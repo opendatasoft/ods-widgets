@@ -189,9 +189,10 @@
 .odswidget-table {
     .embeded & {
         margin: 0;
+        height: 100%;
     }
     overflow: hidden;
-    height: 525px; // Take in account the horizontal scrollbar height
+    height: 400px;
     table {
         font-family: "Open Sans", Helvetica, arial, sans-serif;
         font-size: 0.85em;
@@ -226,17 +227,20 @@
             i {
                 display: none;
             }
-            .sort-icons i {
-                display: inline;
+            .sort-icons {
                 position: relative;
-                opacity: 0.5;
-                &.icon-caret-up {
-                    left: 5px;
-                    top: -4px;
-                }
-                &.icon-caret-down {
-                    left: -5px;
-                    top: 4px;
+                display: inline;
+                margin-left: 2px;
+                i {
+                    position: absolute;
+                    display: inline;
+                    opacity: 0.5;
+                    &.icon-caret-up {
+                        top: -1px;
+                    }
+                    &.icon-caret-down {
+                        top: 6px;
+                    }
                 }
             }
         }
@@ -260,7 +264,7 @@
         display: none;
     }
     .records-body {
-        height: 500px;
+        height: 100%;
         overflow: auto;
         table {
             width: 100%;

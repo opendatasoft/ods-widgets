@@ -10,10 +10,10 @@
                     ng-class="{'active': field.name == tableContext.tablesort || '-'+field.name == tableContext.tablesort}">
                     <div>
                         <span ng-bind="field.label"></span>
-                        <span class="sort-icons" ng-show="isFieldSortable(field)">
+                        <div class="sort-icons" ng-show="isFieldSortable(field)">
                             <i class="icon-caret-up"></i>
                             <i class="icon-caret-down"></i>
-                        </span>
+                        </div>
                         <i ng-class="{'icon-caret-down': tableContext.tablesort[0] === '-', 'icon-caret-up': tableContext.tablesort[0] !== '-'}" ng-show="isFieldSortable(field)"></i>
                     </div>
                 </th>
@@ -30,10 +30,10 @@
                         title="{{ field.name }}">
                         <div>
                             <span ng-bind="field.label"></span>
-                            <span class="sort-icons" ng-show="isFieldSortable(field)">
+                            <div class="sort-icons" ng-show="isFieldSortable(field)">
                                 <i class="icon-caret-up"></i>
                                 <i class="icon-caret-down"></i>
-                            </span>
+                            </div>
                         </div>
                     </th>
                 </tr>

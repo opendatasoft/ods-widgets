@@ -462,10 +462,12 @@
                         }
 
                         if ($('.embedded').length) {
-                            var windowHeight = $(window).height();
-                            $element.height(windowHeight);
-                            $element.find('.records-body').height(windowHeight - 25); // Horizontal scrollbar height
+                            var elementHeight = $(window).height();
+                            $element.height(elementHeight);
+                        } else {
+                            var elementHeight = $element.height();
                         }
+                        $element.find('.records-body').height(elementHeight - 25); // Horizontal scrollbar height
 
                         var recordHeight = recordsBody.find('tr').eq(1).height();
                         var bodyHeight = (rows.length-2)*recordHeight; // Don't take in account placeholders
@@ -482,7 +484,7 @@
 
                         var totalWidth = 0;
                         angular.forEach($element.find('.records-body thead th > div'), function (thDiv, i) {
-                            $scope.layout[i] = $(thDiv).width() + 1; // For all browsers (except Chrome)
+                            $scope.layout[i] = $(thDiv).width() + 6; // For sortable icons
                             totalWidth += $scope.layout[i];
                         });
                         $scope.layout[0] = 30; // First column is the record number
