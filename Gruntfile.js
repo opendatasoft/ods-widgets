@@ -127,15 +127,15 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-concat');
-	grunt.loadNpmTasks('grunt-contrib-clean');
-	grunt.loadNpmTasks('grunt-contrib-copy');
-	grunt.loadNpmTasks('grunt-ngdocs');
-	grunt.loadNpmTasks('grunt-contrib-connect');
+    grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-ngdocs');
+    grunt.loadNpmTasks('grunt-contrib-connect');
 
     // Default task(s).
     grunt.registerTask('default', ['uglify:dist', 'less:dist', 'ngdocs']);
     grunt.registerTask('dev', ['concat', 'less:dev']);
-	grunt.registerTask('docs', ['clean', 'copy', 'ngdocs']);
+    grunt.registerTask('docs', ['clean', 'copy', 'ngdocs']);
     grunt.registerTask('watchdocs', ['docs', 'connect:docs', 'watch:docs']);
 
 };
