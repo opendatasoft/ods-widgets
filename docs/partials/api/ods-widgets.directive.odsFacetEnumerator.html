@@ -1,0 +1,35 @@
+<h1><code ng:non-bindable="">odsFacetEnumerator</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsfacetenumerator-page"><p>This widget enumerates the values (&quot;categories&quot;) of a facet and repeats the template (the content of the directive element) for each of them. For each facet category, the following AngularJS variables are available:</p>
+<ul>
+<li>item.name : the label of the category</li>
+<li>item.path : the path to use to refine on this category</li>
+<li>item.state : &quot;displayed&quot; or &quot;refined&quot;</li>
+<li>item.count : the number of records in this category</li>
+</ul>
+<h3 id="description_example">Example</h3>
+<p> <pre class="prettyprint linenums">
+ &lt;ods-facet-enumerator context="bla" facet="themes"&gt;
+     &lt;div style="display: inline-block; width: 64px; height: 64px;"&gt;
+         {{ facet.name }} ({{ facet.count }}
+     &lt;/div&gt;
+ &lt;/ods-facet-enumerator&gt;
+ </pre>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-facet-enumerator
+       context="{DatasetContext}"
+       facet-name="{string}"&gt;
+&lt;/ods-facet-enumerator&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive creates new scope.</li>
+</ul>
+</div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacetenumerator-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
+</div></td></tr><tr><td>facetName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacetenumerator-page"><p>Name of the facet to enumerate</p>
+</div></td></tr></tbody></table></div>
+</div>

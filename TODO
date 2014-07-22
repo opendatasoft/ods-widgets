@@ -1,0 +1,9 @@
+Try to see if the jQuery dependency can't be remove
+Bower for the external libs that support it
+Make tinycolor lazyloaded
+Make momentjs lazyloaded
+Build lazy dependencies that are not from CDNs into the dist folder: ods-map, ...
+Abstract the data service so that a CKANAPI could be done for example
+Check lexpress tab after CSS refactoring
+Have a ods-widgets-internal package for widgets strongly tied to platform
+Handle moment i18n

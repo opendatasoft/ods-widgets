@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ODS Widgets</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../dist/ods-widgets.css">
+        <style>
+            .odswidget-map > .map { height: 500px; }
+        </style>
+    </head>
+    <body>
+        <div class="container-fluid" ng-app="sample">
+            <h1>Hoy</h1>
+            <ods-catalog-context context="catalog" catalog-domain="parisdata">
+                <ods-dataset-context context="paris" paris-domain="parisdata" paris-dataset="arbresremarquablesparis2011">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <ods-highcharts context="paris" field-x="arrondisse" function-y="count" style="height: 500px;"></ods-highcharts>
+                        </div>
+                        <div class="col-md-4">
+                            <ods-map context="paris" style="height: 500px"></ods-map>
+                        </div>
+                        <div class="col-md-4">
+                            <ods-table context="paris" style="height: 500px"></ods-table>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <ods-last-datasets-feed context="catalog"></ods-last-datasets-feed>
+                        </div>
+                        <div class="col-md-4">
+                            <ods-most-popular-datasets context="catalog"></ods-most-popular-datasets>
+                        </div>
+                        <div class="col-md-4">
+                            <ods-last-reuses-feed context="catalog"></ods-last-reuses-feed>
+                        </div>
+                    </div>
+                </ods-dataset-context>
+            </ods-catalog-context>
+        </div>
+    </body>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular-sanitize.min.js"></script>
+    <script type="text/javascript" src="../dist/ods-widgets.min.js"></script>
+    <script type="text/javascript">
+        var app = angular.module('sample', ['ods-widgets']);
+    </script>
+</html>

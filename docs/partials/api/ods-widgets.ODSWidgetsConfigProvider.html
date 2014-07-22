@@ -1,0 +1,29 @@
+<h1><code ng:non-bindable="">ODSWidgetsConfigProvider</code>
+<div><span class="hint">service in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="ods-widgets-odswidgetsconfigprovider-page"><p>Use <code>ODSWidgetsConfigProvider</code> to set configuration values used by various directives.
+The available settings are:</p>
+<ul>
+<li><strong><code>defaultDomain</code></strong> - <a href="#" class="label type-hint type-hint-string">string</a> - Value used as <code>domain</code> parameter for <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Contexts</a>
+and <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Contexts</a> when none is specified. Defaults is &#39;&#39; (empty string), which means a local API (root is /).</li>
+<li><strong><code>basemaps</code></strong> - <a href="#" class="label type-hint type-hint-array">Array</a> A list of <code>basemap</code> objects.</li>
+<li><strong><code>chartColors</code></strong> - <a href="#" class="label type-hint type-hint-array">Array</a> A list of colors to use for charts. In each chart widget, the first chart will use the first color, the second chart
+will use the second color, and so on until the end of the list is reached, and we start from the beginning of the list again. If not set, default colors will be used,
+depending on the widgets themselves.</li>
+<li><strong><code>disqusShortname</code></strong> - <a href="#" class="label type-hint type-hint-string">string</a> - Shortname used by default for all <a href="#/api/ods-widgets.directive:odsDisqus">ods-widgets.directive:odsDisqus</a> widgets.</li>
+<li><strong><code>themes</code></strong> - <a href="#" class="label type-hint type-hint-object">Object</a> - Configuration of themes and their colors and/or picto</li>
+</ul>
+</div></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_setconfig">setConfig(customConfig)</h3>
+<div class="setconfig"><div class="ods-widgets-odswidgetsconfigprovider-setconfig-page"><p>Sets configuration values by overriding existing values with the values from a new configuration
+object. Existing values that are not present in the new object are left untouched.</p>
+</div><h5 id="methods_setconfig_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>customConfig <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-odswidgetsconfigprovider-setconfig-page"><p>An object containing the configuration values to override.</p>
+</div></td></tr></tbody></table></div>
+</li>
+</ul>
+</div>
+</div>

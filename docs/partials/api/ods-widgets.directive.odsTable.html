@@ -1,0 +1,24 @@
+<h1><code ng:non-bindable="">odsTable</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-table
+       context="{DatasetContext}"
+       displayed-fields="{string}"
+       sort="{string}"
+       table-context="{Object}"&gt;
+&lt;/ods-table&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive creates new scope.</li>
+</ul>
+</div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstable-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
+</div></td></tr><tr><td>displayedFields</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstable-page"><p>A comma-separated list of fields to display. By default all the available fields are displayed.</p>
+</div> <p><em>(default: all)</em></p></td></tr><tr><td>sort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstable-page"><p>Sort expression to apply initially (<em>field</em> or <em>-field</em>)</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>tableContext</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstable-page"><p>An object that you can use to share the sort state between two or more table widgets when they are not in the same context.
+Beware that if you have two tables on two different datasets, they need to have the same sortable fields, else an user may try to sort on a field that doesn&#39;t exist in the other table, and
+an error will occur.</p>
+</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
+</div>

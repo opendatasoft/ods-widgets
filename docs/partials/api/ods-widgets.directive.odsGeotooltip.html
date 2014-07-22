@@ -1,0 +1,33 @@
+<h1><code ng:non-bindable="">odsGeotooltip</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsgeotooltip-page"><p>This directive, when used to surround a text, displays a tooltip showing a point and/or a shape in a map.</p>
+<h3 id="description_example">Example</h3>
+<pre class="prettyprint linenums">
+&lt;ods-geotooltip coords="'48,2'"&gt;my location&lt;/ods-geotooltip&gt;
+&lt;ods-geotooltip coords="[48.04,2.12434]"&gt;my other location&lt;/ods-geotooltip&gt;
+</pre>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-geotooltip
+       coords="{Array|string}"
+       geojson="{Object}"
+       width="{number}"
+       height="{number}"
+       delay="{number}"&gt;
+&lt;/ods-geotooltip&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive creates new scope.</li>
+</ul>
+</div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>coords</td><td><a href="" class="label type-hint type-hint-array">Array</a><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsgeotooltip-page"><p>Coordinates of a point to display in the tooltip; either an array of two numbers as [latitude, longitude], or a string under the form of &quot;latitude,longitude&quot;.
+If you use a string, surround it with simple quotes to ensure Angular treats it as a string.</p>
+</div></td></tr><tr><td>geojson</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsgeotooltip-page"><p>GeoJSON object of a shape to display in the tooltip.</p>
+</div></td></tr><tr><td>width</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsgeotooltip-page"><p>Width of the tooltip, in pixels.</p>
+</div> <p><em>(default: 200)</em></p></td></tr><tr><td>height</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsgeotooltip-page"><p>Height of the tooltip, in pixels.</p>
+</div> <p><em>(default: 200)</em></p></td></tr><tr><td>delay</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsgeotooltip-page"><p>Delay before the tooltip appears on hover, in milliseconds.</p>
+</div> <p><em>(default: 500)</em></p></td></tr></tbody></table></div>
+</div>

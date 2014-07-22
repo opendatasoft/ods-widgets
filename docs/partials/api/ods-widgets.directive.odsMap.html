@@ -1,0 +1,31 @@
+<h1><code ng:non-bindable="">odsMap</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-map
+       context="{DatasetContext}"
+       auto-resize="{boolean}"
+       location="{string}"
+       basemap="{string}"
+       is-static="{boolean}"
+       show-filters="{boolean}"
+       map-context="{Object}"&gt;
+&lt;/ods-map&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive creates new scope.</li>
+</ul>
+</div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
+</div></td></tr><tr><td>autoResize</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, the map will attempt to resize itself to always take up all the space to the bottom of the viewport.
+It is only useful in very specific cases, when the map is the main focus of the page and should take all the window real estate available.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>location</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Initial location of the map, under the format &quot;zoom,latitude,longitude&quot; (e.g. <em>12,48.85887,2.3292</em>)</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>basemap</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Identifier of the basemap to apply. Basemaps are configured using <a href="#/api/ods-widgets.ODSWidgetsConfigProvider">ODSWidgetsConfig.basemaps</a>.</p>
+</div> <p><em>(default: default basemap)</em></p></td></tr><tr><td>isStatic</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, the map can&#39;t be panned or zoomed; in other words the map is static and can only show the initial view. Interaction with the data is still active,
+for example you can still click on a marker to have a tooltip.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>showFilters</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, displays additional tools to use the map to filter the data in the context. For example if you use a table and a map on the same context,
+this makes you able to use the map to refine the data displayed in the table.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>mapContext</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>An object that you can use to share the map state (location and basemap) between two or more table widgets when they are not in the same context.</p>
+</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
+</div>
