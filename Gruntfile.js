@@ -86,7 +86,8 @@ module.exports = function(grunt) {
 				dest: 'assets/'
 			},
             templates: {
-                expand: false,
+                expand: true,
+                flatten: true,
                 src: ['src/templates/*'],
                 dest: 'dist/templates/'
             }
