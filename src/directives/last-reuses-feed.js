@@ -22,11 +22,11 @@
                 '   <li ng-repeat="reuse in reuses" ng-if="reuses">' +
                 '       <div class="reuse-thumbnail">' +
                 '           <span style="display: inline-block; height: 100%; vertical-align: middle;"></span>' +
-                '           <a ng-href="/explore/dataset/{{reuse.dataset.id}}/" target="_self"><img ng-if="reuse.thumbnail" ng-src="{{ reuse.thumbnail }}"></a>' +
+                '           <a ng-href="{{context.domainUrl}}/explore/dataset/{{reuse.dataset.id}}/" target="_self"><img ng-if="reuse.thumbnail" ng-src="{{ reuse.thumbnail }}"></a>' +
                 '       </div>' +
                 '       <div class="reuse-details">' +
-                '           <div class="title"><a ng-href="/explore/dataset/{{reuse.dataset.id}}/" target="_self">{{ reuse.title }}</a></div>' +
-                '           <div class="dataset"><a ng-href="/explore/dataset/{{reuse.dataset.id}}/" target="_self">{{ reuse.dataset.title }}</a></div>' +
+                '           <div class="title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{reuse.dataset.id}}/" target="_self">{{ reuse.title }}</a></div>' +
+                '           <div class="dataset"><a ng-href="{{context.domainUrl}}/explore/dataset/{{reuse.dataset.id}}/" target="_self">{{ reuse.dataset.title }}</a></div>' +
                 '           <div class="modified"><span title="{{ reuse.created_at|moment:\'LLL\' }}"><i class="icon-calendar"></i> {{ reuse.created_at|timesince }}</span></div>' +
                 '       </div>' +
                 '   </li>' +

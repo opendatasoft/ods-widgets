@@ -22,7 +22,7 @@
                 '   <li ng-repeat="dataset in datasets" ng-if="datasets">' +
                 '       <ods-theme-picto theme="{{dataset.metas.theme}}"></ods-theme-picto>' +
                 '       <div class="dataset-details">' +
-                '           <div class="title"><a ng-href="/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
+                '           <div class="title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
                 '           <div class="modified"><span title="{{ dataset.metas.modified|moment:\'LLL\' }}"><i class="icon-calendar"></i> <translate>Modified</translate> {{ dataset.metas.modified|timesince }}</span></div>' +
                 '       </div>' +
                 '   </li>' +

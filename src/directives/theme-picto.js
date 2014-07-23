@@ -11,8 +11,8 @@
          * @restrict E
          * @param {string} theme The label of the theme to display the picto of.
          * @description
-         * This widget displays the "picto" of a theme, based on the theme configuration. This element can be styled (height, width...),
-         * especially if the picto is vectorial (SVG).
+         * This widget displays the "picto" of a theme, based on the `themes` setting in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig}.
+         * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
          *
          */
         var inlineImages = {};

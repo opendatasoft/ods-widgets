@@ -116,7 +116,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.",
-      "keywords": "api directive display displays domain empty explore homepage ods-widgets placeholder redirects search searchbox text wide widget"
+      "keywords": "api catalog context current directive display displays domain empty explore homepage indicating local ods-widgets placeholder redirect redirects search searchbox text user wide widget"
     },
     {
       "section": "api",
@@ -137,12 +137,21 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsThemeBoxes",
+      "shortName": "odsThemeBoxes",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget enumerates the themes available on the domain, by showing their pictos and the number of datasets they contain.",
+      "keywords": "api catalog configured context datasets directive domain enumerate enumerates facet facetname list number ods-widgets odswidgetsconfig odswidgetsconfigprovider pictos pull require setting showing theme themes widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsThemePicto",
       "shortName": "odsThemePicto",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays the &quot;picto&quot; of a theme, based on the theme configuration. This element can be styled (height, width...),",
-      "keywords": "api based configuration directive display displays element label ods-widgets picto styled theme vectorial widget width"
+      "shortDescription": "This widget displays the &quot;picto&quot; of a theme, based on the themes setting in ODSWidgetsConfig.",
+      "keywords": "api based directive display displays element label ods-widgets odswidgetsconfig odswidgetsconfigprovider picto setting styled theme themes vectorial widget width"
     },
     {
       "section": "api",

@@ -6631,7 +6631,7 @@ else {
                 '   <li ng-repeat="dataset in datasets" ng-if="datasets">' +
                 '       <ods-theme-picto theme="{{dataset.metas.theme}}"></ods-theme-picto>' +
                 '       <div class="dataset-details">' +
-                '           <div class="title"><a ng-href="/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
+                '           <div class="title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
                 '           <div class="modified"><span title="{{ dataset.metas.modified|moment:\'LLL\' }}"><i class="icon-calendar"></i> <translate>Modified</translate> {{ dataset.metas.modified|timesince }}</span></div>' +
                 '       </div>' +
                 '   </li>' +
@@ -6678,11 +6678,11 @@ else {
                 '   <li ng-repeat="reuse in reuses" ng-if="reuses">' +
                 '       <div class="reuse-thumbnail">' +
                 '           <span style="display: inline-block; height: 100%; vertical-align: middle;"></span>' +
-                '           <a ng-href="/explore/dataset/{{reuse.dataset.id}}/" target="_self"><img ng-if="reuse.thumbnail" ng-src="{{ reuse.thumbnail }}"></a>' +
+                '           <a ng-href="{{context.domainUrl}}/explore/dataset/{{reuse.dataset.id}}/" target="_self"><img ng-if="reuse.thumbnail" ng-src="{{ reuse.thumbnail }}"></a>' +
                 '       </div>' +
                 '       <div class="reuse-details">' +
-                '           <div class="title"><a ng-href="/explore/dataset/{{reuse.dataset.id}}/" target="_self">{{ reuse.title }}</a></div>' +
-                '           <div class="dataset"><a ng-href="/explore/dataset/{{reuse.dataset.id}}/" target="_self">{{ reuse.dataset.title }}</a></div>' +
+                '           <div class="title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{reuse.dataset.id}}/" target="_self">{{ reuse.title }}</a></div>' +
+                '           <div class="dataset"><a ng-href="{{context.domainUrl}}/explore/dataset/{{reuse.dataset.id}}/" target="_self">{{ reuse.dataset.title }}</a></div>' +
                 '           <div class="modified"><span title="{{ reuse.created_at|moment:\'LLL\' }}"><i class="icon-calendar"></i> {{ reuse.created_at|timesince }}</span></div>' +
                 '       </div>' +
                 '   </li>' +
@@ -7515,7 +7515,7 @@ else {
                 '   <li ng-repeat="dataset in datasets" ng-if="datasets">' +
                 '       <ods-theme-picto theme="{{dataset.metas.theme}}"></ods-theme-picto>' +
                 '       <div class="dataset-details">' +
-                '           <div class="title"><a ng-href="/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
+                '           <div class="title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
                 '           <div class="count"><i class="icon-download-alt"></i> {{ dataset.extra_metas.explore.download_count }} <translate>downloads</translate></div>' +
                 '       </div>' +
                 '   </li>' +
@@ -7549,22 +7549,34 @@ else {
          * @scope
          * @restrict E
          * @param {string} placeholder the text to display as a placeholder when the searchbox is empty
+         * @param {CatalogContext} [context=none] {@link ods-widgets.directive:odsCatalogContext Catalog Context} indicating the domain to redirect the user to show the search results.
+         * If none, the search is done on the local domain (/explore/ of the current domain the user is).
          * @description
          * This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.
          *
          */
-        // FIXME: Take a catalog context so that the searchbox redirects to the absolute URL of the domain
         return {
             restrict: 'E',
             replace: true,
             template: '<div class="odswidget-searchbox">' +
-                    '<form method="GET" action="/explore/">' +
+                    '<form method="GET" action="{{ actionUrl }}">' +
                     '<input class="searchbox" name="q" type="text" placeholder="{{placeholder}}">' +
                     '</form>' +
                 '</div>',
             scope: {
-                placeholder: '@'
-            }
+                placeholder: '@',
+                context: '='
+            },
+            controller: ['$scope', '$sce', function($scope, $sce) {
+                $scope.actionUrl = '/explore/';
+
+                var unwatch = $scope.$watch('context', function(nv) {
+                    if (nv) {
+                        $scope.actionUrl = $sce.trustAsResourceUrl($scope.context.domainUrl + $scope.actionUrl);
+                        unwatch();
+                    }
+                });
+            }]
         };
     });
 
@@ -8236,16 +8248,25 @@ else {
 
 }());;(function() {
     'use strict';
-    // TODO: There are hard dependencies in explore.less, this should not be here...
-    // It is linked to our own code via the theme system. We can't really expose it without a dependency to that code.
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsThemeBoxes', function() {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsThemeBoxes
+         * @scope
+         * @restrict E
+         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to pull the theme list from.
+         * @param {string} facetName Name of the facet to enumerate
+         * @description
+         * This widget enumerates the themes available on the domain, by showing their pictos and the number of datasets they contain.
+         * They require the `themes` setting to be configured in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig}.
+         */
         return {
             restrict: 'E',
             replace: false,
             template: '<div class="odswidget-theme-boxes">' +
-                '<ods-facet-enumerator context="context" facet="theme">' +
+                '<ods-facet-enumerator context="context" facet-name="theme">' +
                     '<a ng-href="{{context.domainUrl}}/explore/?refine.theme={{item.path}}" target="_self" ods-tooltip="{{item.name}} ({{item.count}} jeux de données)" ods-tooltip-direction="bottom" style="display: block;">' +
                         '<ods-theme-picto theme="{{item.name}}"></ods-theme-picto>' +
                     '</a>' +
@@ -8271,8 +8292,8 @@ else {
          * @restrict E
          * @param {string} theme The label of the theme to display the picto of.
          * @description
-         * This widget displays the "picto" of a theme, based on the theme configuration. This element can be styled (height, width...),
-         * especially if the picto is vectorial (SVG).
+         * This widget displays the "picto" of a theme, based on the `themes` setting in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig}.
+         * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
          *
          */
         var inlineImages = {};
