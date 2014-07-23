@@ -1,0 +1,33 @@
+.leaflet-vectormarker, .leaflet-vectormarker object {
+    width: 25px !important;
+    height: 43px !important;
+    top: -37px !important;
+    left: -6px !important;
+    font-size: 32px;
+}
+
+.leaflet-vectormarker .leaflet-vectormarker-iconoverlay {
+    position: absolute;
+    top: 2px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 15px;
+}
+
+.leaflet-vectormarker .leaflet-vectormarker-singleicon {
+    position: absolute;
+    width: 40px;
+    text-align: center;
+    /*top: 29px;*/
+    left: -5px;
+}
+
+.leaflet-vectormarker .leaflet-vectormarker-singleicon i {
+    text-shadow: 0.1em 0.1em 0.3em rgba(0,0,0,0.5);
+}
+
+.leaflet-vectormarker svg {
+    -webkit-filter: drop-shadow( 0.1em 0.1em 0.1em rgba(0,0,0,0.5) );
+    filter: drop-shadow( 0.1em 0.1em 0.1em rgba(0,0,0,0.5) );
+}

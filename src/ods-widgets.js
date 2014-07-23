@@ -178,20 +178,20 @@
                     "//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css",
                     "//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.3/leaflet.fullscreen.css",
                     "//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.css",
-                    "/static/ods-geobox/geobox.css",
-                    "/static/ods-vectormarker/vectormarker.css",
-                    "/static/ods-clustermarker/clustermarker.css"
+                    "libs/ods-geobox/geobox.css",
+                    "libs/ods-vectormarker/vectormarker.css",
+                    "libs/ods-clustermarker/clustermarker.css"
                 ],
                 'js': [
                     ["L@//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"],
                     [
                         "L.Control.FullScreen@//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.3/Leaflet.fullscreen.min.js",
                         "L.Control.Locate@//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.js",
-                        "L.ODSMap@/static/ods-map/ods-map.js",
-                        "L.ODSTileLayer@/static/ods-map/ods-tilelayer.js",
-                        "L.Control.GeoBox@/static/ods-geobox/geobox.js",
-                        "L.VectorMarker@/static/ods-vectormarker/vectormarker.js",
-                        "L.ClusterMarker@/static/ods-clustermarker/clustermarker.js"
+                        "L.ODSMap@libs/ods-map/ods-map.js",
+                        "L.ODSTileLayer@libs/ods-map/ods-tilelayer.js",
+                        "L.Control.GeoBox@libs/ods-geobox/geobox.js",
+                        "L.VectorMarker@libs/ods-vectormarker/vectormarker.js",
+                        "L.ClusterMarker@libs/ods-clustermarker/clustermarker.js"
                     ]
                 ]
             }
@@ -220,7 +220,7 @@
             return objectIsDefined(window, objectName);
         };
 
-        this.$get = ['$q', function($q) {
+        this.$get = ['$q', 'ODSWidgetsConfig', function($q, ODSWidgetsConfig) {
             var loading = {};
             var loaded = [];
 
@@ -229,8 +229,11 @@
                     return loading[url];
                 } else {
                     var deferred = $q.defer();
-                    LazyLoad[type](url, function() {
-    //                    console.log('Loaded:', url);
+                    // If it is a relative URL, make it relative to ODSWidgetsConfig.basePath
+                    var realURL =  url.substring(0, 1) === '/'
+                                || url.substring(0, 7) === 'http://'
+                                || url.substring(0, 8) === 'https://' ? url : ODSWidgetsConfig.basePath + url;
+                    LazyLoad[type](realURL, function() {
                         loaded.push(url);
                         deferred.resolve();
                     });
@@ -300,30 +303,6 @@
                 }
             }
         };
-    }]);
-
-    mod.config(['ODSWidgetsConfigProvider', function(ODSWidgetsConfigProvider) {
-        // if no basepath, try to set a detected one
-        // see how leaflet does it:
-
-        /*
-        L.Icon.Default.imagePath = (function () {
-            var scripts = document.getElementsByTagName('script'),
-                leafletRe = /[\/^]leaflet[\-\._]?([\w\-\._]*)\.js\??/;
-
-            var i, len, src, matches, path;
-
-            for (i = 0, len = scripts.length; i < len; i++) {
-                src = scripts[i].src;
-                matches = src.match(leafletRe);
-
-                if (matches) {
-                    path = src.split(leafletRe)[0];
-                    return (path ? path + '/' : '') + 'images';
-                }
-            }
-        }());
-         */
     }]);
 
     mod.run(['translate', 'ODSWidgetsConfig', function(translate, ODSWidgetsConfig) {

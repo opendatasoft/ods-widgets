@@ -52,30 +52,33 @@
                     }
                     element.append(svg);
                 };
-
-                var url = themeConfig.img;
-
-                if (url.indexOf('.svg') === -1) {
-                    // Normal image
-                    element.append(angular.element('<img src="'+url+'"/>'));
+                if (!themeConfig) {
+                    // No picto to display at all
                 } else {
-                    // SVG
-                    if (inlineImages[scope.theme]) {
-                        if (inlineImages[scope.theme].code) {
-                            loadImageInline(inlineImages[scope.theme].code);
+                    var url = themeConfig.img;
+
+                    if (url.indexOf('.svg') === -1) {
+                        // Normal image
+                        element.append(angular.element('<img src="'+url+'"/>'));
+                    } else {
+                        // SVG
+                        if (inlineImages[scope.theme]) {
+                            if (inlineImages[scope.theme].code) {
+                                loadImageInline(inlineImages[scope.theme].code);
+                            } else {
+                                inlineImages[scope.theme].promise.success(function(data) {
+                                    loadImageInline(data);
+                                });
+                            }
+
                         } else {
-                            inlineImages[scope.theme].promise.success(function(data) {
+                            var promise = $http.get(url);
+                            inlineImages[scope.theme] = {promise: promise};
+                            promise.success(function(data) {
+                                inlineImages[scope.theme].code = data;
                                 loadImageInline(data);
                             });
                         }
-
-                    } else {
-                        var promise = $http.get(url);
-                        inlineImages[scope.theme] = {promise: promise};
-                        promise.success(function(data) {
-                            inlineImages[scope.theme].code = data;
-                            loadImageInline(data);
-                        });
                     }
                 }
 

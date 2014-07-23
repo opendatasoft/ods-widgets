@@ -2,7 +2,7 @@
 // TODO: Generate .css file
 
 var JS_FILES = [
-    'libs/included/*.js',
+    'libs-included/*.js',
     'src/ods-widgets.js',
     'src/filters.js',
     'src/functions.js',
@@ -54,7 +54,7 @@ module.exports = function(grunt) {
             },
             scripts: {
                 files: [JS_FILES],
-                tasks: ['uglify', 'ngdocs'],
+                tasks: ['uglify', 'concat', 'ngdocs'],
                 options: {
                     spawn: false
                 }
@@ -88,8 +88,13 @@ module.exports = function(grunt) {
             templates: {
                 expand: true,
                 flatten: true,
-                src: ['src/templates/*'],
+                src: ['templates/*'],
                 dest: 'dist/templates/'
+            },
+            libs: {
+                expand: true,
+                src: ['libs/**'],
+                dest: 'dist/'
             }
 		},
 		ngdocs: {
@@ -137,6 +142,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['dist']);
-    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'copy:templates', 'ngdocs']);
+    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'copy:templates', 'copy:libs', 'ngdocs']);
     grunt.registerTask('server', ['default', 'connect', 'watch']);
 };

@@ -133,7 +133,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a &quot;tag cloud&quot; of the values available in a facet (either the facet of a dataset, or a facet from the dataset catalog). The &quot;weight&quot; (size) of a tag depends on the number",
-      "keywords": "api build catalog cloud context count dataset depends directive displays facet facetname max maximum number occurences ods-widgets tag tags values weight widget"
+      "keywords": "api build catalog cloud context count dataset depends directive displays facet facetname maximum number occurences ods-widgets tag tags values weight widget"
     },
     {
       "section": "api",

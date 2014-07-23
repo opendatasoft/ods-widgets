@@ -11,7 +11,7 @@
          * @restrict E
          * @param {CatalogContext|DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {string} facetName Name of the facet to build the tag cloud from.
-         * @param {number} max Maximum number of tags to show in the cloud.
+         * @param {number} [max=all] Maximum number of tags to show in the cloud.
          * @description
          * This widget displays a "tag cloud" of the values available in a facet (either the facet of a dataset, or a facet from the dataset catalog). The "weight" (size) of a tag depends on the number
          * of occurences ("count") for this tag.
