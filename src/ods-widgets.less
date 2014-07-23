@@ -333,3 +333,49 @@
         }
     }
 }
+
+.odswidget-geo-scroller {
+    min-height: 30px;
+    position: relative;
+
+    .spinnerWrapper {
+        // Centered spinner, waiting for the results to be displayed
+        position: absolute;
+        top: 50%;
+        left: 50%;
+    }
+
+    .limited-results {
+        text-align: center;
+        font-size: 1.1em;
+    }
+
+    dl {
+        margin: 0;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .imagify {
+        max-width: 100% !important; // Leaflet adds a max-width none as !important
+    }
+
+    h2 {
+        text-align: center;
+        border: none !important;
+        font-size: 18px;
+        margin-bottom: 0px !important;
+
+        &.scroller-control {
+            font-size: 16px;
+            cursor: pointer;
+            i {
+                padding: 5px 10px;
+                &:hover {
+                    color: Black;
+                    background-color: #EEEEEE;
+                }
+            }
+        }
+    }
+}

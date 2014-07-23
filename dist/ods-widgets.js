@@ -6925,7 +6925,7 @@ else {
                         html = jQuery('<div></div>').append(clone).html().trim();
                     });
                     if (html.trim() === '') {
-                        newScope.template = $scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.map_tooltip_template || "/static/explore/html/map_tooltip.html";
+                        newScope.template = $scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.map_tooltip_template || ODSWidgetsConfig.basePath + "templates/geoscroller_tooltip.html";
                     }
                     var popup = new L.Popup(popupOptions).setLatLng(latLng)
                         .setContent($compile('<geo-scroller shape="shape" context="context" recordid="recordid" map="map" template="{{ template }}">'+html+'</geo-scroller>')(newScope)[0]);
@@ -7393,7 +7393,7 @@ else {
         return {
             restrict: 'E',
             transclude: true,
-            template: '<div class="geo-scroller">' +
+            template: '<div class="odswidget-geo-scroller">' +
                     '<spinner ng-hide="records"></spinner>' +
                     '<h2 ng-show="records.length > 1" class="scroller-control ng-leaflet-tooltip-cloak">' +
                         '<i class="icon-chevron-left" ng-click="moveIndex(-1)"></i>' +

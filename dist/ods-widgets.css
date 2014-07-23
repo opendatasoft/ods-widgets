@@ -330,3 +330,41 @@
   left: 0;
   right: 0;
 }
+.odswidget-geo-scroller {
+  min-height: 30px;
+  position: relative;
+}
+.odswidget-geo-scroller .spinnerWrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+.odswidget-geo-scroller .limited-results {
+  text-align: center;
+  font-size: 1.1em;
+}
+.odswidget-geo-scroller dl {
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.odswidget-geo-scroller .imagify {
+  max-width: 100% !important;
+}
+.odswidget-geo-scroller h2 {
+  text-align: center;
+  border: none !important;
+  font-size: 18px;
+  margin-bottom: 0px !important;
+}
+.odswidget-geo-scroller h2.scroller-control {
+  font-size: 16px;
+  cursor: pointer;
+}
+.odswidget-geo-scroller h2.scroller-control i {
+  padding: 5px 10px;
+}
+.odswidget-geo-scroller h2.scroller-control i:hover {
+  color: Black;
+  background-color: #EEEEEE;
+}
