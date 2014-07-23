@@ -200,7 +200,6 @@
   height: 100%;
 }
 .odswidget-table table {
-  font-family: "Open Sans", Helvetica, arial, sans-serif;
   font-size: 0.85em;
   width: 100%;
   max-width: 100%;
@@ -212,6 +211,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  box-sizing: content-box;
 }
 .odswidget-table table th {
   background-color: #e8e8e8;
@@ -241,10 +241,10 @@
   opacity: 0.5;
 }
 .odswidget-table table th .sort-icons i.icon-caret-up {
-  top: -1px;
+  top: -0.1em;
 }
 .odswidget-table table th .sort-icons i.icon-caret-down {
-  top: 6px;
+  bottom: -0.1em;
 }
 .odswidget-table table th:first-child {
   text-align: right;
@@ -270,6 +270,9 @@
 }
 .odswidget-table .records-body table {
   width: 100%;
+}
+.odswidget-table .records-body table > tbody tr td {
+  padding: 1px;
 }
 .odswidget-table .records-body table > tbody tr td:first-child {
   color: rgba(0, 0, 0, 0.5);
@@ -367,4 +370,7 @@
 .odswidget-geo-scroller h2.scroller-control i:hover {
   color: Black;
   background-color: #EEEEEE;
+}
+#odswidget-geotooltip {
+  border: solid 1px Black;
 }

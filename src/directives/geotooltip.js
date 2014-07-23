@@ -25,7 +25,7 @@
              * </pre>
              */
             // The container is shared between directives to avoid performance issues
-            var container = angular.element('<div id="geotooltip" style="opacity: 0; transition: opacity 200ms ease-out; position: fixed; z-index: 40000; visibility: hidden;"></div>');
+            var container = angular.element('<div id="odswidget-geotooltip" style="opacity: 0; transition: opacity 200ms ease-out; position: fixed; z-index: 40000; visibility: hidden;"></div>');
             var map = null;
             var layerGroup = null;
 

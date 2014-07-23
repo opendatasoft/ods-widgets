@@ -1,1 +1,21 @@
-/* For now located in explore.less */
+.cluster-marker .cluster-marker-circle {
+            /*animation: fadein, 0.4s;*/
+       /*-moz-animation: fadein, 0.4s;*/
+    /*-webkit-animation: fadein, 0.4s;*/
+
+            /*transition: opacity linear 0.4s;*/
+       /*-moz-transition: opacity linear 0.4s;*/
+    /*-webkit-transition: opacity linear 0.4s;*/
+
+    border-radius: 50%;
+    text-align: center;
+    position: absolute;
+    background-clip: padding-box;
+    font-weight: bold;
+}
+
+.cluster-marker .cluster-marker-circle span {
+    display:inline-block;
+    margin-top:auto;
+    margin-bottom:auto;
+}
