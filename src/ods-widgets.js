@@ -49,7 +49,7 @@
             mapGeobox: false,
             chartColors: null,
             mapPrependAttribution: null,
-            basePath: '/static/ods-widgets/',
+            basePath: null,
             themes: {}
         };
 
@@ -300,5 +300,62 @@
                 }
             }
         };
+    }]);
+
+    mod.config(['ODSWidgetsConfigProvider', function(ODSWidgetsConfigProvider) {
+        // if no basepath, try to set a detected one
+        // see how leaflet does it:
+
+        /*
+        L.Icon.Default.imagePath = (function () {
+            var scripts = document.getElementsByTagName('script'),
+                leafletRe = /[\/^]leaflet[\-\._]?([\w\-\._]*)\.js\??/;
+
+            var i, len, src, matches, path;
+
+            for (i = 0, len = scripts.length; i < len; i++) {
+                src = scripts[i].src;
+                matches = src.match(leafletRe);
+
+                if (matches) {
+                    path = src.split(leafletRe)[0];
+                    return (path ? path + '/' : '') + 'images';
+                }
+            }
+        }());
+         */
+    }]);
+
+    mod.run(['translate', 'ODSWidgetsConfig', function(translate, ODSWidgetsConfig) {
+        // Initialize with an empty config so that at least it doesn't crash if
+        // nobody bothers to add a translation dictionary.
+        translate.add({});
+
+        if (!ODSWidgetsConfig.basePath) {
+            // Try to detect the path where ODS-Widgets is loaded from
+            // Kudos to Leaflet for the idea
+            var scriptTags = document.getElementsByTagName('script');
+
+            var odswidgetsRE = /[\/^]ods-widgets(\.min)?\.js\??/;
+
+            var i, src, matches, path;
+            for (i=0; i<scriptTags.length; i++) {
+                src = scriptTags[i].src;
+                matches = src.match(odswidgetsRE);
+
+                if (matches) {
+                    path = src.split(odswidgetsRE)[0];
+                    if (!path) {
+                        // Path is '/'
+                        ODSWidgetsConfig.basePath = '/';
+                    } else if (path.substring(path.length-3) === '.js') {
+                        // This is loaded from the same folder
+                        ODSWidgetsConfig.basePath = '';
+                    } else {
+                        ODSWidgetsConfig.basePath = path + '/';
+                    }
+                }
+            }
+        }
     }]);
 }());

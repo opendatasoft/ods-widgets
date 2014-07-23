@@ -3,10 +3,10 @@
 
 var JS_FILES = [
     'libs/included/*.js',
-    'ods-widgets.js',
-    'filters.js',
-    'functions.js',
-    'directives/*.js'
+    'src/ods-widgets.js',
+    'src/filters.js',
+    'src/functions.js',
+    'src/directives/*.js'
 ];
 
 module.exports = function(grunt) {
@@ -31,7 +31,7 @@ module.exports = function(grunt) {
                     cleancss: false
                 },
                 files: {
-                    "dist/ods-widgets.css": "ods-widgets.less"
+                    "dist/ods-widgets.css": "src/ods-widgets.less"
                 }
             },
             dist: {
@@ -40,13 +40,13 @@ module.exports = function(grunt) {
                     cleancss: true
                 },
                 files: {
-                    "dist/ods-widgets.css": "ods-widgets.less"
+                    "dist/ods-widgets.min.css": "src/ods-widgets.less"
                 }
             }
         },
         watch: {
             styles: {
-                files: ['*.less'], // which files to watch
+                files: ['src/*.less'], // which files to watch
                 tasks: ['less'],
                 options: {
                     spawn: false
@@ -54,14 +54,14 @@ module.exports = function(grunt) {
             },
             scripts: {
                 files: [JS_FILES],
-                tasks: ['uglify'],
+                tasks: ['uglify', 'ngdocs'],
                 options: {
                     spawn: false
                 }
             },
-            docs: {
-                files: [JS_FILES],
-                tasks: ['ngdocs'],
+            templates: {
+                files: ['src/templates/*'],
+                tasks: ['copy:templates'],
                 options: {
                     spawn: false
                 }
@@ -79,12 +79,17 @@ module.exports = function(grunt) {
 		// copies logo.png to be used in the doc website header
 		// must be run before 'ngdocs'
 		copy: {
-			main: {
+			docs: {
 				expand: true,
 				cwd: '../ods/img/',
 				src: 'logo.png',
 				dest: 'assets/'
-			}
+			},
+            templates: {
+                expand: false,
+                src: ['src/templates/*'],
+                dest: 'dist/templates/'
+            }
 		},
 		ngdocs: {
 			options: {
@@ -97,9 +102,9 @@ module.exports = function(grunt) {
 			},
 			all: {
 				src: [
-                    'directives/**/*.js',
-                    'filters.js',
-                    'ods-widgets.js',
+                    'src/directives/**/*.js',
+                    'src/filters.js',
+                    'src/ods-widgets.js',
                     '*.ngdoc'
                 ],
 				title: 'Widgets',
@@ -107,15 +112,12 @@ module.exports = function(grunt) {
 		},
 		// serves the documentation server
 		connect: {
-			options: {
+            options: {
                 port: 9001
             },
-//			server: {
-//                keepalive: true
-//            },
-            docs: {
+            server: {
                 options: {
-                    base: 'docs'
+                    keepalive: false
                 }
             }
 		},
@@ -133,9 +135,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-connect');
 
     // Default task(s).
-    grunt.registerTask('default', ['uglify:dist', 'less:dist', 'ngdocs']);
-    grunt.registerTask('dev', ['concat', 'less:dev']);
-    grunt.registerTask('docs', ['clean', 'copy', 'ngdocs']);
-    grunt.registerTask('watchdocs', ['docs', 'connect:docs', 'watch:docs']);
-
+    grunt.registerTask('default', ['dist']);
+    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'copy:templates', 'ngdocs']);
+    grunt.registerTask('server', ['default', 'connect', 'watch']);
 };

@@ -72,7 +72,7 @@
     }]);
 
     /* Directives */
-    ng.module('translate.directives', ['translate'], function ($compileProvider) {
+    ng.module('translate.directives', ['translate'], ['$compileProvider', function ($compileProvider) {
         $compileProvider.directive('translate', ['$compile', 'translate', function ($compile, translate) {
             return {
                 priority: 10, //Should be evaluated befor e. G. pluralize
@@ -100,7 +100,7 @@
                 }
             };
         }]);
-    });
+    }]);
 
     ng.module('translate.filters', ['translate'])
         .filter('translate', ['translate', function(translate) {

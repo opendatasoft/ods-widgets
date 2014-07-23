@@ -1,0 +1,48 @@
+<div class="records records-table odswidget-table">
+    <div class="records-header" ng-show="records.length">
+        <table>
+            <thead>
+            <tr>
+                <th><div><i ng-show="fetching" class="icon-spinner icon-spin icon-large"></i></div></th>
+                <th ng-repeat="field in context.dataset.fields|fieldsForVisualization:'table'|fieldsFilter:displayedFieldsArray"
+                    title="{{ field.name }}"
+                    ng-click="toggleSort(field)"
+                    ng-class="{'active': field.name == tableContext.tablesort || '-'+field.name == tableContext.tablesort}">
+                    <div>
+                        <span ng-bind="field.label"></span>
+                        <div class="sort-icons" ng-show="isFieldSortable(field)">
+                            <i class="icon-caret-up"></i>
+                            <i class="icon-caret-down"></i>
+                        </div>
+                        <i ng-class="{'icon-caret-down': tableContext.tablesort[0] === '-', 'icon-caret-up': tableContext.tablesort[0] !== '-'}" ng-show="isFieldSortable(field)"></i>
+                    </div>
+                </th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="records-body">
+        <table infinite-scroll="loadMore()" infinite-scroll-distance="1" infinite-scroll-disabled="fetching">
+            <thead>
+                <tr>
+                    <th><div><i ng-show="fetching" class="icon-spinner icon-spin icon-large"></i></div></th>
+                    <th ng-repeat="field in context.dataset.fields|fieldsForVisualization:'table'|fieldsFilter:displayedFieldsArray"
+                        title="{{ field.name }}">
+                        <div>
+                            <span ng-bind="field.label"></span>
+                            <div class="sort-icons" ng-show="isFieldSortable(field)">
+                                <i class="icon-caret-up"></i>
+                                <i class="icon-caret-down"></i>
+                            </div>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="overlay" ng-hide="fetching || records"><span translate>No results</span></div>
+    <div class="overlay" ng-hide="(!fetching || records) && !working"><spinner class="spinner"></spinner></div>
+
+</div>

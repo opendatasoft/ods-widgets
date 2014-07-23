@@ -26,7 +26,7 @@
                 sort: '@'
             },
             replace: true,
-            templateUrl: ODSWidgetsConfig.basePath + 'directives/templates/table.html',
+            templateUrl: ODSWidgetsConfig.basePath + 'templates/table.html',
             controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile) {
                 if (angular.isUndefined($scope.tableContext)) {
                     $scope.tableContext = {};

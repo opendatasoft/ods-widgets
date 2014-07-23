@@ -3666,7 +3666,7 @@ mod.directive('infiniteScroll', [
     }]);
 
     /* Directives */
-    ng.module('translate.directives', ['translate'], function ($compileProvider) {
+    ng.module('translate.directives', ['translate'], ['$compileProvider', function ($compileProvider) {
         $compileProvider.directive('translate', ['$compile', 'translate', function ($compile, translate) {
             return {
                 priority: 10, //Should be evaluated befor e. G. pluralize
@@ -3694,7 +3694,7 @@ mod.directive('infiniteScroll', [
                 }
             };
         }]);
-    });
+    }]);
 
     ng.module('translate.filters', ['translate'])
         .filter('translate', ['translate', function(translate) {
@@ -3702,7 +3702,8 @@ mod.directive('infiniteScroll', [
                 return translate(input);
             };
         }]);
-}(angular));;// TinyColor v0.11.2
+}(angular));
+;// TinyColor v0.11.2
 // https://github.com/bgrins/TinyColor
 // 2014-06-13, Brian Grinstead, MIT License
 
@@ -4744,8 +4745,7 @@ else {
 })();;(function() {
     'use strict';
 
-    var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate']);
-
+    var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate', 'translate.directives', 'translate.filters']);
     /**
      *  CONFIGURATION
      *
@@ -4756,6 +4756,29 @@ else {
      *   });
      * */
     mod.provider('ODSWidgetsConfig', function() {
+        /**
+         * @ngdoc object
+         * @name ods-widgets.ODSWidgetsConfigProvider
+         * @description
+         * Use `ODSWidgetsConfigProvider` to set configuration values used by various directives.
+         * The available settings are:
+         *
+         * - **`defaultDomain`** - {@type string} - Value used as `domain` parameter for {@link ods-widgets.directive:odsCatalogContext Catalog Contexts}
+         * and {@link ods-widgets.directive:odsDatasetContext Dataset Contexts} when none is specified. Defaults is '' (empty string), which means a local API (root is /).
+         * - **`basemaps`** - {@type Array} A list of `basemap` objects.
+         * - **`chartColors`** - {@type Array} A list of colors to use for charts. In each chart widget, the first chart will use the first color, the second chart
+         * will use the second color, and so on until the end of the list is reached, and we start from the beginning of the list again. If not set, default colors will be used,
+         * depending on the widgets themselves.
+         * - **`disqusShortname`** - {@type string} - Shortname used by default for all {@link ods-widgets.directive:odsDisqus} widgets.
+         * - **`themes`** - {@type Object} - Configuration of themes and their colors and/or picto
+         */
+        /**
+         * @ngdoc service
+         * @name ods-widgets.ODSWidgetsConfig
+         * @description
+         * A service containing all the configuration values available. Available configuration values are described
+         * in the {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfigProvider} documentation.
+         */
         this.defaultConfig = {
             defaultDomain: '', // Defaults to local API
             language: null,
@@ -4770,12 +4793,23 @@ else {
             mapGeobox: false,
             chartColors: null,
             mapPrependAttribution: null,
-            basePath: '/static/ods-widgets/'
+            basePath: null,
+            themes: {}
         };
 
         this.customConfig = {};
 
         this.setConfig = function(customConfig) {
+            /**
+             * @ngdoc method
+             * @name ods-widgets.ODSWidgetsConfigProvider#setConfig
+             * @methodOf ods-widgets.ODSWidgetsConfigProvider
+             *
+             * @description Sets configuration values by overriding existing values with the values from a new configuration
+             * object. Existing values that are not present in the new object are left untouched.
+             *
+             * @param {Object=} customConfig An object containing the configuration values to override.
+             */
             angular.extend(this.customConfig, customConfig);
         };
 
@@ -4793,32 +4827,8 @@ else {
          * Each method take a context, and specific parameters to append to this request (without modifying the context).
          * A context is an object usually created by a directive such as dataset-context or catalog-context.
          */
-        var getURL = function(context) {
-            var root = null;
-            var domain = context.domain;
-            if (angular.isUndefined(domain)) {
-                root = ODSWidgetsConfig.defaultDomain;
-            } else {
-                // TODO: if the protocol is included, use it
-                if (domain.substr(0, 1) !== '/' && domain.indexOf('.') === -1) {
-                    root = domain+'.opendatasoft.com';
-                } else {
-                    root = domain;
-                }
-                if (root.substr(0, 1) !== '/' && root.indexOf('http://') === -1 && root.indexOf('https://') === -1) {
-                    root = 'https://' + root;
-                }
-            }
-
-            if (root.substr(-1) === '/') {
-                // Remove trailing slash
-                root = root.substr(0, root.length-1);
-            }
-
-            return root;
-        };
         var request = function(context, path, params, timeout) {
-            var url = getURL(context);
+            var url = context.domainUrl;
             url += path;
             params = params || {};
             if (context.apikey) {
@@ -4836,6 +4846,28 @@ else {
             return $http.get(url, options);
         };
         return {
+            'getDomainURL': function(domain) {
+                var root = null;
+                if (angular.isUndefined(domain) || domain === null) {
+                    root = ODSWidgetsConfig.defaultDomain;
+                } else {
+                    if (domain.substr(0, 1) !== '/' && domain.indexOf('.') === -1) {
+                        root = domain+'.opendatasoft.com';
+                    } else {
+                        root = domain;
+                    }
+                    if (root.substr(0, 1) !== '/' && root.indexOf('http://') === -1 && root.indexOf('https://') === -1) {
+                        root = 'https://' + root;
+                    }
+                }
+
+                if (root.substr(-1) === '/') {
+                    // Remove trailing slash
+                    root = root.substr(0, root.length-1);
+                }
+
+                return root;
+            },
             'datasets': {
                 'get': function(context, datasetID, parameters) {
                     return request(context, '/api/datasets/1.0/'+datasetID+'/', parameters);
@@ -4895,15 +4927,15 @@ else {
                     "/static/ods-clustermarker/clustermarker.css"
                 ],
                 'js': [
-                    ["//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"],
+                    ["L@//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"],
                     [
-                        "//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.3/Leaflet.fullscreen.min.js",
-                        "//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.js",
-                        "/static/ods-map/ods-map.js",
-                        "/static/ods-map/ods-tilelayer.js",
-                        "/static/ods-geobox/geobox.js",
-                        "/static/ods-vectormarker/vectormarker.js",
-                        "/static/ods-clustermarker/clustermarker.js"
+                        "L.Control.FullScreen@//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.3/Leaflet.fullscreen.min.js",
+                        "L.Control.Locate@//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.js",
+                        "L.ODSMap@/static/ods-map/ods-map.js",
+                        "L.ODSTileLayer@/static/ods-map/ods-tilelayer.js",
+                        "L.Control.GeoBox@/static/ods-geobox/geobox.js",
+                        "L.VectorMarker@/static/ods-vectormarker/vectormarker.js",
+                        "L.ClusterMarker@/static/ods-clustermarker/clustermarker.js"
                     ]
                 ]
             }
@@ -4911,6 +4943,25 @@ else {
 
         this.getConfig = function() {
             return lazyloading;
+        };
+
+        var objectIsDefined = function(scope, name) {
+            var nameParts = name.split('.');
+            if (scope.hasOwnProperty(nameParts[0]) && angular.isDefined(scope[nameParts[0]])) {
+                if (nameParts.length === 1) {
+                    return true;
+                } else {
+                    var newScope = scope[nameParts[0]];
+                    nameParts.shift();
+                    return objectIsDefined(newScope, nameParts.join('.'));
+                }
+            } else {
+                return false;
+            }
+        };
+
+        var isAlreadyAvailable = function(objectName) {
+            return objectIsDefined(window, objectName);
         };
 
         this.$get = ['$q', function($q) {
@@ -4953,8 +5004,20 @@ else {
 
                     var stepPromises = [];
                     for (var k=0; k<step.length; k++) {
-                        if (loaded.indexOf(step[k]) === -1) {
-                            stepPromises.push(lazyload('js',step[k]).promise);
+                        var parts = step[k].split('@');
+                        var url;
+                        if (parts.length > 1) {
+                            // There is an object name whose existence we can check
+                            if (isAlreadyAvailable(parts[0])) {
+//                                console.log('Object ' + parts[0] + ' is already available.');
+                                continue;
+                            }
+                            url = parts[1];
+                        } else {
+                            url = parts[0];
+                        }
+                        if (loaded.indexOf(url) === -1) {
+                            stepPromises.push(lazyload('js', url).promise);
                         }
                     }
                     if (!deferredSteps) {
@@ -4981,6 +5044,63 @@ else {
                 }
             }
         };
+    }]);
+
+    mod.config(['ODSWidgetsConfigProvider', function(ODSWidgetsConfigProvider) {
+        // if no basepath, try to set a detected one
+        // see how leaflet does it:
+
+        /*
+        L.Icon.Default.imagePath = (function () {
+            var scripts = document.getElementsByTagName('script'),
+                leafletRe = /[\/^]leaflet[\-\._]?([\w\-\._]*)\.js\??/;
+
+            var i, len, src, matches, path;
+
+            for (i = 0, len = scripts.length; i < len; i++) {
+                src = scripts[i].src;
+                matches = src.match(leafletRe);
+
+                if (matches) {
+                    path = src.split(leafletRe)[0];
+                    return (path ? path + '/' : '') + 'images';
+                }
+            }
+        }());
+         */
+    }]);
+
+    mod.run(['translate', 'ODSWidgetsConfig', function(translate, ODSWidgetsConfig) {
+        // Initialize with an empty config so that at least it doesn't crash if
+        // nobody bothers to add a translation dictionary.
+        translate.add({});
+
+        if (!ODSWidgetsConfig.basePath) {
+            // Try to detect the path where ODS-Widgets is loaded from
+            // Kudos to Leaflet for the idea
+            var scriptTags = document.getElementsByTagName('script');
+
+            var odswidgetsRE = /[\/^]ods-widgets(\.min)?\.js\??/;
+
+            var i, src, matches, path;
+            for (i=0; i<scriptTags.length; i++) {
+                src = scriptTags[i].src;
+                matches = src.match(odswidgetsRE);
+
+                if (matches) {
+                    path = src.split(odswidgetsRE)[0];
+                    if (!path) {
+                        // Path is '/'
+                        ODSWidgetsConfig.basePath = '/';
+                    } else if (path.substring(path.length-3) === '.js') {
+                        // This is loaded from the same folder
+                        ODSWidgetsConfig.basePath = '';
+                    } else {
+                        ODSWidgetsConfig.basePath = path + '/';
+                    }
+                }
+            }
+        }
     }]);
 }());
 ;(function() {
@@ -5170,6 +5290,131 @@ else {
         };
     }]);
 
+
+    mod.filter('themeSlug', ['$filter', function($filter) {
+        /*
+        From a theme or a list of themes, computes the slug of the theme
+         */
+        return function(value) {
+            if (!value || angular.isArray(value) && value.length === 0) {
+                return value;
+            }
+            if (angular.isArray(value)) {
+                value = value[0];
+            }
+            return $filter('slugify')($filter('normalize')(value));
+        };
+    }]);
+
+    mod.filter('slugify', function(){
+        return function(text){
+            if (!text) {
+                return text;
+            }
+            return ODS.StringUtils.slugify(text);
+        };
+    });
+
+    mod.filter('normalize', [function() {
+        // http://stackoverflow.com/questions/990904/javascript-remove-accents-in-strings
+        var defaultDiacriticsRemovalMap = [
+            {'base':'A', 'letters':/[\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F]/g},
+            {'base':'AA','letters':/[\uA732]/g},
+            {'base':'AE','letters':/[\u00C6\u01FC\u01E2]/g},
+            {'base':'AO','letters':/[\uA734]/g},
+            {'base':'AU','letters':/[\uA736]/g},
+            {'base':'AV','letters':/[\uA738\uA73A]/g},
+            {'base':'AY','letters':/[\uA73C]/g},
+            {'base':'B', 'letters':/[\u0042\u24B7\uFF22\u1E02\u1E04\u1E06\u0243\u0182\u0181]/g},
+            {'base':'C', 'letters':/[\u0043\u24B8\uFF23\u0106\u0108\u010A\u010C\u00C7\u1E08\u0187\u023B\uA73E]/g},
+            {'base':'D', 'letters':/[\u0044\u24B9\uFF24\u1E0A\u010E\u1E0C\u1E10\u1E12\u1E0E\u0110\u018B\u018A\u0189\uA779]/g},
+            {'base':'DZ','letters':/[\u01F1\u01C4]/g},
+            {'base':'Dz','letters':/[\u01F2\u01C5]/g},
+            {'base':'E', 'letters':/[\u0045\u24BA\uFF25\u00C8\u00C9\u00CA\u1EC0\u1EBE\u1EC4\u1EC2\u1EBC\u0112\u1E14\u1E16\u0114\u0116\u00CB\u1EBA\u011A\u0204\u0206\u1EB8\u1EC6\u0228\u1E1C\u0118\u1E18\u1E1A\u0190\u018E]/g},
+            {'base':'F', 'letters':/[\u0046\u24BB\uFF26\u1E1E\u0191\uA77B]/g},
+            {'base':'G', 'letters':/[\u0047\u24BC\uFF27\u01F4\u011C\u1E20\u011E\u0120\u01E6\u0122\u01E4\u0193\uA7A0\uA77D\uA77E]/g},
+            {'base':'H', 'letters':/[\u0048\u24BD\uFF28\u0124\u1E22\u1E26\u021E\u1E24\u1E28\u1E2A\u0126\u2C67\u2C75\uA78D]/g},
+            {'base':'I', 'letters':/[\u0049\u24BE\uFF29\u00CC\u00CD\u00CE\u0128\u012A\u012C\u0130\u00CF\u1E2E\u1EC8\u01CF\u0208\u020A\u1ECA\u012E\u1E2C\u0197]/g},
+            {'base':'J', 'letters':/[\u004A\u24BF\uFF2A\u0134\u0248]/g},
+            {'base':'K', 'letters':/[\u004B\u24C0\uFF2B\u1E30\u01E8\u1E32\u0136\u1E34\u0198\u2C69\uA740\uA742\uA744\uA7A2]/g},
+            {'base':'L', 'letters':/[\u004C\u24C1\uFF2C\u013F\u0139\u013D\u1E36\u1E38\u013B\u1E3C\u1E3A\u0141\u023D\u2C62\u2C60\uA748\uA746\uA780]/g},
+            {'base':'LJ','letters':/[\u01C7]/g},
+            {'base':'Lj','letters':/[\u01C8]/g},
+            {'base':'M', 'letters':/[\u004D\u24C2\uFF2D\u1E3E\u1E40\u1E42\u2C6E\u019C]/g},
+            {'base':'N', 'letters':/[\u004E\u24C3\uFF2E\u01F8\u0143\u00D1\u1E44\u0147\u1E46\u0145\u1E4A\u1E48\u0220\u019D\uA790\uA7A4]/g},
+            {'base':'NJ','letters':/[\u01CA]/g},
+            {'base':'Nj','letters':/[\u01CB]/g},
+            {'base':'O', 'letters':/[\u004F\u24C4\uFF2F\u00D2\u00D3\u00D4\u1ED2\u1ED0\u1ED6\u1ED4\u00D5\u1E4C\u022C\u1E4E\u014C\u1E50\u1E52\u014E\u022E\u0230\u00D6\u022A\u1ECE\u0150\u01D1\u020C\u020E\u01A0\u1EDC\u1EDA\u1EE0\u1EDE\u1EE2\u1ECC\u1ED8\u01EA\u01EC\u00D8\u01FE\u0186\u019F\uA74A\uA74C]/g},
+            {'base':'OI','letters':/[\u01A2]/g},
+            {'base':'OO','letters':/[\uA74E]/g},
+            {'base':'OU','letters':/[\u0222]/g},
+            {'base':'P', 'letters':/[\u0050\u24C5\uFF30\u1E54\u1E56\u01A4\u2C63\uA750\uA752\uA754]/g},
+            {'base':'Q', 'letters':/[\u0051\u24C6\uFF31\uA756\uA758\u024A]/g},
+            {'base':'R', 'letters':/[\u0052\u24C7\uFF32\u0154\u1E58\u0158\u0210\u0212\u1E5A\u1E5C\u0156\u1E5E\u024C\u2C64\uA75A\uA7A6\uA782]/g},
+            {'base':'S', 'letters':/[\u0053\u24C8\uFF33\u1E9E\u015A\u1E64\u015C\u1E60\u0160\u1E66\u1E62\u1E68\u0218\u015E\u2C7E\uA7A8\uA784]/g},
+            {'base':'T', 'letters':/[\u0054\u24C9\uFF34\u1E6A\u0164\u1E6C\u021A\u0162\u1E70\u1E6E\u0166\u01AC\u01AE\u023E\uA786]/g},
+            {'base':'TZ','letters':/[\uA728]/g},
+            {'base':'U', 'letters':/[\u0055\u24CA\uFF35\u00D9\u00DA\u00DB\u0168\u1E78\u016A\u1E7A\u016C\u00DC\u01DB\u01D7\u01D5\u01D9\u1EE6\u016E\u0170\u01D3\u0214\u0216\u01AF\u1EEA\u1EE8\u1EEE\u1EEC\u1EF0\u1EE4\u1E72\u0172\u1E76\u1E74\u0244]/g},
+            {'base':'V', 'letters':/[\u0056\u24CB\uFF36\u1E7C\u1E7E\u01B2\uA75E\u0245]/g},
+            {'base':'VY','letters':/[\uA760]/g},
+            {'base':'W', 'letters':/[\u0057\u24CC\uFF37\u1E80\u1E82\u0174\u1E86\u1E84\u1E88\u2C72]/g},
+            {'base':'X', 'letters':/[\u0058\u24CD\uFF38\u1E8A\u1E8C]/g},
+            {'base':'Y', 'letters':/[\u0059\u24CE\uFF39\u1EF2\u00DD\u0176\u1EF8\u0232\u1E8E\u0178\u1EF6\u1EF4\u01B3\u024E\u1EFE]/g},
+            {'base':'Z', 'letters':/[\u005A\u24CF\uFF3A\u0179\u1E90\u017B\u017D\u1E92\u1E94\u01B5\u0224\u2C7F\u2C6B\uA762]/g},
+            {'base':'a', 'letters':/[\u0061\u24D0\uFF41\u1E9A\u00E0\u00E1\u00E2\u1EA7\u1EA5\u1EAB\u1EA9\u00E3\u0101\u0103\u1EB1\u1EAF\u1EB5\u1EB3\u0227\u01E1\u00E4\u01DF\u1EA3\u00E5\u01FB\u01CE\u0201\u0203\u1EA1\u1EAD\u1EB7\u1E01\u0105\u2C65\u0250]/g},
+            {'base':'aa','letters':/[\uA733]/g},
+            {'base':'ae','letters':/[\u00E6\u01FD\u01E3]/g},
+            {'base':'ao','letters':/[\uA735]/g},
+            {'base':'au','letters':/[\uA737]/g},
+            {'base':'av','letters':/[\uA739\uA73B]/g},
+            {'base':'ay','letters':/[\uA73D]/g},
+            {'base':'b', 'letters':/[\u0062\u24D1\uFF42\u1E03\u1E05\u1E07\u0180\u0183\u0253]/g},
+            {'base':'c', 'letters':/[\u0063\u24D2\uFF43\u0107\u0109\u010B\u010D\u00E7\u1E09\u0188\u023C\uA73F\u2184]/g},
+            {'base':'d', 'letters':/[\u0064\u24D3\uFF44\u1E0B\u010F\u1E0D\u1E11\u1E13\u1E0F\u0111\u018C\u0256\u0257\uA77A]/g},
+            {'base':'dz','letters':/[\u01F3\u01C6]/g},
+            {'base':'e', 'letters':/[\u0065\u24D4\uFF45\u00E8\u00E9\u00EA\u1EC1\u1EBF\u1EC5\u1EC3\u1EBD\u0113\u1E15\u1E17\u0115\u0117\u00EB\u1EBB\u011B\u0205\u0207\u1EB9\u1EC7\u0229\u1E1D\u0119\u1E19\u1E1B\u0247\u025B\u01DD]/g},
+            {'base':'f', 'letters':/[\u0066\u24D5\uFF46\u1E1F\u0192\uA77C]/g},
+            {'base':'g', 'letters':/[\u0067\u24D6\uFF47\u01F5\u011D\u1E21\u011F\u0121\u01E7\u0123\u01E5\u0260\uA7A1\u1D79\uA77F]/g},
+            {'base':'h', 'letters':/[\u0068\u24D7\uFF48\u0125\u1E23\u1E27\u021F\u1E25\u1E29\u1E2B\u1E96\u0127\u2C68\u2C76\u0265]/g},
+            {'base':'hv','letters':/[\u0195]/g},
+            {'base':'i', 'letters':/[\u0069\u24D8\uFF49\u00EC\u00ED\u00EE\u0129\u012B\u012D\u00EF\u1E2F\u1EC9\u01D0\u0209\u020B\u1ECB\u012F\u1E2D\u0268\u0131]/g},
+            {'base':'j', 'letters':/[\u006A\u24D9\uFF4A\u0135\u01F0\u0249]/g},
+            {'base':'k', 'letters':/[\u006B\u24DA\uFF4B\u1E31\u01E9\u1E33\u0137\u1E35\u0199\u2C6A\uA741\uA743\uA745\uA7A3]/g},
+            {'base':'l', 'letters':/[\u006C\u24DB\uFF4C\u0140\u013A\u013E\u1E37\u1E39\u013C\u1E3D\u1E3B\u017F\u0142\u019A\u026B\u2C61\uA749\uA781\uA747]/g},
+            {'base':'lj','letters':/[\u01C9]/g},
+            {'base':'m', 'letters':/[\u006D\u24DC\uFF4D\u1E3F\u1E41\u1E43\u0271\u026F]/g},
+            {'base':'n', 'letters':/[\u006E\u24DD\uFF4E\u01F9\u0144\u00F1\u1E45\u0148\u1E47\u0146\u1E4B\u1E49\u019E\u0272\u0149\uA791\uA7A5]/g},
+            {'base':'nj','letters':/[\u01CC]/g},
+            {'base':'o', 'letters':/[\u006F\u24DE\uFF4F\u00F2\u00F3\u00F4\u1ED3\u1ED1\u1ED7\u1ED5\u00F5\u1E4D\u022D\u1E4F\u014D\u1E51\u1E53\u014F\u022F\u0231\u00F6\u022B\u1ECF\u0151\u01D2\u020D\u020F\u01A1\u1EDD\u1EDB\u1EE1\u1EDF\u1EE3\u1ECD\u1ED9\u01EB\u01ED\u00F8\u01FF\u0254\uA74B\uA74D\u0275]/g},
+            {'base':'oi','letters':/[\u01A3]/g},
+            {'base':'ou','letters':/[\u0223]/g},
+            {'base':'oo','letters':/[\uA74F]/g},
+            {'base':'p','letters':/[\u0070\u24DF\uFF50\u1E55\u1E57\u01A5\u1D7D\uA751\uA753\uA755]/g},
+            {'base':'q','letters':/[\u0071\u24E0\uFF51\u024B\uA757\uA759]/g},
+            {'base':'r','letters':/[\u0072\u24E1\uFF52\u0155\u1E59\u0159\u0211\u0213\u1E5B\u1E5D\u0157\u1E5F\u024D\u027D\uA75B\uA7A7\uA783]/g},
+            {'base':'s','letters':/[\u0073\u24E2\uFF53\u00DF\u015B\u1E65\u015D\u1E61\u0161\u1E67\u1E63\u1E69\u0219\u015F\u023F\uA7A9\uA785\u1E9B]/g},
+            {'base':'t','letters':/[\u0074\u24E3\uFF54\u1E6B\u1E97\u0165\u1E6D\u021B\u0163\u1E71\u1E6F\u0167\u01AD\u0288\u2C66\uA787]/g},
+            {'base':'tz','letters':/[\uA729]/g},
+            {'base':'u','letters':/[\u0075\u24E4\uFF55\u00F9\u00FA\u00FB\u0169\u1E79\u016B\u1E7B\u016D\u00FC\u01DC\u01D8\u01D6\u01DA\u1EE7\u016F\u0171\u01D4\u0215\u0217\u01B0\u1EEB\u1EE9\u1EEF\u1EED\u1EF1\u1EE5\u1E73\u0173\u1E77\u1E75\u0289]/g},
+            {'base':'v','letters':/[\u0076\u24E5\uFF56\u1E7D\u1E7F\u028B\uA75F\u028C]/g},
+            {'base':'vy','letters':/[\uA761]/g},
+            {'base':'w','letters':/[\u0077\u24E6\uFF57\u1E81\u1E83\u0175\u1E87\u1E85\u1E98\u1E89\u2C73]/g},
+            {'base':'x','letters':/[\u0078\u24E7\uFF58\u1E8B\u1E8D]/g},
+            {'base':'y','letters':/[\u0079\u24E8\uFF59\u1EF3\u00FD\u0177\u1EF9\u0233\u1E8F\u00FF\u1EF7\u1E99\u1EF5\u01B4\u024F\u1EFF]/g},
+            {'base':'z','letters':/[\u007A\u24E9\uFF5A\u017A\u1E91\u017C\u017E\u1E93\u1E95\u01B6\u0225\u0240\u2C6C\uA763]/g}
+        ];
+        return function(input) {
+            if (!input) {
+                return input;
+            }
+            for(var i=0; i<defaultDiacriticsRemovalMap.length; i++) {
+                input = input.replace(defaultDiacriticsRemovalMap[i].letters, defaultDiacriticsRemovalMap[i].base);
+            }
+            return input;
+        };
+    }]);
+
+
 }());;(function(target) {
     var ODS = {
         GeoFilter: {
@@ -5281,6 +5526,25 @@ else {
                     .replace(/[^\w-]+/g,'')
                     .replace(/-+/g,'-');
             }
+        },
+        DatasetUtils: {
+            isFieldSortable: function(field) {
+                // This is in a separate function because it can be used independently from the dataset
+                var supportedSortTypes = ['int', 'double', 'date', 'datetime'];
+                if (supportedSortTypes.indexOf(field.type) >= 0) {
+                    // These types are always sortable
+                    return true;
+                }
+                if (field.type === 'text' && field.annotations) {
+                    for (var a=0; a<field.annotations.length; a++) {
+                        var anno = field.annotations[a];
+                        if (anno.name === 'sortable') {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
         }
     };
 
@@ -5290,7 +5554,14 @@ else {
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsCatalogContext', function() {
+    mod.directive('odsCatalogContext', ['ODSAPI', function(ODSAPI) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsCatalogContext
+         * @scope
+         * @restrict AE
+         */
+
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
         return {
             restrict: 'AE',
@@ -5308,26 +5579,81 @@ else {
                         'name': contextName,
                         'type': 'catalog',
                         'domain': domain,
+                        'domainUrl': ODSAPI.getDomainURL(domain),
                         'apikey': attrs[contextName+'Apikey'],
                         'parameters': scope.$eval(attrs[contextName+'Parameters']) || {}
                     };
                 }
             }
         };
-    });
+    }]);
 }());;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsDatasetContext', ['ODSAPI', function(ODSAPI) {
-        /*
-        Domain value can be:
-        - datailedefrance
-        - parisdata.opendatasoft.com
-        - /monitoring
-        - parisdata.opendatasoft.com/monitoring
-        - nothing (in that case, uses ODSWidgetsConfig.defaultDomain)
+        /**
+         *
+         *  @ngdoc directive
+         *  @name ods-widgets.directive:odsDatasetContext
+         *  @scope
+         *  @restrict AE
+         *  @param {string} context A name (or list of names separated by commas) of contexts to declare. The contexts are further
+         *  configured using specific attributes, as described below.
+         *  @description
+         *  A "dataset context" represents a dataset, and a set of parameters used to query its data. A context can be used
+         *  by one or more directives, so that they can share information (generally the query parameters). For example, a directive
+         *  that displays a time filter can be "plugged" on the same context as a table view directive, so that the user
+         *  can filter the data displayed in the table.
+         *
+         *  The `odsDatasetContext` creates a new child scope, and exposes its contexts into it. In other words, the contexts
+         *  will be available to any directive that is inside the `odsDatasetContext` element. You can nest `odsDatasetContext` directives inside each others.
+         *
+         *  A single `odsDatasetContext` can declare one or more context at once. To initialize contexts, you declare
+         *  them in the **context** attribute. Then, you can configure them further using attributes prefixed by the context
+         *  name (**CONTEXTNAME-SETTING**, e.g. mycontext-domain). The available settings are:
+         *
+         *  * **`domain`** - {@type string} - (optional) Indicate the "domain" (used to construct an URL to an API root) where to find the dataset.
+         * Domain value can be:
+         *
+         *      * a simple alphanum string (e.g. *mydomain*): it will assume it is an OpenDataSoft domain (so in this example *mydomain.opendatasoft.com*)
+         *
+         *      * a hostname (e.g. *data.mydomain.com*)
+         *
+         *      * an absolute path (e.g. _/monitoring_), it will be absolute to the hostname of the current page
+         *
+         *      * a hostname and a path (e.g. *data.mydomain.com/monitoring*)
+         *
+         *      * nothing: in that case, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used
+         *
+         *  * **`dataset`** - {@type string} Identifier of the dataset
+         *
+         *  * **`apikey`** {@type string} (optional) API Key to use in every API call for this context
+         *
+         *  * **`parameters`** {@type Object} (optional) An object holding parameters to apply to the context when it is created.
+         *
+         *  * **`parametersFromContext`** {@type string} (optional) The name of a context to replicate the parameters from. Any change of the parameters
+         *  in this context or the original context will be applied to both.
+         *
+         *  # Example
+         *
+         *  <pre>
+         *  <ods-dataset-context context="trees" trees-dataset="trees-in-paris"></ods-dataset-context>
+         *  </pre>
+         *
+         *  <pre>
+         *  <ods-catalog-context context="trees,hydrants"
+         *                       trees-dataset="trees-in-paris"
+         *                       trees-domain="opendata.paris.fr"
+         *                       hydrants-dataset="hydrants"
+         *                       hydrants-domain="public">
+         *      <!-- Shows a list of the trees -->
+         *      <ods-table context="trees"></ods-table>
+         *      <!-- Shows a map of hydrants -->
+         *      <ods-map context="hydrants"></ods-map>
+         *  </ods-catalog-context>
+         *  </pre>
          */
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
         var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext) {
@@ -5349,6 +5675,7 @@ else {
                 'name': contextName,
                 'type': 'dataset',
                 'domain': domain,
+                'domainUrl': ODSAPI.getDomainURL(domain),
                 'apikey': apikey,
                 'dataset': null,
                 'parameters': contextParams
@@ -5374,6 +5701,13 @@ else {
                     // Do we have a domain ID?
                     var domain = attrs[contextName+'Domain'];
 
+                    if (!domain) {
+                        console.log('ERROR : Context ' + contextName + ' : Missing domain parameter');
+                    }
+                    if (!datasetID) {
+                        console.log('ERROR : Context ' + contextName + ' : Missing dataset parameter');
+                    }
+
                     var apikey = attrs[contextName+'Apikey'];
                     var parameters = scope.$eval(attrs[contextName+'Parameters']);
                     var parametersFromContext = attrs[contextName+'ParametersFromContext'];
@@ -5384,15 +5718,23 @@ else {
         };
     }]);
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsDisqus', ['ODSWidgetsConfig', '$location', '$window', function(ODSWidgetsConfig, $location, $window) {
         /**
-         * TODO integrate the current disqus directive and replace it in Explore.
-        <ods-disqus shortname="odspublic"></ods-disqus>
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsDisqus
+         * @restrict E
+         * @scope
+         * @param {string} shortname Disqus shortname for your account. If not specified, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.disqusShortname} will be used.
+         * @param {string} [identifier=none] By default, the discussion is tied to the URL of the page. If you want to be independant from the URL, or share the discussion between two or more pages, you can define an identifier in this parameter; it is recommended by Disqus to always do it from the start.
+         * @description
+         * This widget shows a Disqus panel where users can comment the page.
+         *
          */
         return {
             restrict: 'E',
@@ -5431,6 +5773,30 @@ else {
 
     mod.directive('odsFacetEnumerator', ['ODSAPI', function(ODSAPI) {
         /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsFacetEnumerator
+         * @scope
+         * @restrict E
+         * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {string} facetName Name of the facet to enumerate
+         * @description
+         * This widget enumerates the values ("categories") of a facet and repeats the template (the content of the directive element) for each of them. For each facet category, the following AngularJS variables are available:
+         *
+         *  * item.name : the label of the category
+         *  * item.path : the path to use to refine on this category
+         *  * item.state : "displayed" or "refined"
+         *  * item.count : the number of records in this category
+         *
+         * # Example
+         *  <pre>
+         *  <ods-facet-enumerator context="bla" facet="themes">
+         *      <div style="display: inline-block; width: 64px; height: 64px;">
+         *          {{ facet.name }} ({{ facet.count }}
+         *      </div>
+         *  </ods-facet-enumerator>
+         *  </pre>
+         */
+        /**
         <ods-facet-enumerator context="bla" facet="themes">
             <div style="display: inline-block; width: 64px; height: 64px;">
                 {{ facet.name }} ({{ facet.count }}
@@ -5444,7 +5810,7 @@ else {
             transclude: true,
             scope: {
                 context: '=',
-                facet: '@'
+                facetName: '@'
             },
             template: '<div class="odswidget-facet-enumerator">' +
                 '<div ng-repeat="item in items" ng-transclude class="item"></div>' +
@@ -5452,7 +5818,7 @@ else {
             controller: function($scope) {
                 var init = $scope.$watch('context', function(nv) {
                     if (nv.type === 'catalog') {
-                        ODSAPI.datasets.facets(nv, $scope.facet).success(function(data) {
+                        ODSAPI.datasets.facets(nv, $scope.facetName).success(function(data) {
                             if (data.facet_groups) {
                                 $scope.items = data.facet_groups[0].facets;
                             } else {
@@ -5466,11 +5832,33 @@ else {
         };
     }]);
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     angular.module('ods-widgets')
         .directive('odsGeotooltip', ['$timeout', 'ModuleLazyLoader', function ($timeout, ModuleLazyLoader) {
+            /**
+             * @ngdoc directive
+             * @name ods-widgets.directive:odsGeotooltip
+             * @scope
+             * @restrict E
+             * @param {Array|string} coords Coordinates of a point to display in the tooltip; either an array of two numbers as [latitude, longitude], or a string under the form of "latitude,longitude".
+             * If you use a string, surround it with simple quotes to ensure Angular treats it as a string.
+             * @param {Object} geojson GeoJSON object of a shape to display in the tooltip.
+             * @param {number} [width=200] Width of the tooltip, in pixels.
+             * @param {number} [height=200] Height of the tooltip, in pixels.
+             * @param {number} [delay=500] Delay before the tooltip appears on hover, in milliseconds.
+             *
+             * @description
+             * This directive, when used to surround a text, displays a tooltip showing a point and/or a shape in a map.
+             *
+             * # Example
+             * <pre>
+             * <ods-geotooltip coords="'48,2'">my location</ods-geotooltip>
+             * <ods-geotooltip coords="[48.04,2.12434]">my other location</ods-geotooltip>
+             * </pre>
+             */
             // The container is shared between directives to avoid performance issues
             var container = angular.element('<div id="geotooltip" style="opacity: 0; transition: opacity 200ms ease-out; position: fixed; z-index: 40000; visibility: hidden;"></div>');
             var map = null;
@@ -5653,7 +6041,7 @@ else {
                 domain: '=',
                 apikey: '='
             },
-            template: '<div><div class="chartplaceholder"></div><debug data="chartoptions"></debug></div>',
+            template: '<div class="ods-chart"><div class="chartplaceholder"></div><debug data="chartoptions"></debug></div>',
             link: function(scope, element, attrs) {
                 var chartplaceholder = element.find('.chartplaceholder');
                 ModuleLazyLoader('highcharts').then(function() {
@@ -5908,6 +6296,7 @@ else {
                                 // datasets.
                                 var virtualContext = {
                                     domain: scope.domain,
+                                    domainUrl: ODSAPI.getDomainURL(scope.domain),
                                     dataset: {'datasetid': search_options.dataset},
                                     apikey: scope.apikey,
                                     parameters: {}
@@ -6083,10 +6472,29 @@ else {
 
     mod.directive('odsHighcharts', function() {
         /**
-         * You can either specify a complete configuration in the 'chart' attribute, or use each parameter.
-         *      <ods-highcharts chart-type="column" context="monitoring" expression-y="size_res" field-x="request_time" function-y="AVG" timescale="day"></ods-highcharts>
-         *      <ods-highcharts chart-config="'eyJ0aW1lc2NhbGUiOiIiLCJxdWVyaWVzIjpbeyJjb25maWciOnsiZGF0YXNldCI6InBsYXlncm91bmQtYXBpLW1vbml0b3JpbmciLCJvcHRpb25zIjp7InRhYiI6ImFuYWx5emUifX0sInhBeGlzIjoiZG9tYWluX2lkIiwic29ydCI6IiIsIm1heHBvaW50cyI6NTAsImNoYXJ0cyI6W3sieUF4aXMiOiJzaXplX3JlcyIsInlMYWJlbCI6Ik1veWVubmUgc2l6ZV9yZXMiLCJmdW5jIjoiQVZHIiwiY29sb3IiOiIjMmY3ZWQ4IiwidHlwZSI6ImJhciIsImV4dHJhcyI6e319XX1dLCJ4TGFiZWwiOiJkb21haW5faWQifQ=='" context="monitoring"></ods-highcharts>
-         *      <ods-highcharts context="monitoring" chart-config="{'timescale':'','queries':[{'config':{'dataset':'playground-api-monitoring','options':{'tab':'analyze'}},'xAxis':'domain_id','sort':'','maxpoints':50,'charts':[{'yAxis':'size_res','yLabel':'Moyenne size_res','func':'AVG','color':'#2f7ed8','type':'bar','extras':{}}]}],'xLabel':'domain_id'}"></ods-highcharts>
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsHighcharts
+         * @restrict E
+         * @scope
+         * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {string} fieldX Name of the field used for the X axis
+         * @param {string} expressionY Expression for the Y axis, typically a field name. Optional if the function (function-y) is 'COUNT'.
+         * @param {string} functionY Function applied to the expression for the Y axis: AVG, COUNT, MIN, MAX, STDDEV, SUM
+         * @param {string} timescale If the X axis is time-based, then you can specify the timescale (year, month, week, day, hour)
+         * @param {string} chartType One of the following chart types: line, spline, area, areaspline, column, bar, pie
+         * @param {string} color The color (or comma-separated list of colors in case of a pie chart) to draw the chart in. Colors are in hex color code (e.g. *#2f7ed8*).
+         * If not specified, the colors from {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.chartColors} will be used if they are configured, else Highcharts default colors.
+         * @param {string} [sort=none] How to sort the data in the chart: *x* or *-x* to sort or reverse sort on the X axis; *y* or *-y* to sort or reverse sort on the Y axis.
+         * @param {number} [maxpoints=50] Maximum number of points to chart.
+         * @param {string|Object} [chartConfig=none] a complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted. If this parameter is present, all the other parameters are ignored, and the chart will not change if the context changes.
+         *
+         * @description
+         * This widget can be used to integrate a visualization based on Highcharts.
+         *
+         * # Example
+         * <pre>
+         * <ods-highcharts chart-type="column" context="monitoring" expression-y="size_res" field-x="request_time" function-y="AVG" timescale="day"></ods-highcharts>
+         * </pre>
          */
         var defaultColors = [
             '#2f7ed8',
@@ -6183,6 +6591,17 @@ else {
     });
 
     mod.directive('odsMultiHighcharts', function() {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsMultiHighcharts
+         * @restrict E
+         * @scope
+         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
+         * @param {string|Object} [chartConfig=none] A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.
+         * @description
+         * This widget can display a multiple chart generated using the "Charts" interface of OpenDataSoft.
+         *
+         */
         return {
             restrict: 'E',
             scope: {
@@ -6193,6 +6612,7 @@ else {
             template: '<div class="odswidget-multihighcharts"><div ods-chart="chart" domain="context.domain" apikey="context.apikey"></div></div>',
             controller: ['$scope', function($scope) {
                 var unwatch = $scope.$watch('context', function(nv) {
+                    if (!nv) return;
                     if (nv.type !== 'catalog') {
                         console.error('ods-multi-highcharts requires a Catalog Context');
                     }
@@ -6207,12 +6627,22 @@ else {
         };
     });
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsLastDatasetsFeed', ['ODSAPI', function(ODSAPI) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsLastDatasetsFeed
+         * @scope
+         * @restrict E
+         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
+         * @description
+         * This widget displays the last 5 datasets of a catalog, based on the *modified* metadata.
+         */
         return {
             restrict: 'E',
             replace: true,
@@ -6220,7 +6650,7 @@ else {
                 '<ul>' +
                 '   <li class="no-data" ng-hide="datasets" translate>No data available yet</li>' +
                 '   <li ng-repeat="dataset in datasets" ng-if="datasets">' +
-                '       <theme-picto theme="{{dataset.metas.theme}}"></theme-picto>' +
+                '       <ods-theme-picto theme="{{dataset.metas.theme}}"></ods-theme-picto>' +
                 '       <div class="dataset-details">' +
                 '           <div class="title"><a ng-href="/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
                 '           <div class="modified"><span title="{{ dataset.metas.modified|moment:\'LLL\' }}"><i class="icon-calendar"></i> <translate>Modified</translate> {{ dataset.metas.modified|timesince }}</span></div>' +
@@ -6251,6 +6681,15 @@ else {
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsLastReusesFeed', ['ODSAPI', function(ODSAPI) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsLastReusesFeed
+         * @scope
+         * @restrict E
+         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
+         * @description
+         * This widget displays the last 5 reuses published on a domain.
+         */
         return {
             restrict: 'E',
             replace: true,
@@ -6294,14 +6733,34 @@ else {
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsMap', ['ModuleLazyLoader', function(ModuleLazyLoader) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsMap
+         * @restrict E
+         * @scope
+         * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {boolean} [autoResize=false] If true, the map will attempt to resize itself to always take up all the space to the bottom of the viewport.
+         * It is only useful in very specific cases, when the map is the main focus of the page and should take all the window real estate available.
+         * @param {string} [location=none] Initial location of the map, under the format "zoom,latitude,longitude" (e.g. *12,48.85887,2.3292*)
+         * @param {string} [basemap=default basemap] Identifier of the basemap to apply. Basemaps are configured using {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.basemaps}.
+         * @param {boolean} [isStatic=false] If true, the map can't be panned or zoomed; in other words the map is static and can only show the initial view. Interaction with the data is still active,
+         * for example you can still click on a marker to have a tooltip.
+         * @param {boolean} [showFilters=false] If true, displays additional tools to use the map to filter the data in the context. For example if you use a table and a map on the same context,
+         * this makes you able to use the map to refine the data displayed in the table.
+         * @param {Object} [mapContext=none] An object that you can use to share the map state (location and basemap) between two or more table widgets when they are not in the same context.
+         *
+         */
         return {
             restrict: 'E',
             scope: {
                 context: '=',
-                embedMode: '@',
+                embedMode: '@', // FIXME: This concept is not useful, we could remove it and use the more explicit settings to achieve the same effects
                 autoResize: '@',
                 mapContext: '=?',
-                location: '@'
+                location: '@',
+                basemap: '@',
+                isStatic: '@',
+                showFilters: '@'
             },
             replace: true,
             transclude: true,
@@ -6311,10 +6770,12 @@ else {
                     '</div>',
             link: function(scope, element) {
                 if (angular.isUndefined(scope.mapContext)) {
-//                    scope.mapContext = {location: null, basemap: null};
                     scope.mapContext = {};
                     if (scope.location) {
                         scope.mapContext.location = scope.location;
+                    }
+                    if (scope.basemap) {
+                        scope.mapContext.basemap = scope.basemap;
                     }
                 }
 
@@ -6388,43 +6849,39 @@ else {
 
                     });
 
-                    scope.initMap = function(dataset, embedMode, basemapsList, translate, geobox, basemap, enableDragging, zoom, prependAttribution) {
+                    scope.initMap = function(dataset, embedMode, basemapsList, translate, geobox, basemap, staticMap, prependAttribution) {
 
                         var mapOptions = {
                             basemapsList: basemapsList,
                             worldCopyJump: true,
                             minZoom: 2,
                             basemap: basemap,
-                            dragging: enableDragging,
-                            zoomControl: !zoom,
+                            dragging: !staticMap,
+                            zoomControl: !staticMap,
                             prependAttribution: prependAttribution
                         };
 
-                        var fixZoom = function(zoom, options) {
-                            $.extend(options, {
-                                minZoom: zoom,
-                                maxZoom: zoom
-                            });
-                        };
-
-                        if (zoom) {
-                            fixZoom(zoom, mapOptions);
+                        if (staticMap) {
+                            mapOptions.doubleClickZoom = false;
+                            mapOptions.scrollWheelZoom = false;
                         }
                         var map = new L.ODSMap(element.children()[0], mapOptions);
 
     //                    map.setView(new L.LatLng(48.8567, 2.3508),13);
                         map.addControl(new L.Control.Scale());
                         if (embedMode !== 'true') {
-                            map.addControl(new L.Control.FilterByView());
+                            if (scope.showFilters === 'true') {
+                                map.addControl(new L.Control.FilterByView());
+                            }
                             map.addControl(new L.Control.Fullscreen());
                         }
 
                         // Because of the weird CSS method we use to stay within Leaflet's control system, we need to add it
                         // last
-                        if (geobox && enableDragging) {
+                        if (geobox && !staticMap) {
                             map.addControl(new L.Control.GeoBox({placeholder: translate('Find a place...')}));
                         }
-                        if (enableDragging) {
+                        if (!staticMap) {
                             map.addControl(new L.Control.Locate({maxZoom: 18}));
                         }
 
@@ -6802,17 +7259,13 @@ else {
                         $scope.mapViewFilter = false;
                     }
 
-                    $scope.staticMap = $scope.context.parameters.static === 'true' ? true : false;
-
-                    // Static map
-                    var draggable = !$scope.staticMap;
-                    var zoom = $scope.staticMap ? locationParameterFunctions.getZoomFromLocationParameter($scope.mapContext.location) : null;
+                    $scope.staticMap = $scope.isStatic === 'true' || $scope.context.parameters.static === 'true';
 
                     // Wait for initMap to be ready (lazy loading)
                     var unwatchInit = $scope.$watch('initMap', function() {
                         if ($scope.initMap) {
                             unwatchInit();
-                            $scope.initMap(newValue, $scope.embedMode, ODSWidgetsConfig.basemaps, translate, ODSWidgetsConfig.mapGeobox, $scope.mapContext.basemap, draggable, zoom, ODSWidgetsConfig.mapPrependAttribution);
+                            $scope.initMap(newValue, $scope.embedMode, ODSWidgetsConfig.basemaps, translate, ODSWidgetsConfig.mapGeobox, $scope.mapContext.basemap, $scope.staticMap, ODSWidgetsConfig.mapPrependAttribution);
                         }
                     });
                     unwatchSchema();
@@ -7065,6 +7518,15 @@ else {
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsMostPopularDatasets', ['ODSAPI', function(ODSAPI) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsMostPopularDatasets
+         * @scope
+         * @restrict E
+         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
+         * @description
+         * This widget displays the top 5 datasets of a catalog, based on the number of downloads.
+         */
         return {
             restrict: 'E',
             replace: true,
@@ -7072,7 +7534,7 @@ else {
                 '<ul>' +
                 '   <li class="no-data" ng-hide="datasets" translate>No data available yet</li>' +
                 '   <li ng-repeat="dataset in datasets" ng-if="datasets">' +
-                '       <theme-picto theme="{{dataset.metas.theme}}"></theme-picto>' +
+                '       <ods-theme-picto theme="{{dataset.metas.theme}}"></ods-theme-picto>' +
                 '       <div class="dataset-details">' +
                 '           <div class="title"><a ng-href="/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
                 '           <div class="count"><i class="icon-download-alt"></i> {{ dataset.extra_metas.explore.download_count }} <translate>downloads</translate></div>' +
@@ -7102,6 +7564,17 @@ else {
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsSearchbox', function() {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsSearchbox
+         * @scope
+         * @restrict E
+         * @param {string} placeholder the text to display as a placeholder when the searchbox is empty
+         * @description
+         * This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.
+         *
+         */
+        // FIXME: Take a catalog context so that the searchbox redirects to the absolute URL of the domain
         return {
             restrict: 'E',
             replace: true,
@@ -7122,6 +7595,19 @@ else {
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsTable', ['ODSWidgetsConfig', function(ODSWidgetsConfig) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsTable
+         * @restrict E
+         * @scope
+         * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {string} [displayedFields=all] A comma-separated list of fields to display. By default all the available fields are displayed.
+         * @param {string} [sort=none] Sort expression to apply initially (*field* or *-field*)
+         * @param {Object} [tableContext=none] An object that you can use to share the sort state between two or more table widgets when they are not in the same context.
+         * Beware that if you have two tables on two different datasets, they need to have the same sortable fields, else an user may try to sort on a field that doesn't exist in the other table, and
+         * an error will occur.
+         *
+         */
         return {
             restrict: 'E',
             scope: {
@@ -7131,7 +7617,7 @@ else {
                 sort: '@'
             },
             replace: true,
-            templateUrl: ODSWidgetsConfig.basePath + 'directives/templates/table.html',
+            templateUrl: ODSWidgetsConfig.basePath + 'templates/table.html',
             controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile) {
                 if (angular.isUndefined($scope.tableContext)) {
                     $scope.tableContext = {};
@@ -7220,20 +7706,7 @@ else {
                 };
 
                 $scope.isFieldSortable = function(field) {
-                    var supportedSortTypes = ['int', 'double', 'date', 'datetime'];
-                    if (supportedSortTypes.indexOf(field.type) >= 0) {
-                        // These types are always sortable
-                        return true;
-                    }
-                    if (field.type === 'text' && field.annotations) {
-                        for (var a=0; a<field.annotations.length; a++) {
-                            var anno = field.annotations[a];
-                            if (anno.name === 'sortable') {
-                                return true;
-                            }
-                        }
-                    }
-                    return false;
+                    return ODS.DatasetUtils.isFieldSortable(field);
                 };
 
                 $scope.toggleSort = function(field){
@@ -7403,7 +7876,7 @@ else {
                     }
                     else {
                         if (scrollDown) {
-                            for (i=0; i<startIndex; i++) {
+                            for (var i=0; i<startIndex; i++) {
                                 deleteOneRecord(i);
                             }
 
@@ -7424,7 +7897,7 @@ else {
                             placeholderBot.style.height = newHeight + 'px';
                         } else {
                             var count = 0;
-                            for (i=endIndex+1; i<$scope.records.length; i++) {
+                            for (var i=endIndex+1; i<$scope.records.length; i++) {
                                 deleteOneRecord(i);
                                 count++;
                             }
@@ -7438,7 +7911,7 @@ else {
                             var firstRecordNumber = visible ? parseInt(trInDom[1].className.substr(7), 10) : endIndex;
 
                             var count = 0;
-                            for (i=firstRecordNumber-1; i>=startIndex; i--) {
+                            for (var i=firstRecordNumber-1; i>=startIndex; i--) {
                                 renderOneRecord(i, $scope.records, 'begin');
                                 count++;
                             }
@@ -7485,6 +7958,13 @@ else {
                         }
                     }
 
+                    if (!$scope.tableContext.tablesort && $scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.table_default_sort_field) {
+                        var sortField = $scope.context.dataset.extra_metas.visualization.table_default_sort_field;
+                        if ($scope.context.dataset.extra_metas.visualization.table_default_sort_direction === '-') {
+                            sortField = '-' + sortField;
+                        }
+                        $scope.tableContext.tablesort = sortField;
+                    }
 
                     $scope.staticSearchOptions = {
                         rows: $scope.resultsPerPage
@@ -7573,10 +8053,12 @@ else {
                         }
 
                         if ($('.embedded').length) {
-                            var windowHeight = $(window).height();
-                            $element.height(windowHeight);
-                            $element.find('.records-body').height(windowHeight - 25); // Horizontal scrollbar height
+                            var elementHeight = $(window).height();
+                            $element.height(elementHeight);
+                        } else {
+                            var elementHeight = $element.height();
                         }
+                        $element.find('.records-body').height(elementHeight - 25); // Horizontal scrollbar height
 
                         var recordHeight = recordsBody.find('tr').eq(1).height();
                         var bodyHeight = (rows.length-2)*recordHeight; // Don't take in account placeholders
@@ -7593,7 +8075,7 @@ else {
 
                         var totalWidth = 0;
                         angular.forEach($element.find('.records-body thead th > div'), function (thDiv, i) {
-                            $scope.layout[i] = $(thDiv).width() + 1; // For all browsers (except Chrome)
+                            $scope.layout[i] = $(thDiv).width() + 6; // For sortable icons
                             totalWidth += $scope.layout[i];
                         });
                         $scope.layout[0] = 30; // First column is the record number
@@ -7666,24 +8148,109 @@ else {
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsTagCloud', ['ODSAPI', function(ODSAPI) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsTagCloud
+         * @scope
+         * @restrict E
+         * @param {CatalogContext|DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {string} facetName Name of the facet to build the tag cloud from.
+         * @param {number} max Maximum number of tags to show in the cloud.
+         * @description
+         * This widget displays a "tag cloud" of the values available in a facet (either the facet of a dataset, or a facet from the dataset catalog). The "weight" (size) of a tag depends on the number
+         * of occurences ("count") for this tag.
+         */
+        function median(facets) {
+            var half = Math.floor(facets.length/2);
+            if (facets.length % 2) return facets[half].count;
+            else return (facets[half-1].count + facets[half].count) / 2.0;
+        }
+        function aggregateArrays(facets, median) {
+            var array1 = $.grep(facets, function(value) {
+                return value.count >= median;
+            });
+            var array2 = $.grep(facets, function(value) {
+                return value.count <= median;
+            });
+            var obj = [
+                {count: array1.length, min: array1[array1.length-1].count, max: array1[0].count},
+                {count: array2.length, min: array2[array2.length-1].count, max: array2[0].count}
+            ];
+            obj[0].delta = obj[0].max - obj[0].min;
+            obj[1].delta = obj[1].max - obj[1].min;
+            return obj;
+        }
+        function getFacet(facet, median, aggregateArrays, domainUrl) {
+            var delta = (facet.count >= median ? aggregateArrays[0].delta : aggregateArrays[1].delta) / 2;
+            var weight;
+
+            if (facet.count >= 2*delta) {
+                weight = 1;
+            } else if (facet.count >= delta && facet.count < 2*delta) {
+                weight = 2;
+            } else {
+                weight = 3;
+            }
+            weight = facet.count >= median ? weight : weight+3;
+
+            facet = {
+                count: facet.count,
+                name: facet.name,
+                opacity: ((((7-weight)+4)/10)+0.05).toFixed(2),
+                size: ((7-weight)/3).toFixed(1),
+                weight: weight
+            };
+            facet.size = weight !== 6 ? facet.size : parseFloat(facet.size)+0.3;
+            return facet;
+        }
+        function shuffle(array) {
+            for (var i = array.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = array[i];
+                array[i] = array[j];
+                array[j] = temp;
+            }
+            return array;
+        }
         return {
             restrict: 'E',
             replace: true,
-            template: '<div class="odswidget-tag-cloud"><ul><li ng-repeat="tag in tags">{{tag.name}} ({{tag.count}})</li></ul></div>',
+            template: '<div class="odswidget-tag-cloud">' +
+                    '<ul>' +
+                    '<li ng-repeat="tag in tags" class="tag tag{{ tag.weight }}" style="font-size: {{ tag.size }}em; opacity: {{ tag.opacity }}"><a ng-href="{{ context.domainUrl }}{{url }}/?refine.{{ facetName }}={{ tag.name }}">{{ tag.name }}</a></li>' +
+                    '</ul>' +
+                '</div>',
             scope: {
                 context: '=',
-                facetName: '@'
+                facetName: '@',
+                max: '@?'
             },
             controller: function($scope) {
                 var refresh = function() {
-                    ODSAPI.datasets.search($scope.context, {'rows': 0, 'facet': $scope.facetName}).
-                        success(function(data) {
+                    var query;
+                    if ($scope.context.type === 'catalog') {
+                        query = ODSAPI.datasets.search($scope.context, {'rows': 0, 'facet': $scope.facetName});
+                    } else {
+                        query = ODSAPI.records.search($scope.context, {'rows': 0, 'facet': $scope.facetName});
+                    }
+                    query.success(function(data) {
                             $scope.tags = data.facet_groups[0].facets;
+                            if ($scope.max) {
+                                $scope.tags = $scope.tags.slice(0, $scope.max);
+                            }
+                            var m = median($scope.tags);
+                            for (var i=0; i<$scope.tags.length; i++) {
+                                $scope.tags[i] = getFacet($scope.tags[i], m, aggregateArrays($scope.tags, m), $scope.context.domainUrl);
+                            }
+                            $scope.tags = shuffle($scope.tags);
                         });
                 };
-                $scope.$watch('context', function() {
-                    refresh();
-                });
+                $scope.$watch('context', function (nv, ov) {
+                    if ($scope.context.type === 'catalog' || $scope.context.type === 'dataset' && $scope.context.dataset) {
+                        $scope.url = $scope.context.type === 'catalog' ? '/explore' : '/explore/dataset/' + $scope.context.dataset.datasetid;
+                        refresh();
+                    }
+                }, true);
             }
         };
     }]);
@@ -7700,8 +8267,8 @@ else {
             replace: false,
             template: '<div class="odswidget-theme-boxes">' +
                 '<ods-facet-enumerator context="context" facet="theme">' +
-                    '<a ng-href="/explore/?refine.theme={{item.path}}" target="_self" ods-tooltip="{{item.name}} ({{item.count}} jeux de données)" ods-tooltip-direction="bottom" style="display: block;">' +
-                        '<theme-picto theme="{{item.name}}"></theme-picto>' +
+                    '<a ng-href="{{context.domainUrl}}/explore/?refine.theme={{item.path}}" target="_self" ods-tooltip="{{item.name}} ({{item.count}} jeux de données)" ods-tooltip-direction="bottom" style="display: block;">' +
+                        '<ods-theme-picto theme="{{item.name}}"></ods-theme-picto>' +
                     '</a>' +
                 '</div>' +
                 '</ods-facet-enumerator>' +
@@ -7717,14 +8284,106 @@ else {
 
     var mod = angular.module('ods-widgets');
 
+    mod.directive('odsThemePicto', ['ODSWidgetsConfig', '$http', function(ODSWidgetsConfig, $http) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsThemePicto
+         * @scope
+         * @restrict E
+         * @param {string} theme The label of the theme to display the picto of.
+         * @description
+         * This widget displays the "picto" of a theme, based on the theme configuration. This element can be styled (height, width...),
+         * especially if the picto is vectorial (SVG).
+         *
+         */
+        var inlineImages = {};
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                theme: '@'
+            },
+            template: '<div class="odswidget-theme-picto theme-{{getTheme()|themeSlug}}"></div>',
+            link: function(scope, element) {
+                // TODO: IE8 fallback
+                // TODO: png fallback
+                var themeConfig = null;
+                var defaultPicto = false;
+                if (ODSWidgetsConfig.themes[scope.theme]) {
+                    themeConfig = ODSWidgetsConfig.themes[scope.theme];
+                } else {
+                    themeConfig = ODSWidgetsConfig.themes['default'];
+                    defaultPicto = true;
+                }
+
+                scope.getTheme = function() {
+                    if (defaultPicto) {
+                        return 'default';
+                    } else {
+                        return scope.theme;
+                    }
+                };
+
+                var loadImageInline = function(code) {
+                    var svg = angular.element(code);
+                    if (themeConfig.color) {
+                        svg.css('fill', themeConfig.color);
+                    } else {
+                        element.addClass('colorless');
+                    }
+                    element.append(svg);
+                };
+
+                var url = themeConfig.img;
+
+                if (url.indexOf('.svg') === -1) {
+                    // Normal image
+                    element.append(angular.element('<img src="'+url+'"/>'));
+                } else {
+                    // SVG
+                    if (inlineImages[scope.theme]) {
+                        if (inlineImages[scope.theme].code) {
+                            loadImageInline(inlineImages[scope.theme].code);
+                        } else {
+                            inlineImages[scope.theme].promise.success(function(data) {
+                                loadImageInline(data);
+                            });
+                        }
+
+                    } else {
+                        var promise = $http.get(url);
+                        inlineImages[scope.theme] = {promise: promise};
+                        promise.success(function(data) {
+                            inlineImages[scope.theme].code = data;
+                            loadImageInline(data);
+                        });
+                    }
+                }
+
+            }
+        };
+    }]);
+}());;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
     mod.directive('odsTimescale', function() {
         /**
-         * Displays a control to select either:
-         * - last day
-         * - last week
-         * - last month
-         * - last year
-         */
+        *  @ngdoc directive
+        *  @name ods-widgets.directive:odsTimescale
+        *  @restrict E
+        *  @scope
+        *  @description
+        * Displays a control to select either:
+        * - last day
+        * - last week
+        * - last month
+        * - last year
+        *
+        *  @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+        *  @param {string} timeField Name of the field (date or datetime) to filter on
+        */
         return {
             restrict: 'E',
             replace: true,
@@ -7735,10 +8394,10 @@ else {
             template: '<div class="odswidget-timescale">' +
                 '<ul>' +
                     '<li ng-class="{\'active\': scale == \'everything\' || !scale}"><a href="#" ng-click="selectScale(\'everything\'); $event.preventDefault();" translate>Everything</a></li>' +
-                    '<li ng-class="{\'active\': scale == \'year\'}"><a href="#" ng-click="selectScale(\'year\'); $event.preventDefault();" translate>Last year</a></li>' +
-                    '<li ng-class="{\'active\': scale == \'month\'}"><a href="#" ng-click="selectScale(\'month\'); $event.preventDefault();" translate>Last month</a></li>' +
-                    '<li ng-class="{\'active\': scale == \'week\'}"><a href="#" ng-click="selectScale(\'week\'); $event.preventDefault();" translate>Last week</a></li>' +
-                    '<li ng-class="{\'active\': scale == \'day\'}"><a href="#" ng-click="selectScale(\'day\'); $event.preventDefault();" translate>Last day</a></li>' +
+                    '<li ng-class="{\'active\': scale == \'year\'}"><a href="#" ng-click="selectScale(\'year\'); $event.preventDefault();" translate>Last 12 months</a></li>' +
+                    '<li ng-class="{\'active\': scale == \'month\'}"><a href="#" ng-click="selectScale(\'month\'); $event.preventDefault();" translate>Last 4 weeks</a></li>' +
+                    '<li ng-class="{\'active\': scale == \'week\'}"><a href="#" ng-click="selectScale(\'week\'); $event.preventDefault();" translate>Last 7 days</a></li>' +
+                    '<li ng-class="{\'active\': scale == \'day\'}"><a href="#" ng-click="selectScale(\'day\'); $event.preventDefault();" translate>Last 24 hours</a></li>' +
                 '</ul>' +
                 '</div>',
             controller: ['$scope', function($scope) {
@@ -7804,12 +8463,25 @@ else {
         };
     });
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsTwitterTimeline', function() {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsTwitterTimeline
+         * @restrict E
+         * @scope
+         * @param {string} widgetId The identifier of the Twitter widget you want to integrate. See https://twitter.com/settings/widgets for more information.
+         * @description
+         * Integrates a Twitter "widget" using the widget ID provided by Twitter.
+         *
+         * This directive is useful if you want to avoid having `<script>` tags in your page, for example to allow your users to enter HTML text without cross-scripting risks.
+         *
+         */
         return {
             restrict: 'E',
             replace: true,
