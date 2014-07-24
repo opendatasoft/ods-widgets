@@ -17,18 +17,6 @@ This library is used in production as a part of the OpenDataSoft platform, a
 Software-as-a-Service data portal. It is essentially the current core of our
 front-end data visualization features.
 
-Here are a few ideas of things you could do with all this:
-- integrate a simple visualization (or a more complete visualization tool using
-more widgets) from a public dataset into a blog article (it is worth noting that,
-as more and more search engines are understanding JS applications like Google is,
-your integrated visualizations will be referenced, which can be very beneficial to your SEO)
-- allow your users to design and build complex and interactive dashboard or visualization pages
-on your data, using simple HTML tags (that's what we are doing, for example)
-- build a website on top of your data without having to worry about consuming and
-exposing your data to end-users in a scalable and compelling way
-- fork and enrich this toolset with your own widgets, or even adapt it to your
-own needs and backend services: the project is licensed under the MIT license
-
 #### [> Visit the samples](http://opendatasoft.github.com/ods-widgets/)
 
 ### Quick example
