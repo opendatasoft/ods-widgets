@@ -39,6 +39,15 @@ Domain value can be:</p>
 in this context or the original context will be applied to both.</p>
 </li>
 </ul>
+<p>Once created, the context is exposed and accessible as a variable named after it. The context contains properties that you can access directly:</p>
+<ul>
+<li><p>domainUrl: a full URL the the domain of the context, that can be used to create links</p>
+</li>
+<li><p>parameters: the parameters object of the context</p>
+</li>
+<li><p>dataset: the dataset object for this context</p>
+</li>
+</ul>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-dataset-context
@@ -57,10 +66,12 @@ configured using specific attributes, as described below.</p>
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsdatasetcontext-page"><pre class="prettyprint linenums">
-&lt;ods-dataset-context context="trees" trees-dataset="trees-in-paris"&gt;&lt;/ods-dataset-context&gt;
+&lt;ods-dataset-context context="trees" trees-dataset="trees-in-paris"&gt;
+    A dataset from {{trees.domainUrl}}.
+&lt;/ods-dataset-context&gt;
 </pre>
 <pre class="prettyprint linenums">
-&lt;ods-catalog-context context="trees,hydrants"
+&lt;ods-dataset-context context="trees,hydrants"
                      trees-dataset="trees-in-paris"
                      trees-domain="opendata.paris.fr"
                      hydrants-dataset="hydrants"
@@ -69,7 +80,7 @@ configured using specific attributes, as described below.</p>
     &lt;ods-table context="trees"&gt;&lt;/ods-table&gt;
     &lt;!-- Shows a map of hydrants --&gt;
     &lt;ods-map context="hydrants"&gt;&lt;/ods-map&gt;
-&lt;/ods-catalog-context&gt;
+&lt;/ods-dataset-context&gt;
 </pre>
 </div></div>
 </div>

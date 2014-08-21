@@ -15,6 +15,15 @@
          * @description
          * This widget displays a "tag cloud" of the values available in a facet (either the facet of a dataset, or a facet from the dataset catalog). The "weight" (size) of a tag depends on the number
          * of occurences ("count") for this tag.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com">
+         *              <ods-tag-cloud context="catalog" facet-name="keyword"></ods-tag-cloud>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
         function median(facets) {
             var half = Math.floor(facets.length/2);

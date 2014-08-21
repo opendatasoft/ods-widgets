@@ -11,13 +11,27 @@
         *  @scope
         *  @description
         * Displays a control to select either:
-        * - last day
-        * - last week
-        * - last month
-        * - last year
+        *
+        * * last day
+        *
+        * * last week
+        *
+        * * last month
+        *
+        * * last year
         *
         *  @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
         *  @param {string} timeField Name of the field (date or datetime) to filter on
+        *
+        *  @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
+         *              <ods-timescale context="cibul"></ods-timescale>
+         *              <ods-map context="cibul"></ods-map>
+         *          </ods-dataset-context>
+         *     </file>
+         * </example>
         */
         return {
             restrict: 'E',

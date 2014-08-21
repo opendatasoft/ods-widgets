@@ -9,7 +9,7 @@
         <link rel="stylesheet" href="../dist/ods-widgets.css">
     </head>
     <body>
-        <div class="container-fluid" ng-app="sample">
+        <div class="container-fluid" ng-app="ods-widgets">
             <h1>Hoy</h1>
             <ods-catalog-context context="catalog" catalog-domain="parisdata">
                 <ods-dataset-context context="paris" paris-domain="parisdata" paris-dataset="arbresremarquablesparis2011">
@@ -50,7 +50,4 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular-sanitize.min.js"></script>
     <script type="text/javascript" src="../dist/ods-widgets.js"></script>
-    <script type="text/javascript">
-        var app = angular.module('sample', ['ods-widgets']);
-    </script>
 </html>

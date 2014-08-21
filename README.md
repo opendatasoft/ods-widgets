@@ -84,17 +84,13 @@ To load ODS-Widgets, you can then simply load `ods-widgets.js` and `ods-widgets.
 Some specific widgets can rely on specific "heavy" libraries (such as Highcharts, Leaflet...);
 in that case, they are lazily-loaded from a CDN when the widget initializes itself.
 
-ODS-Widgets require an AngularJS app to run, and the 'ods-widgets' module added as a dependency;
-here is a simple way to achieve that:
+ODS-Widgets require an AngularJS app to run, which can for example be done with a simple `ng-app="ods-widgets"`:
 ```html
 <body>
-  <div ng-app="sample">
+  <div ng-app="ods-widgets">
     <!-- Within this div, we are in an Angular app where ODS-Widgets tags will run -->
     {{ "hello" + "from" + "angular!"}}
   </div>
-  <script type="text/javascript">
-    var app = angular.module('sample', ['ods-widgets']);
-  </script>
 </body>
 ```
 

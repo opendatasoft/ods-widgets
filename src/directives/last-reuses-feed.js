@@ -12,6 +12,15 @@
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
          * This widget displays the last 5 reuses published on a domain.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="paris" paris-domain="http://opendata.paris.fr">
+         *              <ods-last-reuses-feed context="paris"></ods-last-reuses-feed>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',

@@ -54,7 +54,7 @@ module.exports = function(grunt) {
             },
             scripts: {
                 files: [JS_FILES],
-                tasks: ['uglify', 'concat', 'ngdocs'],
+                tasks: ['uglify', 'concat', 'copy:libs', 'ngdocs'],
                 options: {
                     spawn: false
                 }
@@ -105,7 +105,8 @@ module.exports = function(grunt) {
                     'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular.js',
                     'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular-animate.js',
                     'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular-sanitize.js',
-                    '../dist/ods-widgets.js'
+                    '../dist/ods-widgets.js',
+                    '../docs-load-css.js'
                 ],
                 styles: ['../dist/ods-widgets.css'],
 				html5Mode: false,
@@ -131,7 +132,17 @@ module.exports = function(grunt) {
             },
             server: {
                 options: {
-                    keepalive: false
+                    keepalive: false,
+                    middleware: function(connect, options, middlewares) {
+                        middlewares.unshift(function(req, res, next) {
+                            res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+                            res.setHeader('Access-Control-Allow-Methods', 'GET');
+                            res.setHeader('Access-Control-Allow-Origin', '*');
+                            next();
+                        });
+
+                        return middlewares;
+                    }
                 }
             }
 		},

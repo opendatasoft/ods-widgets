@@ -15,6 +15,12 @@
          *
          * This directive is useful if you want to avoid having `<script>` tags in your page, for example to allow your users to enter HTML text without cross-scripting risks.
          *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-twitter-timeline widget-id="502475045042544641"></ods-twitter-timeline>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',

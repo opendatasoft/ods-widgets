@@ -24,6 +24,22 @@
          *  * item.datasetid: Dataset identifier of the dataset this record belongs to
          *  * item.fields: an object hold all the key/values for the record
          *  * item.geometry: if the record contains geometrical information, this object is present and holds its GeoJSON representation
+         *
+         *  @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
+         *              <ul>
+         *                  <ods-result-enumerator context="public">
+         *                      <li>
+         *                          <strong>{{item.metas.title}}</strong>
+         *                          (<a ng-href="{{context.domainUrl + '/explore/dataset/' + item.datasetid + '/'}}" target="_blank">{{item.datasetid}}</a>)
+         *                      </li>
+         *                  </ods-result-enumerator>
+         *              </ul>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
 
         return {

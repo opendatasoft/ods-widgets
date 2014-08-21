@@ -12,6 +12,15 @@
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
          * This widget displays the 5 most used themes.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
+         *              <ods-most-used-themes context="public"></ods-most-used-themes>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',

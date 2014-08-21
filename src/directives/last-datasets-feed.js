@@ -12,6 +12,15 @@
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
          * This widget displays the last 5 datasets of a catalog, based on the *modified* metadata.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
+         *              <ods-last-datasets-feed context="public"></ods-last-datasets-feed>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',

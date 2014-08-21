@@ -4,11 +4,17 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odstimescale-page"><p>Displays a control to select either:
-- last day
-- last week
-- last month
-- last year</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odstimescale-page"><p>Displays a control to select either:</p>
+<ul>
+<li><p>last day</p>
+</li>
+<li><p>last week</p>
+</li>
+<li><p>last month</p>
+</li>
+<li><p>last year</p>
+</li>
+</ul>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-timescale
@@ -22,4 +28,19 @@
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimescale-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
 </div></td></tr><tr><td>timeField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimescale-page"><p>Name of the field (date or datetime) to filter on</p>
 </div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odstimescale-page"><h4 id="example_source">Source</h4>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-12" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html-12" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-12">
+     <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
+         <ods-timescale context="cibul"></ods-timescale>
+         <ods-map context="cibul"></ods-map>
+     </ods-dataset-context>
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-12" ng-eval-javascript=""></div>
+</div></div>
 </div>

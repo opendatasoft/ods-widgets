@@ -20,13 +20,15 @@
          *  * item.count : the number of records in this category
          *
          * @example
-         *  <pre>
-         *  <ods-facet-enumerator context="bla" facet-name="theme">
-         *      <div style="display: inline-block; width: 64px; height: 64px;">
-         *          {{ item.name }} ({{ item.count }}
-         *      </div>
-         *  </ods-facet-enumerator>
-         *  </pre>
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com">
+         *              <ods-facet-enumerator context="catalog" facet-name="theme">
+         *                  {{ item.name }} ({{ item.count }})
+         *              </ods-facet-enumerator>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
 
         return {

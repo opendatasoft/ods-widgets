@@ -15,11 +15,15 @@
          * along with a link to the portal that shows the dataset, and the license attached to the data.
          *
          * @example
-         *  <pre>
-         *  <ods-dataset-card context="mydata">
-         *      <ods-table context="mydata"></ods-table>
-         *  </ods-dataset-card>
-         *  </pre>
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *              <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
+         *                  <ods-dataset-card context="stations" style="height: 600px">
+         *                      <ods-map context="stations"></ods-map>
+         *                  </ods-dataset-card>
+         *              </ods-dataset-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',

@@ -5599,6 +5599,51 @@ else {
          * @name ods-widgets.directive:odsCatalogContext
          * @scope
          * @restrict AE
+         *  @param {string} context A name (or list of names separated by commas) of contexts to declare. The contexts are further
+         *  configured using specific attributes, as described below.
+         *  @description
+         *  A "catalog context" represents the entire catalog (list) of datasets from a given domain, and a set of parameters used to query this catalog. A context can be used
+         *  by one or more directives, so that they can share information (generally the query parameters). For example, a directive
+         *  that displays a time filter can be "plugged" on the same context as a results list, to filter the displayed results.
+         *
+         *  The `odsCatalogContext` creates a new child scope, and exposes its contexts into it. In other words, the contexts
+         *  will be available to any directive that is inside the `odsCatalogContext` element. You can nest `odsCatalogContext` directives inside each others.
+         *
+         *  A single `odsCatalogContext` can declare one or more context at once. To initialize contexts, you declare
+         *  them in the **context** attribute. Then, you can configure them further using attributes prefixed by the context
+         *  name (**CONTEXTNAME-SETTING**, e.g. mycontext-domain). The available settings are:
+         *
+         *  * **`domain`** - {@type string} - (optional) Indicate the "domain" (used to construct an URL to an API root) where to find the dataset.
+         * Domain value can be:
+         *
+         *      * a simple alphanum string (e.g. *mydomain*): it will assume it is an OpenDataSoft domain (so in this example *mydomain.opendatasoft.com*)
+         *
+         *      * a hostname (e.g. *data.mydomain.com*)
+         *
+         *      * an absolute path (e.g. _/monitoring_), it will be absolute to the hostname of the current page
+         *
+         *      * a hostname and a path (e.g. *data.mydomain.com/monitoring*)
+         *
+         *      * nothing: in that case, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used
+         *
+         *  * **`apikey`** {@type string} (optional) API Key to use in every API call for this context
+         *
+         *  * **`parameters`** {@type Object} (optional) An object holding parameters to apply to the context when it is created.
+         *
+         *  Once created, the context is exposed and accessible as a variable named after it. The context contains properties that you can access directly:
+         *
+         *  * domainUrl: a full URL the the domain of the context, that can be used to create links
+         *
+         *  * parameters: the parameters object of the context
+         *
+         *  @example
+         *  <pre>
+         *  <ods-catalog-context context="public">
+         *      <ods-result-enumerator context="public">
+         *          <p>{{item.datasetid}}</p>
+         *      </ods-result-enumerator>
+         *  </ods-dataset-context>
+         *  </pre>
          */
 
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
@@ -5643,11 +5688,15 @@ else {
          * along with a link to the portal that shows the dataset, and the license attached to the data.
          *
          * @example
-         *  <pre>
-         *  <ods-dataset-card context="mydata">
-         *      <ods-table context="mydata"></ods-table>
-         *  </ods-dataset-card>
-         *  </pre>
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *              <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
+         *                  <ods-dataset-card context="stations" style="height: 600px">
+         *                      <ods-map context="stations"></ods-map>
+         *                  </ods-dataset-card>
+         *              </ods-dataset-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',
@@ -5776,13 +5825,23 @@ else {
          *  * **`parametersFromContext`** {@type string} (optional) The name of a context to replicate the parameters from. Any change of the parameters
          *  in this context or the original context will be applied to both.
          *
+         *  Once created, the context is exposed and accessible as a variable named after it. The context contains properties that you can access directly:
+         *
+         *  * domainUrl: a full URL the the domain of the context, that can be used to create links
+         *
+         *  * parameters: the parameters object of the context
+         *
+         *  * dataset: the dataset object for this context
+         *
          *  @example
          *  <pre>
-         *  <ods-dataset-context context="trees" trees-dataset="trees-in-paris"></ods-dataset-context>
+         *  <ods-dataset-context context="trees" trees-dataset="trees-in-paris">
+         *      A dataset from {{trees.domainUrl}}.
+         *  </ods-dataset-context>
          *  </pre>
          *
          *  <pre>
-         *  <ods-catalog-context context="trees,hydrants"
+         *  <ods-dataset-context context="trees,hydrants"
          *                       trees-dataset="trees-in-paris"
          *                       trees-domain="opendata.paris.fr"
          *                       hydrants-dataset="hydrants"
@@ -5791,7 +5850,7 @@ else {
          *      <ods-table context="trees"></ods-table>
          *      <!-- Shows a map of hydrants -->
          *      <ods-map context="hydrants"></ods-map>
-         *  </ods-catalog-context>
+         *  </ods-dataset-context>
          *  </pre>
          */
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
@@ -5915,27 +5974,37 @@ else {
          * @restrict AE
          * @param {DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
-         * This widget enumerates statistic values for a given catalog. The following AngularJS variables are available:
+         * This widget enumerates statistic values for a given catalog and injects them as variables in the context. The following AngularJS variables are available:
          *
-         *  * stats.dataset : the number of datasets
-         *  * stats.keyword : the number of keywords
-         *  * stats.publisher : the number of publishers
-         *  * stats.theme : the number of themes
+         *  * CONTEXTNAME.stats.dataset : the number of datasets
+         *  * CONTEXTNAME.stats.keyword : the number of keywords
+         *  * CONTEXTNAME.stats.publisher : the number of publishers
+         *  * CONTEXTNAME.stats.theme : the number of themes
          *
-         * @example
-         * # Example 1 : when declaring a catalog context
+         * # First syntax: when declaring a catalog context, directly inject these values
          * <pre>
          * <ods-catalog-context context="catalog" catalog-domain="dataset" ods-domain-statistics>
          *     {{ catalog.stats.dataset }} datasets
          * </ods-catalog-context>
          * </pre>
          *
-         * # Example 2 : with the corresponding tag
+         * # Second syntax : inject them using a dedicated tag
          *  <pre>
          *  <ods-domain-statistics context="catalog">
          *      {{ catalog.stats.dataset }} datasets
          *  </ods-domain-statistics>
          *  </pre>
+         *
+         *  @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com" ods-domain-statistics>
+         *              <p>Our portal has {{public.stats.dataset}} datasets, described by {{public.stats.theme}} themes
+         *              and {{public.stats.keyword}} keywords.</p>
+         *              </p>{{public.stats.publisher}} publishers have contributed.</p>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
 
         return {
@@ -5995,13 +6064,15 @@ else {
          *  * item.count : the number of records in this category
          *
          * @example
-         *  <pre>
-         *  <ods-facet-enumerator context="bla" facet-name="theme">
-         *      <div style="display: inline-block; width: 64px; height: 64px;">
-         *          {{ item.name }} ({{ item.count }}
-         *      </div>
-         *  </ods-facet-enumerator>
-         *  </pre>
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com">
+         *              <ods-facet-enumerator context="catalog" facet-name="theme">
+         *                  {{ item.name }} ({{ item.count }})
+         *              </ods-facet-enumerator>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
 
         return {
@@ -6061,10 +6132,13 @@ else {
              * This directive, when used to surround a text, displays a tooltip showing a point and/or a shape in a map.
              *
              * @example
-             * <pre>
-             * <ods-geotooltip coords="'48,2'">my location</ods-geotooltip>
-             * <ods-geotooltip coords="[48.04,2.12434]">my other location</ods-geotooltip>
-             * </pre>
+             *  <example module="ods-widgets">
+             *      <file name="index.html">
+             *          <ods-geotooltip coords="'48.858093,2.294694'">Nice place</ods-geotooltip>
+             *          <br />
+             *          <ods-geotooltip coords="[48.841601, 2.284822]">Nice people</ods-geotooltip>
+             *      </file>
+             *  </example>
              */
             // The container is shared between directives to avoid performance issues
             var container = angular.element('<div id="odswidget-geotooltip" class="odswidget" style="opacity: 0; transition: opacity 200ms ease-out; position: fixed; z-index: 40000; visibility: hidden;"></div>');
@@ -6710,9 +6784,13 @@ else {
          * This widget can be used to integrate a visualization based on Highcharts.
          *
          * @example
-         * <pre>
-         * <ods-highcharts chart-type="column" context="monitoring" expression-y="size_res" field-x="request_time" function-y="AVG" timescale="day"></ods-highcharts>
-         * </pre>
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context context="hurricanes" hurricanes-domain="public.opendatasoft.com" hurricanes-dataset="hurricane-tracks-1851-2007">
+         *              <ods-highcharts context="hurricanes" field-x="track_date" chart-type="line" timescale="year" function-y="COUNT"></ods-highcharts>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
          */
         var defaultColors = [
             '#2f7ed8',
@@ -6860,6 +6938,15 @@ else {
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
          * This widget displays the last 5 datasets of a catalog, based on the *modified* metadata.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
+         *              <ods-last-datasets-feed context="public"></ods-last-datasets-feed>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',
@@ -6907,6 +6994,15 @@ else {
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
          * This widget displays the last 5 reuses published on a domain.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="paris" paris-domain="http://opendata.paris.fr">
+         *              <ods-last-reuses-feed context="paris"></ods-last-reuses-feed>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',
@@ -6967,6 +7063,14 @@ else {
          * this makes you able to use the map to refine the data displayed in the table.
          * @param {Object} [mapContext=none] An object that you can use to share the map state (location and basemap) between two or more table widgets when they are not in the same context.
          *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
+         *              <ods-map context="stations"></ods-map>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',
@@ -7664,7 +7768,7 @@ else {
                         '<i class="icon-chevron-right" ng-click="moveIndex(1)"></i>' +
                     '</h2>' +
                     '<div class="ng-leaflet-tooltip-cloak limited-results" ng-show="records && records.length == RECORD_LIMIT" translate>(limited to the first {{RECORD_LIMIT}} records)</div>' +
-                    '<div ng-if="template" ng-include src="template"></div>' +
+                    '<div ng-if="template" ng-include src="safeUrl(template)"></div>' +
                     '<div inject></div>' +
                 '</div>',
             scope: {
@@ -7683,7 +7787,7 @@ else {
                     jQuery('.ng-leaflet-tooltip-cloak', element).removeClass('ng-leaflet-tooltip-cloak');
                 };
             },
-            controller: ['$scope', '$filter', 'ODSAPI', function($scope, $filter, ODSAPI) {
+            controller: ['$scope', '$filter', 'ODSAPI', 'ODSWidgetsConfig', '$sce', function($scope, $filter, ODSAPI, ODSWidgetsConfig, $sce) {
                 $scope.RECORD_LIMIT = 100;
                 $scope.records = [];
                 $scope.selectedIndex = 0;
@@ -7693,6 +7797,15 @@ else {
                         newIndex = $scope.records.length + newIndex;
                     }
                     $scope.selectedIndex = newIndex;
+                };
+
+                $scope.safeUrl = function(url) {
+                    // FIXME: Don't allow URLs of templates as parameters: it is a recipe for failure (and XSS)
+                    if (url === ODSWidgetsConfig.basePath + "templates/geoscroller_tooltip.html") {
+                        return $sce.trustAsResourceUrl(url);
+                    } else {
+                        return url;
+                    }
                 };
 
                 // Prepare the geofilter parameter
@@ -7768,6 +7881,15 @@ else {
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
          * This widget displays the top 5 datasets of a catalog, based on the number of downloads.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
+         *              <ods-most-popular-datasets context="public"></ods-most-popular-datasets>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',
@@ -7815,6 +7937,15 @@ else {
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
          * This widget displays the 5 most used themes.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
+         *              <ods-most-used-themes context="public"></ods-most-used-themes>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',
@@ -7875,6 +8006,22 @@ else {
          *  * item.datasetid: Dataset identifier of the dataset this record belongs to
          *  * item.fields: an object hold all the key/values for the record
          *  * item.geometry: if the record contains geometrical information, this object is present and holds its GeoJSON representation
+         *
+         *  @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
+         *              <ul>
+         *                  <ods-result-enumerator context="public">
+         *                      <li>
+         *                          <strong>{{item.metas.title}}</strong>
+         *                          (<a ng-href="{{context.domainUrl + '/explore/dataset/' + item.datasetid + '/'}}" target="_blank">{{item.datasetid}}</a>)
+         *                      </li>
+         *                  </ods-result-enumerator>
+         *              </ul>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
 
         return {
@@ -8556,6 +8703,15 @@ else {
          * @description
          * This widget displays a "tag cloud" of the values available in a facet (either the facet of a dataset, or a facet from the dataset catalog). The "weight" (size) of a tag depends on the number
          * of occurences ("count") for this tag.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com">
+         *              <ods-tag-cloud context="catalog" facet-name="keyword"></ods-tag-cloud>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
         function median(facets) {
             var half = Math.floor(facets.length/2);
@@ -8828,13 +8984,27 @@ else {
         *  @scope
         *  @description
         * Displays a control to select either:
-        * - last day
-        * - last week
-        * - last month
-        * - last year
+        *
+        * * last day
+        *
+        * * last week
+        *
+        * * last month
+        *
+        * * last year
         *
         *  @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
         *  @param {string} timeField Name of the field (date or datetime) to filter on
+        *
+        *  @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
+         *              <ods-timescale context="cibul"></ods-timescale>
+         *              <ods-map context="cibul"></ods-map>
+         *          </ods-dataset-context>
+         *     </file>
+         * </example>
         */
         return {
             restrict: 'E',
@@ -8930,6 +9100,15 @@ else {
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
          * This widget displays the 5 top publishers
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
+         *              <ods-top-publishers context="public"></ods-top-publishers>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',
@@ -8979,6 +9158,12 @@ else {
          *
          * This directive is useful if you want to avoid having `<script>` tags in your page, for example to allow your users to enter HTML text without cross-scripting risks.
          *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-twitter-timeline widget-id="502475045042544641"></ods-twitter-timeline>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',

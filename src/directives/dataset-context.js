@@ -47,13 +47,23 @@
          *  * **`parametersFromContext`** {@type string} (optional) The name of a context to replicate the parameters from. Any change of the parameters
          *  in this context or the original context will be applied to both.
          *
+         *  Once created, the context is exposed and accessible as a variable named after it. The context contains properties that you can access directly:
+         *
+         *  * domainUrl: a full URL the the domain of the context, that can be used to create links
+         *
+         *  * parameters: the parameters object of the context
+         *
+         *  * dataset: the dataset object for this context
+         *
          *  @example
          *  <pre>
-         *  <ods-dataset-context context="trees" trees-dataset="trees-in-paris"></ods-dataset-context>
+         *  <ods-dataset-context context="trees" trees-dataset="trees-in-paris">
+         *      A dataset from {{trees.domainUrl}}.
+         *  </ods-dataset-context>
          *  </pre>
          *
          *  <pre>
-         *  <ods-catalog-context context="trees,hydrants"
+         *  <ods-dataset-context context="trees,hydrants"
          *                       trees-dataset="trees-in-paris"
          *                       trees-domain="opendata.paris.fr"
          *                       hydrants-dataset="hydrants"
@@ -62,7 +72,7 @@
          *      <ods-table context="trees"></ods-table>
          *      <!-- Shows a map of hydrants -->
          *      <ods-map context="hydrants"></ods-map>
-         *  </ods-catalog-context>
+         *  </ods-dataset-context>
          *  </pre>
          */
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)

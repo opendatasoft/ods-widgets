@@ -12,6 +12,15 @@
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
          * This widget displays the top 5 datasets of a catalog, based on the number of downloads.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
+         *              <ods-most-popular-datasets context="public"></ods-most-popular-datasets>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',

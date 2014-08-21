@@ -11,27 +11,37 @@
          * @restrict AE
          * @param {DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
-         * This widget enumerates statistic values for a given catalog. The following AngularJS variables are available:
+         * This widget enumerates statistic values for a given catalog and injects them as variables in the context. The following AngularJS variables are available:
          *
-         *  * stats.dataset : the number of datasets
-         *  * stats.keyword : the number of keywords
-         *  * stats.publisher : the number of publishers
-         *  * stats.theme : the number of themes
+         *  * CONTEXTNAME.stats.dataset : the number of datasets
+         *  * CONTEXTNAME.stats.keyword : the number of keywords
+         *  * CONTEXTNAME.stats.publisher : the number of publishers
+         *  * CONTEXTNAME.stats.theme : the number of themes
          *
-         * @example
-         * # Example 1 : when declaring a catalog context
+         * # First syntax: when declaring a catalog context, directly inject these values
          * <pre>
          * <ods-catalog-context context="catalog" catalog-domain="dataset" ods-domain-statistics>
          *     {{ catalog.stats.dataset }} datasets
          * </ods-catalog-context>
          * </pre>
          *
-         * # Example 2 : with the corresponding tag
+         * # Second syntax : inject them using a dedicated tag
          *  <pre>
          *  <ods-domain-statistics context="catalog">
          *      {{ catalog.stats.dataset }} datasets
          *  </ods-domain-statistics>
          *  </pre>
+         *
+         *  @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com" ods-domain-statistics>
+         *              <p>Our portal has {{public.stats.dataset}} datasets, described by {{public.stats.theme}} themes
+         *              and {{public.stats.keyword}} keywords.</p>
+         *              </p>{{public.stats.publisher}} publishers have contributed.</p>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
 
         return {

@@ -20,6 +20,14 @@
          * this makes you able to use the map to refine the data displayed in the table.
          * @param {Object} [mapContext=none] An object that you can use to share the map state (location and basemap) between two or more table widgets when they are not in the same context.
          *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
+         *              <ods-map context="stations"></ods-map>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',
@@ -717,7 +725,7 @@
                         '<i class="icon-chevron-right" ng-click="moveIndex(1)"></i>' +
                     '</h2>' +
                     '<div class="ng-leaflet-tooltip-cloak limited-results" ng-show="records && records.length == RECORD_LIMIT" translate>(limited to the first {{RECORD_LIMIT}} records)</div>' +
-                    '<div ng-if="template" ng-include src="template"></div>' +
+                    '<div ng-if="template" ng-include src="safeUrl(template)"></div>' +
                     '<div inject></div>' +
                 '</div>',
             scope: {
@@ -736,7 +744,7 @@
                     jQuery('.ng-leaflet-tooltip-cloak', element).removeClass('ng-leaflet-tooltip-cloak');
                 };
             },
-            controller: ['$scope', '$filter', 'ODSAPI', function($scope, $filter, ODSAPI) {
+            controller: ['$scope', '$filter', 'ODSAPI', 'ODSWidgetsConfig', '$sce', function($scope, $filter, ODSAPI, ODSWidgetsConfig, $sce) {
                 $scope.RECORD_LIMIT = 100;
                 $scope.records = [];
                 $scope.selectedIndex = 0;
@@ -746,6 +754,15 @@
                         newIndex = $scope.records.length + newIndex;
                     }
                     $scope.selectedIndex = newIndex;
+                };
+
+                $scope.safeUrl = function(url) {
+                    // FIXME: Don't allow URLs of templates as parameters: it is a recipe for failure (and XSS)
+                    if (url === ODSWidgetsConfig.basePath + "templates/geoscroller_tooltip.html") {
+                        return $sce.trustAsResourceUrl(url);
+                    } else {
+                        return url;
+                    }
                 };
 
                 // Prepare the geofilter parameter

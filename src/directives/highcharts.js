@@ -510,9 +510,13 @@
          * This widget can be used to integrate a visualization based on Highcharts.
          *
          * @example
-         * <pre>
-         * <ods-highcharts chart-type="column" context="monitoring" expression-y="size_res" field-x="request_time" function-y="AVG" timescale="day"></ods-highcharts>
-         * </pre>
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context context="hurricanes" hurricanes-domain="public.opendatasoft.com" hurricanes-dataset="hurricane-tracks-1851-2007">
+         *              <ods-highcharts context="hurricanes" field-x="track_date" chart-type="line" timescale="year" function-y="COUNT"></ods-highcharts>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
          */
         var defaultColors = [
             '#2f7ed8',
