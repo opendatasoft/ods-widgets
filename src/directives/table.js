@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsTable', ['ODSWidgetsConfig', function(ODSWidgetsConfig) {
+    mod.directive('odsTable', ['ODSWidgetsConfig', '$sce', function(ODSWidgetsConfig, $sce) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsTable
@@ -16,6 +16,18 @@
          * Beware that if you have two tables on two different datasets, they need to have the same sortable fields, else an user may try to sort on a field that doesn't exist in the other table, and
          * an error will occur.
          *
+         * @description
+         * This widget displays a table view of a dataset, with infinite scroll and an ability to sort columns (depending on the
+         * types of the column).
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
+         *              <ods-table context="stations"></ods-table>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',
@@ -26,8 +38,9 @@
                 sort: '@'
             },
             replace: true,
-            templateUrl: ODSWidgetsConfig.basePath + 'templates/table.html',
-            controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile) {
+            transclude: true,
+            templateUrl: $sce.trustAsResourceUrl(ODSWidgetsConfig.basePath + 'templates/table.html'), // Required for some cases (such as "Open in Plunkr" from the doc)
+            controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', '$transclude', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile, $transclude) {
                 if (angular.isUndefined($scope.tableContext)) {
                     $scope.tableContext = {};
                 }
@@ -135,6 +148,12 @@
                     }
                 };
 
+                // Is there a custom template into the directive's tag?
+                var customTemplate = false;
+                $transclude(function(clone) {
+                    customTemplate = clone.length > 0;
+                });
+
                 var renderOneRecord = function(index, records, position) {
                     /*
                      <tr ng-repeat="record in records">
@@ -188,31 +207,42 @@
                         var div = document.createElement('div');
                         td.appendChild(div);
 
-                        var newScope = $scope.$new(false);
-                        newScope.recordFields = record.fields[field.name];
-
-                        if (field && field.type === 'geo_point_2d') {
-                            newScope.fieldValue = fieldValue;
-                            if (!window.ie8) {
-                                node = $compile('<ods-geotooltip width="300" height="300" coords="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
-                            } else {
-                                node = document.createElement('span');
-                                node.title = fieldValue;
-                                node.innerHTML = fieldValue;
-                            }
-                        } else if (field && field.type === 'geo_shape') {
-                            newScope.fieldValue = $filter('truncate')(fieldValue);
-                            if (!window.ie8) {
-                                node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
-                            } else {
-                                node = document.createElement('span');
-                                node.title = fieldValue;
-                                node.innerHTML = fieldValue;
-                            }
+                        var newScope, node;
+                        if (customTemplate) {
+                            // Inject the custom template and a few carefully selected variables
+                            newScope = $scope.$new(true);
+                            newScope.record = record;
+                            newScope.currentField = field.name;
+                            newScope.currentValue = record.fields[field.name];
+                            newScope.currentFormattedValue = fieldValue;
+                            node = $compile('<div inject></div>', $transclude)(newScope)[0];
                         } else {
-                            var node = document.createElement('span');
-                            node.title = fieldValue;
-                            node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
+                            newScope = $scope.$new(false);
+                            newScope.recordFields = record.fields[field.name];
+
+                            if (field && field.type === 'geo_point_2d') {
+                                newScope.fieldValue = fieldValue;
+                                if (!window.ie8) {
+                                    node = $compile('<ods-geotooltip width="300" height="300" coords="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
+                                } else {
+                                    node = document.createElement('span');
+                                    node.title = fieldValue;
+                                    node.innerHTML = fieldValue;
+                                }
+                            } else if (field && field.type === 'geo_shape') {
+                                newScope.fieldValue = $filter('truncate')(fieldValue);
+                                if (!window.ie8) {
+                                    node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
+                                } else {
+                                    node = document.createElement('span');
+                                    node.title = fieldValue;
+                                    node.innerHTML = fieldValue;
+                                }
+                            } else {
+                                node = document.createElement('span');
+                                node.title = fieldValue;
+                                node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
+                            }
                         }
 
                         div.appendChild(node);
@@ -462,7 +492,7 @@
                         }
 
                         if ($('.embedded').length) {
-                            var elementHeight = $(window).height();
+                            var elementHeight = $(window).height() - $element.offset().top;
                             $element.height(elementHeight);
                         } else {
                             var elementHeight = $element.height();

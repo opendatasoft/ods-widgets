@@ -76,8 +76,8 @@ Known to work on: (may not be exhaustive)
 
 ### Setup
 The following libraries are required as dependencies in your pages for ODS-Widgets to work:
-- **jQuery** (1.6+ should work) *note: we're looking to ditch this dependency in the future*
-- **AngularJS** 1.2.* and the **angular-sanitize** optional module
+- **jQuery** (1.6+ should work) *note: we're looking to remove this dependency in the future*
+- **AngularJS** 1.2.* and the **angular-sanitize** module
 
 To load ODS-Widgets, you can then simply load `ods-widgets.js` and `ods-widgets.css`.
 

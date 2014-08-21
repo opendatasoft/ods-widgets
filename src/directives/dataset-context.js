@@ -47,8 +47,7 @@
          *  * **`parametersFromContext`** {@type string} (optional) The name of a context to replicate the parameters from. Any change of the parameters
          *  in this context or the original context will be applied to both.
          *
-         *  # Example
-         *
+         *  @example
          *  <pre>
          *  <ods-dataset-context context="trees" trees-dataset="trees-in-paris"></ods-dataset-context>
          *  </pre>
@@ -112,9 +111,6 @@
                     // Do we have a domain ID?
                     var domain = attrs[contextName+'Domain'];
 
-                    if (!domain) {
-                        console.log('ERROR : Context ' + contextName + ' : Missing domain parameter');
-                    }
                     if (!datasetID) {
                         console.log('ERROR : Context ' + contextName + ' : Missing dataset parameter');
                     }

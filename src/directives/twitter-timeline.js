@@ -19,7 +19,7 @@
         return {
             restrict: 'E',
             replace: true,
-            template: '<div></div>',
+            template: '<div class="odswidget"></div>',
             scope: {
                 'widgetId': '@'
             },

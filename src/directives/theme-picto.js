@@ -22,7 +22,7 @@
             scope: {
                 theme: '@'
             },
-            template: '<div class="odswidget-theme-picto theme-{{getTheme()|themeSlug}}"></div>',
+            template: '<div class="odswidget odswidget-theme-picto theme-{{getTheme()|themeSlug}}"></div>',
             link: function(scope, element) {
                 // TODO: IE8 fallback
                 // TODO: png fallback

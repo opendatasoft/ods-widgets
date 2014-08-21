@@ -22,6 +22,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsDatasetCard",
+      "shortName": "odsDatasetCard",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "If you wrap this directive around an element or a set of element, it will display an expandable card above it to show the title and description of the dataset,",
+      "keywords": "api attached card context data dataset description directive display element expandable license link mydata ods-widgets portal set title wrap"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsDatasetContext",
       "shortName": "odsDatasetContext",
       "type": "directive",
@@ -40,12 +49,21 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsDomainStatistics",
+      "shortName": "odsDomainStatistics",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget enumerates statistic values for a given catalog. The following AngularJS variables are available:",
+      "keywords": "ae angularjs api catalog catalog-domain context corresponding dataset datasets declaring directive enumerates example keyword keywords number ods-domain-statistics ods-widgets publisher publishers statistic stats tag theme themes values variables widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsFacetEnumerator",
       "shortName": "odsFacetEnumerator",
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget enumerates the values (&quot;categories&quot;) of a facet and repeats the template (the content of the directive element) for each of them. For each facet category, the following AngularJS variables are available:",
-      "keywords": "angularjs api bla categories category content context count dataset directive display displayed element enumerate enumerates example facet facetname height inline-block item label number ods-widgets path records refine refined repeats style template themes values variables widget width"
+      "keywords": "angularjs api bla catalog categories category content context count dataset directive display displayed element enumerate enumerates facet facet-name facetname height inline-block item label number ods-widgets path records refine refined repeats style template theme values variables widget width"
     },
     {
       "section": "api",
@@ -54,7 +72,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This directive, when used to surround a text, displays a tooltip showing a point and/or a shape in a map.",
-      "keywords": "angular api appears array coordinates coords delay directive display displays ensure example form geojson height hover latitude location longitude map milliseconds numbers object ods-widgets pixels point quotes shape showing simple string surround text tooltip treats width"
+      "keywords": "angular api appears array coordinates coords delay directive display displays ensure form geojson height hover latitude location longitude map milliseconds numbers object ods-widgets pixels point quotes shape showing simple string surround text tooltip treats width"
     },
     {
       "section": "api",
@@ -63,7 +81,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget can be used to integrate a visualization based on Highcharts.",
-      "keywords": "angular api applied area areaspline avg axis bar base64 based case change changes chart chart-type chartcolors charttype code color colors column comma-separated complete configuration configured context count data dataset day default directive directly draw example expects expression expression-y expressiony field field-x fieldx function function-y functiony hex highcharts hour ignored integrate list max maximum min monitoring month number object ods-widgets odswidgetsconfig odswidgetsconfigprovider optional parameter parameters pie points quoted request_time reverse size_res sort spline stddev string sum time-based timescale types typically visualization week widget"
+      "keywords": "angular api applied area areaspline avg axis bar base64 based case change changes chart chart-type chartcolors charttype code color colors column comma-separated complete configuration configured context count data dataset day default directive directly draw expects expression expression-y expressiony field field-x fieldx function function-y functiony hex highcharts hour ignored integrate list max maximum min monitoring month number object ods-widgets odswidgetsconfig odswidgetsconfigprovider optional parameter parameters pie points quoted request_time reverse size_res sort spline stddev string sum time-based timescale types typically visualization week widget"
     },
     {
       "section": "api",
@@ -102,12 +120,30 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsMostUsedThemes",
+      "shortName": "odsMostUsedThemes",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays the 5 most used themes.",
+      "keywords": "api catalog context directive displays ods-widgets themes widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsMultiHighcharts",
       "shortName": "odsMultiHighcharts",
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget can display a multiple chart generated using the &quot;Charts&quot; interface of OpenDataSoft.",
       "keywords": "angular api base64 catalog chart charts complete configuration context directive directly display expects expression generated interface multiple object ods-widgets opendatasoft parameter quoted string widget"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsResultEnumerator",
+      "shortName": "odsResultEnumerator",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget enumerates the results of a search (records for a Dataset Context, datasets for a Catalog Context) and repeats the template (the content of the directive element) for each of them.",
+      "keywords": "angularjs api belongs catalog content context dataset datasetid datasets directive element enumerates fields geojson geometrical geometry hold holding holds identifier item key maximum metadata metas number object ods-widgets record repeats representation result search template variables widget"
     },
     {
       "section": "api",
@@ -124,7 +160,8 @@ NG_DOCS={
       "shortName": "odsTable",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "keywords": "api apply beware comma-separated context dataset datasets default directive display displayed doesn error exist expression field fields initially list object occur ods-widgets share sort sortable table tables user widgets"
+      "shortDescription": "This widget displays a table view of a dataset, with infinite scroll and an ability to sort columns (depending on the",
+      "keywords": "ability api apply beware column columns comma-separated context dataset datasets default directive display displayed displays doesn error exist expression field fields html infinite initially jcdecaux_bike_data list module object occur ods-widgets opendatasoft public scroll share sort sortable stations stations-dataset stations-domain table tables types user view widget widgets"
     },
     {
       "section": "api",
@@ -134,6 +171,15 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a &quot;tag cloud&quot; of the values available in a facet (either the facet of a dataset, or a facet from the dataset catalog). The &quot;weight&quot; (size) of a tag depends on the number",
       "keywords": "api build catalog cloud context count dataset depends directive displays facet facetname maximum number occurences ods-widgets tag tags values weight widget"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsTextSearch",
+      "shortName": "odsTextSearch",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays a search box that can be used to do a full-text search on a context.",
+      "keywords": "api box button catalog context dataset directive display displays empty full-text ods-widgets placeholder search searchbox text widget"
     },
     {
       "section": "api",
@@ -161,6 +207,15 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "Displays a control to select either:",
       "keywords": "api context control dataset datetime day directive displays field filter month ods-widgets select timefield week year"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsTopPublishers",
+      "shortName": "odsTopPublishers",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays the 5 top publishers",
+      "keywords": "api catalog context directive displays ods-widgets publishers top widget"
     },
     {
       "section": "api",
@@ -196,6 +251,10 @@ NG_DOCS={
   "html5Mode": false,
   "startPage": "/api/ods-widgets",
   "scripts": [
-    "angular.min.js"
+    "jquery-1.11.1.min.js",
+    "angular.js",
+    "angular-animate.js",
+    "angular-sanitize.js",
+    "ods-widgets.js"
   ]
 };

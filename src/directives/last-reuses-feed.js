@@ -16,7 +16,7 @@
         return {
             restrict: 'E',
             replace: true,
-            template: '<div class="odswidget-last-reuses-feed">' +
+            template: '<div class="odswidget odswidget-last-reuses-feed">' +
                 '<ul>' +
                 '   <li class="no-data" ng-hide="reuses" translate>No data available yet</li>' +
                 '   <li ng-repeat="reuse in reuses" ng-if="reuses">' +

@@ -309,5 +309,48 @@
         };
     }]);
 
+    mod.filter('shortSummary', [function() {
+        // Return a short summary from the given text, usually the first paragraph
+        return function(summary) {
+            if (!summary) {
+                return '';
+            }
+            // What we want is :
+            // - If it starts with text, then this text (up to a potential \n)
+            // - Else, try to find a <p> and takes the content
+            // - Else, takes the text
+            // Then takes up to x words
+            var text = '';
+            var body = angular.element('<div>'+summary+'</div>');
+            if (body.children().length === 0) {
+                // Regular text
+                if (summary.indexOf('\n') > -1) {
+                    text = summary.substring(0, summary.indexOf('\n'));
+                } else {
+                    text = summary;
+                }
+            } else {
+                var firstNode = body.contents()[0];
+                if (firstNode.nodeType == 3) {
+                    // Text node
+                    text = firstNode.textContent;
+                } else {
+                    // It doesn't begin with text : is there a <p>?
+                    if (body.find('p').length > 0) {
+                        text = body.find('p')[0].textContent;
+                    } else {
+                        // Well, we take what we can get
+                        text = body.text();
+                    }
+                }
+            }
+            // Limit text length
+            if (text.length > 400) {
+                text = text.substring(0, 397) + '…';
+            }
+            return text;
+        };
+    }]);
+
 
 }());

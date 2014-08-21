@@ -34,11 +34,14 @@
                 showFilters: '@'
             },
             replace: true,
-            transclude: true,
-            template: '<div class="odswidget-map">' +
+            template: function(tElement) {
+                tElement.children().wrapAll('<div>');
+                tElement.data('tooltip-template', tElement.children().html());
+                return '<div class="odswidget odswidget-map">' +
                         '<div class="map"></div>' +
                         '<div class="overlay map opaque-overlay" ng-show="pendingRequests.length && initialLoading"><spinner class="spinner"></spinner></div>' +
-                    '</div>',
+                    '</div>';
+            },
             link: function(scope, element) {
                 if (angular.isUndefined(scope.mapContext)) {
                     scope.mapContext = {};
@@ -53,7 +56,7 @@
                 function resizeMap(){
                     if ($('.odswidget-map > .map').length > 0) {
                         // Only do this if visible
-                        $('.odswidget-map > .map').height(Math.max(300, $(window).height() - $('.odswidget-map > .map').offset().top));
+                        $('.odswidget-map > .map').height(Math.max(200, $(window).height() - $('.odswidget-map > .map').offset().top));
                     }
                 }
                 if (scope.autoResize === 'true') {
@@ -164,7 +167,7 @@
                     };
                 });
             },
-            controller: ['$scope', '$http', '$compile', '$q', '$filter', '$transclude', 'translate', 'ODSAPI', 'DebugLogger', 'ODSWidgetsConfig', function($scope, $http, $compile, $q, $filter, $transclude, translate, ODSAPI, DebugLogger, ODSWidgetsConfig) {
+            controller: ['$scope', '$http', '$compile', '$q', '$filter', '$element', 'translate', 'ODSAPI', 'DebugLogger', 'ODSWidgetsConfig', function($scope, $http, $compile, $q, $filter, $element, translate, ODSAPI, DebugLogger, ODSWidgetsConfig) {
                 DebugLogger.log('init map');
 
                 $scope.pendingRequests = $http.pendingRequests;
@@ -212,11 +215,11 @@
                         autoPanPaddingTopLeft: [50, 305],
                         autoPan: !$scope.mapViewFilter && !$scope.staticMap
                     };
-                    var html = null;
-                    $transclude(function(clone) {
-                        html = jQuery('<div></div>').append(clone).html().trim();
-                    });
-                    if (html.trim() === '') {
+                    var html = $element.data('tooltip-template');
+
+                    // FIXME: It may not work after transcluding "fixes" in Angular, see https://github.com/angular/angular.js/issues/7874
+                    if (angular.isUndefined(html) || !angular.isString(html) || html.trim() === '') {
+                        html = '';
                         newScope.template = $scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.map_tooltip_template || ODSWidgetsConfig.basePath + "templates/geoscroller_tooltip.html";
                     }
                     var popup = new L.Popup(popupOptions).setLatLng(latLng)
@@ -251,18 +254,25 @@
                                     } else {
                                         // Get the boundingbox for the content
                                         $scope.$apply(function () {
-                                            var options = {};
-                                            // The geofilter.polygon has to be added last because if we are in mapViewFilter mode,
-                                            // the searchOptions already contains a geofilter
-                                            jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {
-                                                'geofilter.polygon': ODS.GeoFilter.getGeoJSONPolygonAsPolygonParameter(cluster.cluster)
-                                            });
-                                            ODSAPI.records.boundingbox($scope.context, options).success(function (data) {
+                                            if (cluster.cluster.type === 'Point') {
                                                 $scope.map.fitBounds([
-                                                    [data.bbox[1], data.bbox[0]],
-                                                    [data.bbox[3], data.bbox[2]]
+                                                    [cluster.cluster.coordinates[1], cluster.cluster.coordinates[0]],
+                                                    [cluster.cluster.coordinates[1], cluster.cluster.coordinates[0]]
                                                 ]);
-                                            });
+                                            } else {
+                                                var options = {};
+                                                // The geofilter.polygon has to be added last because if we are in mapViewFilter mode,
+                                                // the searchOptions already contains a geofilter
+                                                jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {
+                                                    'geofilter.polygon': ODS.GeoFilter.getGeoJSONPolygonAsPolygonParameter(cluster.cluster)
+                                                });
+                                                ODSAPI.records.boundingbox($scope.context, options).success(function (data) {
+                                                    $scope.map.fitBounds([
+                                                        [data.bbox[1], data.bbox[0]],
+                                                        [data.bbox[3], data.bbox[2]]
+                                                    ]);
+                                                });
+                                            }
                                         });
                                     }
                                 });
@@ -282,7 +292,8 @@
                 var refreshClusteredGeo = function() {
                     var options = {
                         'geofilter.polygon': ODS.GeoFilter.getBoundsAsPolygonParameter($scope.map.getBounds()),
-                        'clusterprecision': $scope.map.getZoom()
+                        'clusterprecision': $scope.map.getZoom(),
+                        'clusterdistance': 50
                     };
                     jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters);
                     if ($scope.currentClusterRequestCanceler) {
@@ -486,11 +497,24 @@
                     ODSAPI.records.boundingbox($scope.context, options).success(function(data) {
                         if (globalSearch) {
                             // We manually move the map and trigger the refreshes on the new viewport
-                            $scope.map.fitBounds([[data.bbox[1], data.bbox[0]], [data.bbox[3], data.bbox[2]]]);
+                            if (data.bbox.length > 0) {
+                                var oldBounds = $scope.map.getBounds();
+                                $scope.map.fitBounds([[data.bbox[1], data.bbox[0]], [data.bbox[3], data.bbox[2]]]);
+                                var newBounds = $scope.map.getBounds();
+
+                                if (angular.equals(oldBounds, newBounds)) {
+                                    // We need a refresh even though the map didn't move
+                                    refreshRawGeo();
+                                }
+
+                            } else {
+                                // We know we have no data, and we can't count on a viewport move to refresh it
+                                refreshRawGeo();
+                            }
                         } else {
                             if (data.count < DOWNLOAD_CAP || $scope.map.getZoom() === $scope.map.getMaxZoom()) {
                                 // Low enough: always download
-                                refreshRawGeo(true);
+                                refreshRawGeo();
                             } else if (data.count < SHAPEPREVIEW_HIGHCAP) {
                                 // We take our decision depending on the content of the envelope
                                 if (data.geometries.Point && data.geometries.Point > data.count/2) {
@@ -694,7 +718,7 @@
                     '</h2>' +
                     '<div class="ng-leaflet-tooltip-cloak limited-results" ng-show="records && records.length == RECORD_LIMIT" translate>(limited to the first {{RECORD_LIMIT}} records)</div>' +
                     '<div ng-if="template" ng-include src="template"></div>' +
-                    '<div ng-transclude></div>' +
+                    '<div inject></div>' +
                 '</div>',
             scope: {
                 shape: '=',

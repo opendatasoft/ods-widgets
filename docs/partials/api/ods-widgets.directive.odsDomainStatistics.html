@@ -1,0 +1,43 @@
+<h1><code ng:non-bindable="">odsDomainStatistics</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsdomainstatistics-page"><p>This widget enumerates statistic values for a given catalog. The following AngularJS variables are available:</p>
+<ul>
+<li>stats.dataset : the number of datasets</li>
+<li>stats.keyword : the number of keywords</li>
+<li>stats.publisher : the number of publishers</li>
+<li>stats.theme : the number of themes</li>
+</ul>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-domain-statistics
+       context="{DatasetContext}"&gt;
+&lt;/ods-domain-statistics&gt;</pre>
+as attribute<pre class="prettyprint linenums">&lt;ANY ods-domain-statistics
+     context="{DatasetContext}"&gt;
+   ...
+&lt;/ANY&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive creates new scope.</li>
+</ul>
+</div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdomainstatistics-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> to use</p>
+</div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsdomainstatistics-page"><h3 id="example_example-1-when-declaring-a-catalog-context">Example 1 : when declaring a catalog context</h3>
+<pre class="prettyprint linenums">
+&lt;ods-catalog-context context="catalog" catalog-domain="dataset" ods-domain-statistics&gt;
+    {{ catalog.stats.dataset }} datasets
+&lt;/ods-catalog-context&gt;
+</pre>
+<h3 id="example_example-2-with-the-corresponding-tag">Example 2 : with the corresponding tag</h3>
+<p> <pre class="prettyprint linenums">
+ &lt;ods-domain-statistics context="catalog"&gt;
+     {{ catalog.stats.dataset }} datasets
+ &lt;/ods-domain-statistics&gt;
+ </pre>
+</div></div>
+</div>

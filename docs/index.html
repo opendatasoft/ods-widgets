@@ -31,12 +31,22 @@
       addTag('link', {rel: 'stylesheet', href: 'css/animations.css', type: 'text/css'});
 
       
+         addTag('link', {rel: 'stylesheet', href: '../dist/ods-widgets.css', type: 'text/css'}, sync);
+      
 
       addTag('script', {src: 'js/google-code-prettify.js'}, sync);
       addTag('script', {src: 'js/marked.js'}, sync);
 
       
-        addTag('script', {src: 'js/angular.min.js'}, sync);
+        addTag('script', {src: 'https://code.jquery.com/jquery-1.11.1.min.js'}, sync);
+      
+        addTag('script', {src: 'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular.js'}, sync);
+      
+        addTag('script', {src: 'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular-animate.js'}, sync);
+      
+        addTag('script', {src: 'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular-sanitize.js'}, sync);
+      
+        addTag('script', {src: '../dist/ods-widgets.js'}, sync);
       
       
       addTag('script', {src: 'js/angular-bootstrap.js'}, sync);

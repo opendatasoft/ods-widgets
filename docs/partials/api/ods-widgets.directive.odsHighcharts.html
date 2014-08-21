@@ -5,10 +5,6 @@
 </h1>
 <div><h2 id="description">Description</h2>
 <div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odshighcharts-page"><p>This widget can be used to integrate a visualization based on Highcharts.</p>
-<h3 id="description_example">Example</h3>
-<pre class="prettyprint linenums">
-&lt;ods-highcharts chart-type="column" context="monitoring" expression-y="size_res" field-x="request_time" function-y="AVG" timescale="day"&gt;&lt;/ods-highcharts&gt;
-</pre>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-highcharts
@@ -39,4 +35,9 @@ If not specified, the colors from <a href="#/api/ods-widgets.ODSWidgetsConfigPro
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>maxpoints</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odshighcharts-page"><p>Maximum number of points to chart.</p>
 </div> <p><em>(default: 50)</em></p></td></tr><tr><td>chartConfig</td><td><a href="" class="label type-hint type-hint-string">string</a><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odshighcharts-page"><p>a complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted. If this parameter is present, all the other parameters are ignored, and the chart will not change if the context changes.</p>
 </div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odshighcharts-page"><pre class="prettyprint linenums">
+&lt;ods-highcharts chart-type="column" context="monitoring" expression-y="size_res" field-x="request_time" function-y="AVG" timescale="day"&gt;&lt;/ods-highcharts&gt;
+</pre>
+</div></div>
 </div>

@@ -18,7 +18,7 @@
         return {
             restrict: 'E',
             replace: true,
-            template: '<div class="odswidget-searchbox">' +
+            template: '<div class="odswidget odswidget-searchbox">' +
                     '<form method="GET" action="{{ actionUrl }}">' +
                     '<input class="searchbox" name="q" type="text" placeholder="{{placeholder}}">' +
                     '</form>' +

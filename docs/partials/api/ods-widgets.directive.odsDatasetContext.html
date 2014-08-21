@@ -39,22 +39,6 @@ Domain value can be:</p>
 in this context or the original context will be applied to both.</p>
 </li>
 </ul>
-<h3 id="description_example">Example</h3>
-<pre class="prettyprint linenums">
-&lt;ods-dataset-context context="trees" trees-dataset="trees-in-paris"&gt;&lt;/ods-dataset-context&gt;
-</pre>
-<pre class="prettyprint linenums">
-&lt;ods-catalog-context context="trees,hydrants"
-                     trees-dataset="trees-in-paris"
-                     trees-domain="opendata.paris.fr"
-                     hydrants-dataset="hydrants"
-                     hydrants-domain="public"&gt;
-    &lt;!-- Shows a list of the trees --&gt;
-    &lt;ods-table context="trees"&gt;&lt;/ods-table&gt;
-    &lt;!-- Shows a map of hydrants --&gt;
-    &lt;ods-map context="hydrants"&gt;&lt;/ods-map&gt;
-&lt;/ods-catalog-context&gt;
-</pre>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-dataset-context
@@ -71,4 +55,21 @@ as attribute<pre class="prettyprint linenums">&lt;ANY ods-dataset-context
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatasetcontext-page"><p>A name (or list of names separated by commas) of contexts to declare. The contexts are further
 configured using specific attributes, as described below.</p>
 </div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsdatasetcontext-page"><pre class="prettyprint linenums">
+&lt;ods-dataset-context context="trees" trees-dataset="trees-in-paris"&gt;&lt;/ods-dataset-context&gt;
+</pre>
+<pre class="prettyprint linenums">
+&lt;ods-catalog-context context="trees,hydrants"
+                     trees-dataset="trees-in-paris"
+                     trees-domain="opendata.paris.fr"
+                     hydrants-dataset="hydrants"
+                     hydrants-domain="public"&gt;
+    &lt;!-- Shows a list of the trees --&gt;
+    &lt;ods-table context="trees"&gt;&lt;/ods-table&gt;
+    &lt;!-- Shows a map of hydrants --&gt;
+    &lt;ods-map context="hydrants"&gt;&lt;/ods-map&gt;
+&lt;/ods-catalog-context&gt;
+</pre>
+</div></div>
 </div>

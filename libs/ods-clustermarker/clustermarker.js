@@ -16,8 +16,12 @@ L.ClusterMarker = L.FeatureGroup.extend({
         var styles = this._getShapeStyle(options.color, ratio);
 
         if (options.geojson) {
-            this.addLayer(new L.GeoJSON(options.geojson, {style: styles['default']}));
-            this._clusterShape = options.geojson;
+            if (options.geojson.type !== 'Point') {
+                this.addLayer(new L.GeoJSON(options.geojson, {style: styles['default']}));
+                this._clusterShape = options.geojson;
+            } else {
+                this._clusterShape = [options.geojson.coordinates[1], options.geojson.coordinates[0]];
+            }
         }
 
         this.addLayer(new L.Marker(latlng, {icon: this._getMarkerIcon(options.color, options.value, ratio, options.numberFormattingFunction)}));

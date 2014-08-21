@@ -100,6 +100,14 @@ module.exports = function(grunt) {
 		ngdocs: {
 			options: {
 				dest: 'docs',
+                scripts: [
+                    'https://code.jquery.com/jquery-1.11.1.min.js',
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular.js',
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular-animate.js',
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular-sanitize.js',
+                    '../dist/ods-widgets.js'
+                ],
+                styles: ['../dist/ods-widgets.css'],
 				html5Mode: false,
 				image: 'assets/logo.png',
 				title: "ODS",

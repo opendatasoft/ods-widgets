@@ -71,8 +71,9 @@
         return {
             restrict: 'E',
             replace: true,
-            template: '<div class="odswidget-tag-cloud">' +
+            template: '<div class="odswidget odswidget-tag-cloud">' +
                     '<ul>' +
+                    '<li class="no-data" ng-hide="tags" translate>No data available yet</li>' +
                     '<li ng-repeat="tag in tags" class="tag tag{{ tag.weight }}" style="font-size: {{ tag.size }}em; opacity: {{ tag.opacity }}"><a ng-href="{{ context.domainUrl }}{{url }}/?refine.{{ facetName }}={{ tag.name }}">{{ tag.name }}</a></li>' +
                     '</ul>' +
                 '</div>',
@@ -90,15 +91,17 @@
                         query = ODSAPI.records.search($scope.context, {'rows': 0, 'facet': $scope.facetName});
                     }
                     query.success(function(data) {
-                            $scope.tags = data.facet_groups[0].facets;
-                            if ($scope.max) {
-                                $scope.tags = $scope.tags.slice(0, $scope.max);
+                            if (data.facet_groups) {
+                                $scope.tags = data.facet_groups[0].facets;
+                                if ($scope.max) {
+                                    $scope.tags = $scope.tags.slice(0, $scope.max);
+                                }
+                                var m = median($scope.tags);
+                                for (var i = 0; i < $scope.tags.length; i++) {
+                                    $scope.tags[i] = getFacet($scope.tags[i], m, aggregateArrays($scope.tags, m), $scope.context.domainUrl);
+                                }
+                                $scope.tags = shuffle($scope.tags);
                             }
-                            var m = median($scope.tags);
-                            for (var i=0; i<$scope.tags.length; i++) {
-                                $scope.tags[i] = getFacet($scope.tags[i], m, aggregateArrays($scope.tags, m), $scope.context.domainUrl);
-                            }
-                            $scope.tags = shuffle($scope.tags);
                         });
                 };
                 $scope.$watch('context', function (nv, ov) {

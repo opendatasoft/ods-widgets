@@ -7961,7 +7961,7 @@ else {
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsTable', ['ODSWidgetsConfig', '$sce', function(ODSWidgetsConfig, $sce) {
+    mod.directive('odsTable', ['ODSWidgetsConfig', function(ODSWidgetsConfig) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsTable
@@ -7997,7 +7997,7 @@ else {
             },
             replace: true,
             transclude: true,
-            templateUrl: $sce.trustAsResourceUrl(ODSWidgetsConfig.basePath + 'templates/table.html'), // Required for some cases (such as "Open in Plunkr" from the doc)
+            templateUrl: ODSWidgetsConfig.basePath + 'templates/table.html',
             controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', '$transclude', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile, $transclude) {
                 if (angular.isUndefined($scope.tableContext)) {
                     $scope.tableContext = {};

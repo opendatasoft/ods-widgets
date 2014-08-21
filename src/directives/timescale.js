@@ -26,7 +26,7 @@
                 context: '=',
                 timeField: '@'
             },
-            template: '<div class="odswidget-timescale">' +
+            template: '<div class="odswidget odswidget-timescale">' +
                 '<ul>' +
                     '<li ng-class="{\'active\': scale == \'everything\' || !scale}"><a href="#" ng-click="selectScale(\'everything\'); $event.preventDefault();" translate>Everything</a></li>' +
                     '<li ng-class="{\'active\': scale == \'year\'}"><a href="#" ng-click="selectScale(\'year\'); $event.preventDefault();" translate>Last 12 months</a></li>' +

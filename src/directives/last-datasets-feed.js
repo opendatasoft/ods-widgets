@@ -16,14 +16,14 @@
         return {
             restrict: 'E',
             replace: true,
-            template: '<div class="odswidget-last-datasets-feed">' +
+            template: '<div class="odswidget odswidget-last-datasets-feed">' +
                 '<ul>' +
                 '   <li class="no-data" ng-hide="datasets" translate>No data available yet</li>' +
                 '   <li ng-repeat="dataset in datasets" ng-if="datasets">' +
                 '       <ods-theme-picto theme="{{dataset.metas.theme}}"></ods-theme-picto>' +
                 '       <div class="dataset-details">' +
                 '           <div class="title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
-                '           <div class="modified"><span title="{{ dataset.metas.modified|moment:\'LLL\' }}"><i class="icon-calendar"></i> <translate>Modified</translate> {{ dataset.metas.modified|timesince }}</span></div>' +
+                '           <div class="modified"><i class="icon-calendar"></i> <span title="{{ dataset.metas.modified|moment:\'LLL\' }}"><translate>Modified</translate> {{ dataset.metas.modified|timesince }}</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +

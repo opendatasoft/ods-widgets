@@ -50,6 +50,7 @@
             chartColors: null,
             mapPrependAttribution: null,
             basePath: null,
+            websiteName: null,
             themes: {}
         };
 
@@ -104,7 +105,7 @@
         return {
             'getDomainURL': function(domain) {
                 var root = null;
-                if (angular.isUndefined(domain) || domain === null) {
+                if (angular.isUndefined(domain) || domain === null || domain === '') {
                     root = ODSWidgetsConfig.defaultDomain;
                 } else {
                     if (domain.substr(0, 1) !== '/' && domain.indexOf('.') === -1) {
@@ -337,4 +338,20 @@
             }
         }
     }]);
+
+    mod.directive('inject', function(){
+        // Thank you petebacondarwin: https://github.com/angular/angular.js/issues/7874#issuecomment-47647003
+        return {
+            link: function($scope, $element, $attrs, controller, $transclude) {
+                var innerScope = $scope.$new();
+                $transclude(innerScope, function(clone) {
+                    $element.empty();
+                    $element.append(clone);
+                    $element.on('$destroy', function() {
+                    innerScope.$destroy();
+                    });
+                });
+            }
+        };
+    });
 }());

@@ -18,14 +18,14 @@
              * @description
              * This directive, when used to surround a text, displays a tooltip showing a point and/or a shape in a map.
              *
-             * # Example
+             * @example
              * <pre>
              * <ods-geotooltip coords="'48,2'">my location</ods-geotooltip>
              * <ods-geotooltip coords="[48.04,2.12434]">my other location</ods-geotooltip>
              * </pre>
              */
             // The container is shared between directives to avoid performance issues
-            var container = angular.element('<div id="odswidget-geotooltip" style="opacity: 0; transition: opacity 200ms ease-out; position: fixed; z-index: 40000; visibility: hidden;"></div>');
+            var container = angular.element('<div id="odswidget-geotooltip" class="odswidget" style="opacity: 0; transition: opacity 200ms ease-out; position: fixed; z-index: 40000; visibility: hidden;"></div>');
             var map = null;
             var layerGroup = null;
 

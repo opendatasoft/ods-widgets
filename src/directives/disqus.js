@@ -22,7 +22,7 @@
                 'shortname': '@',
                 'identifier': '@'
             },
-            template: '<div id="disqus_thread"></div>',
+            template: '<div id="disqus_thread" class="odswidget"></div>',
             link: function (scope) {
                 $window.disqus_shortname = scope.shortname || ODSWidgetsConfig.disqusShortname;
                 if (scope.identifier) {

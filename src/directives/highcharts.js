@@ -48,7 +48,11 @@
                 domain: '=',
                 apikey: '='
             },
-            template: '<div class="ods-chart"><div class="chartplaceholder"></div><debug data="chartoptions"></debug></div>',
+            template: '<div class="ods-chart">' +
+                        '<div class="no-data" ng-hide="data" translate>No data available yet</div>' +
+                        '<div class="chartplaceholder"></div>' +
+                        '<debug data="chartoptions"></debug>' +
+                    '</div>',
             link: function(scope, element, attrs) {
                 var chartplaceholder = element.find('.chartplaceholder');
                 ModuleLazyLoader('highcharts').then(function() {
@@ -96,6 +100,10 @@
                                     return value;
                             }
                         } else {
+                            if (angular.isObject(value) && ("day" in value || "month" in value || "year" in value)) {
+                                var date = new Date(value.year, value.month-1 || 0, value.day || 1, value.hour || 0, value.minute || 0);
+                                return Highcharts.dateFormat("%Y-%m-%d", date);
+                            }
                             return value;
                         }
                     }
@@ -312,6 +320,7 @@
                                 search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, query.config.options, search_options)));
                             });
 
+                            scope.data = false;
                             // wait for all datas to come back
                             $q.all(search_promises).then(function(http_calls){
                                 // compute
@@ -323,6 +332,7 @@
                                     angular.forEach(http_calls, function(http_call, index){
                                         var nb_series = scope.parameters.queries[index].charts.length;
                                         for (var i=0; i < http_call.data.length; i++) {
+                                            scope.data = true;
                                             var row = http_call.data[i];
 
                                             if(row.x.year){
@@ -339,7 +349,7 @@
 
                                 function getValue(value, chart){
                                     if(chart.subsets) {
-                                        return value[chart.subsets];
+                                        return value[chart.subsets + ".0"];
                                     } else {
                                         return value;
                                     }
@@ -350,6 +360,7 @@
                                     var nb_series = scope.parameters.queries[index].charts.length;
 
                                     for (var i=0; i < http_call.data.length; i++) {
+                                        scope.data = true;
                                         var row = http_call.data[i];
                                         for (var j=0; j < nb_series; j++) {
                                             var chart = scope.parameters.queries[index].charts[j];
@@ -498,7 +509,7 @@
          * @description
          * This widget can be used to integrate a visualization based on Highcharts.
          *
-         * # Example
+         * @example
          * <pre>
          * <ods-highcharts chart-type="column" context="monitoring" expression-y="size_res" field-x="request_time" function-y="AVG" timescale="day"></ods-highcharts>
          * </pre>
@@ -533,7 +544,7 @@
                 maxpoints: '@'
             },
             replace: true,
-            template: '<div class="odswidget-highcharts"><div ods-chart="chart" domain="context.domain" apikey="context.apikey"></div></div>',
+            template: '<div class="odswidget odswidget-highcharts"><div ods-chart="chart" domain="context.domain" apikey="context.apikey"></div></div>',
             controller: ['$scope', 'ODSWidgetsConfig', function($scope, ODSWidgetsConfig) {
                 var color = ODSWidgetsConfig.chartColors || defaultColors;
                 if ($scope.color) {
@@ -616,7 +627,7 @@
                 chartConfig: '='
             },
             replace: true,
-            template: '<div class="odswidget-multihighcharts"><div ods-chart="chart" domain="context.domain" apikey="context.apikey"></div></div>',
+            template: '<div class="odswidget odswidget-multihighcharts"><div ods-chart="chart" domain="context.domain" apikey="context.apikey"></div></div>',
             controller: ['$scope', function($scope) {
                 var unwatch = $scope.$watch('context', function(nv) {
                     if (!nv) return;
