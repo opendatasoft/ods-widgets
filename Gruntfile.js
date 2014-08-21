@@ -59,6 +59,13 @@ module.exports = function(grunt) {
                     spawn: false
                 }
             },
+            ngdoc: {
+                files: ['*.ngdoc'],
+                tasks: ['ngdocs'],
+                options: {
+                    spawn: false
+                }
+            },
             templates: {
                 files: ['src/templates/*'],
                 tasks: ['copy:templates'],
@@ -122,7 +129,7 @@ module.exports = function(grunt) {
                     'src/ods-widgets.js',
                     '*.ngdoc'
                 ],
-				title: 'Widgets',
+				title: 'Widgets'
 			}
 		},
 		// serves the documentation server

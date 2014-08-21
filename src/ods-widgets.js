@@ -2,15 +2,7 @@
     'use strict';
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate', 'translate.directives', 'translate.filters']);
-    /**
-     *  CONFIGURATION
-     *
-     *   var app = angular.module('myapp').config(function(ODSWidgetsConfigProvider) {
-     *       ODSWidgetsConfig.setConfig({
-     *           defaultDomain: '/myapi'
-     *       });
-     *   });
-     * */
+
     mod.provider('ODSWidgetsConfig', function() {
         /**
          * @ngdoc object
@@ -27,6 +19,15 @@
          * depending on the widgets themselves.
          * - **`disqusShortname`** - {@type string} - Shortname used by default for all {@link ods-widgets.directive:odsDisqus} widgets.
          * - **`themes`** - {@type Object} - Configuration of themes and their colors and/or picto
+         *
+         * @example
+         * <pre>
+         *   var app = angular.module('ods-widgets').config(function(ODSWidgetsConfigProvider) {
+         *       ODSWidgetsConfig.setConfig({
+         *           defaultDomain: '/myapi'
+         *       });
+         *   });
+         * </pre>
          */
         /**
          * @ngdoc service

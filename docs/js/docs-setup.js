@@ -243,7 +243,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "ods-widgets",
       "shortDescription": "Use ODSWidgetsConfigProvider to set configuration values used by various directives.",
-      "keywords": "api array basemap basemaps catalog chart chartcolors charts color colors configuration contexts customconfig dataset default defaultdomain defaults depending directive directives disqusshortname domain existing left list local method object objects ods-widgets odswidgetsconfigprovider override overriding parameter picto reached second set setconfig sets settings shortname start string themes untouched values widget widgets"
+      "keywords": "angular api app array basemap basemaps catalog chart chartcolors charts color colors config configuration contexts customconfig dataset default defaultdomain defaults depending directive directives disqusshortname domain existing left list local method module object objects ods-widgets odswidgetsconfig odswidgetsconfigprovider override overriding parameter picto reached second set setconfig sets settings shortname start string themes untouched values var widget widgets"
     }
   ],
   "apis": {
