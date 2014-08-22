@@ -60,7 +60,7 @@ Known to work on: (may not be exhaustive)
 - Android Browser from Android 3.0+
 
 ### Download
-You can [download the latest ODS Widgets release here](/releases/latest). This is a ZIP file of a folder that you can then
+You can [download the latest ODS Widgets release here](../..//releases/latest). This is a ZIP file of a folder that you can then
 copy into your project.
 
 ### Setup
