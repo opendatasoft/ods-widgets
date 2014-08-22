@@ -262,7 +262,7 @@ NG_DOCS={
       "type": "overview",
       "moduleName": "index",
       "shortDescription": "This section is dedicated to tutorials on how to use ODS Widgets, from basic uses (a simple visualization on your page) to",
-      "keywords": "advanced alert alert-block alert-warning applications basic bootstrapcdn building charset class cloudflare code container-fluid content create cross-domain css currently dashboards data dedicated download editor examples extend favorite files firstpage github href html initial-scale interactive io js limitations load local min ng-app occur ods ods-widgets odsmap opendatasoft overview plunkr problem proposed public rel reproduce requests sandbox simple speed src start stylesheet technical template text tutorial tutorials type utf-8 version viewport visualization widgets width work"
+      "keywords": "advanced alert alert-block alert-warning applications basic bootstrapcdn building charset class cloudflare code container-fluid content create cross-domain css currently dashboards data dedicated download editor examples extend favorite files firstpage github href html https initial-scale interactive io js limitations load local min ng-app occur ods ods-widgets odsmap opendatasoft overview plunkr problem proposed public rel reproduce requests sandbox simple speed src start stylesheet technical template text tutorial tutorials type utf-8 version viewport visualization widgets width work"
     },
     {
       "section": "tutorial",
