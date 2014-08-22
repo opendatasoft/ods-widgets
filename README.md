@@ -34,9 +34,9 @@ Let's show a map of the restaurants near our former office in Paris. The data
 can be browsed on http://public.opendatasoft.com/explore/dataset/restaurants_a_proximite_de_pepiniere_27/
 ```html
 <!-- Expose a "dataset context" from the data -->
-<ods-dataset-context context="restaurants" public-domain="public.opendatasoft.com" public-dataset="restaurants_a_proximite_de_pepiniere_27">
+<ods-dataset-context context="restaurants" restaurants-domain="public.opendatasoft.com" restaurants-dataset="restaurants_a_proximite_de_pepiniere_27">
   <!-- Display a map from the data exposed from this context -->
-  <ods-map context="restaurants">
+  <ods-map context="restaurants"></ods-map>
 </ods-dataset-context>
 ```
 

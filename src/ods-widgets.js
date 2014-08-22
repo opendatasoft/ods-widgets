@@ -166,29 +166,30 @@
     }]);
 
     mod.provider('ModuleLazyLoader', function() {
-        // TODO: Don't load if the global object is already available
+        // We always load from https://, because if we don't put a scheme in the URL, local testing (from filesystem)
+        // will look at file:// URLs and won't work.
         var lazyloading = {
             'highcharts': {
                 'css': [],
                 'js': [
-                    ["//code.highcharts.com/3.0.7/highcharts.js"],
-                    ["//code.highcharts.com/3.0.7/highcharts-more.js"]
+                    ["https://code.highcharts.com/3.0.7/highcharts.js"],
+                    ["https://code.highcharts.com/3.0.7/highcharts-more.js"]
                 ]
             },
             'leaflet': {
                 'css': [
-                    "//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css",
-                    "//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.3/leaflet.fullscreen.css",
-                    "//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.css",
+                    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css",
+                    "https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.3/leaflet.fullscreen.css",
+                    "https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.css",
                     "libs/ods-geobox/geobox.css",
                     "libs/ods-vectormarker/vectormarker.css",
                     "libs/ods-clustermarker/clustermarker.css"
                 ],
                 'js': [
-                    ["L@//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"],
+                    ["L@https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"],
                     [
-                        "L.Control.FullScreen@//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.3/Leaflet.fullscreen.min.js",
-                        "L.Control.Locate@//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.js",
+                        "L.Control.FullScreen@https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.3/Leaflet.fullscreen.min.js",
+                        "L.Control.Locate@https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.js",
                         "L.ODSMap@libs/ods-map/ods-map.js",
                         "L.ODSTileLayer@libs/ods-map/ods-tilelayer.js",
                         "L.Control.GeoBox@libs/ods-geobox/geobox.js",
