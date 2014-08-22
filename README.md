@@ -100,4 +100,4 @@ you can contact us.
 This software library is licensed under the MIT license.
 
 ### Contact
-If you have questions, you can contact us on Twitter (@opendatasoft) or simply open an GitHub issue.
+If you have questions, you can contact us on Twitter (@opendatasoft) or simply open a GitHub issue.
