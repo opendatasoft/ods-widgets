@@ -22,14 +22,12 @@ Here are a few ideas of things you could do with all this:
 more widgets) from a public dataset into a blog article (it is worth noting that,
 as more and more search engines are understanding JS applications like Google is,
 your integrated visualizations will be referenced, which can be very beneficial to your SEO)
-- allow your users to design and build complex and interactive dashboard or visualization pages
+- within your application, allow your users to design and build complex and interactive dashboard or visualization pages
 on your data, using simple HTML tags (that's what we are doing, for example)
-- build a website on top of your data without having to worry about consuming and
+- build a website on top of your data (or public data) without having to worry about consuming and
 exposing your data to end-users in a scalable and compelling way
 - fork and enrich this toolset with your own widgets, or even adapt it to your
 own needs and backend services: the project is licensed under the MIT license
-
-#### [> Visit the samples](http://opendatasoft.github.com/ods-widgets/)
 
 ### Quick example
 Let's show a map of the restaurants near our former office in Paris. The data
@@ -46,25 +44,12 @@ can be browsed on http://public.opendatasoft.com/explore/dataset/restaurants_a_p
 There is a complete tutorial to help you build your first page around a simple example.
 Since it is build on public data, you can reproduce it by yourself and even use it as a basis
 for your first project.
-#### [> Tutorial to build your first page](http://opendatasoft.github.com/ods-widgets/)
+#### [> Tutorial to build your first page](http://opendatasoft.github.com/ods-widgets/docs/#/tutorial)
 
 There is a complete reference documentation of all the available directives and all
 the parameters they support. It also contains more literature on the technical
 details of the library.
-#### [> Reference Documentation](http://opendatasoft.github.com/ods-widgets/)
-
-
-### Available API and data sources
-Currently, ODS-Widgets only works with an API from an OpenDataSoft domain, or any API
-that exposes the same interface and returns the same JSON result.
-
-This project originates from OpenDataSoft codebase, and as such obviously works
-closely with our own interfaces; however, we are looking to make this framework work
-with more APIs and services (and thankfully, AngularJS can make it easier), for example by
-implementing more AngularJS services as sources, beside our ODSAPI service.
-If you have an API that exposes structured data in a way that looks
-like our widgets could display it, and you want to try to make it work with it,
-you can contact us.
+#### [> Reference Documentation](http://opendatasoft.github.com/ods-widgets/docs/)
 
 ### Compatibility
 Known to work on: (may not be exhaustive)
@@ -74,10 +59,15 @@ Known to work on: (may not be exhaustive)
 - Firefox 4+
 - Android Browser from Android 3.0+
 
+### Download
+You can [download the latest ODS Widgets release here](/releases/latest). This is a ZIP file of a folder that you can then
+copy into your project.
+
 ### Setup
 The following libraries are required as dependencies in your pages for ODS-Widgets to work:
-- **jQuery** (1.6+ should work) *note: we're looking to remove this dependency in the future*
+- **jQuery** (1.6+ should work) *(note: we're looking to remove this dependency in the future)*
 - **AngularJS** 1.2.* and the **angular-sanitize** module
+- Some widgets are using icons from **[FontAwesome 3.2.1](http://fontawesome.io/3.2.1/icons/)** *(note: we're looking to remove this dependency in the future)*
 
 To load ODS-Widgets, you can then simply load `ods-widgets.js` and `ods-widgets.css`.
 
@@ -93,6 +83,18 @@ ODS-Widgets require an AngularJS app to run, which can for example be done with 
   </div>
 </body>
 ```
+
+### Available API and data sources
+Currently, ODS-Widgets only works with an API from an OpenDataSoft domain, or any API
+that exposes the same interface and returns the same JSON result.
+
+This project originates from OpenDataSoft codebase, and as such obviously works
+closely with our own interfaces; however, we are looking to make this framework work
+with more APIs and services (and thankfully, AngularJS can make it easier), for example by
+implementing more AngularJS services as sources, beside our ODSAPI service.
+If you have an API that exposes structured data in a way that looks
+like our widgets could display it, and you want to try to make it work with it,
+you can contact us.
 
 ### License
 This software library is licensed under the MIT license.

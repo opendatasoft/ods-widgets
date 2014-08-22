@@ -1,0 +1,5 @@
+@ngdoc overview
+@name ods-widgets
+@description
+
+This Angular module contains all the ODS Widgets, together with helper services and filters.

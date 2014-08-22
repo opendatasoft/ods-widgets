@@ -8002,7 +8002,7 @@ else {
          *  * item.datasetid: Dataset identifier of the dataset
          *  * item.metas: An object holding the key/values of metadata for this dataset
          *
-         *  * If used with a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, for each result, the following AngularJS variables are available:
+         * If used with a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, for each result, the following AngularJS variables are available:
          *
          *  * item.datasetid: Dataset identifier of the dataset this record belongs to
          *  * item.fields: an object hold all the key/values for the record
@@ -9007,6 +9007,7 @@ else {
          *     </file>
          * </example>
         */
+        // TODO:  There is experimental support for holding multiple contexts at once, but it's not really clean...
         return {
             restrict: 'E',
             replace: true,
@@ -9034,13 +9035,12 @@ else {
                             } else {
                                 contexts[$scope.context.name] = {'context': $scope.context};
                             }
-
                             angular.forEach(contexts, function(ctx) {
                                 var unwatch = $scope.$watch(function() { return ctx.context.dataset; }, function(nv) {
                                     if (nv) {
                                         var timeFields = nv.fields.filter(function(item) { return item.type === 'date' || item.type === 'datetime'; });
                                         if (timeFields.length > 1) {
-                                            console.log('Error: the dataset "'+nv.datasetid+'" has more than one date or datetime field, the Timescale requires the name of the field to use.');
+                                            console.log('Warning: the dataset "'+nv.datasetid+'" has more than one date or datetime field, the first date or datetime field will be used. You can specify the field to use using the "time-field" parameter.');
                                         }
                                         if (timeFields.length === 0) {
                                             console.log('Error: the dataset "'+nv.datasetid+'" doesn\'t have any date or datetime field, which is required for the Timescale widget.');
@@ -9055,7 +9055,25 @@ else {
                         }
                     });
 
+                } else {
+                    var initTimefield = $scope.$watch('context', function(nv) {
+                        if (nv) {
+                            if (angular.isArray($scope.context)) {
+                                angular.forEach($scope.context, function(item) { contexts[item.name] = {
+                                    'context': item,
+                                    timeField: $scope.timeField
+                                }; });
+                            } else {
+                                contexts[$scope.context.name] = {
+                                    'context': $scope.context,
+                                    timeField: $scope.timeField
+                                };
+                            }
+                            initTimefield();
+                        }
+                    });
                 }
+
                 $scope.selectScale = function(scale) {
                     $scope.scale = scale;
                     if (scale === 'everything') {

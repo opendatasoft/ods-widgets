@@ -60,7 +60,10 @@ module.exports = function(grunt) {
                 }
             },
             ngdoc: {
-                files: ['*.ngdoc'],
+                files: [
+                    'src-docs/widgets/*.ngdoc',
+                    'src-docs/tutorial/*.ngdoc'
+                ],
                 tasks: ['ngdocs'],
                 options: {
                     spawn: false
@@ -118,19 +121,25 @@ module.exports = function(grunt) {
                 styles: ['../dist/ods-widgets.css'],
 				html5Mode: false,
 				image: 'assets/logo.png',
-				title: "ODS",
+				title: "ODS Widgets",
 				bestMatch: true,
-                startPage: '/api/ods-widgets'
+                startPage: '/api',
+                navTemplate: 'src-docs/navbar.html'
 			},
 			all: {
 				src: [
                     'src/directives/**/*.js',
                     'src/filters.js',
                     'src/ods-widgets.js',
-                    '*.ngdoc'
+                    'src-docs/widgets/*.ngdoc'
                 ],
-				title: 'Widgets'
-			}
+				title: 'Reference Documentation'
+			},
+            tutorial: {
+                src: ['src-docs/tutorial/*.ngdoc'],
+                title: 'Tutorial',
+                api: false
+            }
 		},
 		// serves the documentation server
 		connect: {

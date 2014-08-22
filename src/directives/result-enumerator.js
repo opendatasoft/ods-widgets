@@ -19,7 +19,7 @@
          *  * item.datasetid: Dataset identifier of the dataset
          *  * item.metas: An object holding the key/values of metadata for this dataset
          *
-         *  * If used with a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, for each result, the following AngularJS variables are available:
+         * If used with a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, for each result, the following AngularJS variables are available:
          *
          *  * item.datasetid: Dataset identifier of the dataset this record belongs to
          *  * item.fields: an object hold all the key/values for the record
