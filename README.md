@@ -53,7 +53,7 @@ details of the library.
 
 ### Compatibility
 Known to work on: (may not be exhaustive)
-- Internet Explorer 9+
+- Internet Explorer 10+
 - Safari 6+
 - Chrome 12+
 - Firefox 4+

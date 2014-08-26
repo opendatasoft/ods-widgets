@@ -4743,6 +4743,9 @@ else {
 }
 
 })();;(function() {
+    /*
+    ODS Widgets - version 0.1.0
+     */
     'use strict';
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate', 'translate.directives', 'translate.filters']);
