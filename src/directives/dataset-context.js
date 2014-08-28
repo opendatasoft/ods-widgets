@@ -65,7 +65,7 @@
          *
          *  <pre>
          *  <ods-dataset-context context="trees,clocks"
-         *                       trees-dataset="les-arbres"
+         *                       trees-dataset="arbresalignementparis2010"
          *                       trees-domain="http://opendata.paris.fr"
          *                       clocks-dataset="horloges_exterieures_et_interieures"
          *                       clocks-domain="public">
