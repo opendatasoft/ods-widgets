@@ -42,7 +42,7 @@
          *
          *  * **`apikey`** {@type string} (optional) API Key to use in every API call for this context
          *
-         *  * **`parameters`** {@type Object} (optional) An object holding parameters to apply to the context when it is created.
+         *  * **`parameters`** {@type Object} (optional) An object holding parameters to apply to the context when it is created. Any parameter from the API can be used here (such as `q`, `refine.FIELD` ...)
          *
          *  * **`parametersFromContext`** {@type string} (optional) The name of a context to replicate the parameters from. Any change of the parameters
          *  in this context or the original context will be applied to both.
@@ -58,20 +58,31 @@
          *  @example
          *  <pre>
          *  <ods-dataset-context context="trees" trees-dataset="trees-in-paris">
+         *      <!-- Retrieved from a local API (no domain for the context)-->
          *      A dataset from {{trees.domainUrl}}.
          *  </ods-dataset-context>
          *  </pre>
          *
          *  <pre>
-         *  <ods-dataset-context context="trees,hydrants"
-         *                       trees-dataset="trees-in-paris"
-         *                       trees-domain="opendata.paris.fr"
-         *                       hydrants-dataset="hydrants"
-         *                       hydrants-domain="public">
+         *  <ods-dataset-context context="trees,clocks"
+         *                       trees-dataset="les-arbres"
+         *                       trees-domain="http://opendata.paris.fr"
+         *                       clocks-dataset="horloges_exterieures_et_interieures"
+         *                       clocks-domain="public">
          *      <!-- Shows a list of the trees -->
          *      <ods-table context="trees"></ods-table>
-         *      <!-- Shows a map of hydrants -->
-         *      <ods-map context="hydrants"></ods-map>
+         *      <!-- Shows a map of clocks -->
+         *      <ods-map context="clocks"></ods-map>
+         *  </ods-dataset-context>
+         *  </pre>
+         *
+         *  <pre>
+         *  <ods-dataset-context context="stations"
+         *                       stations-dataset="jcdecaux_bike_data"
+         *                       stations-domain="public.opendatasoft.com"
+         *                       stations-parameters="{'q': 'place', 'refine.contract_name': 'Paris'}">
+         *      <!-- All bike stations in Paris that have 'place' in their name or address -->
+         *      <ods-map context="trees"></ods-map>
          *  </ods-dataset-context>
          *  </pre>
          */

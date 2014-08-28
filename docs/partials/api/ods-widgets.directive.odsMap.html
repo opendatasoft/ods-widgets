@@ -11,7 +11,10 @@
        basemap="{string}"
        is-static="{boolean}"
        show-filters="{boolean}"
-       map-context="{Object}"&gt;
+       map-context="{Object}"
+       item-click-context="{DatasetContext}"
+       item-click-map-field="{string}"
+       item-click-context-field="{string}"&gt;
 &lt;/ods-map&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -27,6 +30,12 @@ for example you can still click on a marker to have a tooltip.</p>
 </div> <p><em>(default: false)</em></p></td></tr><tr><td>showFilters</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, displays additional tools to use the map to filter the data in the context. For example if you use a table and a map on the same context,
 this makes you able to use the map to refine the data displayed in the table.</p>
 </div> <p><em>(default: false)</em></p></td></tr><tr><td>mapContext</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>An object that you can use to share the map state (location and basemap) between two or more table widgets when they are not in the same context.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>itemClickContext</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Instead of popping a tooltip when you click on an item on the map, you can decide to add a filter to another context using this parameter.
+Clicks that would normally make a popup appear (markers, clusters that can&#39;t be expanded more, shapes) will instead filter the specified context. By default this is a spatial filter:
+if you clicked a point, then the filter is the exact location; if you clicked a shape, then the filter is the content of this shape.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>itemClickMapField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If you are using <code>itemClickContext</code> and want to filter on the value of a field instead of a spatial query, you can use this parameter to specify the name of the field to take
+the value from. This must be a field from the dataset displayed on the map. It must be used together with <code>itemClickContextField</code>.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>itemClickContextField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>This parameter specifies the field to filter on in the context configured in <code>itemClickContext</code>. It must be used together with <code>itemClickMapField</code>.</p>
 </div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><h4 id="example_source">Source</h4>

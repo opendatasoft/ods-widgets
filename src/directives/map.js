@@ -19,6 +19,12 @@
          * @param {boolean} [showFilters=false] If true, displays additional tools to use the map to filter the data in the context. For example if you use a table and a map on the same context,
          * this makes you able to use the map to refine the data displayed in the table.
          * @param {Object} [mapContext=none] An object that you can use to share the map state (location and basemap) between two or more table widgets when they are not in the same context.
+         * @param {DatasetContext} [itemClickContext=none] Instead of popping a tooltip when you click on an item on the map, you can decide to add a filter to another context using this parameter.
+         * Clicks that would normally make a popup appear (markers, clusters that can't be expanded more, shapes) will instead filter the specified context. By default this is a spatial filter:
+         * if you clicked a point, then the filter is the exact location; if you clicked a shape, then the filter is the content of this shape.
+         * @param {string} [itemClickMapField=none] If you are using `itemClickContext` and want to filter on the value of a field instead of a spatial query, you can use this parameter to specify the name of the field to take
+         * the value from. This must be a field from the dataset displayed on the map. It must be used together with `itemClickContextField`.
+         * @param {string} [itemClickContextField=none] This parameter specifies the field to filter on in the context configured in `itemClickContext`. It must be used together with `itemClickMapField`.
          *
          * @example
          *  <example module="ods-widgets">
@@ -39,7 +45,10 @@
                 location: '@',
                 basemap: '@',
                 isStatic: '@',
-                showFilters: '@'
+                showFilters: '@',
+                itemClickContext: '=',
+                itemClickMapField: '@?',
+                itemClickContextField: '@?'
             },
             replace: true,
             template: function(tElement) {
@@ -181,7 +190,10 @@
                 $scope.pendingRequests = $http.pendingRequests;
                 $scope.initialLoading = true;
 
-        //        var refreshRecords;
+                if ($scope.itemClickMapField && !$scope.itemClickContextField || !$scope.itemClickMapField && $scope.itemClickContextField) {
+                    console.log('ERROR: You need to configure both item-click-context-field and item-click-map-field.');
+                }
+
                 var shapeField = null;
                 var createMarker = null;
 
@@ -209,30 +221,67 @@
                     }
                 };
 
-                var openRecordPopup = function(latLng, shape, recordid) {
-                    var newScope = $scope.$new(false);
-                    if (recordid) {
-                        newScope.recordid = recordid;
-                    } else {
-                        newScope.shape = shape;
-                    }
-                    var popupOptions = {
-                        offset: [0, -30],
-                        maxWidth: 250,
-                        minWidth: 250,
-                        autoPanPaddingTopLeft: [50, 305],
-                        autoPan: !$scope.mapViewFilter && !$scope.staticMap
-                    };
-                    var html = $element.data('tooltip-template');
+                var propagateSpatialItemClickToContext = function(shape) {
+                    ODS.GeoFilter.addGeoFilterFromSpatialObject($scope.itemClickContext.parameters, shape);
+                };
 
-                    // FIXME: It may not work after transcluding "fixes" in Angular, see https://github.com/angular/angular.js/issues/7874
-                    if (angular.isUndefined(html) || !angular.isString(html) || html.trim() === '') {
-                        html = '';
-                        newScope.template = $scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.map_tooltip_template || ODSWidgetsConfig.basePath + "templates/geoscroller_tooltip.html";
+                var propagateItemClickToContext = function(record) {
+                    if (angular.isDefined(record.fields[$scope.itemClickMapField])) {
+                        $scope.itemClickContext.parameters.q = $scope.itemClickContextField + ':"' + record.fields[$scope.itemClickMapField] + '"';
                     }
-                    var popup = new L.Popup(popupOptions).setLatLng(latLng)
-                        .setContent($compile('<geo-scroller shape="shape" context="context" recordid="recordid" map="map" template="{{ template }}">'+html+'</geo-scroller>')(newScope)[0]);
-                    popup.openOn($scope.map);
+                };
+
+                var clickOnItem = function(latLng, shape, recordid, record) {
+                    // This method is triggered when the user clicks on a marker or anything that triggers a "selection"
+                    // of something (a shape, a cluster that can't be more precise...).
+                    if ($scope.itemClickContext) {
+                        // Trigger a change in another context
+                        if (!$scope.itemClickMapField && !$scope.itemClickContextField) {
+                            $scope.$apply(function() {
+                                propagateSpatialItemClickToContext(shape);
+                            });
+                        } else if (record) {
+                            $scope.$apply(function() {
+                                propagateItemClickToContext(record);
+                            });
+                        } else {
+                            // We need to retrieve a record for this to work
+                            var options = {};
+                            ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
+                            jQuery.extend(
+                                options,
+                                $scope.staticSearchOptions,
+                                $scope.context.parameters,
+                                {'rows': 1});
+                            ODSAPI.records.download($scope.context, options).success(function(data) {
+                                propagateItemClickToContext(data[0]);
+                            });
+                        }
+                    } else {
+                        // Good ol' popup
+                        var newScope = $scope.$new(false);
+                        if (recordid) {
+                            newScope.recordid = recordid;
+                        } else {
+                            newScope.shape = shape;
+                        }
+                        var popupOptions = {
+                            offset: [0, -30],
+                            maxWidth: 250,
+                            minWidth: 250,
+                            autoPanPaddingTopLeft: [50, 305],
+                            autoPan: !$scope.mapViewFilter && !$scope.staticMap
+                        };
+                        var html = $element.data('tooltip-template');
+
+                        if (angular.isUndefined(html) || !angular.isString(html) || html.trim() === '') {
+                            html = '';
+                            newScope.template = $scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.map_tooltip_template || ODSWidgetsConfig.basePath + "templates/geoscroller_tooltip.html";
+                        }
+                        var popup = new L.Popup(popupOptions).setLatLng(latLng)
+                            .setContent($compile('<geo-scroller shape="shape" context="context" recordid="recordid" map="map" template="{{ template }}">'+html+'</geo-scroller>')(newScope)[0]);
+                        popup.openOn($scope.map);
+                    }
                 };
 
                 var numberFormatting = function(number) {
@@ -258,7 +307,7 @@
                             if (!$scope.staticMap) {
                                 clusterMarker.on('click', function (e) {
                                     if ($scope.map.getZoom() === $scope.map.getMaxZoom()) {
-                                        openRecordPopup(marker.getLatLng(), cluster.cluster);
+                                        clickOnItem(marker.getLatLng(), cluster.cluster);
                                     } else {
                                         // Get the boundingbox for the content
                                         $scope.$apply(function () {
@@ -290,7 +339,7 @@
                         } else {
                             var singleMarker = createMarker(cluster.cluster_center);
                             singleMarker.on('click', function(e) {
-                                openRecordPopup(e.target.getLatLng(), cluster.cluster);
+                                clickOnItem(e.target.getLatLng(), cluster.cluster);
                             });
                             layerGroup.addLayer(singleMarker);
                         }
@@ -381,7 +430,7 @@
 
                     layerGroup.addLayer(shapeLayer);
                     shapeLayer.on('click', function(e) {
-                        openRecordPopup(e.latlng, null, shape.id);
+                        clickOnItem(e.latlng, shape.geometry, shape.id); //shape
                     });
                 };
 
@@ -444,7 +493,7 @@
                         var point = new L.LatLng(geoJSON.coordinates[1], geoJSON.coordinates[0]);
                         var marker = createMarker(point);
                         marker.on('click', function(e) {
-                            openRecordPopup(e.target.getLatLng(), geoJSON);
+                            clickOnItem(e.target.getLatLng(), geoJSON, null, record);
                         });
                         markers.addLayer(marker);
                         bounds.extend(point);
@@ -452,7 +501,7 @@
                         var layer = new L.GeoJSON(geoJSON);
                         layer.on('click', function(e) {
                             // For geometries, we bind the popup query to the center
-                            openRecordPopup(L.latLng(record.geometry.coordinates[1], record.geometry.coordinates[0]), record.geometry);
+                            clickOnItem(L.latLng(record.geometry.coordinates[1], record.geometry.coordinates[0]), geoJSON, record.recordid, record); //shape
                         });
                         layerGroup.addLayer(layer);
                         bounds.extend(layer.getBounds());
@@ -772,25 +821,8 @@
                 };
                 if ($scope.recordid) {
                     options.q = "recordid:'"+$scope.recordid+"'";
-                } else if (angular.isArray($scope.shape)) {
-                    // 2D coordinates (lat, lng)
-                    options["geofilter.distance"] = $scope.shape[0]+','+$scope.shape[1];
-                } else if ($scope.shape.type === 'Point') {
-                    options["geofilter.distance"] = $scope.shape.coordinates[1]+','+$scope.shape.coordinates[0];
                 } else {
-                    var polygon = $scope.shape.coordinates[0];
-                    var polygonBounds = [];
-                    for (var i=0; i<polygon.length; i++) {
-                        var bound = angular.copy(polygon[i]);
-                        if (bound.length > 2) {
-                            // Discard the z
-                            bound.splice(2, 1);
-                        }
-                        bound.reverse(); // GeoJSON has reverse coordinates from the rest of us
-                        polygonBounds.push(bound.join(','));
-                    }
-                    var param = '('+polygonBounds.join('),(')+')';
-                    options["geofilter.polygon"] = param;
+                    ODS.GeoFilter.addGeoFilterFromSpatialObject(options, $scope.shape);
                 }
                 var refresh = function() {
                     var queryOptions = {};

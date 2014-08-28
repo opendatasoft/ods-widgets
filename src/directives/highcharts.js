@@ -48,11 +48,7 @@
                 domain: '=',
                 apikey: '='
             },
-            template: '<div class="ods-chart">' +
-                        '<div class="no-data" ng-hide="data" translate>No data available yet</div>' +
-                        '<div class="chartplaceholder"></div>' +
-                        '<debug data="chartoptions"></debug>' +
-                    '</div>',
+            template: '<div class="ods-chart"><div class="chartplaceholder"></div><debug data="chartoptions"></debug></div>',
             link: function(scope, element, attrs) {
                 var chartplaceholder = element.find('.chartplaceholder');
                 ModuleLazyLoader('highcharts').then(function() {
@@ -320,7 +316,6 @@
                                 search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, query.config.options, search_options)));
                             });
 
-                            scope.data = false;
                             // wait for all datas to come back
                             $q.all(search_promises).then(function(http_calls){
                                 // compute
@@ -332,7 +327,6 @@
                                     angular.forEach(http_calls, function(http_call, index){
                                         var nb_series = scope.parameters.queries[index].charts.length;
                                         for (var i=0; i < http_call.data.length; i++) {
-                                            scope.data = true;
                                             var row = http_call.data[i];
 
                                             if(row.x.year){
@@ -360,7 +354,6 @@
                                     var nb_series = scope.parameters.queries[index].charts.length;
 
                                     for (var i=0; i < http_call.data.length; i++) {
-                                        scope.data = true;
                                         var row = http_call.data[i];
                                         for (var j=0; j < nb_series; j++) {
                                             var chart = scope.parameters.queries[index].charts[j];
@@ -504,6 +497,8 @@
          * If not specified, the colors from {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.chartColors} will be used if they are configured, else Highcharts default colors.
          * @param {string} [sort=none] How to sort the data in the chart: *x* or *-x* to sort or reverse sort on the X axis; *y* or *-y* to sort or reverse sort on the Y axis.
          * @param {number} [maxpoints=50] Maximum number of points to chart.
+         * @param {string} [labelX=none] Configure a specific label for the X axis. By default it is named after the field used for the X axis.
+         * @param {string} [labelY=none] Configure a specific label for the charted values and the Y axis. By default it is named after the expression used for the Y axis, or 'Count' if `functionY` is "COUNT".
          * @param {string|Object} [chartConfig=none] a complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted. If this parameter is present, all the other parameters are ignored, and the chart will not change if the context changes.
          *
          * @description
@@ -573,6 +568,8 @@
                             } else {
                                 sort = $scope.sort;
                             }
+                            // TODO: Retrieve the field label for default X and Y labels (using ODS.Dataset coming soon)
+                            var yLabel = $scope.labelY || ($scope.functionY.toUpperCase() === 'COUNT' ? 'Count' : $scope.expressionY);
                             $scope.chart = {
                                 timescale: $scope.timescale,
                                 xLabel: $scope.labelX,
@@ -588,7 +585,7 @@
                                         charts: [
                                             {
                                                 yAxis: $scope.expressionY,
-                                                yLabel: $scope.labelY,
+                                                yLabel: yLabel,
                                                 func: $scope.functionY,
                                                 color: color[0],
                                                 type: $scope.chartType,

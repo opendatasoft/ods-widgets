@@ -200,6 +200,10 @@
                         "L.ClusterMarker@libs/ods-clustermarker/clustermarker.js"
                     ]
                 ]
+            },
+            'rome': {
+                'css': ['libs/rome/rome.css'],
+                'js': ['libs/rome/rome.standalone.js']
             }
         };
 

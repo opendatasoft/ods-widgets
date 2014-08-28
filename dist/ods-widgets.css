@@ -325,17 +325,6 @@
   font-family: monospace;
   text-align: right;
 }
-.ods-chart {
-  position: relative;
-}
-.ods-chart .no-data {
-  position: absolute;
-  left: 0;
-  right: 0;
-  opacity: 0.5;
-  font-size: 1.2em;
-  z-index: 1;
-}
 .odswidget-highcharts,
 .odswidget-multihighcharts {
   height: 400px;
@@ -521,4 +510,17 @@
   text-align: center;
   opacity: 0.5;
   font-size: 1.2em;
+}
+.odswidget-timerange {
+  text-align: center;
+}
+.odswidget-timerange .odswidget-timerange-to {
+  margin-left: 5px;
+}
+.odswidgets-rd-container {
+  z-index: 10;
+}
+.odswidgets-rd-container table {
+  border-collapse: separate;
+  border-spacing: 2px;
 }

@@ -5,25 +5,25 @@
 
     mod.directive('odsTimescale', function() {
         /**
-        *  @ngdoc directive
-        *  @name ods-widgets.directive:odsTimescale
-        *  @restrict E
-        *  @scope
-        *  @description
-        * Displays a control to select either:
-        *
-        * * last day
-        *
-        * * last week
-        *
-        * * last month
-        *
-        * * last year
-        *
-        *  @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-        *  @param {string} timeField Name of the field (date or datetime) to filter on
-        *
-        *  @example
+         *  @ngdoc directive
+         *  @name ods-widgets.directive:odsTimescale
+         *  @restrict E
+         *  @scope
+         *  @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         *  @param {string} [timeField=first date/datetime field available] Name of the field (date or datetime) to filter on
+         *  @description
+         * Displays a control to select either:
+         *
+         * * last day
+         *
+         * * last week
+         *
+         * * last month
+         *
+         * * last year
+         *
+         *
+         *  @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">

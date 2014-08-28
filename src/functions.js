@@ -96,6 +96,30 @@
                     polygonBounds.push(bound.join(','));
                 }
                 return '('+polygonBounds.join('),(')+')';
+            },
+            addGeoFilterFromSpatialObject: function(parameters, spatial) {
+                /*  Input: Either a GeoJSON or an array of lat,lng
+                    Output: Nothing (it adds the new geofilter in place)
+                 */
+                if (angular.isArray(spatial)) {
+                    // 2D coordinates (lat, lng)
+                    parameters["geofilter.distance"] = spatial[0]+','+spatial[1];
+                } else if (spatial.type === 'Point') {
+                    parameters["geofilter.distance"] = spatial.coordinates[1]+','+spatial.coordinates[0];
+                } else {
+                    var polygon = spatial.coordinates[0];
+                    var polygonBounds = [];
+                    for (var i=0; i<polygon.length; i++) {
+                        var bound = angular.copy(polygon[i]);
+                        if (bound.length > 2) {
+                            // Discard the z
+                            bound.splice(2, 1);
+                        }
+                        bound.reverse(); // GeoJSON has reverse coordinates from the rest of us
+                        polygonBounds.push(bound.join(','));
+                    }
+                    parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
+                }
             }
         },
         StringUtils: {
