@@ -74,7 +74,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This directive, when used to surround a text, displays a tooltip showing a point and/or a shape in a map.",
-      "keywords": "angular api appears array coordinates coords delay directive display displays ensure form geojson height hover html latitude longitude map milliseconds module numbers object ods-widgets people pixels place point quotes shape showing simple string surround text tooltip treats width"
+      "keywords": "angular api appears array content context coordinates coords delay directive directly display displays ensure example field fields form geo_point_2d geo_shape geojson geometry height hover html item jcdecaux_bike_data latitude location longitude map max milliseconds module numbers object ods-widgets odsresultenumerator opendatasoft passing people pixels place point position property public quotes record records shape showing simple specific stations stations-dataset stations-domain string surround text tooltip treats type values width working"
     },
     {
       "section": "api",
@@ -296,5 +296,6 @@ NG_DOCS={
     "angular-sanitize.js",
     "ods-widgets.js",
     "docs-load-css.js"
-  ]
+  ],
+  "editExample": true
 };

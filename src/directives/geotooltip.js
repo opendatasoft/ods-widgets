@@ -8,9 +8,10 @@
              * @name ods-widgets.directive:odsGeotooltip
              * @scope
              * @restrict E
-             * @param {Array|string} coords Coordinates of a point to display in the tooltip; either an array of two numbers as [latitude, longitude], or a string under the form of "latitude,longitude".
-             * If you use a string, surround it with simple quotes to ensure Angular treats it as a string.
-             * @param {Object} geojson GeoJSON object of a shape to display in the tooltip.
+             * @param {Array|string} [coords=none] Coordinates of a point to display in the tooltip; either an array of two numbers as [latitude, longitude], or a string under the form of "latitude,longitude".
+             * If you use a string, surround it with simple quotes to ensure Angular treats it as a string. If you are working with a record (for example using {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}), you can directly use the content of a `geo_point_2d` field.
+             * @param {Object} [geojson=none] GeoJSON object of a shape to display in the tooltip. If you are working with a record (for example using {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}), you can directly use the content of a `geo_shape` field.
+             * @param {Object} [record=none] A record object (for example from {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}) from which the geometry will be taken (this is the `geometry` property of the record).
              * @param {number} [width=200] Width of the tooltip, in pixels.
              * @param {number} [height=200] Height of the tooltip, in pixels.
              * @param {number} [delay=500] Delay before the tooltip appears on hover, in milliseconds.
@@ -21,9 +22,25 @@
              * @example
              *  <example module="ods-widgets">
              *      <file name="index.html">
-             *          <ods-geotooltip coords="'48.858093,2.294694'">Nice place</ods-geotooltip>
-             *          <br />
-             *          <ods-geotooltip coords="[48.841601, 2.284822]">Nice people</ods-geotooltip>
+             *          <!-- Display specific values -->
+             *          <p>
+             *              <ods-geotooltip coords="'48.858093,2.294694'">Nice place</ods-geotooltip>
+             *          </p>
+             *          <p>
+             *              <ods-geotooltip coords="[48.841601, 2.284822]">Nice people</ods-geotooltip>
+             *          </p>
+             *
+             *          <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
+             *              <!-- Display values from records -->
+             *              <ods-result-enumerator context="stations" max="1">
+             *                  <div>
+             *                      <!-- Using the value from a field with a "geo_point_2d" type -->
+             *                      <ods-geotooltip coords="item.fields.position">Location</ods-geotooltip>
+             *                      <!-- Directly passing a record -->
+             *                      <ods-geotooltip record="item">Same location</ods-geotooltip>
+             *                  </div>
+             *              </ods-result-enumerator>
+             *          </ods-dataset-context>
              *      </file>
              *  </example>
              */
@@ -32,7 +49,7 @@
             var map = null;
             var layerGroup = null;
 
-            var displayTooltip = function(tippedElement, width, height, coords, geoJson) {
+            var displayTooltip = function(tippedElement, width, height, coords, geoJson, record) {
                 // Make the container the right size
                 var resized = false;
                 if (width !== container.css('width') || height !== container.css('height')) {
@@ -95,6 +112,12 @@
                     bounds.extend(geoJsonLayer.getBounds());
                 }
 
+                if (record && angular.isDefined(record.geometry)) {
+                    var geoJsonLayer = L.geoJson(record.geometry);
+                    layerGroup.addLayer(geoJsonLayer);
+                    bounds.extend(geoJsonLayer.getBounds());
+                }
+
                 layerGroup.addTo(map);
                 map.fitBounds(bounds, {reset: true});
                 container.css('opacity', '1');
@@ -118,7 +141,8 @@
                     'width': '@',
                     'height': '@',
                     'delay': '@',
-                    'geojson': '='
+                    'geojson': '=',
+                    'record': '='
                 },
                 link: function(scope, element, attrs) {
                     ModuleLazyLoader('leaflet').then(function() {
@@ -130,16 +154,16 @@
                         // Events
                         element.bind('mouseenter', function() {
                             if (delay === 0) {
-                                displayTooltip(element, tooltipWidth, tooltipHeight, scope.coords, scope.geojson);
+                                displayTooltip(element, tooltipWidth, tooltipHeight, scope.coords, scope.geojson, scope.record);
                             } else {
                                 tooltipPop = $timeout(function() {
-                                    displayTooltip(element, tooltipWidth, tooltipHeight, scope.coords, scope.geojson);
+                                    displayTooltip(element, tooltipWidth, tooltipHeight, scope.coords, scope.geojson, scope.record);
                                     tooltipPop = null;
                                 }, delay);
                             }
                         });
                         element.bind('click', function() {
-                            displayTooltip(element, tooltipWidth, tooltipHeight, scope.coords, scope.geojson);
+                            displayTooltip(element, tooltipWidth, tooltipHeight, scope.coords, scope.geojson, scope.record);
                             if (tooltipPop !== null) {
                                 // Chances are we triggered the original timer
                                 $timeout.cancel(tooltipPop);
