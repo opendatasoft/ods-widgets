@@ -1,8 +1,6 @@
 .leaflet-vectormarker, .leaflet-vectormarker object {
     width: 25px !important;
     height: 43px !important;
-    top: -37px !important;
-    left: -6px !important;
     font-size: 32px;
 }
 

@@ -7,14 +7,14 @@
                 <th ng-repeat="field in context.dataset.fields|fieldsForVisualization:'table'|fieldsFilter:displayedFieldsArray"
                     title="{{ field.name }}"
                     ng-click="toggleSort(field)"
-                    ng-class="{'active': field.name == tableContext.tablesort || '-'+field.name == tableContext.tablesort}">
+                    ng-class="{'active': field.name == context.parameters.sort || '-'+field.name == context.parameters.sort}">
                     <div>
                         <span ng-bind="field.label"></span>
                         <div class="sort-icons" ng-show="isFieldSortable(field)">
                             <i class="icon-caret-up"></i>
                             <i class="icon-caret-down"></i>
                         </div>
-                        <i ng-class="{'icon-caret-down': tableContext.tablesort[0] === '-', 'icon-caret-up': tableContext.tablesort[0] !== '-'}" ng-show="isFieldSortable(field)"></i>
+                        <i ng-class="{'icon-caret-down': context.parameters.sort[0] === '-', 'icon-caret-up': context.parameters.sort[0] !== '-'}" ng-show="isFieldSortable(field)"></i>
                     </div>
                 </th>
             </tr>

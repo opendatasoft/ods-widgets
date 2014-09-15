@@ -4743,10 +4743,13 @@ else {
 }
 
 })();;(function() {
-    /*
-    ODS Widgets - version 0.1.0
-     */
     'use strict';
+
+    // ODS-Widgets, a library of web components to build interactive visualizations from APIs
+    // by OpenDataSoft
+    //  License: MIT
+    var version = '0.1.1-dev';
+    //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate', 'translate.directives', 'translate.filters']);
 
@@ -4833,10 +4836,10 @@ else {
          * A context is an object usually created by a directive such as dataset-context or catalog-context.
          */
         var request = function(context, path, params, timeout) {
-            var url = context.domainUrl;
+            var url = context ? context.domainUrl : '';
             url += path;
             params = params || {};
-            if (context.apikey) {
+            if (context && context.apikey) {
                 params.apikey = context.apikey;
             }
             var options = {
@@ -4847,7 +4850,10 @@ else {
             }
             if (ODSWidgetsConfig.customAPIHeaders) {
                 options.headers = ODSWidgetsConfig.customAPIHeaders;
+            } else {
+                options.headers = {};
             }
+            options.headers['ODS-Widgets-Version'] = version;
             return $http.get(url, options);
         };
         return {
@@ -4920,6 +4926,7 @@ else {
                 'css': [],
                 'js': [
                     ["https://code.highcharts.com/3.0.7/highcharts.js"],
+                    ["https://code.highcharts.com/3.0.7/modules/no-data-to-display.js"],
                     ["https://code.highcharts.com/3.0.7/highcharts-more.js"]
                 ]
             },
@@ -5250,6 +5257,13 @@ else {
         };
     }]);
 
+
+    mod.filter('capitalize', [function() {
+        return function(input) {
+            return ODS.StringUtils.capitalize(input);
+        };
+    }]);
+
     mod.filter('truncate', function() {
         return function(text, length) {
             if (!text || !angular.isString(text)) {
@@ -5447,7 +5461,13 @@ else {
                 } else {
                     // It doesn't begin with text : is there a <p>?
                     if (body.find('p').length > 0) {
-                        text = body.find('p')[0].textContent;
+                        var node = body.find('p')[0];
+                        if (angular.isDefined(node.textContent)) {
+                            text = node.textContent;
+                        } else {
+                            // Fallback for IE8, loses the \n's
+                            text = node.innerText;
+                        }
                     } else {
                         // Well, we take what we can get
                         text = body.text();
@@ -5549,16 +5569,28 @@ else {
                 /*  Input: a GeoJSON object of type Polygon
                     Output: a Polygon
                  */
-                var coordinates = geoJsonPolygon.coordinates[0];
+                var coordinates;
                 var polygonBounds = [];
-                for (var i=0; i<coordinates.length; i++) {
-                    var bound = angular.copy(coordinates[i]);
-                    if (bound.length > 2) {
-                        // Discard the z
-                        bound.splice(2, 1);
+                if (geoJsonPolygon.type === 'LineString') {
+                    // Currently our API doesn't have a geofilter system that supports querying as a line, so we
+                    // query its bounding box instead
+                    coordinates = geoJsonPolygon.coordinates;
+                    polygonBounds.push(coordinates[0][1] + ',' + coordinates[0][0]); // Point 1
+                    polygonBounds.push(coordinates[0][1] + ',' + coordinates[1][0]);
+                    polygonBounds.push(coordinates[1][1] + ',' + coordinates[1][0]); // Point 2
+                    polygonBounds.push(coordinates[1][1] + ',' + coordinates[0][0]);
+                } else {
+                    // We are only working on the first set of coordinates
+                    coordinates = geoJsonPolygon.coordinates[0];
+                    for (var i=0; i<coordinates.length; i++) {
+                        var bound = angular.copy(coordinates[i]);
+                        if (bound.length > 2) {
+                            // Discard the z
+                            bound.splice(2, 1);
+                        }
+                        bound.reverse(); // GeoJSON has reverse coordinates from the rest of us
+                        polygonBounds.push(bound.join(','));
                     }
-                    bound.reverse(); // GeoJSON has reverse coordinates from the rest of us
-                    polygonBounds.push(bound.join(','));
                 }
                 return '('+polygonBounds.join('),(')+')';
             },
@@ -5572,17 +5604,6 @@ else {
                 } else if (spatial.type === 'Point') {
                     parameters["geofilter.distance"] = spatial.coordinates[1]+','+spatial.coordinates[0];
                 } else {
-                    var polygon = spatial.coordinates[0];
-                    var polygonBounds = [];
-                    for (var i=0; i<polygon.length; i++) {
-                        var bound = angular.copy(polygon[i]);
-                        if (bound.length > 2) {
-                            // Discard the z
-                            bound.splice(2, 1);
-                        }
-                        bound.reverse(); // GeoJSON has reverse coordinates from the rest of us
-                        polygonBounds.push(bound.join(','));
-                    }
                     parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
                 }
             }
@@ -5597,6 +5618,12 @@ else {
                     .replace(/\s+/g,'-')
                     .replace(/[^\w-]+/g,'')
                     .replace(/-+/g,'-');
+            },
+            capitalize: function(input) {
+                return input.charAt(0).toUpperCase() + input.slice(1);
+            },
+            startsWith: function(input, searchedString) {
+                return input.indexOf(searchedString) === 0;
             }
         },
         DatasetUtils: {
@@ -5808,6 +5835,75 @@ else {
             }]
         };
     });
+
+    mod.directive('odsMultidatasetsCard', ['ODSWidgetsConfig',  function(ODSWidgetsConfig) {
+        return {
+            restrict: 'E',
+            scope: {
+                title: '=',
+                datasets: '=',
+                context: '='
+            },
+            templateUrl: ODSWidgetsConfig.basePath + 'templates/multidatasets_card.html',
+            replace: true,
+            transclude: true,
+            link: function($scope, elem) {
+
+                // moves embedded item down so the card doesn't overlap when collapsed
+                $scope.renderContent = function(transcludeService) {
+                    var datasetItem = elem.find('.dataset-item').first();
+                    var cardContainer = elem.find('.card-container');
+                    var cardHeight = $(cardContainer).outerHeight();
+                    $(datasetItem).css('top', cardHeight);
+                    $(datasetItem).height(elem.outerHeight() - cardHeight);
+
+                    transcludeService(function(clone) {
+                        // Make the element take all the available space
+                        clone.css('height', '100%');
+                        //clone.height($(datasetItem).height());
+                        $(datasetItem).html(clone);
+                    });
+                    $scope.$apply();
+                };
+            },
+            controller: ['$scope', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, ODSWidgetsConfig, $transclude, $sce) {
+                $scope.datasetObjectKeys = [];
+                $scope.websiteName = ODSWidgetsConfig.websiteName;
+
+                $scope.safeHtml = function(html) {
+                    return $sce.trustAsHtml(html);
+                };
+
+                $scope.isExpandable = function() {
+                    if (!$scope.datasetObjectKeys.length || ($scope.datasetObjectKeys.length === 1)) {
+                        return false;
+                    }
+                    return true;
+                };
+
+                $scope.tryToggleExpand = function() {
+                    if ($scope.isExpandable()) {
+                        $scope.expanded = !$scope.expanded;
+                    }
+                }
+
+                var unwatch = $scope.$watch('datasets', function(nv, ov) {
+                    var keys = Object.keys(nv);
+                    if (keys.length === 0) {
+                        return;
+                    }
+                    $scope.datasetObjectKeys = keys;
+
+                    // waiting for re-render
+                    setTimeout(function() {
+                        $scope.renderContent($transclude);
+                    }, 0);
+                    $scope.expanded = false;
+                    unwatch();
+                }, true);
+            }]
+        }
+    }]);
 })();
 ;(function() {
     'use strict';
@@ -6504,6 +6600,18 @@ else {
 
                                         return s.join('');
                                     }
+                                },
+                                noData: {
+                                    style: {
+                                        fontFamily: 'Open Sans',
+                                        fontWeight: 'normal',
+                                        fontSize: '1.4em',
+                                        color: '#333',
+                                        opacity: '0.5'
+                                    }
+                                },
+                                lang: {
+                                    noData: translate("No data available yet")
                                 }
                             };
                             scope.chartoptions = options;
@@ -7129,11 +7237,31 @@ else {
          * this makes you able to use the map to refine the data displayed in the table.
          * @param {Object} [mapContext=none] An object that you can use to share the map state (location and basemap) between two or more table widgets when they are not in the same context.
          * @param {DatasetContext} [itemClickContext=none] Instead of popping a tooltip when you click on an item on the map, you can decide to add a filter to another context using this parameter.
-         * Clicks that would normally make a popup appear (markers, clusters that can't be expanded more, shapes) will instead filter the specified context. By default this is a spatial filter:
+         * Clicks that would normally make a popup appear (markers, clusters that can't be expanded more, shapes) will instead filter the specified context.
+         *
+         * By default this is a spatial filter:
          * if you clicked a point, then the filter is the exact location; if you clicked a shape, then the filter is the content of this shape.
+         *
+         * Note that you can specify more than one context by passing an array:
+         * <pre>
+         *     <ods-map context="myctx"
+         *              item-click-context="[context2, context3]">
+         *     </ods-map>
+         * </pre>
+         * In that case, the `itemClickMapField` and `itemClickContextField` (as described below) need to contain the name of the context they apply to:
+         * <pre>
+         *     <ods-map context="myctx"
+         *              item-click-context="[trees, roads]"
+         *              item-click-trees-map-field="field1"
+         *              item-click-trees-context-field="field2"
+         *              item-click-roads-map-field="field1"
+         *              item-click-roads-context-field="field3">
+         *     </ods-map>
+         * </pre>
          * @param {string} [itemClickMapField=none] If you are using `itemClickContext` and want to filter on the value of a field instead of a spatial query, you can use this parameter to specify the name of the field to take
          * the value from. This must be a field from the dataset displayed on the map. It must be used together with `itemClickContextField`.
          * @param {string} [itemClickContextField=none] This parameter specifies the field to filter on in the context configured in `itemClickContext`. It must be used together with `itemClickMapField`.
+         * The field must be a facet.
          *
          * @example
          *  <example module="ods-widgets">
@@ -7155,9 +7283,7 @@ else {
                 basemap: '@',
                 isStatic: '@',
                 showFilters: '@',
-                itemClickContext: '=',
-                itemClickMapField: '@?',
-                itemClickContextField: '@?'
+                itemClickContext: '='
             },
             replace: true,
             template: function(tElement) {
@@ -7293,7 +7419,7 @@ else {
                     };
                 });
             },
-            controller: ['$scope', '$http', '$compile', '$q', '$filter', '$element', 'translate', 'ODSAPI', 'DebugLogger', 'ODSWidgetsConfig', function($scope, $http, $compile, $q, $filter, $element, translate, ODSAPI, DebugLogger, ODSWidgetsConfig) {
+            controller: ['$scope', '$http', '$compile', '$q', '$filter', '$element', 'translate', 'ODSAPI', 'DebugLogger', 'ODSWidgetsConfig', '$attrs', function($scope, $http, $compile, $q, $filter, $element, translate, ODSAPI, DebugLogger, ODSWidgetsConfig, $attrs) {
                 DebugLogger.log('init map');
 
                 $scope.pendingRequests = $http.pendingRequests;
@@ -7330,41 +7456,63 @@ else {
                     }
                 };
 
-                var propagateSpatialItemClickToContext = function(shape) {
-                    ODS.GeoFilter.addGeoFilterFromSpatialObject($scope.itemClickContext.parameters, shape);
+                var propagateSpatialItemClickToContext = function(context, shape) {
+                    ODS.GeoFilter.addGeoFilterFromSpatialObject(context.parameters, shape);
                 };
 
-                var propagateItemClickToContext = function(record) {
-                    if (angular.isDefined(record.fields[$scope.itemClickMapField])) {
-                        $scope.itemClickContext.parameters.q = $scope.itemClickContextField + ':"' + record.fields[$scope.itemClickMapField] + '"';
+                var propagateItemClickToContext = function(context, mapField, contextField, record) {
+                    if (angular.isDefined(record.fields[mapField])) {
+                        // Until we can have named parameters, we need to avoid using the q= parameter as it will quickly
+                        // conflict with other widgets that need to interact with the query.
+                        context.parameters['refine.'+contextField] = record.fields[mapField];
+//                        context.parameters.q = contextField + ':"' + record.fields[mapField] + '"';
+                    }
+                };
+
+                var propagateToContext = function(context, mapField, contextField, shape, record) {
+                    if (!mapField && !contextField) {
+                        $scope.$apply(function() {
+                            propagateSpatialItemClickToContext(context, shape);
+                        });
+                    } else if (record) {
+                        $scope.$apply(function() {
+                            propagateItemClickToContext(context, mapField, contextField, record);
+                        });
+                    } else {
+                        // We need to retrieve a record for this to work
+                        var options = {};
+                        ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
+                        jQuery.extend(
+                            options,
+                            $scope.staticSearchOptions,
+                            $scope.context.parameters,
+                            {'rows': 1});
+                        ODSAPI.records.download($scope.context, options).success(function(data) {
+                            propagateItemClickToContext(context, mapField, contextField, data[0]);
+                        });
                     }
                 };
 
                 var clickOnItem = function(latLng, shape, recordid, record) {
                     // This method is triggered when the user clicks on a marker or anything that triggers a "selection"
                     // of something (a shape, a cluster that can't be more precise...).
+                    var mapField, contextField, context;
                     if ($scope.itemClickContext) {
                         // Trigger a change in another context
-                        if (!$scope.itemClickMapField && !$scope.itemClickContextField) {
-                            $scope.$apply(function() {
-                                propagateSpatialItemClickToContext(shape);
-                            });
-                        } else if (record) {
-                            $scope.$apply(function() {
-                                propagateItemClickToContext(record);
+                        if (angular.isArray($scope.itemClickContext)) {
+                            // Multiple contexts
+                            angular.forEach($scope.itemClickContext, function(context) {
+                                contextField = $attrs['itemClick'+ODS.StringUtils.capitalize(context.name)+'ContextField'];
+                                mapField = $attrs['itemClick'+ODS.StringUtils.capitalize(context.name)+'MapField'];
+                                propagateToContext(context, mapField, contextField, shape, record);
                             });
                         } else {
-                            // We need to retrieve a record for this to work
-                            var options = {};
-                            ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
-                            jQuery.extend(
-                                options,
-                                $scope.staticSearchOptions,
-                                $scope.context.parameters,
-                                {'rows': 1});
-                            ODSAPI.records.download($scope.context, options).success(function(data) {
-                                propagateItemClickToContext(data[0]);
-                            });
+                            // Single context
+                            context = $scope.itemClickContext;
+                            // If there is only one context, precising its name in the attributs is optional
+                            contextField = $attrs['itemClick'+ODS.StringUtils.capitalize(context.name)+'ContextField'] || $attrs.itemClickContextField;
+                            mapField = $attrs['itemClick'+ODS.StringUtils.capitalize(context.name)+'MapField'] || $attrs.itemClickMapField;
+                            propagateToContext(context, mapField, contextField, shape, record);
                         }
                     } else {
                         // Good ol' popup
@@ -7999,7 +8147,7 @@ else {
                 '       <ods-theme-picto theme="{{dataset.metas.theme}}"></ods-theme-picto>' +
                 '       <div class="dataset-details">' +
                 '           <div class="title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
-                '           <div class="count"><i class="icon-download-alt"></i> {{ dataset.extra_metas.explore.download_count }} ' + "<ng-pluralize count=\"dataset.extra_metas.explore.download_count\" translate=\"when\" when=\"{'0': 'download', '1': 'download', 'other': 'downloads'}\"></ng-pluralize>" + '</div>' +
+                '           <div class="count"><i class="icon-download-alt"></i> {{ dataset.extra_metas.explore.download_count }} ' + "<span ng-pluralize count=\"dataset.extra_metas.explore.download_count\" translate=\"when\" when=\"{'0': 'download', '1': 'download', 'other': 'downloads'}\"></span>" + '</div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
@@ -8054,7 +8202,7 @@ else {
                 '   <li ng-repeat="theme in themes" ng-if="themes">' +
                 '       <div class="dataset-details">' +
                 '           <div class="name"><a ng-href="{{ context.domainUrl }}/explore/?refine.theme={{ theme.path }}" target="_self">{{ theme.name }}</a></div>' +
-                '           <div class="count"><i class="icon-table"></i> <translate>Used by</translate> {{ theme.count }} ' + "<ng-pluralize count=\"theme.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></ng-pluralize>" + '</div>' +
+                '           <div class="count"><i class="icon-table"></i> <translate>Used by</translate> {{ theme.count }} ' + "<span ng-pluralize count=\"theme.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
@@ -8218,9 +8366,6 @@ else {
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {string} [displayedFields=all] A comma-separated list of fields to display. By default all the available fields are displayed.
          * @param {string} [sort=none] Sort expression to apply initially (*field* or *-field*)
-         * @param {Object} [tableContext=none] An object that you can use to share the sort state between two or more table widgets when they are not in the same context.
-         * Beware that if you have two tables on two different datasets, they need to have the same sortable fields, else an user may try to sort on a field that doesn't exist in the other table, and
-         * an error will occur.
          *
          * @description
          * This widget displays a table view of a dataset, with infinite scroll and an ability to sort columns (depending on the
@@ -8240,19 +8385,12 @@ else {
             scope: {
                 context: '=',
                 displayedFields: '@',
-                tableContext: '=?',
                 sort: '@'
             },
             replace: true,
             transclude: true,
             templateUrl: $sce.trustAsResourceUrl(ODSWidgetsConfig.basePath + 'templates/table.html'), // Required for some cases (such as "Open in Plunkr" from the doc)
             controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', '$transclude', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile, $transclude) {
-                if (angular.isUndefined($scope.tableContext)) {
-                    $scope.tableContext = {};
-                }
-                if ($scope.sort) {
-                    $scope.tableContext.tablesort = $scope.sort;
-                }
                 $scope.displayedFieldsArray = null;
 
                 // Infinite scroll parameters
@@ -8303,10 +8441,6 @@ else {
                     }
                     jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {start: start});
 
-                    if ($scope.tableContext.tablesort) {
-                        options.sort = $scope.tableContext.tablesort;
-                    }
-
                     ODSAPI.records.search($scope.context, options).
                         success(function(data, status, headers, config) {
                             if (!data.records.length) {
@@ -8340,17 +8474,17 @@ else {
                 $scope.toggleSort = function(field){
                     // Not all the sorts are supported yet
                     if($scope.isFieldSortable(field)){
-                        if($scope.tableContext.tablesort == field.name){
-                            $scope.tableContext.tablesort = '-' + field.name;
+                        if($scope.context.parameters.sort == field.name){
+                            $scope.context.parameters.sort = '-' + field.name;
                             return;
                         }
-                        if($scope.tableContext.tablesort == '-' + field.name){
-                            $scope.tableContext.tablesort = field.name;
+                        if($scope.context.parameters.sort == '-' + field.name){
+                            $scope.context.parameters.sort = field.name;
                             return;
                         }
-                        $scope.tableContext.tablesort = '-'+field.name;
+                        $scope.context.parameters.sort = '-'+field.name;
                     } else {
-                        delete $scope.tableContext.tablesort;
+                        delete $scope.context.parameters.sort;
                     }
                 };
 
@@ -8603,12 +8737,12 @@ else {
                         }
                     }
 
-                    if (!$scope.tableContext.tablesort && $scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.table_default_sort_field) {
+                    if (!$scope.context.parameters.sort && $scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.table_default_sort_field) {
                         var sortField = $scope.context.dataset.extra_metas.visualization.table_default_sort_field;
                         if ($scope.context.dataset.extra_metas.visualization.table_default_sort_direction === '-') {
                             sortField = '-' + sortField;
                         }
-                        $scope.tableContext.tablesort = sortField;
+                        $scope.context.parameters.sort = sortField;
                     }
 
                     $scope.staticSearchOptions = {
@@ -8623,7 +8757,7 @@ else {
                     refreshRecords(true);
                 }, true);
 
-                $scope.$watch('[context.parameters, tableContext.tablesort]', function(newValue, oldValue) {
+                $scope.$watch('context.parameters', function(newValue, oldValue) {
                     // Don't fire at initialization time
                     if (newValue === oldValue) return;
 
@@ -8720,7 +8854,7 @@ else {
 
                         var totalWidth = 0;
                         angular.forEach($element.find('.records-body thead th > div'), function (thDiv, i) {
-                            $scope.layout[i] = $(thDiv).width() + 6; // For sortable icons
+                            $scope.layout[i] = $(thDiv).width() + 8; // For sortable icons
                             totalWidth += $scope.layout[i];
                         });
                         $scope.layout[0] = 30; // First column is the record number
@@ -9107,9 +9241,9 @@ else {
         };
         var computeDefaultTime = function(value) {
             if (value === 'yesterday') {
-                return moment().subtract('days', 1).format('YYYY-MM-DD hh:mm');
+                return moment().subtract('days', 1).format('YYYY-MM-DD HH:mm');
             } else if (value === 'now') {
-                return moment().format('YYYY-MM-DD hh:mm');
+                return moment().format('YYYY-MM-DD HH:mm');
             } else {
                 return null;
             }
@@ -9363,7 +9497,7 @@ else {
                 '   <li ng-repeat="publisher in publishers" ng-if="publishers">' +
                 '       <div class="dataset-details">' +
                 '           <div class="name"><a ng-href="{{ context.domainUrl }}/explore/?refine.publisher={{ publisher.path }}" target="_self">{{ publisher.name }}</a></div>' +
-                '           <div class="count"><i class="icon-table"></i> <translate>Used by</translate> {{ publisher.count }} ' + "<ng-pluralize count=\"publisher.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></ng-pluralize>" + '</div>' +
+                '           <div class="count"><i class="icon-table"></i> <translate>Used by</translate> {{ publisher.count }} ' + "<span ng-pluralize count=\"publisher.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +

@@ -84,16 +84,28 @@
                 /*  Input: a GeoJSON object of type Polygon
                     Output: a Polygon
                  */
-                var coordinates = geoJsonPolygon.coordinates[0];
+                var coordinates;
                 var polygonBounds = [];
-                for (var i=0; i<coordinates.length; i++) {
-                    var bound = angular.copy(coordinates[i]);
-                    if (bound.length > 2) {
-                        // Discard the z
-                        bound.splice(2, 1);
+                if (geoJsonPolygon.type === 'LineString') {
+                    // Currently our API doesn't have a geofilter system that supports querying as a line, so we
+                    // query its bounding box instead
+                    coordinates = geoJsonPolygon.coordinates;
+                    polygonBounds.push(coordinates[0][1] + ',' + coordinates[0][0]); // Point 1
+                    polygonBounds.push(coordinates[0][1] + ',' + coordinates[1][0]);
+                    polygonBounds.push(coordinates[1][1] + ',' + coordinates[1][0]); // Point 2
+                    polygonBounds.push(coordinates[1][1] + ',' + coordinates[0][0]);
+                } else {
+                    // We are only working on the first set of coordinates
+                    coordinates = geoJsonPolygon.coordinates[0];
+                    for (var i=0; i<coordinates.length; i++) {
+                        var bound = angular.copy(coordinates[i]);
+                        if (bound.length > 2) {
+                            // Discard the z
+                            bound.splice(2, 1);
+                        }
+                        bound.reverse(); // GeoJSON has reverse coordinates from the rest of us
+                        polygonBounds.push(bound.join(','));
                     }
-                    bound.reverse(); // GeoJSON has reverse coordinates from the rest of us
-                    polygonBounds.push(bound.join(','));
                 }
                 return '('+polygonBounds.join('),(')+')';
             },
@@ -107,17 +119,6 @@
                 } else if (spatial.type === 'Point') {
                     parameters["geofilter.distance"] = spatial.coordinates[1]+','+spatial.coordinates[0];
                 } else {
-                    var polygon = spatial.coordinates[0];
-                    var polygonBounds = [];
-                    for (var i=0; i<polygon.length; i++) {
-                        var bound = angular.copy(polygon[i]);
-                        if (bound.length > 2) {
-                            // Discard the z
-                            bound.splice(2, 1);
-                        }
-                        bound.reverse(); // GeoJSON has reverse coordinates from the rest of us
-                        polygonBounds.push(bound.join(','));
-                    }
                     parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
                 }
             }
@@ -132,6 +133,12 @@
                     .replace(/\s+/g,'-')
                     .replace(/[^\w-]+/g,'')
                     .replace(/-+/g,'-');
+            },
+            capitalize: function(input) {
+                return input.charAt(0).toUpperCase() + input.slice(1);
+            },
+            startsWith: function(input, searchedString) {
+                return input.indexOf(searchedString) === 0;
             }
         },
         DatasetUtils: {

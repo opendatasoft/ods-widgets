@@ -11,8 +11,7 @@ types of the column).</p>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-table
        context="{DatasetContext}"
        displayed-fields="{string}"
-       sort="{string}"
-       table-context="{Object}"&gt;
+       sort="{string}"&gt;
 &lt;/ods-table&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -21,22 +20,19 @@ types of the column).</p>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstable-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
 </div></td></tr><tr><td>displayedFields</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstable-page"><p>A comma-separated list of fields to display. By default all the available fields are displayed.</p>
 </div> <p><em>(default: all)</em></p></td></tr><tr><td>sort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstable-page"><p>Sort expression to apply initially (<em>field</em> or <em>-field</em>)</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>tableContext</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstable-page"><p>An object that you can use to share the sort state between two or more table widgets when they are not in the same context.
-Beware that if you have two tables on two different datasets, they need to have the same sortable fields, else an user may try to sort on a field that doesn&#39;t exist in the other table, and
-an error will occur.</p>
 </div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odstable-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-214" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-10" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-214" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-214">
+<pre class="prettyprint linenums" ng-set-text="index.html-10" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-10">
     <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
         <ods-table context="stations"></ods-table>
     </ods-dataset-context>
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-214" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-10" ng-eval-javascript=""></div>
 </div></div>
 </div>

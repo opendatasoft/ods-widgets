@@ -34,6 +34,8 @@ L.VectorMarker = L.Marker.extend({
             }
         return L.divIcon({
             className: 'leaflet-vectormarker',
+            iconSize: L.point([25, 43]),
+            iconAnchor: L.point([12.5, 43.5]),
             html: html
         });
     }

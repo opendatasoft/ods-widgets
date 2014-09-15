@@ -1,8 +1,11 @@
 (function() {
-    /*
-    ODS Widgets - version 0.1.0
-     */
     'use strict';
+
+    // ODS-Widgets, a library of web components to build interactive visualizations from APIs
+    // by OpenDataSoft
+    //  License: MIT
+    var version = '0.1.1-dev';
+    //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate', 'translate.directives', 'translate.filters']);
 
@@ -89,10 +92,10 @@
          * A context is an object usually created by a directive such as dataset-context or catalog-context.
          */
         var request = function(context, path, params, timeout) {
-            var url = context.domainUrl;
+            var url = context ? context.domainUrl : '';
             url += path;
             params = params || {};
-            if (context.apikey) {
+            if (context && context.apikey) {
                 params.apikey = context.apikey;
             }
             var options = {
@@ -103,7 +106,10 @@
             }
             if (ODSWidgetsConfig.customAPIHeaders) {
                 options.headers = ODSWidgetsConfig.customAPIHeaders;
+            } else {
+                options.headers = {};
             }
+            options.headers['ODS-Widgets-Version'] = version;
             return $http.get(url, options);
         };
         return {
@@ -176,6 +182,7 @@
                 'css': [],
                 'js': [
                     ["https://code.highcharts.com/3.0.7/highcharts.js"],
+                    ["https://code.highcharts.com/3.0.7/modules/no-data-to-display.js"],
                     ["https://code.highcharts.com/3.0.7/highcharts-more.js"]
                 ]
             },

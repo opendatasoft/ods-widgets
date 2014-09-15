@@ -20,11 +20,31 @@
          * this makes you able to use the map to refine the data displayed in the table.
          * @param {Object} [mapContext=none] An object that you can use to share the map state (location and basemap) between two or more table widgets when they are not in the same context.
          * @param {DatasetContext} [itemClickContext=none] Instead of popping a tooltip when you click on an item on the map, you can decide to add a filter to another context using this parameter.
-         * Clicks that would normally make a popup appear (markers, clusters that can't be expanded more, shapes) will instead filter the specified context. By default this is a spatial filter:
+         * Clicks that would normally make a popup appear (markers, clusters that can't be expanded more, shapes) will instead filter the specified context.
+         *
+         * By default this is a spatial filter:
          * if you clicked a point, then the filter is the exact location; if you clicked a shape, then the filter is the content of this shape.
+         *
+         * Note that you can specify more than one context by passing an array:
+         * <pre>
+         *     <ods-map context="myctx"
+         *              item-click-context="[context2, context3]">
+         *     </ods-map>
+         * </pre>
+         * In that case, the `itemClickMapField` and `itemClickContextField` (as described below) need to contain the name of the context they apply to:
+         * <pre>
+         *     <ods-map context="myctx"
+         *              item-click-context="[trees, roads]"
+         *              item-click-trees-map-field="field1"
+         *              item-click-trees-context-field="field2"
+         *              item-click-roads-map-field="field1"
+         *              item-click-roads-context-field="field3">
+         *     </ods-map>
+         * </pre>
          * @param {string} [itemClickMapField=none] If you are using `itemClickContext` and want to filter on the value of a field instead of a spatial query, you can use this parameter to specify the name of the field to take
          * the value from. This must be a field from the dataset displayed on the map. It must be used together with `itemClickContextField`.
          * @param {string} [itemClickContextField=none] This parameter specifies the field to filter on in the context configured in `itemClickContext`. It must be used together with `itemClickMapField`.
+         * The field must be a facet.
          *
          * @example
          *  <example module="ods-widgets">
@@ -46,9 +66,7 @@
                 basemap: '@',
                 isStatic: '@',
                 showFilters: '@',
-                itemClickContext: '=',
-                itemClickMapField: '@?',
-                itemClickContextField: '@?'
+                itemClickContext: '='
             },
             replace: true,
             template: function(tElement) {
@@ -184,7 +202,7 @@
                     };
                 });
             },
-            controller: ['$scope', '$http', '$compile', '$q', '$filter', '$element', 'translate', 'ODSAPI', 'DebugLogger', 'ODSWidgetsConfig', function($scope, $http, $compile, $q, $filter, $element, translate, ODSAPI, DebugLogger, ODSWidgetsConfig) {
+            controller: ['$scope', '$http', '$compile', '$q', '$filter', '$element', 'translate', 'ODSAPI', 'DebugLogger', 'ODSWidgetsConfig', '$attrs', function($scope, $http, $compile, $q, $filter, $element, translate, ODSAPI, DebugLogger, ODSWidgetsConfig, $attrs) {
                 DebugLogger.log('init map');
 
                 $scope.pendingRequests = $http.pendingRequests;
@@ -221,41 +239,63 @@
                     }
                 };
 
-                var propagateSpatialItemClickToContext = function(shape) {
-                    ODS.GeoFilter.addGeoFilterFromSpatialObject($scope.itemClickContext.parameters, shape);
+                var propagateSpatialItemClickToContext = function(context, shape) {
+                    ODS.GeoFilter.addGeoFilterFromSpatialObject(context.parameters, shape);
                 };
 
-                var propagateItemClickToContext = function(record) {
-                    if (angular.isDefined(record.fields[$scope.itemClickMapField])) {
-                        $scope.itemClickContext.parameters.q = $scope.itemClickContextField + ':"' + record.fields[$scope.itemClickMapField] + '"';
+                var propagateItemClickToContext = function(context, mapField, contextField, record) {
+                    if (angular.isDefined(record.fields[mapField])) {
+                        // Until we can have named parameters, we need to avoid using the q= parameter as it will quickly
+                        // conflict with other widgets that need to interact with the query.
+                        context.parameters['refine.'+contextField] = record.fields[mapField];
+//                        context.parameters.q = contextField + ':"' + record.fields[mapField] + '"';
+                    }
+                };
+
+                var propagateToContext = function(context, mapField, contextField, shape, record) {
+                    if (!mapField && !contextField) {
+                        $scope.$apply(function() {
+                            propagateSpatialItemClickToContext(context, shape);
+                        });
+                    } else if (record) {
+                        $scope.$apply(function() {
+                            propagateItemClickToContext(context, mapField, contextField, record);
+                        });
+                    } else {
+                        // We need to retrieve a record for this to work
+                        var options = {};
+                        ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
+                        jQuery.extend(
+                            options,
+                            $scope.staticSearchOptions,
+                            $scope.context.parameters,
+                            {'rows': 1});
+                        ODSAPI.records.download($scope.context, options).success(function(data) {
+                            propagateItemClickToContext(context, mapField, contextField, data[0]);
+                        });
                     }
                 };
 
                 var clickOnItem = function(latLng, shape, recordid, record) {
                     // This method is triggered when the user clicks on a marker or anything that triggers a "selection"
                     // of something (a shape, a cluster that can't be more precise...).
+                    var mapField, contextField, context;
                     if ($scope.itemClickContext) {
                         // Trigger a change in another context
-                        if (!$scope.itemClickMapField && !$scope.itemClickContextField) {
-                            $scope.$apply(function() {
-                                propagateSpatialItemClickToContext(shape);
-                            });
-                        } else if (record) {
-                            $scope.$apply(function() {
-                                propagateItemClickToContext(record);
+                        if (angular.isArray($scope.itemClickContext)) {
+                            // Multiple contexts
+                            angular.forEach($scope.itemClickContext, function(context) {
+                                contextField = $attrs['itemClick'+ODS.StringUtils.capitalize(context.name)+'ContextField'];
+                                mapField = $attrs['itemClick'+ODS.StringUtils.capitalize(context.name)+'MapField'];
+                                propagateToContext(context, mapField, contextField, shape, record);
                             });
                         } else {
-                            // We need to retrieve a record for this to work
-                            var options = {};
-                            ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
-                            jQuery.extend(
-                                options,
-                                $scope.staticSearchOptions,
-                                $scope.context.parameters,
-                                {'rows': 1});
-                            ODSAPI.records.download($scope.context, options).success(function(data) {
-                                propagateItemClickToContext(data[0]);
-                            });
+                            // Single context
+                            context = $scope.itemClickContext;
+                            // If there is only one context, precising its name in the attributs is optional
+                            contextField = $attrs['itemClick'+ODS.StringUtils.capitalize(context.name)+'ContextField'] || $attrs.itemClickContextField;
+                            mapField = $attrs['itemClick'+ODS.StringUtils.capitalize(context.name)+'MapField'] || $attrs.itemClickMapField;
+                            propagateToContext(context, mapField, contextField, shape, record);
                         }
                     } else {
                         // Good ol' popup

@@ -109,7 +109,7 @@ NG_DOCS={
       "shortName": "odsMap",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "keywords": "active add additional api appear apply attempt basemap basemaps bottom cases click clicked clicks clusters configured content context data dataset decide default directive displayed displays estate exact example expanded field filter focus format html identifier initial interaction item itemclickcontext itemclickcontextfield itemclickmapfield jcdecaux_bike_data latitude location longitude main map marker module object ods-widgets odswidgetsconfig odswidgetsconfigprovider opendatasoft panned parameter point popping popup public query real refine resize shape shapes share space spatial specific specifies static stations stations-dataset stations-domain table tools tooltip true view viewport widgets window zoom zoomed"
+      "keywords": "active add additional api appear apply array attempt basemap basemaps bottom case cases click clicked clicks clusters configured content context context3 data dataset decide default described directive displayed displays estate exact example expanded facet field field1 field2 field3 filter focus format html identifier initial interaction item item-click-context item-click-roads-context-field item-click-roads-map-field item-click-trees-context-field item-click-trees-map-field itemclickcontext itemclickcontextfield itemclickmapfield jcdecaux_bike_data latitude location longitude main map marker module myctx note object ods-widgets odswidgetsconfig odswidgetsconfigprovider opendatasoft panned parameter passing point popping popup public query real refine resize roads shape shapes share space spatial specific specifies static stations stations-dataset stations-domain table tools tooltip true view viewport widgets window zoom zoomed"
     },
     {
       "section": "api",
@@ -163,7 +163,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a table view of a dataset, with infinite scroll and an ability to sort columns (depending on the",
-      "keywords": "ability api apply beware column columns comma-separated context dataset datasets default directive display displayed displays doesn error exist expression field fields html infinite initially jcdecaux_bike_data list module object occur ods-widgets opendatasoft public scroll share sort sortable stations stations-dataset stations-domain table tables types user view widget widgets"
+      "keywords": "ability api apply column columns comma-separated context dataset default directive display displayed displays expression fields html infinite initially jcdecaux_bike_data list module ods-widgets opendatasoft public scroll sort stations stations-dataset stations-domain table types view widget"
     },
     {
       "section": "api",

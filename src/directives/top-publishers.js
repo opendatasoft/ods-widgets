@@ -31,7 +31,7 @@
                 '   <li ng-repeat="publisher in publishers" ng-if="publishers">' +
                 '       <div class="dataset-details">' +
                 '           <div class="name"><a ng-href="{{ context.domainUrl }}/explore/?refine.publisher={{ publisher.path }}" target="_self">{{ publisher.name }}</a></div>' +
-                '           <div class="count"><i class="icon-table"></i> <translate>Used by</translate> {{ publisher.count }} ' + "<ng-pluralize count=\"publisher.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></ng-pluralize>" + '</div>' +
+                '           <div class="count"><i class="icon-table"></i> <translate>Used by</translate> {{ publisher.count }} ' + "<span ng-pluralize count=\"publisher.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +

@@ -140,6 +140,13 @@
         };
     }]);
 
+
+    mod.filter('capitalize', [function() {
+        return function(input) {
+            return ODS.StringUtils.capitalize(input);
+        };
+    }]);
+
     mod.filter('truncate', function() {
         return function(text, length) {
             if (!text || !angular.isString(text)) {
@@ -337,7 +344,13 @@
                 } else {
                     // It doesn't begin with text : is there a <p>?
                     if (body.find('p').length > 0) {
-                        text = body.find('p')[0].textContent;
+                        var node = body.find('p')[0];
+                        if (angular.isDefined(node.textContent)) {
+                            text = node.textContent;
+                        } else {
+                            // Fallback for IE8, loses the \n's
+                            text = node.innerText;
+                        }
                     } else {
                         // Well, we take what we can get
                         text = body.text();

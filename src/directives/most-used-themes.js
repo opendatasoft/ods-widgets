@@ -31,7 +31,7 @@
                 '   <li ng-repeat="theme in themes" ng-if="themes">' +
                 '       <div class="dataset-details">' +
                 '           <div class="name"><a ng-href="{{ context.domainUrl }}/explore/?refine.theme={{ theme.path }}" target="_self">{{ theme.name }}</a></div>' +
-                '           <div class="count"><i class="icon-table"></i> <translate>Used by</translate> {{ theme.count }} ' + "<ng-pluralize count=\"theme.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></ng-pluralize>" + '</div>' +
+                '           <div class="count"><i class="icon-table"></i> <translate>Used by</translate> {{ theme.count }} ' + "<span ng-pluralize count=\"theme.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +

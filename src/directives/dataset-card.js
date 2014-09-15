@@ -102,4 +102,73 @@
             }]
         };
     });
+
+    mod.directive('odsMultidatasetsCard', ['ODSWidgetsConfig',  function(ODSWidgetsConfig) {
+        return {
+            restrict: 'E',
+            scope: {
+                title: '=',
+                datasets: '=',
+                context: '='
+            },
+            templateUrl: ODSWidgetsConfig.basePath + 'templates/multidatasets_card.html',
+            replace: true,
+            transclude: true,
+            link: function($scope, elem) {
+
+                // moves embedded item down so the card doesn't overlap when collapsed
+                $scope.renderContent = function(transcludeService) {
+                    var datasetItem = elem.find('.dataset-item').first();
+                    var cardContainer = elem.find('.card-container');
+                    var cardHeight = $(cardContainer).outerHeight();
+                    $(datasetItem).css('top', cardHeight);
+                    $(datasetItem).height(elem.outerHeight() - cardHeight);
+
+                    transcludeService(function(clone) {
+                        // Make the element take all the available space
+                        clone.css('height', '100%');
+                        //clone.height($(datasetItem).height());
+                        $(datasetItem).html(clone);
+                    });
+                    $scope.$apply();
+                };
+            },
+            controller: ['$scope', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, ODSWidgetsConfig, $transclude, $sce) {
+                $scope.datasetObjectKeys = [];
+                $scope.websiteName = ODSWidgetsConfig.websiteName;
+
+                $scope.safeHtml = function(html) {
+                    return $sce.trustAsHtml(html);
+                };
+
+                $scope.isExpandable = function() {
+                    if (!$scope.datasetObjectKeys.length || ($scope.datasetObjectKeys.length === 1)) {
+                        return false;
+                    }
+                    return true;
+                };
+
+                $scope.tryToggleExpand = function() {
+                    if ($scope.isExpandable()) {
+                        $scope.expanded = !$scope.expanded;
+                    }
+                }
+
+                var unwatch = $scope.$watch('datasets', function(nv, ov) {
+                    var keys = Object.keys(nv);
+                    if (keys.length === 0) {
+                        return;
+                    }
+                    $scope.datasetObjectKeys = keys;
+
+                    // waiting for re-render
+                    setTimeout(function() {
+                        $scope.renderContent($transclude);
+                    }, 0);
+                    $scope.expanded = false;
+                    unwatch();
+                }, true);
+            }]
+        }
+    }]);
 })();

@@ -12,9 +12,6 @@
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {string} [displayedFields=all] A comma-separated list of fields to display. By default all the available fields are displayed.
          * @param {string} [sort=none] Sort expression to apply initially (*field* or *-field*)
-         * @param {Object} [tableContext=none] An object that you can use to share the sort state between two or more table widgets when they are not in the same context.
-         * Beware that if you have two tables on two different datasets, they need to have the same sortable fields, else an user may try to sort on a field that doesn't exist in the other table, and
-         * an error will occur.
          *
          * @description
          * This widget displays a table view of a dataset, with infinite scroll and an ability to sort columns (depending on the
@@ -34,19 +31,12 @@
             scope: {
                 context: '=',
                 displayedFields: '@',
-                tableContext: '=?',
                 sort: '@'
             },
             replace: true,
             transclude: true,
             templateUrl: $sce.trustAsResourceUrl(ODSWidgetsConfig.basePath + 'templates/table.html'), // Required for some cases (such as "Open in Plunkr" from the doc)
             controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', '$transclude', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile, $transclude) {
-                if (angular.isUndefined($scope.tableContext)) {
-                    $scope.tableContext = {};
-                }
-                if ($scope.sort) {
-                    $scope.tableContext.tablesort = $scope.sort;
-                }
                 $scope.displayedFieldsArray = null;
 
                 // Infinite scroll parameters
@@ -97,10 +87,6 @@
                     }
                     jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {start: start});
 
-                    if ($scope.tableContext.tablesort) {
-                        options.sort = $scope.tableContext.tablesort;
-                    }
-
                     ODSAPI.records.search($scope.context, options).
                         success(function(data, status, headers, config) {
                             if (!data.records.length) {
@@ -134,17 +120,17 @@
                 $scope.toggleSort = function(field){
                     // Not all the sorts are supported yet
                     if($scope.isFieldSortable(field)){
-                        if($scope.tableContext.tablesort == field.name){
-                            $scope.tableContext.tablesort = '-' + field.name;
+                        if($scope.context.parameters.sort == field.name){
+                            $scope.context.parameters.sort = '-' + field.name;
                             return;
                         }
-                        if($scope.tableContext.tablesort == '-' + field.name){
-                            $scope.tableContext.tablesort = field.name;
+                        if($scope.context.parameters.sort == '-' + field.name){
+                            $scope.context.parameters.sort = field.name;
                             return;
                         }
-                        $scope.tableContext.tablesort = '-'+field.name;
+                        $scope.context.parameters.sort = '-'+field.name;
                     } else {
-                        delete $scope.tableContext.tablesort;
+                        delete $scope.context.parameters.sort;
                     }
                 };
 
@@ -397,12 +383,12 @@
                         }
                     }
 
-                    if (!$scope.tableContext.tablesort && $scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.table_default_sort_field) {
+                    if (!$scope.context.parameters.sort && $scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.table_default_sort_field) {
                         var sortField = $scope.context.dataset.extra_metas.visualization.table_default_sort_field;
                         if ($scope.context.dataset.extra_metas.visualization.table_default_sort_direction === '-') {
                             sortField = '-' + sortField;
                         }
-                        $scope.tableContext.tablesort = sortField;
+                        $scope.context.parameters.sort = sortField;
                     }
 
                     $scope.staticSearchOptions = {
@@ -417,7 +403,7 @@
                     refreshRecords(true);
                 }, true);
 
-                $scope.$watch('[context.parameters, tableContext.tablesort]', function(newValue, oldValue) {
+                $scope.$watch('context.parameters', function(newValue, oldValue) {
                     // Don't fire at initialization time
                     if (newValue === oldValue) return;
 
@@ -514,7 +500,7 @@
 
                         var totalWidth = 0;
                         angular.forEach($element.find('.records-body thead th > div'), function (thDiv, i) {
-                            $scope.layout[i] = $(thDiv).width() + 6; // For sortable icons
+                            $scope.layout[i] = $(thDiv).width() + 8; // For sortable icons
                             totalWidth += $scope.layout[i];
                         });
                         $scope.layout[0] = 30; // First column is the record number

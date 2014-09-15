@@ -33,9 +33,9 @@
         };
         var computeDefaultTime = function(value) {
             if (value === 'yesterday') {
-                return moment().subtract('days', 1).format('YYYY-MM-DD hh:mm');
+                return moment().subtract('days', 1).format('YYYY-MM-DD HH:mm');
             } else if (value === 'now') {
-                return moment().format('YYYY-MM-DD hh:mm');
+                return moment().format('YYYY-MM-DD HH:mm');
             } else {
                 return null;
             }

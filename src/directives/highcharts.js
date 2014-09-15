@@ -161,6 +161,18 @@
 
                                         return s.join('');
                                     }
+                                },
+                                noData: {
+                                    style: {
+                                        fontFamily: 'Open Sans',
+                                        fontWeight: 'normal',
+                                        fontSize: '1.4em',
+                                        color: '#333',
+                                        opacity: '0.5'
+                                    }
+                                },
+                                lang: {
+                                    noData: translate("No data available yet")
                                 }
                             };
                             scope.chartoptions = options;
