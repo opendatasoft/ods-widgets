@@ -4853,7 +4853,7 @@ else {
             } else {
                 options.headers = {};
             }
-            options.headers['ODS-Widgets-Version'] = version;
+            //options.headers['ODS-Widgets-Version'] = version; -- commented until our production APIs support it
             return $http.get(url, options);
         };
         return {
