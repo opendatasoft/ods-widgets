@@ -109,7 +109,7 @@
             } else {
                 options.headers = {};
             }
-            //options.headers['ODS-Widgets-Version'] = version; -- commented until our production APIs support it
+            options.headers['ODS-Widgets-Version'] = version;
             return $http.get(url, options);
         };
         return {

@@ -360,8 +360,14 @@
                                                 var options = {};
                                                 // The geofilter.polygon has to be added last because if we are in mapViewFilter mode,
                                                 // the searchOptions already contains a geofilter
+
+                                                // FIXME: This is a workaround until we know we can safely do polygon requests for the clusters.
+                                                // See https://github.com/opendatasoft/platform/issues/2116
+//                                                var polygonParameter = ODS.GeoFilter.getGeoJSONPolygonAsPolygonParameter(cluster.cluster); // This is the normal good one
+                                                var polygonParameter = ODS.GeoFilter.getBoundsAsPolygonParameter(L.geoJson(cluster.cluster).getBounds()); // This is the workaround
+
                                                 jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {
-                                                    'geofilter.polygon': ODS.GeoFilter.getGeoJSONPolygonAsPolygonParameter(cluster.cluster)
+                                                    'geofilter.polygon': polygonParameter
                                                 });
                                                 ODSAPI.records.boundingbox($scope.context, options).success(function (data) {
                                                     $scope.map.fitBounds([
