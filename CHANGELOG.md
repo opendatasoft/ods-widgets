@@ -17,6 +17,8 @@ a simple counter of the number of hits.
 explicit message instead of an empty space.
 - The HTTP requests sent to APIs now include an `ODS-Widgets-Version` header to indicate
 the version of the ODS-Widgets library.
+- To improve support for Internet Explorer 8, you can now load a `ieshiv.js` file (or its minified version also included)
+before AngularJS is loaded in your page.
 
 ### Removed
 - `odsTable` no longer has a `tableContext` parameter; instead, the active sort is

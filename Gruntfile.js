@@ -20,7 +20,8 @@ module.exports = function(grunt) {
                     report: 'gzip'
                 },
                 files: {
-                    'dist/ods-widgets.min.js': JS_FILES
+                    'dist/ods-widgets.min.js': JS_FILES,
+                    'dist/ieshiv.min.js': 'src/ieshiv.js'
                 }
             }
         },
@@ -75,6 +76,12 @@ module.exports = function(grunt) {
                 options: {
                     spawn: false
                 }
+            },
+            ieshiv: {
+                files: {
+                    'dist/ieshiv.min.js': 'src/ieshiv.js'
+                },
+                tasks: ['copy:ieshiv']
             }
         },
         concat: {
@@ -105,6 +112,11 @@ module.exports = function(grunt) {
                 expand: true,
                 src: ['libs/**'],
                 dest: 'dist/'
+            },
+            ieshiv: {
+                files: {
+                    'dist/ieshiv.js': 'src/ieshiv.js'
+                }
             }
 		},
 		ngdocs: {
@@ -177,6 +189,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['dist']);
-    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'copy:templates', 'copy:libs', 'ngdocs']);
+    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'copy:templates', 'copy:libs', 'copy:ieshiv', 'ngdocs']);
     grunt.registerTask('server', ['default', 'connect', 'watch']);
 };
