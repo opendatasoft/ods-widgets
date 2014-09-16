@@ -69,10 +69,12 @@ The following libraries are required as dependencies in your pages for ODS-Widge
 - **AngularJS** 1.2.* and the **angular-sanitize** module
 - Some widgets are using icons from **[FontAwesome 3.2.1](http://fontawesome.io/3.2.1/icons/)** *(note: we're looking to remove this dependency in the future)*
 
-To load ODS-Widgets, you can then simply load `ods-widgets.js` and `ods-widgets.css`.
+To load ODS-Widgets, you can then simply load `ods-widgets.js` and `ods-widgets.css`, or their minified version also included
+in the distribution.
 
-Some specific widgets can rely on specific "heavy" libraries (such as Highcharts, Leaflet...);
-in that case, they are lazily-loaded from a CDN when the widget initializes itself.
+Note: When including the scripts in your page, you need to include jQuery, then AngularJS, then angular-sanitize, then ODS-Widgets.
+
+If you want to improve compatibility with Internet Explorer 8, you can also load `ieshiv.js` (or the minified version). It must be loaded before AngularJS is loaded.
 
 ODS-Widgets require an AngularJS app to run, which can for example be done with a simple `ng-app="ods-widgets"`:
 ```html
@@ -83,6 +85,9 @@ ODS-Widgets require an AngularJS app to run, which can for example be done with 
   </div>
 </body>
 ```
+
+Some specific widgets can rely on specific "heavy" libraries (such as Highcharts, Leaflet...);
+in that case, they are lazily-loaded from a CDN when the widget initializes itself.
 
 ### Available API and data sources
 Currently, ODS-Widgets only works with an API from an OpenDataSoft domain, or any API
