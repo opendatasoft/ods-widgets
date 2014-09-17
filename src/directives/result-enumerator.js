@@ -53,30 +53,15 @@
                 showHitsCounter: '@?'
             },
             template: '<div class="odswidget odswidget-result-enumerator">' +
-                '<div ng-if="!count" class="no-results" translate>No results</div>' +
-                '<div ng-if="count && hitsCounter" class="results-count">{{count}} <translate>results</translate></div>' +
-                '<div ng-repeat="item in items" inject class="item"></div>' +
+                '<div ods-results="items" ods-results-context="context" ods-results-max="{{max}}">' +
+                '<div ng-if="!items.length" class="no-results" translate>No results</div>' +
+                '<div ng-if="items.length && hitsCounter" class="results-count">{{items.length}} <translate>results</translate></div>' +
+                '<div ng-repeat="item in items" inject class="item""></div>' +
+                '</div>' +
                 '</div>',
             controller: ['$scope', function($scope) {
-                var max = $scope.max || 10;
+                $scope.max = $scope.max || 10;
                 $scope.hitsCounter = (angular.isString($scope.showHitsCounter) && $scope.showHitsCounter.toLowerCase() === 'true');
-
-                $scope.$watch('context', function(nv) {
-                    var options = angular.extend({}, nv.parameters, {'rows': max});
-                    if (nv.type === 'catalog') {
-                        ODSAPI.datasets.search(nv, options).success(function(data) {
-                            $scope.count = data.nhits;
-                            $scope.items = data.datasets;
-                        });
-                    } else if (nv.type === 'dataset' && nv.dataset) {
-                        ODSAPI.records.search(nv, options).success(function(data) {
-                            $scope.count = data.nhits;
-                            $scope.items = data.records;
-                        });
-                    } else {
-                        return;
-                    }
-                }, true);
             }]
         };
     }]);

@@ -7,6 +7,8 @@ This log tries to follow the good principles of [Keep a CHANGELOG](http://keepac
 - We now have a changelog!
 - New widget: `odsTimerange`. This widget displays a calendar to select a range
 of date or datetime to refine on.
+- New widget: `odsResults`. This widget exposes the result of a search query as a variable in your scope. It can be
+easily combined with AngularJS's ngRepeat to display a custom list of results.
 - `odsGeotooltip` can now be directly passed a record to display its geographical
 information, instead of having to explicitely pass the field name.
 - `odsMap` now supports a new mechanism to refine another context when the user

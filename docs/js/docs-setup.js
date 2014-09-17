@@ -149,6 +149,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsResults",
+      "shortName": "odsResults",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget exposes the results of a search (as an array) in a variable available in the scope. It can be used with AngularJS&#39;s ngRepeat to simply build a list",
+      "keywords": "angularjs api arbresremarquablesparis2011 array build catalog class context dataset directive exposes fields html item items list maximum module ng-repeat ngrepeat nom_commun nom_ev number ods-results ods-results-context ods-results-max ods-widgets odsresultscontext opendatasoft parisdata scope search simply sort table table-bordered table-condensed table-striped tree tree-dataset tree-domain tree-parameters variable widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsSearchbox",
       "shortName": "odsSearchbox",
       "type": "directive",

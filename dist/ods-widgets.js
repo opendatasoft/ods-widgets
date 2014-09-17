@@ -8287,30 +8287,15 @@ else {
                 showHitsCounter: '@?'
             },
             template: '<div class="odswidget odswidget-result-enumerator">' +
-                '<div ng-if="!count" class="no-results" translate>No results</div>' +
-                '<div ng-if="count && hitsCounter" class="results-count">{{count}} <translate>results</translate></div>' +
-                '<div ng-repeat="item in items" inject class="item"></div>' +
+                '<div ods-results="items" ods-results-context="context" ods-results-max="{{max}}">' +
+                '<div ng-if="!items.length" class="no-results" translate>No results</div>' +
+                '<div ng-if="items.length && hitsCounter" class="results-count">{{items.length}} <translate>results</translate></div>' +
+                '<div ng-repeat="item in items" inject class="item""></div>' +
+                '</div>' +
                 '</div>',
             controller: ['$scope', function($scope) {
-                var max = $scope.max || 10;
+                $scope.max = $scope.max || 10;
                 $scope.hitsCounter = (angular.isString($scope.showHitsCounter) && $scope.showHitsCounter.toLowerCase() === 'true');
-
-                $scope.$watch('context', function(nv) {
-                    var options = angular.extend({}, nv.parameters, {'rows': max});
-                    if (nv.type === 'catalog') {
-                        ODSAPI.datasets.search(nv, options).success(function(data) {
-                            $scope.count = data.nhits;
-                            $scope.items = data.datasets;
-                        });
-                    } else if (nv.type === 'dataset' && nv.dataset) {
-                        ODSAPI.records.search(nv, options).success(function(data) {
-                            $scope.count = data.nhits;
-                            $scope.items = data.records;
-                        });
-                    } else {
-                        return;
-                    }
-                }, true);
             }]
         };
     }]);
@@ -8322,6 +8307,41 @@ else {
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsResults', ['ODSAPI', function(ODSAPI) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsResults
+         * @scope
+         * @restrict A
+         * @param {string} [odsResults=results] Variable name to use
+         * @param {CatalogContext|DatasetContext} odsResultsContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {number} [odsResultsMax=all] Maximum number of results to show
+         * @description
+         * This widget exposes the results of a search (as an array) in a variable available in the scope. It can be used with AngularJS's ngRepeat to simply build a list
+         * of results.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com" tree-parameters="{'sort': '-objectid'}">
+         *              <table class="table table-bordered table-condensed table-striped">
+         *                  <thead>
+         *                      <tr>
+         *                          <th>Tree name</th>
+         *                          <th>Place</th>
+         *                      </tr>
+         *                  </thead>
+         *                  <tbody>
+         *                      <tr ng-repeat="item in items" ods-results="items" ods-results-context="tree" ods-results-max="10">
+         *                          <td>{{ item.fields.nom_commun }}</td>
+         *                          <td>{{ item.fields.nom_ev }}</td>
+         *                      </tr>
+         *                  </tbody>
+         *              </table>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
+         */
+
         return {
             restrict: 'A',
             scope: true,
