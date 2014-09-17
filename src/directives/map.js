@@ -18,7 +18,7 @@
          * for example you can still click on a marker to have a tooltip.
          * @param {boolean} [showFilters=false] If true, displays additional tools to use the map to filter the data in the context. For example if you use a table and a map on the same context,
          * this makes you able to use the map to refine the data displayed in the table.
-         * @param {Object} [mapContext=none] An object that you can use to share the map state (location and basemap) between two or more table widgets when they are not in the same context.
+         * @param {Object} [mapContext=none] An object that you can use to share the map state (location and basemap) between two or more map widgets when they are not in the same context.
          * @param {DatasetContext} [itemClickContext=none] Instead of popping a tooltip when you click on an item on the map, you can decide to add a filter to another context using this parameter.
          * Clicks that would normally make a popup appear (markers, clusters that can't be expanded more, shapes) will instead filter the specified context.
          *
