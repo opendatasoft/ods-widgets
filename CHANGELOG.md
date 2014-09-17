@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
-## Unreleased (as 0.1.1-dev)
+## 0.1.1 - 2014-09-17
 ### Added
 - We now have a changelog!
 - New widget: `odsTimerange`. This widget displays a calendar to select a range
