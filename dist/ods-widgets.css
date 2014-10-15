@@ -684,8 +684,8 @@
 .odswidget-facet .category-list {
   list-style: none;
 }
-.odswidget-facet.category-list a.active,
-.odswidget-facet .category-list a.active {
+.odswidget-facet.category-list a.refined,
+.odswidget-facet .category-list a.refined {
   font-weight: bold;
 }
 .odswidget-facet.category-list .expansion-control,
