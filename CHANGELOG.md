@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 0.1.2 - 2014-10-15
+### Added
+- New widget: `odsFacets`. This widget allows you to insert and finely configure filters for your data, including customizing the way each available
+value is displayed. You can find more information in the documentation.
+- New widget: `odsReuses`. This widget displays an infinite list of reuses for a domain, displayed in large boxes.
+- The user's timezones is now taken into account in filters and facets.
+
+### Fixed
+- Internet Explorer 8 and 9 can now interact with non-local APIs: the widgets now use JSONP to circumvent these browsers'
+limitations with cross-domain requests.
+
 ## 0.1.1 - 2014-09-17
 ### Added
 - We now have a changelog!

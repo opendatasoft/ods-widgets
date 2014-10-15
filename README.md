@@ -69,6 +69,8 @@ The following libraries are required as dependencies in your pages for ODS-Widge
 - **AngularJS** 1.2.* and the **angular-sanitize** module
 - Some widgets are using icons from **[FontAwesome 3.2.1](http://fontawesome.io/3.2.1/icons/)** *(note: we're looking to remove this dependency in the future)*
 
+Note: Angular 1.3 has not been tested with ODS-Widgets, and it is not planned to support it yet, due to Angular 1.3's end of support of IE8.
+
 To load ODS-Widgets, you can then simply load `ods-widgets.js` and `ods-widgets.css`, or their minified version also included
 in the distribution.
 
