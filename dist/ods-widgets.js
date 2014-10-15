@@ -1,4 +1,361 @@
-/*jslint browser: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, regexp: false */
+/**
+ * This script gives you the zone info key representing your device's time zone setting.
+ *
+ * @name jsTimezoneDetect
+ * @version 1.0.5
+ * @author Jon Nylander
+ * @license MIT License - http://www.opensource.org/licenses/mit-license.php
+ *
+ * For usage and examples, visit:
+ * http://pellepim.bitbucket.org/jstz/
+ *
+ * Copyright (c) Jon Nylander
+ */
+
+/*jslint undef: true */
+/*global console, exports*/
+
+(function(root) {
+  /**
+   * Namespace to hold all the code for timezone detection.
+   */
+  var jstz = (function () {
+      'use strict';
+      var HEMISPHERE_SOUTH = 's',
+
+          /**
+           * Gets the offset in minutes from UTC for a certain date.
+           * @param {Date} date
+           * @returns {Number}
+           */
+          get_date_offset = function (date) {
+              var offset = -date.getTimezoneOffset();
+              return (offset !== null ? offset : 0);
+          },
+
+          get_date = function (year, month, date) {
+              var d = new Date();
+              if (year !== undefined) {
+                d.setFullYear(year);
+              }
+              d.setMonth(month);
+              d.setDate(date);
+              return d;
+          },
+
+          get_january_offset = function (year) {
+              return get_date_offset(get_date(year, 0 ,2));
+          },
+
+          get_june_offset = function (year) {
+              return get_date_offset(get_date(year, 5, 2));
+          },
+
+          /**
+           * Private method.
+           * Checks whether a given date is in daylight saving time.
+           * If the date supplied is after august, we assume that we're checking
+           * for southern hemisphere DST.
+           * @param {Date} date
+           * @returns {Boolean}
+           */
+          date_is_dst = function (date) {
+              var is_southern = date.getMonth() > 7,
+                  base_offset = is_southern ? get_june_offset(date.getFullYear()) :
+                                              get_january_offset(date.getFullYear()),
+                  date_offset = get_date_offset(date),
+                  is_west = base_offset < 0,
+                  dst_offset = base_offset - date_offset;
+
+              if (!is_west && !is_southern) {
+                  return dst_offset < 0;
+              }
+
+              return dst_offset !== 0;
+          },
+
+          /**
+           * This function does some basic calculations to create information about
+           * the user's timezone. It uses REFERENCE_YEAR as a solid year for which
+           * the script has been tested rather than depend on the year set by the
+           * client device.
+           *
+           * Returns a key that can be used to do lookups in jstz.olson.timezones.
+           * eg: "720,1,2".
+           *
+           * @returns {String}
+           */
+
+          lookup_key = function () {
+              var january_offset = get_january_offset(),
+                  june_offset = get_june_offset(),
+                  diff = january_offset - june_offset;
+
+              if (diff < 0) {
+                  return january_offset + ",1";
+              } else if (diff > 0) {
+                  return june_offset + ",1," + HEMISPHERE_SOUTH;
+              }
+
+              return january_offset + ",0";
+          },
+
+          /**
+           * Uses get_timezone_info() to formulate a key to use in the olson.timezones dictionary.
+           *
+           * Returns a primitive object on the format:
+           * {'timezone': TimeZone, 'key' : 'the key used to find the TimeZone object'}
+           *
+           * @returns Object
+           */
+          determine = function () {
+              var key = lookup_key();
+              return new jstz.TimeZone(jstz.olson.timezones[key]);
+          },
+
+          /**
+           * This object contains information on when daylight savings starts for
+           * different timezones.
+           *
+           * The list is short for a reason. Often we do not have to be very specific
+           * to single out the correct timezone. But when we do, this list comes in
+           * handy.
+           *
+           * Each value is a date denoting when daylight savings starts for that timezone.
+           */
+          dst_start_for = function (tz_name) {
+
+            var ru_pre_dst_change = new Date(2010, 6, 15, 1, 0, 0, 0), // In 2010 Russia had DST, this allows us to detect Russia :)
+                dst_starts = {
+                    'America/Denver': new Date(2011, 2, 13, 3, 0, 0, 0),
+                    'America/Mazatlan': new Date(2011, 3, 3, 3, 0, 0, 0),
+                    'America/Chicago': new Date(2011, 2, 13, 3, 0, 0, 0),
+                    'America/Mexico_City': new Date(2011, 3, 3, 3, 0, 0, 0),
+                    'America/Asuncion': new Date(2012, 9, 7, 3, 0, 0, 0),
+                    'America/Santiago': new Date(2012, 9, 3, 3, 0, 0, 0),
+                    'America/Campo_Grande': new Date(2012, 9, 21, 5, 0, 0, 0),
+                    'America/Montevideo': new Date(2011, 9, 2, 3, 0, 0, 0),
+                    'America/Sao_Paulo': new Date(2011, 9, 16, 5, 0, 0, 0),
+                    'America/Los_Angeles': new Date(2011, 2, 13, 8, 0, 0, 0),
+                    'America/Santa_Isabel': new Date(2011, 3, 5, 8, 0, 0, 0),
+                    'America/Havana': new Date(2012, 2, 10, 2, 0, 0, 0),
+                    'America/New_York': new Date(2012, 2, 10, 7, 0, 0, 0),
+                    'Europe/Helsinki': new Date(2013, 2, 31, 5, 0, 0, 0),
+                    'Pacific/Auckland': new Date(2011, 8, 26, 7, 0, 0, 0),
+                    'America/Halifax': new Date(2011, 2, 13, 6, 0, 0, 0),
+                    'America/Goose_Bay': new Date(2011, 2, 13, 2, 1, 0, 0),
+                    'America/Miquelon': new Date(2011, 2, 13, 5, 0, 0, 0),
+                    'America/Godthab': new Date(2011, 2, 27, 1, 0, 0, 0),
+                    'Europe/Moscow': ru_pre_dst_change,
+                    'Asia/Amman': new Date(2013, 2, 29, 1, 0, 0, 0),
+                    'Asia/Beirut': new Date(2013, 2, 31, 2, 0, 0, 0),
+                    'Asia/Damascus': new Date(2013, 3, 6, 2, 0, 0, 0),
+                    'Asia/Jerusalem': new Date(2013, 2, 29, 5, 0, 0, 0),
+                    'Asia/Yekaterinburg': ru_pre_dst_change,
+                    'Asia/Omsk': ru_pre_dst_change,
+                    'Asia/Krasnoyarsk': ru_pre_dst_change,
+                    'Asia/Irkutsk': ru_pre_dst_change,
+                    'Asia/Yakutsk': ru_pre_dst_change,
+                    'Asia/Vladivostok': ru_pre_dst_change,
+                    'Asia/Baku': new Date(2013, 2, 31, 4, 0, 0),
+                    'Asia/Yerevan': new Date(2013, 2, 31, 3, 0, 0),
+                    'Asia/Kamchatka': ru_pre_dst_change,
+                    'Asia/Gaza': new Date(2010, 2, 27, 4, 0, 0),
+                    'Africa/Cairo': new Date(2010, 4, 1, 3, 0, 0),
+                    'Europe/Minsk': ru_pre_dst_change,
+                    'Pacific/Apia': new Date(2010, 10, 1, 1, 0, 0, 0),
+                    'Pacific/Fiji': new Date(2010, 11, 1, 0, 0, 0),
+                    'Australia/Perth': new Date(2008, 10, 1, 1, 0, 0, 0)
+                };
+
+              return dst_starts[tz_name];
+          };
+
+      return {
+          determine: determine,
+          date_is_dst: date_is_dst,
+          dst_start_for: dst_start_for
+      };
+  }());
+
+  /**
+   * Simple object to perform ambiguity check and to return name of time zone.
+   */
+  jstz.TimeZone = function (tz_name) {
+      'use strict';
+        /**
+         * The keys in this object are timezones that we know may be ambiguous after
+         * a preliminary scan through the olson_tz object.
+         *
+         * The array of timezones to compare must be in the order that daylight savings
+         * starts for the regions.
+         */
+      var AMBIGUITIES = {
+              'America/Denver':       ['America/Denver', 'America/Mazatlan'],
+              'America/Chicago':      ['America/Chicago', 'America/Mexico_City'],
+              'America/Santiago':     ['America/Santiago', 'America/Asuncion', 'America/Campo_Grande'],
+              'America/Montevideo':   ['America/Montevideo', 'America/Sao_Paulo'],
+              'Asia/Beirut':          ['Asia/Amman', 'Asia/Jerusalem', 'Asia/Beirut', 'Europe/Helsinki','Asia/Damascus'],
+              'Pacific/Auckland':     ['Pacific/Auckland', 'Pacific/Fiji'],
+              'America/Los_Angeles':  ['America/Los_Angeles', 'America/Santa_Isabel'],
+              'America/New_York':     ['America/Havana', 'America/New_York'],
+              'America/Halifax':      ['America/Goose_Bay', 'America/Halifax'],
+              'America/Godthab':      ['America/Miquelon', 'America/Godthab'],
+              'Asia/Dubai':           ['Europe/Moscow'],
+              'Asia/Dhaka':           ['Asia/Yekaterinburg'],
+              'Asia/Jakarta':         ['Asia/Omsk'],
+              'Asia/Shanghai':        ['Asia/Krasnoyarsk', 'Australia/Perth'],
+              'Asia/Tokyo':           ['Asia/Irkutsk'],
+              'Australia/Brisbane':   ['Asia/Yakutsk'],
+              'Pacific/Noumea':       ['Asia/Vladivostok'],
+              'Pacific/Tarawa':       ['Asia/Kamchatka', 'Pacific/Fiji'],
+              'Pacific/Tongatapu':    ['Pacific/Apia'],
+              'Asia/Baghdad':         ['Europe/Minsk'],
+              'Asia/Baku':            ['Asia/Yerevan','Asia/Baku'],
+              'Africa/Johannesburg':  ['Asia/Gaza', 'Africa/Cairo']
+          },
+
+          timezone_name = tz_name,
+
+          /**
+           * Checks if a timezone has possible ambiguities. I.e timezones that are similar.
+           *
+           * For example, if the preliminary scan determines that we're in America/Denver.
+           * We double check here that we're really there and not in America/Mazatlan.
+           *
+           * This is done by checking known dates for when daylight savings start for different
+           * timezones during 2010 and 2011.
+           */
+          ambiguity_check = function () {
+              var ambiguity_list = AMBIGUITIES[timezone_name],
+                  length = ambiguity_list.length,
+                  i = 0,
+                  tz = ambiguity_list[0];
+
+              for (; i < length; i += 1) {
+                  tz = ambiguity_list[i];
+
+                  if (jstz.date_is_dst(jstz.dst_start_for(tz))) {
+                      timezone_name = tz;
+                      return;
+                  }
+              }
+          },
+
+          /**
+           * Checks if it is possible that the timezone is ambiguous.
+           */
+          is_ambiguous = function () {
+              return typeof (AMBIGUITIES[timezone_name]) !== 'undefined';
+          };
+
+      if (is_ambiguous()) {
+          ambiguity_check();
+      }
+
+      return {
+          name: function () {
+              return timezone_name;
+          }
+      };
+  };
+
+  jstz.olson = {};
+
+  /*
+   * The keys in this dictionary are comma separated as such:
+   *
+   * First the offset compared to UTC time in minutes.
+   *
+   * Then a flag which is 0 if the timezone does not take daylight savings into account and 1 if it
+   * does.
+   *
+   * Thirdly an optional 's' signifies that the timezone is in the southern hemisphere,
+   * only interesting for timezones with DST.
+   *
+   * The mapped arrays is used for constructing the jstz.TimeZone object from within
+   * jstz.determine_timezone();
+   */
+  jstz.olson.timezones = {
+      '-720,0'   : 'Pacific/Majuro',
+      '-660,0'   : 'Pacific/Pago_Pago',
+      '-600,1'   : 'America/Adak',
+      '-600,0'   : 'Pacific/Honolulu',
+      '-570,0'   : 'Pacific/Marquesas',
+      '-540,0'   : 'Pacific/Gambier',
+      '-540,1'   : 'America/Anchorage',
+      '-480,1'   : 'America/Los_Angeles',
+      '-480,0'   : 'Pacific/Pitcairn',
+      '-420,0'   : 'America/Phoenix',
+      '-420,1'   : 'America/Denver',
+      '-360,0'   : 'America/Guatemala',
+      '-360,1'   : 'America/Chicago',
+      '-360,1,s' : 'Pacific/Easter',
+      '-300,0'   : 'America/Bogota',
+      '-300,1'   : 'America/New_York',
+      '-270,0'   : 'America/Caracas',
+      '-240,1'   : 'America/Halifax',
+      '-240,0'   : 'America/Santo_Domingo',
+      '-240,1,s' : 'America/Santiago',
+      '-210,1'   : 'America/St_Johns',
+      '-180,1'   : 'America/Godthab',
+      '-180,0'   : 'America/Argentina/Buenos_Aires',
+      '-180,1,s' : 'America/Montevideo',
+      '-120,0'   : 'America/Noronha',
+      '-120,1'   : 'America/Noronha',
+      '-60,1'    : 'Atlantic/Azores',
+      '-60,0'    : 'Atlantic/Cape_Verde',
+      '0,0'      : 'UTC',
+      '0,1'      : 'Europe/London',
+      '60,1'     : 'Europe/Berlin',
+      '60,0'     : 'Africa/Lagos',
+      '60,1,s'   : 'Africa/Windhoek',
+      '120,1'    : 'Asia/Beirut',
+      '120,0'    : 'Africa/Johannesburg',
+      '180,0'    : 'Asia/Baghdad',
+      '180,1'    : 'Europe/Moscow',
+      '210,1'    : 'Asia/Tehran',
+      '240,0'    : 'Asia/Dubai',
+      '240,1'    : 'Asia/Baku',
+      '270,0'    : 'Asia/Kabul',
+      '300,1'    : 'Asia/Yekaterinburg',
+      '300,0'    : 'Asia/Karachi',
+      '330,0'    : 'Asia/Kolkata',
+      '345,0'    : 'Asia/Kathmandu',
+      '360,0'    : 'Asia/Dhaka',
+      '360,1'    : 'Asia/Omsk',
+      '390,0'    : 'Asia/Rangoon',
+      '420,1'    : 'Asia/Krasnoyarsk',
+      '420,0'    : 'Asia/Jakarta',
+      '480,0'    : 'Asia/Shanghai',
+      '480,1'    : 'Asia/Irkutsk',
+      '525,0'    : 'Australia/Eucla',
+      '525,1,s'  : 'Australia/Eucla',
+      '540,1'    : 'Asia/Yakutsk',
+      '540,0'    : 'Asia/Tokyo',
+      '570,0'    : 'Australia/Darwin',
+      '570,1,s'  : 'Australia/Adelaide',
+      '600,0'    : 'Australia/Brisbane',
+      '600,1'    : 'Asia/Vladivostok',
+      '600,1,s'  : 'Australia/Sydney',
+      '630,1,s'  : 'Australia/Lord_Howe',
+      '660,1'    : 'Asia/Kamchatka',
+      '660,0'    : 'Pacific/Noumea',
+      '690,0'    : 'Pacific/Norfolk',
+      '720,1,s'  : 'Pacific/Auckland',
+      '720,0'    : 'Pacific/Tarawa',
+      '765,1,s'  : 'Pacific/Chatham',
+      '780,0'    : 'Pacific/Tongatapu',
+      '780,1,s'  : 'Pacific/Apia',
+      '840,0'    : 'Pacific/Kiritimati'
+  };
+
+  if (typeof exports !== 'undefined') {
+    exports.jstz = jstz;
+  } else {
+    root.jstz = jstz;
+  }
+})(this);;/*jslint browser: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, regexp: false */
 
 /**
 LazyLoad makes it easy and painless to lazily load one or more external
@@ -387,8 +744,8 @@ LazyLoad = (function (doc) {
     }
 
   };
-})(this.document);;/* Modernizr 2.7.1 (Custom Build) | MIT & BSD
- * Build: http://modernizr.com/download/#-geolocation-inlinesvg-svg-shiv-cssclasses-load
+})(this.document);;/* Modernizr 2.8.3 (Custom Build) | MIT & BSD
+ * Build: http://modernizr.com/download/#-geolocation-inlinesvg-svg-shiv-cssclasses-cors-load
  */
 ;
 
@@ -396,7 +753,7 @@ LazyLoad = (function (doc) {
 
 window.Modernizr = (function( window, document, undefined ) {
 
-    var version = '2.7.1',
+    var version = '2.8.3',
 
     Modernizr = {},
 
@@ -768,7 +1125,9 @@ window.Modernizr = (function( window, document, undefined ) {
 /*yepnope1.5.4|WTFPL*/
 (function(a,b,c){function d(a){return"[object Function]"==o.call(a)}function e(a){return"string"==typeof a}function f(){}function g(a){return!a||"loaded"==a||"complete"==a||"uninitialized"==a}function h(){var a=p.shift();q=1,a?a.t?m(function(){("c"==a.t?B.injectCss:B.injectJs)(a.s,0,a.a,a.x,a.e,1)},0):(a(),h()):q=0}function i(a,c,d,e,f,i,j){function k(b){if(!o&&g(l.readyState)&&(u.r=o=1,!q&&h(),l.onload=l.onreadystatechange=null,b)){"img"!=a&&m(function(){t.removeChild(l)},50);for(var d in y[c])y[c].hasOwnProperty(d)&&y[c][d].onload()}}var j=j||B.errorTimeout,l=b.createElement(a),o=0,r=0,u={t:d,s:c,e:f,a:i,x:j};1===y[c]&&(r=1,y[c]=[]),"object"==a?l.data=c:(l.src=c,l.type=a),l.width=l.height="0",l.onerror=l.onload=l.onreadystatechange=function(){k.call(this,r)},p.splice(e,0,u),"img"!=a&&(r||2===y[c]?(t.insertBefore(l,s?null:n),m(k,j)):y[c].push(l))}function j(a,b,c,d,f){return q=0,b=b||"j",e(a)?i("c"==b?v:u,a,b,this.i++,c,d,f):(p.splice(this.i++,0,a),1==p.length&&h()),this}function k(){var a=B;return a.loader={load:j,i:0},a}var l=b.documentElement,m=a.setTimeout,n=b.getElementsByTagName("script")[0],o={}.toString,p=[],q=0,r="MozAppearance"in l.style,s=r&&!!b.createRange().compareNode,t=s?l:n.parentNode,l=a.opera&&"[object Opera]"==o.call(a.opera),l=!!b.attachEvent&&!l,u=r?"object":l?"script":"img",v=l?"script":u,w=Array.isArray||function(a){return"[object Array]"==o.call(a)},x=[],y={},z={timeout:function(a,b){return b.length&&(a.timeout=b[0]),a}},A,B;B=function(a){function b(a){var a=a.split("!"),b=x.length,c=a.pop(),d=a.length,c={url:c,origUrl:c,prefixes:a},e,f,g;for(f=0;f<d;f++)g=a[f].split("="),(e=z[g.shift()])&&(c=e(c,g));for(f=0;f<b;f++)c=x[f](c);return c}function g(a,e,f,g,h){var i=b(a),j=i.autoCallback;i.url.split(".").pop().split("?").shift(),i.bypass||(e&&(e=d(e)?e:e[a]||e[g]||e[a.split("/").pop().split("?")[0]]),i.instead?i.instead(a,e,f,g,h):(y[i.url]?i.noexec=!0:y[i.url]=1,f.load(i.url,i.forceCSS||!i.forceJS&&"css"==i.url.split(".").pop().split("?").shift()?"c":c,i.noexec,i.attrs,i.timeout),(d(e)||d(j))&&f.load(function(){k(),e&&e(i.origUrl,h,g),j&&j(i.origUrl,h,g),y[i.url]=2})))}function h(a,b){function c(a,c){if(a){if(e(a))c||(j=function(){var a=[].slice.call(arguments);k.apply(this,a),l()}),g(a,j,b,0,h);else if(Object(a)===a)for(n in m=function(){var b=0,c;for(c in a)a.hasOwnProperty(c)&&b++;return b}(),a)a.hasOwnProperty(n)&&(!c&&!--m&&(d(j)?j=function(){var a=[].slice.call(arguments);k.apply(this,a),l()}:j[n]=function(a){return function(){var b=[].slice.call(arguments);a&&a.apply(this,b),l()}}(k[n])),g(a[n],j,b,n,h))}else!c&&l()}var h=!!a.test,i=a.load||a.both,j=a.callback||f,k=j,l=a.complete||f,m,n;c(h?a.yep:a.nope,!!i),i&&c(i)}var i,j,l=this.yepnope.loader;if(e(a))g(a,0,l,0);else if(w(a))for(i=0;i<a.length;i++)j=a[i],e(j)?g(j,0,l,0):w(j)?B(j):Object(j)===j&&h(j,l);else Object(a)===a&&h(a,l)},B.addPrefix=function(a,b){z[a]=b},B.addFilter=function(a){x.push(a)},B.errorTimeout=1e4,null==b.readyState&&b.addEventListener&&(b.readyState="loading",b.addEventListener("DOMContentLoaded",A=function(){b.removeEventListener("DOMContentLoaded",A,0),b.readyState="complete"},0)),a.yepnope=k(),a.yepnope.executeStack=h,a.yepnope.injectJs=function(a,c,d,e,i,j){var k=b.createElement("script"),l,o,e=e||B.errorTimeout;k.src=a;for(o in d)k.setAttribute(o,d[o]);c=j?h:c||f,k.onreadystatechange=k.onload=function(){!l&&g(k.readyState)&&(l=1,c(),k.onload=k.onreadystatechange=null)},m(function(){l||(l=1,c(1))},e),i?k.onload():n.parentNode.insertBefore(k,n)},a.yepnope.injectCss=function(a,c,d,e,g,i){var e=b.createElement("link"),j,c=i?h:c||f;e.href=a,e.rel="stylesheet",e.type="text/css";for(j in d)e.setAttribute(j,d[j]);g||(n.parentNode.insertBefore(e,n),m(c,0))}})(this,document);
 Modernizr.load=function(){yepnope.apply(window,[].slice.call(arguments,0));};
-;;//! moment.js
+// cors
+// By Theodoor van Donge
+Modernizr.addTest('cors', !!(window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest()));;;//! moment.js
 //! version : 2.7.0
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 //! license : MIT
@@ -3512,7 +3871,7 @@ mod.directive('infiniteScroll', [
   '$rootScope', '$window', '$timeout', function($rootScope, $window, $timeout) {
     return {
       link: function(scope, elem, attrs) {
-        var $scrollParent, checkWhenEnabled, elementTop, handler, scrollDistance, scrollEnabled;
+        var $scrollParent, checkWhenEnabled, elementTop, handler, scrollDistance, scrollEnabled, parentTop;
         $window = angular.element($window);
         $scrollParent = elem.parents().filter(function() {
           return /(auto|scroll)/.test(($.css(this, 'overflow')) + ($.css(this, 'overflow-y')));
@@ -3542,7 +3901,8 @@ mod.directive('infiniteScroll', [
             }
           });
         }
-        elementTop = elem.position().top;
+        parentTop = $scrollParent !== $window ? $scrollParent.position().top : 0;
+        elementTop = elem.position().top - parentTop;
         handler = function() {
           var elementBottom, remaining, scrollBottom, shouldScroll;
 
@@ -3684,7 +4044,8 @@ mod.directive('infiniteScroll', [
                     }
                     return function preLink(scope, el, attrs) {
                         if (translateInnerHtml) {
-                            el.html(translate(el.html()));
+                            var translation = translate(el.html());
+                            el.empty().append(translation);
                         }
                         try{
                             $compile(el.contents())(scope);
@@ -4745,6 +5106,226 @@ else {
 })();;(function() {
     'use strict';
 
+    // add indexOf to old browsers
+    if (!Array.prototype.indexOf) {
+      Array.prototype.indexOf = function(elt /*, from*/)
+      {
+        var len = this.length >>> 0;
+
+        var from = Number(arguments[1]) || 0;
+        from = (from < 0) ? Math.ceil(from) : Math.floor(from);
+        if (from < 0) {
+          from += len;
+        }
+
+        for (; from < len; from++)
+        {
+          if (from in this &&
+              this[from] === elt)
+            return from;
+        }
+        return -1;
+      };
+    }
+
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+    if (!Array.prototype.filter)
+    {
+      Array.prototype.filter = function(fun /*, thisArg */)
+      {
+        "use strict";
+
+        if (this === void 0 || this === null)
+          throw new TypeError();
+
+        var t = Object(this);
+        var len = t.length >>> 0;
+        if (typeof fun != "function")
+          throw new TypeError();
+
+        var res = [];
+        var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
+        for (var i = 0; i < len; i++)
+        {
+          if (i in t)
+          {
+            var val = t[i];
+
+            // NOTE: Technically this should Object.defineProperty at
+            //       the next index, as push can be affected by
+            //       properties on Object.prototype and Array.prototype.
+            //       But that method's new, and collisions should be
+            //       rare, so use the more-compatible alternative.
+            if (fun.call(thisArg, val, i, t))
+              res.push(val);
+          }
+        }
+
+        return res;
+      };
+    }
+
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
+    // Production steps of ECMA-262, Edition 5, 15.4.4.19
+    // Reference: http://es5.github.io/#x15.4.4.19
+    if (!Array.prototype.map) {
+
+      Array.prototype.map = function(callback, thisArg) {
+
+        var T, A, k;
+
+        if (this == null) {
+          throw new TypeError(" this is null or not defined");
+        }
+
+        // 1. Let O be the result of calling ToObject passing the |this|
+        //    value as the argument.
+        var O = Object(this);
+
+        // 2. Let lenValue be the result of calling the Get internal
+        //    method of O with the argument "length".
+        // 3. Let len be ToUint32(lenValue).
+        var len = O.length >>> 0;
+
+        // 4. If IsCallable(callback) is false, throw a TypeError exception.
+        // See: http://es5.github.com/#x9.11
+        if (typeof callback !== "function") {
+          throw new TypeError(callback + " is not a function");
+        }
+
+        // 5. If thisArg was supplied, let T be thisArg; else let T be undefined.
+        if (arguments.length > 1) {
+          T = thisArg;
+        }
+
+        // 6. Let A be a new array created as if by the expression new Array(len)
+        //    where Array is the standard built-in constructor with that name and
+        //    len is the value of len.
+        A = new Array(len);
+
+        // 7. Let k be 0
+        k = 0;
+
+        // 8. Repeat, while k < len
+        while (k < len) {
+
+          var kValue, mappedValue;
+
+          // a. Let Pk be ToString(k).
+          //   This is implicit for LHS operands of the in operator
+          // b. Let kPresent be the result of calling the HasProperty internal
+          //    method of O with argument Pk.
+          //   This step can be combined with c
+          // c. If kPresent is true, then
+          if (k in O) {
+
+            // i. Let kValue be the result of calling the Get internal
+            //    method of O with argument Pk.
+            kValue = O[k];
+
+            // ii. Let mappedValue be the result of calling the Call internal
+            //     method of callback with T as the this value and argument
+            //     list containing kValue, k, and O.
+            mappedValue = callback.call(T, kValue, k, O);
+
+            // iii. Call the DefineOwnProperty internal method of A with arguments
+            // Pk, Property Descriptor
+            // { Value: mappedValue,
+            //   Writable: true,
+            //   Enumerable: true,
+            //   Configurable: true },
+            // and false.
+
+            // In browsers that support Object.defineProperty, use the following:
+            // Object.defineProperty(A, k, {
+            //   value: mappedValue,
+            //   writable: true,
+            //   enumerable: true,
+            //   configurable: true
+            // });
+
+            // For best browser support, use the following:
+            A[k] = mappedValue;
+          }
+          // d. Increase k by 1.
+          k++;
+        }
+
+        // 9. return A
+        return A;
+      };
+    }
+
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim
+    if (!String.prototype.trim) {
+      String.prototype.trim = function () {
+        return this.replace(/^\s+|\s+$/g, '');
+      };
+    }
+
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
+    if (!Object.keys) {
+        Object.keys = (function () {
+            'use strict';
+            var hasOwnProperty = Object.prototype.hasOwnProperty,
+                hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
+                dontEnums = [
+                    'toString',
+                    'toLocaleString',
+                    'valueOf',
+                    'hasOwnProperty',
+                    'isPrototypeOf',
+                    'propertyIsEnumerable',
+                    'constructor'
+                ],
+                dontEnumsLength = dontEnums.length;
+
+            return function (obj) {
+                if (typeof obj !== 'object' && (typeof obj !== 'function' || obj === null)) {
+                    throw new TypeError('Object.keys called on non-object');
+                }
+
+                var result = [], prop, i;
+
+                for (prop in obj) {
+                    if (hasOwnProperty.call(obj, prop)) {
+                        result.push(prop);
+                    }
+                }
+
+                if (hasDontEnumBug) {
+                    for (i = 0; i < dontEnumsLength; i++) {
+                        if (hasOwnProperty.call(obj, dontEnums[i])) {
+                            result.push(dontEnums[i]);
+                        }
+                    }
+                }
+                return result;
+            };
+        }());
+    }
+
+    if (!String.prototype.startsWith) {
+      String.prototype.startsWith = function(searchedString) {
+        return this.indexOf(searchedString) === 0;
+      };
+    }
+
+    if (!String.prototype.endsWith) {
+      String.prototype.endsWith = function(searchedString) {
+        return this.lastIndexOf(searchedString) === this.length - searchedString.length;
+      };
+    }
+
+    // IE8 doesn't define hasOwnProperty on the window object
+    if (!window.hasOwnProperty) {
+        window.hasOwnProperty = function(name) {
+            return Object.prototype.hasOwnProperty.call(window, name);
+        };
+    }
+}());;(function() {
+    'use strict';
+
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
@@ -4787,6 +5368,7 @@ else {
          * in the {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfigProvider} documentation.
          */
         this.defaultConfig = {
+            ODSWidgetsVersion: version,
             defaultDomain: '', // Defaults to local API
             language: null,
             disqusShortname: null,
@@ -4826,9 +5408,481 @@ else {
         };
     });
 
-    /** SERVICES */
+    mod.run(['translate', 'ODSWidgetsConfig', function(translate, ODSWidgetsConfig) {
+        // Initialize with an empty config so that at least it doesn't crash if
+        // nobody bothers to add a translation dictionary.
+        translate.add({});
 
-    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', function($http, ODSWidgetsConfig) {
+        if (!ODSWidgetsConfig.basePath) {
+            // Try to detect the path where ODS-Widgets is loaded from
+            // Kudos to Leaflet for the idea
+            var scriptTags = document.getElementsByTagName('script');
+
+            var odswidgetsRE = /[\/^]ods-widgets(\.min)?\.js\??/;
+
+            var i, src, matches, path;
+            for (i=0; i<scriptTags.length; i++) {
+                src = scriptTags[i].src;
+                matches = src.match(odswidgetsRE);
+
+                if (matches) {
+                    path = src.split(odswidgetsRE)[0];
+                    if (!path) {
+                        // Path is '/'
+                        ODSWidgetsConfig.basePath = '/';
+                    } else if (path.substring(path.length-3) === '.js') {
+                        // This is loaded from the same folder
+                        ODSWidgetsConfig.basePath = '';
+                    } else {
+                        ODSWidgetsConfig.basePath = path + '/';
+                    }
+                }
+            }
+        }
+    }]);
+}());
+;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.factory('AggregationHelper', ['translate', function(translate) {
+        var availableFunctions = [
+            {label: translate('Count'), func: 'COUNT'},
+            {label: translate('Average'), func: 'AVG'},
+            {label: translate('Minimum'), func: 'MIN'},
+            {label: translate('Maximum'), func: 'MAX'},
+            {label: translate('Standard deviation'), func: 'STDDEV'},
+            {label: translate('Sum'), func: 'SUM'},
+            {label: translate('Percentile'), func: 'QUANTILES'}
+        ];
+        
+        return {
+            getAvailableFunctions: function() {
+                return availableFunctions;
+            },
+            getAvailableFunction: function(f) {
+                return availableFunctions[f];
+            },
+            getFunctionLabel: function(func) {
+                func = func.toUpperCase();
+                return $.grep(availableFunctions, function(f){return func === f.func;})[0].label;
+            }
+        }
+    }]);
+
+    mod.factory('ChartHelper', ['translate', 'AggregationHelper', 'ODSWidgetsConfig', function(translate, AggregationHelper, ODSWidgetsConfig) {
+        var availableX = {},
+            availableY = {},
+            availableFunctions = [],
+            timescales_label = {
+                'year': translate('Year'),
+                'month': translate('Month'),
+                'day': translate('Day'),
+                'hour': translate('Hour'),
+                'minute': translate('Minute'),
+                'month month': translate('Month of year'),
+                'day day': translate('Day of month'),
+                'day weekday': translate('Day of week'),
+                'day month': translate('Day of year'),
+                'hour hour': translate('Hour of day')
+            },
+            callbacks = {},
+            initialized = [],
+            positions = {
+                'top left': {center: ['15%', '20%'], size: '25%'},
+                'top right': {center: ['85%', '20%'], size: '25%'},
+                'bottom left': {center: ['15%', '80%'], size: '25%'},
+                'bottom right': {center: ['85%', '80%'], size: '25%'},
+                'center': {}
+            },
+            defaultColors = ODSWidgetsConfig.chartColors || [
+               '#2f7ed8',
+               '#0d233a',
+               '#8bbc21',
+               '#910000',
+               '#1aadce',
+               '#492970',
+               '#f28f43',
+               '#77a1e5',
+               '#c42525',
+               '#a6c96a'
+            ],
+            availableCharts = [
+                {label: translate('Line'), type: 'line', group: translate('line charts')},
+                {label: translate('Spline'), type: 'spline', group: translate('line charts')},
+                {label: translate('Range'), type: 'arearange', group: translate('Area charts')},
+                {label: translate('Range spline'), type: 'areasplinerange', group: translate('Area charts')},
+                {label: translate('Column range'), type: 'columnrange', group: translate('Area charts')},
+                {label: translate('Area'), type: 'area', group: translate('Area charts')},
+                {label: translate('Area spline'), type: 'areaspline', group: translate('Area charts')},
+                {label: translate('Column chart'), type: 'column', group: translate('Bar charts')},
+                {label: translate('Bar chart'), type: 'bar', group: translate('Bar charts')},
+                {label: translate('Pie chart'), type: 'pie', group: translate('Pie charts')},
+                {label: translate('Scatter plot'), type: 'scatter', group: translate('line charts')}
+            ],
+            timeserie_precision_tab = [
+                "year",
+                "month",
+                "day",
+                "hour",
+                "minute"
+            ],
+            advanced_precision_tab = [
+                'month month',
+                'day day',
+                'day weekday',
+                'day month',
+                'hour hour'
+            ],
+            colorIdx = 0,
+            fields = {},
+            datasets = {},
+            timeSeries;
+
+            var getAvailableTimescalesFromPrecision = function(precision, type, fullList) {
+                var forced = false;
+                if (!precision) {
+                    precision = type == 'date' ? 'day' : 'hour';
+                } else {
+                    forced = true;
+                }
+                var res = [];
+                for (var i=0; i <= timeserie_precision_tab.indexOf(precision); i++){
+                    res.push({name : timeserie_precision_tab[i], label: timescales_label[timeserie_precision_tab[i]]});
+                    if (type === 'date' && timeserie_precision_tab[i] == 'day') {
+                        break;
+                    }
+                    if (type === 'datetime' && !forced && timeserie_precision_tab[i] == 'hour') {
+                        break;
+                    }
+                    if (type === 'datetime' && forced && timeserie_precision_tab[i] == 'minute') {
+                        break;
+                    }
+                }
+                if (fullList) {
+                    for (var j = 0; j < advanced_precision_tab.length; j++) {
+                        res.push({name: advanced_precision_tab[j], label: timescales_label[advanced_precision_tab[j]]});
+                        if (type === 'date' && timeserie_precision_tab[j] == 'day month') {
+                            break;
+                        }
+                    }
+                }
+                return res;
+            };
+        return {
+            getDatasetUniqueId: function(datasetid) {
+                var dataset;
+                angular.forEach(datasets, function(value, key) {
+                    if (key.endsWith(datasetid)) {
+                        dataset = value;
+                    }
+                    return false;
+                })
+                return dataset.getUniqueId();
+            },
+            getDataset: function(uniqueid) {
+                var dataset;
+                angular.forEach(datasets, function(value, key) {
+                    if (uniqueid === key) {
+                        dataset = value;
+                    }
+                    return false;
+                })
+                return dataset;
+            },
+            isChartSortable: function(chartType) {
+                return ['arearange', 'areasplinerange', 'columnrange'].indexOf(chartType) < 0;
+            },
+            getAllTimescales: function() {
+                return getAvailableTimescalesFromPrecision('minute', 'datetime', true);
+            },
+            getAvailableX: function(datasetid, i) {
+                if (typeof i === "undefined") 
+                    return availableX[datasetid];
+                return availableX[datasetid][i];
+            },
+            getAvailableY: function(datasetid, i) {
+                if (typeof i === "undefined") 
+                    return availableY[datasetid];
+                return availableY[datasetid][i];
+            },
+            getTimescales: function(datasetid, fieldName) {
+                var precision;
+                var field;
+                for (var i = 0; i< fields[datasetid].length; i++) {
+                    if (fields[datasetid][i].name === fieldName) {
+                        field = fields[datasetid][i];
+                        break;
+                    }
+                }
+                if (!field) {
+                    return;
+                }
+                if (field.annotations) {
+                    for (var annotation=0; annotation<field.annotations.length; annotation++) {
+                        if (field.annotations[annotation].name == 'timeserie_precision') {
+                            precision = field.annotations[annotation].args[0];
+                            break;
+                        }
+                    }
+                }
+
+                return getAvailableTimescalesFromPrecision(precision, field.type, timeSeries);
+            },
+            init: function(dataset, limitToTimeSeries, force) {
+                if (typeof force === "undefined") {
+                    force = false;
+                }
+                if (typeof limitToTimeSeries === "undefined") {
+                    limitToTimeSeries = false;
+                }
+                timeSeries = limitToTimeSeries;
+                var availableX = [], availableY = [];
+                var datasetid = dataset.getUniqueId();
+
+                if (!force && !!(datasetid in initialized)) {
+                    return;
+                }
+                fields[datasetid] = dataset.fields;
+
+                for (var i = 0; i< fields[datasetid].length; i++) {
+                    var field = fields[datasetid][i];
+                    if (field.type == 'int' || field.type == 'double') {
+                        availableY.push(field);
+                    }
+                    if (field.type == 'datetime' || field.type == 'date') {
+                        availableX.unshift(field);
+                    } else if (!limitToTimeSeries) {
+                        // Find out if this is a facet
+                        if (field.annotations) {
+                            for (var a=0; a<field.annotations.length; a++) {
+                                var anno = field.annotations[a];
+                                if (anno.name == 'facet') {
+                                    availableX.push(field);
+                                }
+                            }
+                        }
+                    }
+                }
+                this.setAvailableX(datasetid, availableX);
+                this.setAvailableY(datasetid, availableY);
+                initialized[datasetid] = true;
+                datasets[datasetid] = dataset;
+                this.load(datasetid);
+            },
+            isInitialized: function(datasetid) {
+                if (datasetid === '') {
+                    return !!(initialized.length);
+                } else {
+                    return !!(datasetid in initialized);
+                }
+            },
+            load: function(datasetid) {
+                if (callbacks[datasetid]) {
+                    for (var i = 0; i < callbacks[datasetid].length; i++) {
+                        callbacks[datasetid][i]();
+                    }
+                }
+                callbacks[datasetid] = [];
+                if (callbacks['']) {
+                    for (var i = 0; i < callbacks[''].length; i++) {
+                        callbacks[''][i]();
+                    }
+                }
+                callbacks[''] = [];
+            },
+            onLoad: function(datasetid, f) {
+                if (typeof datasetid === "function") {
+                    f = datasetid;
+                    datasetid = '';
+                }
+                if (this.isInitialized(datasetid)) {
+                    f();
+                } else {
+                    if (!(datasetid in callbacks)) {
+                        callbacks[datasetid] = [];
+                    }
+                    if (callbacks[datasetid].indexOf(f) < 0) {
+                        callbacks[datasetid].push(f);
+                    }
+                }
+            },
+            setAvailableX: function(datasetid, x) {
+                availableX[datasetid] = x;
+            },
+            setAvailableY: function(datasetid, y) {
+                availableY[datasetid] = y;
+            },
+            resolvePosition: function(position) {
+                if (typeof position == undefined) {
+                    position = "center";
+                }
+                if (!(position in positions)) {
+                    position = "center";
+                }
+                return positions[position];
+            },
+            getPieChartPositions: function() {
+                return $.map(positions, function(v,k) {return k;});
+            },
+            getDefaultColors: function() {
+                return defaultColors;
+            },
+            getDefaultColor: function(currentColor, backupColor) {
+                if (typeof currentColor !== "undefined" && currentColor !== "") {
+                    colorIdx++;
+                    return currentColor;
+                } else if (typeof backupColor !== "undefined" && backupColor !== "") {
+                    // coming back from a pie chart, we don't want to increase the color counter
+                    return backupColor;
+                } else {
+                    var color = defaultColors[colorIdx++%defaultColors.length];
+                    return color;
+                }
+            },
+            getAvailableCharts: function() {
+                return availableCharts;
+            },
+            setDefaultValues: function(datasetid, chart) {
+                // Compute default labels
+                // Enveloppe
+                if(chart.yAxis === ''){
+                    if (this.getAvailableY(datasetid).length === 0) {
+                        chart.func = 'COUNT';
+                    } else {
+                        chart.yAxis = this.getAvailableY(datasetid, 0).name;
+                    }
+                } else if (chart.func === 'COUNT') {
+                    // chart.func = 'AVG';
+                }
+
+                if(!this.isChartSortable(chart.type)){
+                    chart.func = 'COUNT';
+                    if(!chart.charts){
+                        chart.charts = [
+                            {
+                                func: 'MIN',
+                                expr: chart.yAxis
+                            },
+                            {
+                                func: 'MAX',
+                                expr: chart.yAxis
+                            }
+                        ];
+                    }
+                    if (!chart.charts[0].expr) {
+                        chart.charts[0].expr = chart.yAxis;
+                    }
+                    if (!chart.charts[1].expr) {
+                        chart.charts[1].expr = chart.yAxis;
+                    }
+                    if(chart.charts[0].func === 'QUANTILES' && !chart.charts[0].subsets){
+                        chart.charts[0].subsets = 5;
+                    }
+                    if(chart.charts[1].func === 'QUANTILES' && !chart.charts[1].subsets){
+                        chart.charts[1].subsets = 95;
+                    }
+
+                    if (chart.charts[0].func !== 'QUANTILES' && chart.charts[0].subsets) {
+                        delete chart.charts[0].subsets;
+                    }
+                    if (chart.charts[1].func !== 'QUANTILES' && chart.charts[1].subsets) {
+                        delete chart.charts[1].subsets;
+                    }
+                } else {
+                    if(chart.charts){
+                        delete chart.charts;
+                    }
+                    if(chart.func === 'QUANTILES'){
+                        if (!chart.subsets){
+                            chart.subsets = 50;
+                        }
+                    } else {
+                        if (chart.subsets) {
+                          delete chart.subsets;
+                        }
+                    }
+                }
+
+                if (chart.type === "pie" && !chart.position) {
+                    chart.position = "center";
+                }
+                this.setColor(chart);
+            },
+            setColor: function(chart) {
+                if(chart.type === 'pie'){
+                    chart._color = chart.color;
+                    delete chart.color;
+                    chart.extras = this.resolvePosition(chart.position);
+                    chart.extras.colors = this.getDefaultColors();
+                } else {
+                    chart.color = this.getDefaultColor(chart.color, chart._color);
+                }
+            },
+            getXLabel: function(datasetid, xAxis, timescale, precision) {
+                var xType = this.getFieldType(datasetid, xAxis);
+                var xLabel = this.getFieldLabel(datasetid, xAxis);
+                if ((xType === 'date' || xType === 'datetime') && timescale) {
+                    // Timeserie
+                    return xLabel + ' (' + timescales_label[timescale] + ')';
+                } else {
+                    return xLabel;
+                }
+            },
+            getYLabel: function(datasetid, chart) {
+                if (chart.yLabelOverride) {
+                    return chart.yLabelOverride;
+                } else {
+                    if (!this.isChartSortable(chart.type)) {
+                        return this.getYLabel(datasetid, chart.charts[0]) + " / " + this.getYLabel(datasetid, chart.charts[1]);
+                    } else {
+                        var funcLabel = AggregationHelper.getFunctionLabel(chart.func);
+                        var nameY = chart.yAxis || chart.expr;
+                        var possibleYAxis = $.grep(this.getAvailableY(datasetid), function(y){return y.name == nameY;});
+                        if (possibleYAxis.length > 0 && chart.func !== "COUNT") {
+                            return funcLabel + ' ' + possibleYAxis[0].label;
+                        } else {
+                            return funcLabel;
+                        }
+                    }
+                }
+            },
+            getField: function(datasetid, fieldName) {
+                if (!fields[datasetid]) return null;
+                for (var i=0; i < fields[datasetid].length; i++) {
+                    var field = fields[datasetid][i];
+                    if (field.name == fieldName) {
+                        return field;
+                    }
+                }
+                return undefined;
+            },
+            getFieldLabel: function(datasetid, fieldName) {
+                var field = this.getField(datasetid, fieldName);
+                if (!field) {
+                    return field;
+                }
+                return field.label;
+            },
+            getFieldType: function(datasetid, fieldName) {
+                var field = this.getField(datasetid, fieldName);
+                if (!field) {
+                    return field;
+                }
+                return field.type;
+            },
+            getAvailableFunctions: function(datasetid, fieldName) {
+                if (fieldName == '' || typeof this.getFieldType(fieldName) === "undefined") {
+                    return [{label: translate('Count'), func: 'COUNT'}];
+                } else {
+                    return AggregationHelper.getAvailableFunctions();
+                }
+            }
+        };
+    }]);
+
+    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsErrorService', function($http, ODSWidgetsConfig, odsErrorService) {
         /**
          * This service exposes OpenDataSoft APIs.
          *
@@ -4839,6 +5893,7 @@ else {
             var url = context ? context.domainUrl : '';
             url += path;
             params = params || {};
+            params.timezone = jstz.determine().name();
             if (context && context.apikey) {
                 params.apikey = context.apikey;
             }
@@ -4853,8 +5908,23 @@ else {
             } else {
                 options.headers = {};
             }
-            options.headers['ODS-Widgets-Version'] = version;
-            return $http.get(url, options);
+            options.headers['ODS-Widgets-Version'] = ODSWidgetsConfig.ODSWidgetsVersion;
+            if (!context.domainUrl || Modernizr.cors) {
+                return $http.
+                    get(url, options).
+                    error(function(data) {
+                        if (data) {
+                            odsErrorService.sendErrorNotification(data);
+                        }
+                    });
+            } else {
+                // Fallback for non-CORS browsers (IE8, IE9)
+                // In that case we won't have proper errors from the API
+                url += url.indexOf('?') > -1 ? '&' : '?';
+                url += 'callback=JSON_CALLBACK';
+                return $http.jsonp(url, options);
+            }
+
         };
         return {
             'getDomainURL': function(domain) {
@@ -4892,6 +5962,8 @@ else {
                 }
             },
             'records': {
+                // FIXME: Why don't we implicitely use the parameters from the context, instead of requiring the widgets
+                // to explicitely send them together with the other parameters?
                 'analyze': function(context, parameters) {
 //                    return request(context, '/api/datasets/1.0/'+context.dataset.datasetid+'/records/analyze/', parameters);
                     return request(context, '/api/records/1.0/analyze/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}));
@@ -4925,9 +5997,9 @@ else {
             'highcharts': {
                 'css': [],
                 'js': [
-                    ["https://code.highcharts.com/3.0.7/highcharts.js"],
-                    ["https://code.highcharts.com/3.0.7/modules/no-data-to-display.js"],
-                    ["https://code.highcharts.com/3.0.7/highcharts-more.js"]
+                    ["https://code.highcharts.com/3.0.10/highcharts.js"],
+                    ["https://code.highcharts.com/3.0.10/modules/no-data-to-display.js"],
+                    ["https://code.highcharts.com/3.0.10/highcharts-more.js"]
                 ]
             },
             'leaflet': {
@@ -5029,7 +6101,6 @@ else {
                         if (parts.length > 1) {
                             // There is an object name whose existence we can check
                             if (isAlreadyAvailable(parts[0])) {
-//                                console.log('Object ' + parts[0] + ' is already available.');
                                 continue;
                             }
                             url = parts[1];
@@ -5066,51 +6137,25 @@ else {
         };
     }]);
 
-    mod.run(['translate', 'ODSWidgetsConfig', function(translate, ODSWidgetsConfig) {
-        // Initialize with an empty config so that at least it doesn't crash if
-        // nobody bothers to add a translation dictionary.
-        translate.add({});
-
-        if (!ODSWidgetsConfig.basePath) {
-            // Try to detect the path where ODS-Widgets is loaded from
-            // Kudos to Leaflet for the idea
-            var scriptTags = document.getElementsByTagName('script');
-
-            var odswidgetsRE = /[\/^]ods-widgets(\.min)?\.js\??/;
-
-            var i, src, matches, path;
-            for (i=0; i<scriptTags.length; i++) {
-                src = scriptTags[i].src;
-                matches = src.match(odswidgetsRE);
-
-                if (matches) {
-                    path = src.split(odswidgetsRE)[0];
-                    if (!path) {
-                        // Path is '/'
-                        ODSWidgetsConfig.basePath = '/';
-                    } else if (path.substring(path.length-3) === '.js') {
-                        // This is loaded from the same folder
-                        ODSWidgetsConfig.basePath = '';
-                    } else {
-                        ODSWidgetsConfig.basePath = path + '/';
-                    }
-                }
-            }
-        }
-    }]);
-
-    mod.directive('inject', function(){
-        // Thank you petebacondarwin: https://github.com/angular/angular.js/issues/7874#issuecomment-47647003
+    mod.factory("odsErrorService", function() {
+        var notificationList = [];
         return {
-            link: function($scope, $element, $attrs, controller, $transclude) {
-                var innerScope = $scope.$new();
-                $transclude(innerScope, function(clone) {
-                    $element.empty();
-                    $element.append(clone);
-                    $element.on('$destroy', function() {
-                    innerScope.$destroy();
-                    });
+            registerForErrorNotification: function(callback) {
+                notificationList.push(callback);
+            },
+            sendErrorNotification: function(error) {
+                if (angular.isString(error)) {
+                    error = {
+                        title: 'Error',
+                        error: error
+                    };
+                }
+                angular.forEach(notificationList, function(callback) {
+                    callback(error);
                 });
+            },
+            markErrorAsHandled: function(error) {
+                error.handled = true;
             }
         };
     });
@@ -5240,9 +6285,11 @@ else {
             } else if (field.type === 'date') {
                 var precision = getPrecision(field);
                 if (precision === 'year') {
-                    return $filter('moment')(value, 'YYYY');
+                    return value;
                 } else if (precision === 'month') {
-                    return $filter('capitalize')($filter('moment')(value, 'MMMM YYYY'));
+                    // Parse the partial date properly
+                    var partialDate = moment(value, 'YYYY-MM');
+                    return $filter('capitalize')($filter('moment')(partialDate, 'MMMM YYYY'));
                 }
                 return $filter('moment')(value, 'LL');
             } else if (field.type === 'datetime') {
@@ -5623,7 +6670,7 @@ else {
                 return input.charAt(0).toUpperCase() + input.slice(1);
             },
             startsWith: function(input, searchedString) {
-                return input.indexOf(searchedString) === 0;
+                return input && input.indexOf(searchedString) === 0;
             }
         },
         DatasetUtils: {
@@ -5644,11 +6691,109 @@ else {
                 }
                 return false;
             }
+        },
+        Dataset: function(dataset) {
+            var types, facetsCount, filtersDescription;
+
+            var isFieldAnnotated = function(field, annotationName) {
+                if (field.annotations) {
+                    for (var i=0; i<field.annotations.length; i++) {
+                        if (field.annotations[i].name === annotationName) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            };
+
+            var iterateFields = function() {
+                filtersDescription = {'facets': []};
+                types = [];
+                facetsCount = 0;
+                for (var j=0; j< dataset.fields.length; j++) {
+                    var field = dataset.fields[j];
+                    if (isFieldAnnotated(field, 'facet')) {
+                        facetsCount++;
+                        filtersDescription.facets.push(field);
+                    }
+                    if (!types[field.type]) {
+                        types[field.type] = 1;
+                    } else {
+                        types[field.type] += 1;
+                    }
+                }
+            };
+
+            return {
+                datasetid: dataset.datasetid || "preview", // "preview" is here as a trick in publish as the dataset has no id
+                has_records: dataset.has_records,
+                metas: dataset.metas || {domain: 'preview'},
+                features: dataset.features,
+                attachments: dataset.attachments,
+                fields: dataset.fields,
+                extra_metas: dataset.extra_metas,
+                interop_metas: dataset.interop_metas,
+                setFields: function(fields) {
+                    this.fields = fields;
+                    iterateFields();
+                },
+                getUniqueId: function() {
+                    return this.metas.domain + '.' + this.datasetid;
+                },
+                getTypes: function() {
+                    if (typeof types === "undefined") {
+                        iterateFields();
+                    }
+                    return types;
+                },
+                hasFieldType: function(fieldType) {
+                    for (var i = 0; i < this.fields.length; i++) {
+                        if (this.fields[i].type == fieldType) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                getFacetsCount: function() {
+                    if (typeof facetsCount === "undefined") {
+                        iterateFields();
+                    }
+                    return facetsCount;
+                },
+                hasFacet: function() {
+                    if (typeof facetsCount === "undefined") {
+                        iterateFields();
+                    }
+                    return facetsCount > 0;
+                },
+                getFilterDescription: function() {
+                    if (typeof filtersDescription === "undefined") {
+                        iterateFields();
+                    }
+                    return filtersDescription;
+                },
+                getFacets: function() {
+                    return this.getFilterDescription().facets;
+                },
+                setMetas: function(metas) {
+                    this.metas = metas;
+                },
+                getField: function(fieldName) {
+                    for (var i=0; i<this.fields.length; i++) {
+                        var field = this.fields[i];
+                        if (field.name === fieldName) {
+                            return field;
+                        }
+                    }
+                    return null;
+                }
+            }
         }
     };
 
     target.ODS = ODS;
-})(window);;(function() {
+})(window);
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -5736,6 +6881,23 @@ else {
 
     var mod = angular.module('ods-widgets');
 
+    var renderCard = function(transcludeService, scope, elem) {
+        var datasetItem = elem.find('.dataset-item').first();
+        var cardContainer = elem.find('.card-container');
+        var cardHeight = $(cardContainer).outerHeight();
+        if (scope.position == "bottom") {
+            $(datasetItem).css('top', 0);
+            $(datasetItem).css('bottom', cardHeight);
+        } else { // top
+            $(datasetItem).css('top', cardHeight);
+            $(datasetItem).height(elem.outerHeight() - cardHeight);
+        }
+        transcludeService(function(clone) {
+            $(datasetItem).html(clone);
+        });
+        scope.$apply();
+    }
+
     mod.directive('odsDatasetCard', function() {
         /**
          * @ngdoc directive
@@ -5764,9 +6926,9 @@ else {
                 context: '='
             },
             template: '<div class="odswidget odswidget-dataset-card">' +
-                         '<div class="card-container" ng-class="{expanded: expanded, expandable: isExpandable()}">' +
+                         '<div class="card-container" ng-class="{bottom: position == \'bottom\', expanded: expanded, expandable: isExpandable()}">' +
                             '<h2 class="dataset-title" ng-click="expanded = !expanded" ng-show="!expanded || (expanded && !context.dataset.metas.description)">{{context.dataset.metas.title}}</h2>' +
-                            '<div ng-click="expanded = !expanded" class="expand-control"><translate>Details</translate> <i class="icon-chevron-down" ng-show="!expanded"></i><i class="icon-chevron-up" ng-hide="!expanded"></i></div>' +
+                            '<div ng-click="expanded = !expanded" class="expand-control"><span translate>Details</span> <i class="icon-chevron-down" ng-show="!expanded"></i><i class="icon-chevron-up" ng-hide="!expanded"></i></div>' +
                             '<div class="dataset-expanded" ng-click="expanded = !expanded"">'+
                                 '<h2 class="dataset-title" ng-show="expanded">{{context.dataset.metas.title}}</h2>' +
                                 '<p class="dataset-description" ng-if="expanded" ng-bind-html="safeHtml(context.dataset.metas.description)"></p>' +
@@ -5777,26 +6939,12 @@ else {
                 '</div>',
             replace: true,
             transclude: true,
-            link: function($scope, elem) {
-
+            link: function(scope, elem, attrs) {
+                scope.position = attrs['position'] || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
-                $scope.renderContent = function(transcludeService) {
-                    var datasetItem = elem.find('.dataset-item').first();
-                    var cardContainer = elem.find('.card-container');
-                    var cardHeight = $(cardContainer).outerHeight();
-                    $(datasetItem).css('top', cardHeight);
-                    $(datasetItem).height(elem.outerHeight() - cardHeight);
-
-                    transcludeService(function(clone) {
-                        // Make the element take all the available space
-                        clone.css('height', '100%');
-//                        clone.height($(datasetItem).height());
-                        $(datasetItem).append(clone);
-                    });
-                    $scope.$apply();
-                };
+                scope.renderContent = renderCard;
             },
-            controller: ['$scope', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, ODSWidgetsConfig, $transclude, $sce) {
+            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, $element, ODSWidgetsConfig, $transclude, $sce) {
                 $scope.websiteName = ODSWidgetsConfig.websiteName;
                 $scope.expanded = false;
 
@@ -5823,7 +6971,7 @@ else {
                     }
                     // waiting for re-render
                     setTimeout(function() {
-                        $scope.renderContent($transclude);
+                        $scope.renderContent($transclude, $scope, $element);
                     }, 0);
                     $scope.expanded = false;
                     $scope.datasetUrl = $scope.context.domainUrl + '/explore/dataset/' + $scope.context.dataset.datasetid + '/';
@@ -5847,26 +6995,12 @@ else {
             templateUrl: ODSWidgetsConfig.basePath + 'templates/multidatasets_card.html',
             replace: true,
             transclude: true,
-            link: function($scope, elem) {
-
+            link: function(scope, elem, attrs) {
+                scope.position = attrs['position'] || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
-                $scope.renderContent = function(transcludeService) {
-                    var datasetItem = elem.find('.dataset-item').first();
-                    var cardContainer = elem.find('.card-container');
-                    var cardHeight = $(cardContainer).outerHeight();
-                    $(datasetItem).css('top', cardHeight);
-                    $(datasetItem).height(elem.outerHeight() - cardHeight);
-
-                    transcludeService(function(clone) {
-                        // Make the element take all the available space
-                        clone.css('height', '100%');
-                        //clone.height($(datasetItem).height());
-                        $(datasetItem).html(clone);
-                    });
-                    $scope.$apply();
-                };
+                scope.renderContent = renderCard;
             },
-            controller: ['$scope', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, ODSWidgetsConfig, $transclude, $sce) {
+            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, $element, ODSWidgetsConfig, $transclude, $sce) {
                 $scope.datasetObjectKeys = [];
                 $scope.websiteName = ODSWidgetsConfig.websiteName;
 
@@ -5896,7 +7030,7 @@ else {
 
                     // waiting for re-render
                     setTimeout(function() {
-                        $scope.renderContent($transclude);
+                        $scope.renderContent($transclude, $scope, $element);
                     }, 0);
                     $scope.expanded = false;
                     unwatch();
@@ -5949,6 +7083,8 @@ else {
          *
          *  * **`apikey`** {@type string} (optional) API Key to use in every API call for this context
          *
+         *  * **`sort`** {@type string} (optional) Sort expression to apply initially (*field* or *-field*)
+         *
          *  * **`parameters`** {@type Object} (optional) An object holding parameters to apply to the context when it is created. Any parameter from the API can be used here (such as `q`, `refine.FIELD` ...)
          *
          *  * **`parametersFromContext`** {@type string} (optional) The name of a context to replicate the parameters from. Any change of the parameters
@@ -5996,7 +7132,7 @@ else {
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
         var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext) {
             var contextParams;
-            if (parameters) {
+            if (!angular.equals(parameters, {})) {
                 contextParams = parameters;
             } else if (parametersFromContext) {
                 var unwatch = scope.$watch(parametersFromContext, function(nv, ov) {
@@ -6018,9 +7154,9 @@ else {
                 'dataset': null,
                 'parameters': contextParams
             };
-            ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true}).
+            ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true, interopmetas: true}).
                 success(function(data) {
-                    scope[contextName].dataset = data;
+                    scope[contextName].dataset = new ODS.Dataset(data);
                 });
         };
 
@@ -6044,8 +7180,13 @@ else {
                     }
 
                     var apikey = attrs[contextName+'Apikey'];
-                    var parameters = scope.$eval(attrs[contextName+'Parameters']);
+                    var sort = attrs[contextName+'Sort'];
+                    var parameters = scope.$eval(attrs[contextName+'Parameters']) || {};
                     var parametersFromContext = attrs[contextName+'ParametersFromContext'];
+
+                    if (sort) {
+                        parameters.sort = sort;
+                    }
 
                     exposeContext(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext);
                 }
@@ -6227,7 +7368,7 @@ else {
                 '<div class="no-data" ng-hide="items" translate>No data available yet</div>' +
                 '<div ng-repeat="item in items" inject class="item"></div>' +
                 '</div>',
-            controller: function($scope) {
+            controller: ['$scope', function($scope) {
                 var init = $scope.$watch('context', function(nv) {
                     var query;
                     if (nv.type === 'catalog') {
@@ -6246,9 +7387,424 @@ else {
                     });
                     init();
                 }, true);
-            }
+            }]
         };
     }]);
+
+}());
+;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('odsFacets', function($compile, translate) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsFacets
+         * @scope
+         * @restrict E
+         * @param {DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @description
+         * This widget displays filters (facets) for a dataset or a domain's catalog of datasets, allowing the users
+         * to dynamically "refine" on one or more categories for the context, typically to restrict the data displayed
+         * by another widget such as {@link ods-widgets.directive:odsTable odsTable}.
+         *
+         * Used alone without any configuration, the widget will display by default filters from all the "facet" fields
+         * of a dataset if it is used with a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, or based on
+         * typical metadata from a dataset catalog if used with a {@link ods-widgets.directive:odsCatalogContext Catalog Context}.
+         *
+         * <pre>
+         *     <ods-facets context="mycontext"></ods-facets>
+         * </pre>
+         *
+         * To configure which facets are displayed, you can use the odsFacet directive within the odsFacets widget. You can also
+         * use regular HTML within the odsFacets widget:
+         * <pre>
+         *     <ods-facets context="mycontext">
+         *         <h3>First field</h3>
+         *         <ods-facet name="myfield"></ods-facet>
+         *
+         *         <h3>Second field</h3>
+         *         <ods-facet name="mysecondfield"></ods-facet>
+         *     </ods-facets>
+         * </pre>
+         *
+         *
+         * The odsFacet directive supports the following parameters:
+         *
+         * - **`name`** {@type string} the name of the field to display the filter on
+         *
+         * - **`title`** {@type string} (optional) a title to display above the filters
+         *
+         * - **`sort`** {@type string} (optional, default is count) How to sort the categories: either `count`, `-count` (sort by number of items in each category),
+         * `num`, `-num` (sort by the name of category if it is a number), `alphanum`, `-alphanum` (sort by the name of the category).
+         *
+         * - **`visible-items`** {@type number} (optional, default 6) the number of categories to show; if there are more,
+         * they are collapsed and can be expanded by clicking on a "more" link.
+         *
+         * - **`hide-if-single-category`** {@type boolean} (optional) if 'true', don't show the filter for that facet if there is
+         * only one available category to refine on.
+         *
+         * - **`hide-category-if`** {@type string} (optional) an AngularJS expression to evaluate; if it evaluates to true, then
+         * the category is displayed. You can use `category.name` (the value of the category), `category.path` (the complete path
+         * to the category, including hierarchical levels) and `category.state` (refined, excluded, or displayed) in the expression.
+         *
+         * <pre>
+         *     <ods-facets context="mycontext">
+         *         <ods-facet name="myfield" sort="-num" visible-items="10"></ods-facet>
+         *         <ods-facet name="mysecondfield" hide-if-single-category="true" hide-category-if="category.name == 'hiddencategory'"></ods-facet>
+         *     </ods-facets>
+         * </pre>
+         *
+         * You can write HTML within the odsFacet tag to change the display template of each category. The available variables
+         * within the template are `facetName` (the name of the field that the filter is based on), `category.name`
+         * (the value of the category), `category.path` (the complete path to the category, including hierarchical levels)
+         * and `category.state` (refined, excluded, or displayed).
+         *
+         * <pre>
+         *     <ods-facets context="mycontext">
+         *         <ods-facet name="myfield">
+         *             {{category.name}} @ {{category.state}}
+         *         </ods-facet>
+         *     </ods-facets>
+         * </pre>
+         *
+         *  @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context context="events"
+         *                               events-domain="public.opendatasoft.com"
+         *                               events-dataset="evenements-publics-cibul">
+         *              <div class="row-fluid">
+         *                  <div class="span4">
+         *                      <ods-facets context="events">
+         *                          <ods-facet name="updated_at" title="Date"></ods-facet>
+         *
+         *                          <h3>
+         *                              <i class="icon-tags"></i> Tags
+         *                          </h3>
+         *                          <ods-facet name="tags">
+         *                              <i class="icon-tag"></i> {{category.name}}
+         *                          </ods-facet>
+         *                      </ods-facets>
+         *                  </div>
+         *                  <div class="span8">
+         *                      <ods-map context="events"></ods-map>
+         *                  </div>
+         *              </div>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
+         */
+        var buildFacetTagsHTML = function(scope, element, facets) {
+            var html = '';
+
+            angular.forEach(facets, function(facet) {
+                html += '<ods-facet ' +
+                    'name="'+facet.name+'" ' +
+                    'title="'+(facet.title || facet.name)+'" ' +
+                    'sort="'+(facet.sort || '')+'" ' +
+                    'hide-if-single-category="'+(facet.hideIfSingleCategory ? 'true' : 'false')+'" ' +
+                    'hide-category-if="'+(facet.hideCategoryIf || '')+'"' +
+                    '>'+(facet.template || '')+'</ods-facet>';
+            });
+            var tags = angular.element(html);
+            element.append(tags);
+            $compile(tags)(scope);
+
+        };
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                context: '=',
+                facetsConfig: '='
+            },
+            compile: function(tElement) {
+                var childrenCount = tElement.children().length;
+                return function(scope, element) {
+                    if (scope.facetsConfig) {
+                        buildFacetTagsHTML(scope, element, scope.facetsConfig);
+                        scope.init();
+                    } else if (childrenCount === 0) {
+                        // By default, we add all the available facets
+                        var facets;
+
+                        var unwatchContext = scope.$watch('context', function() {
+                            if (scope.context) {
+                                unwatchContext();
+                                if (scope.context.type === 'catalog') {
+                                    facets = [
+                                        {name: 'modified', title: translate('Modified')},
+                                        {name: 'publisher', title: translate('Publisher')},
+                                        {name: 'keyword', title: translate('Keyword')},
+                                        {name: 'theme', title: translate('Theme')}
+                                    ];
+                                    buildFacetTagsHTML(scope, element, facets);
+                                    scope.init();
+                                } else {
+                                    var unwatch = scope.$watch('context.dataset', function(nv) {
+                                        if (nv) {
+                                            unwatch();
+                                            facets = angular.copy(scope.context.dataset.getFacets());
+                                            angular.forEach(facets, function(f) {
+                                                f.title = f.label;
+                                                delete f.label;
+                                            });
+                                            buildFacetTagsHTML(scope, element, facets);
+                                            scope.init();
+                                        }
+                                    }, true);
+                                }
+                            }
+                        }, true);
+                    } else {
+                    // We're starting the queries from here because at that time we are sure the children (odsFacets tags)
+                    // are ready and have registered themselves.
+                        scope.init();
+                    }
+                };
+            },
+            controller: ['$scope', 'ODSAPI', function($scope, ODSAPI) {
+                $scope.facets = [];
+                $scope.init = function() {
+                    // Commented until we no longer need the call to refresh the nhits on the context
+//                    if ($scope.facets.length === 0) {
+//                        return;
+//                    }
+                    $scope.$watch(function() {
+                        // FIXME: Generalize this and use a whitelist https://github.com/opendatasoft/ods-widgets/issues/13
+                        var params = angular.copy($scope.context.parameters);
+                        if (params.sort) {
+                            delete params.sort;
+                        }
+                        if (params.start) {
+                            delete params.start;
+                        }
+                        if (params.tab) {
+                            delete params.tab;
+                        }
+                        if (params.dataChart) {
+                            delete params.dataChart;
+                        }
+                        if ($scope.context.type === 'dataset') {
+                            return [params, $scope.context.dataset];
+                        } else {
+                            return params;
+                        }
+                    }, function() {
+                        if ($scope.context.type === 'catalog' || $scope.context.dataset) {
+                            if (angular.isDefined($scope.context.parameters.start)) {
+                                delete $scope.context.parameters.start;
+                            }
+                            $scope.refreshData();
+                        }
+                    }, true);
+                };
+
+                $scope.refreshData = function() {
+                    var params = angular.extend({}, $scope.context.parameters, {
+                        rows: 0,
+                        facet: $scope.facets.map(function(facetInfo) { return facetInfo.name; })
+                    });
+                    $scope.facets.map(function(facetInfo) {
+                        if (facetInfo.sort) {
+                            params['facetsort.'+facetInfo.name] = facetInfo.sort;
+                        }
+                    });
+
+                    var req;
+                    if ($scope.context.type === 'dataset') {
+                        req = ODSAPI.records.search($scope.context, params);
+                    } else {
+                        req = ODSAPI.datasets.search($scope.context, params);
+                    }
+
+                    req.success(function(data) {
+                        $scope.context.nhits = data.nhits;
+                        var facetGroup, categories, facetItem;
+                        angular.forEach($scope.facets, function(facet) {
+                            facet.categories.splice(0, facet.categories.length);
+                        });
+                        if (data.facet_groups) {
+                            for (var i=0; i<data.facet_groups.length; i++) {
+                                facetGroup = data.facet_groups[i];
+                                facetItem = $scope.facets.filter(function(f) { return f.name === facetGroup.name; });
+                                if (facetItem.length > 0) {
+                                    categories = facetItem[0].categories;
+                                    // Add all the categories in the array
+                                    Array.prototype.push.apply(categories, facetGroup.facets);
+                                }
+                            }
+                        }
+                    });
+                };
+
+                this.registerFacet = function(name, sort) {
+                    var categories = [];
+                    $scope.facets.push({'name': name, 'categories': categories, 'sort': sort});
+                    return categories;
+                };
+
+                this.toggleRefinement = function(facetName, path) {
+                    var refineKey = 'refine.'+facetName;
+                    if (angular.isDefined($scope.context.parameters[refineKey])) {
+                        // There is at least one refine already
+                        var refines = angular.copy($scope.context.parameters[refineKey]);
+                        if (!angular.isArray(refines)) {
+                            refines = [refines];
+                        }
+                        if (refines.indexOf(path) > -1) {
+                            // Remove the refinement
+                            refines.splice(refines.indexOf(path), 1);
+                        } else {
+                            // Activate
+                            angular.forEach(refines, function(refine, idx) {
+                                if (path.startsWith(refine+'/')) {
+                                    // This already active refine is less precise than the new one, we remove it
+                                    refines.splice(idx, 1);
+                                } else if (refine.startsWith(path+'/')) {
+                                    // This already active refine is more precise than the new one, we remove it
+                                    refines.splice(idx, 1);
+                                }
+                            });
+                            refines.push(path);
+                        }
+
+                        if (refines.length === 0) {
+                            delete $scope.context.parameters[refineKey];
+                        } else {
+                            $scope.context.parameters[refineKey] = refines;
+                        }
+                    } else {
+                        $scope.context.parameters[refineKey] = path;
+                    }
+                };
+            }]
+        };
+    });
+
+    mod.directive('odsFacet', function() {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                name: '@',
+                title: '@',
+                visibleItems: '@',
+                hideIfSingleCategory: '@',
+                hideCategoryIf: '@',
+                sort: '@'
+            },
+            template: function(tElement) {
+                tElement.data('facet-template', tElement.html());
+                return '<div class="odswidget odswidget-facet">' +
+                '<h3 class="facet-title" ng-if="title && categories.length && visible()">{{title}}</h3>' +
+                '<ods-facet-category-list ng-if="visible()" facet-name="{{ name }}" hide-category-if="{{ hideCategoryIf }}" categories="categories" template="{{ customTemplate }}"></ods-facet-category-list>' +
+                '</div>';
+            },
+            require: '^odsFacets',
+            link: function(scope, element, attrs, facetsCtrl) {
+                if (angular.isUndefined(facetsCtrl)) {
+                    console.log('ERROR : odsFacet must be used within an odsFacets tag.');
+                }
+                scope.categories = facetsCtrl.registerFacet(scope.name, scope.sort);
+                scope.facetsCtrl = facetsCtrl;
+
+            },
+            controller: ['$scope', '$element', function($scope, $element) {
+                $scope.visibleItemsNumber = $scope.visibleItems || 6;
+                this.toggleRefinement = function(path) {
+                    $scope.facetsCtrl.toggleRefinement($scope.name, path);
+                };
+                this.getVisibleItemsNumber = function() {
+                    return $scope.visibleItemsNumber;
+                };
+                $scope.visible = function() {
+                    return !(angular.isString($scope.hideIfSingleCategory) && $scope.hideIfSingleCategory.toLowerCase() === 'true' && $scope.categories.length === 1 && $scope.categories[0].state !== 'refined');
+                };
+                // Is there a custom template into the directive's tag?
+                $scope.customTemplate = $element.data('facet-template');
+            }]
+        };
+    });
+
+    mod.directive('odsFacetCategoryList', function() {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                categories: '=',
+                template: '@',
+                facetName: '@',
+                hideCategoryIf: '@'
+            },
+            require: '^odsFacet',
+            template: '<ul class="category-list">' +
+                '<li ng-repeat="category in categories">' +
+                '<ods-facet-category ng-if="!categoryIsHidden(category)" facet-name="{{ facetName }}" category="category" template="{{template}}" ng-show="visible($index)"></ods-facet-category>' +
+                '</li>' +
+                '<li ng-if="visibleItems < categories.length" class="expansion-control">' +
+                '<a ng-hide="expanded" href="#" ng-click="toggle($event)" translate>More</a>' +
+                '<a ng-show="expanded" href="#" ng-click="toggle($event)" translate>Less</a>' +
+                '</li>' +
+                '</ul>',
+            link: function(scope, element, attrs, facetCtrl) {
+                scope.expanded = false;
+                scope.visibleItems = facetCtrl.getVisibleItemsNumber();
+                scope.visible = function(index) {
+                    return scope.expanded || index < scope.visibleItems;
+                };
+                scope.toggle = function(event) {
+                    event.preventDefault();
+                    scope.expanded = !scope.expanded;
+                };
+                scope.categoryIsHidden = function(category) {
+                    if (!scope.hideCategoryIf) {
+                        return false;
+                    }
+                    var testScope = scope.$new(false);
+                    testScope.category = category;
+                    return testScope.$eval(scope.hideCategoryIf);
+                };
+            }
+        };
+    });
+
+    mod.directive('odsFacetCategory', function($compile) {
+        return {
+            restrict: 'E',
+            replace: true,
+            require: '^odsFacet',
+            scope: {
+                category: '=',
+                facetName: '@',
+                template: '@'
+            },
+            template: '<div class="odswidget odswidget-facet-category">' +
+                '   <a href="#" ng-click="toggleRefinement($event, category.path)" ng-class="{\'refined\': category.state === \'refined\'}">' +
+                '   </a>' +
+                '</div>',
+            link: function(scope, element, attrs, facetCtrl) {
+                scope.toggleRefinement = function($event, path) {
+                    $event.preventDefault();
+                    facetCtrl.toggleRefinement(path);
+                };
+                var template = scope.template || '<span class="category-name">{{ category.name }}</span> <span class="category-count">{{ category.count|number }}</span>';
+                element.find('a').append($compile('<div>'+template+'</div>')(scope)[0]);
+
+                if (scope.category.facets) {
+                    var sublist = angular.element('<ods-facet-category-list categories="category.facets" template="{{template}}"></ods-facet-category-list>');
+                    element.find('a').after(sublist);
+                    $compile(sublist)(scope);
+                }
+
+            },
+            controller: ['$scope', function($scope) {
+
+            }]
+        };
+    });
 
 }());
 ;(function() {
@@ -6442,7 +7998,85 @@ else {
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive("odsChart", ['ODSAPI', '$q', 'translate', 'ModuleLazyLoader', function(ODSAPI, $q, translate, ModuleLazyLoader) {
+
+    mod.factory("requestData", ['ODSAPI', '$q', 'ChartHelper', 'AggregationHelper', function(ODSAPI, $q, ChartHelper, AggregationHelper) {
+        var buildSearchOptions = function(query, timeSerieMode, precision, periodic) {
+            var search_options = {
+                dataset: query.config.dataset,
+                x: query.xAxis,
+                sort: query.sort || '',
+                maxpoints: query.maxpoints || ''
+            };
+
+            if (timeSerieMode){
+                search_options.precision = precision;
+                search_options.periodic = periodic;
+            }
+
+            // is there a timescale override ?
+            if(query.timescale){
+                 var tokens = query.timescale.split(' ');
+                 search_options.precision = tokens[0];
+                 search_options.periodic = tokens.length == 2 ? tokens[1] : '';
+            }
+            return search_options;
+        };
+        var addSeriesToSearchOptions = function(search_options, chart, index) {
+            if(!ChartHelper.isChartSortable(chart.type)) {
+                $.each(chart.charts[0], function(key, value){
+                    search_options['y.serie' + (index+1) + 'min.'+key] = value;
+                });
+                $.each(chart.charts[1], function(key, value){
+                    search_options['y.serie' + (index+1) + 'max.'+key] = value;
+                });
+
+                if(search_options.sort ===  'serie' + (index+1)) {
+                    // cannot sort on range
+                    search_options.sort = '';
+                }
+            } else {
+                search_options['y.serie' + (index+1) + '.expr'] = chart.yAxis;
+                search_options['y.serie' + (index+1) + '.func'] = chart.func;
+                search_options['y.serie' + (index+1) + '.cumulative'] = chart.cumulative || false;
+                if(chart.func === 'QUANTILES'){
+                    if (!chart.subsets){
+                        chart.subsets = 50;
+                    }
+                    search_options['y.serie' + (index+1) + '.subsets'] = chart.subsets;
+                }
+            }
+            return search_options;
+        };
+
+        return function(queries, timeSerieMode, precision, periodic, domain, apikey, callback) {
+            var search_promises = [];
+            angular.forEach(queries, function(query){
+                var search_options = buildSearchOptions(query, timeSerieMode, precision, periodic);
+
+                angular.forEach(query.charts, function(chart, index){
+                    
+                    addSeriesToSearchOptions(search_options, chart, index);
+
+                });
+
+                // Analyse request
+                // We have to build virtual contexts from parameters because we can source charts from multiple
+                // datasets.
+                var virtualContext = {
+                    domain: domain,
+                    domainUrl: ODSAPI.getDomainURL(domain),
+                    dataset: {'datasetid': search_options.dataset},
+                    apikey: apikey,
+                    parameters: {}
+                };
+
+                search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, query.config.options, search_options)));
+            });
+            $q.all(search_promises).then(callback);
+        }
+    }]);
+
+    mod.directive("odsChart", ['requestData', 'translate', 'ModuleLazyLoader', 'AggregationHelper', 'ChartHelper', '$rootScope', 'odsErrorService', function(requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsErrorService) {
         // parameters : {
         //     timescale: year, month, week, day, hour, month year, day year, day month, day week
         //     xLabel:
@@ -6485,21 +8119,16 @@ else {
             scope: {
                 parameters: '=odsChart',
                 domain: '=',
-                apikey: '='
+                apikey: '=',
+                colors: '='
             },
             template: '<div class="ods-chart"><div class="chartplaceholder"></div><debug data="chartoptions"></debug></div>',
             link: function(scope, element, attrs) {
+                var update = function() {};
                 var chartplaceholder = element.find('.chartplaceholder');
                 ModuleLazyLoader('highcharts').then(function() {
                     Highcharts.setOptions({
-                        global: {useUTC: false},
-                        plotOptions: {
-                            pie: {
-                                tooltip: {
-                                    pointFormat: '{series.name}: <b>{point.y} ({point.percentage:.1f}%)</b>'
-                                }
-                            }
-                        }
+                        global: {useUTC: false}
                     });
                     function formatRowX(value){
                         if (periodic) {
@@ -6532,405 +8161,549 @@ else {
                                 case 'day':
                                     return value.day;
                                 default:
-                                    return value;
+                                    return "" + value;
                             }
                         } else {
                             if (angular.isObject(value) && ("day" in value || "month" in value || "year" in value)) {
                                 var date = new Date(value.year, value.month-1 || 0, value.day || 1, value.hour || 0, value.minute || 0);
                                 return Highcharts.dateFormat("%Y-%m-%d", date);
                             }
-                            return value;
+                            return "" + value;
                         }
                     }
 
-                    var timeSerieMode, precision, periodic;
-                    // scope.parameters = scope.$eval(attrs.chart);
-                    scope.$watch('parameters',function(nv, ov){
+                    var timeSerieMode, precision, periodic, yAxisesIndexes;
+                    var getDatasetUniqueId = function(dataset_id) {
+                        var datasetid;
+                        if (scope.domain) {
+                            datasetid = scope.domain + "." + dataset_id;
+                        } else {
+                            datasetid = ChartHelper.getDatasetUniqueId(dataset_id);
+                        }
+                        return datasetid;
+                    }
+
+                    var getGlobalOptions = function(parameters) {
+                        var height = chartplaceholder.height();
+                        var width = chartplaceholder.width();
+                        
+                        if (parameters.queries.length === 0) {
+                            parameters.xLabel = '';
+                        } else {
+
+                            var datasetid = getDatasetUniqueId(parameters.queries[0].config.dataset);
+                            parameters.xLabel = ChartHelper.getXLabel(datasetid, parameters.queries[0].xAxis, parameters.timescale);
+                        }
+
+                        var options = {
+                            chart: {
+                            },
+                            title: {text: ''},
+                            credits: {enabled: false},
+                            colors: [],
+                            series: [],
+                            xAxis: {
+                                title: {
+                                    text: (parameters.queries.length > 0) ? (parameters.xLabel || parameters.queries[0].xAxis) :  "" // all charts must use the same xAxis
+                                },
+                                labels: {
+                                    step: 1,
+                                    rotation: -45,
+                                    align: 'right'
+                                },
+                                minPadding: 0,
+                                maxPadding: 0,
+                                dateTimeLabelFormats: {
+                                    second: '%H:%M:%S',
+                                    minute: '%H:%M',
+                                    hour: '%H:%M',
+                                    day: '%e %b %y',
+                                    week: '%e. %b',
+                                    month: '%b \'%y',
+                                    year: '%Y'
+                                }
+                                // startOnTick: true,
+                                // endOnTick: true,
+                            },
+                            // legend: {
+                            //     // align: 'right',
+                            //     // verticalAlign: 'bottom',
+                            //     // layout: 'horizontal',
+                            //     // x: -10,
+                            //     y: 0,
+                            //     // floating: false,
+                            //     borderWidth: 0,
+                            //     // width: width/5
+                            // },
+                            yAxis: [],
+                            plotOptions: {
+                                columnrange: {
+                                    pointPadding: 0,
+                                    groupPadding: 0,
+                                    borderWidth: 0,
+                                    tooltip: {
+                                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
+                                    }
+                                },
+                                arearange: {
+                                    tooltip: {
+                                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
+                                    }
+                                },
+                                areasplinerange: {
+                                    tooltip: {
+                                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
+                                    }
+                                },
+                                pie: {
+                                    tooltip: {
+                                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y} ({point.percentage:.1f}%)</b>'
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                valueDecimals: 2,
+                                headerFormat: '{point.key}<br>',
+                                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b>',
+                                formatter: function (tooltip) {
+                                    var items = this.points || angular.isArray(this) ? this : [this],
+                                        series = items[0].series,
+                                        s;
+
+                                    // build the header
+                                    s = [tooltip.tooltipHeaderFormatter(items[0])];
+
+                                    // build the values
+                                    angular.forEach(items, function (item) {
+                                        series = item.series;
+                                        var value = (series.tooltipFormatter && series.tooltipFormatter(item)) || item.point.tooltipFormatter(series.tooltipOptions.pointFormat);
+                                        value = value.replace(/(\.|,)00</, '<');
+                                        s.push(value);
+                                    });
+                                    // footer
+                                    s.push(tooltip.options.footerFormat || '');
+
+                                    return s.join('');
+                                }
+                            },
+                            noData: {
+                                style: {
+                                    fontFamily: 'Open Sans',
+                                    fontWeight: 'normal',
+                                    fontSize: '1.4em',
+                                    color: '#333',
+                                    opacity: '0.5'
+                                }
+                            },
+                            lang: {
+                                noData: translate("No data available yet")
+                            }
+                        };
+                        scope.chartoptions = options;
+
+                        // is it a timeSerie ? with default sort
+                        if(parameters.timescale && $.grep(parameters.queries, function(query){return query.sort;}).length === 0){
+                             timeSerieMode = parameters.timescale;
+                             var tokens = timeSerieMode.split(' ');
+                             precision = tokens[0];
+                             periodic = tokens.length == 2 ? tokens[1] : '';
+                        } else {
+                            timeSerieMode = false;
+                            precision = false;
+                            periodic = false;
+                        }
+
+                        if (precision) {
+                            options.xAxis.type = 'datetime';
+                            options.xAxis.maxZoom = 3600000; // fourteen days
+                            options.chart.zoomType = 'xy';
+                        } else {
+                            options.xAxis.categories = [];
+                        }
+
+                        if (periodic === "month") {  // month of year
+                            options.xAxis.labels.format = "{value: %B}";
+                        } else if (periodic === "weekday") {  // day of week
+                            options.xAxis.labels.format = "{value: %A}";
+                        } else if (periodic === "day") {  // day of month
+                            options.xAxis.labels.format = "{value: %d}";
+                        } else if (periodic === "hour") {
+                            options.xAxis.labels.format = "{value: %H}";
+                        }
+
+                        if(parameters.singleAxis) {
+                            options.yAxis.push({
+                                title: {
+                                    text: parameters.singleAxisLabel || ""
+                                },
+                                type: parameters.singleAxisScale || "linear"
+                            });
+                        }
+                        
+                        return options;
+                    };
+                    var getSerieOptions = function(parameters, query, chart) {
+                        var datasetid = getDatasetUniqueId(query.config.dataset);
+                        var yLabel = ChartHelper.getYLabel(datasetid, chart);
+
+                        var options = angular.extend({}, {
+                            name: yLabel,
+                            color: chart.color,
+                            type: chart.type,
+                            yAxis: parameters.singleAxis ? 0 : yAxisesIndexes[datasetid][yLabel],
+                            marker: {
+                                enabled: (chart.type === 'scatter'),
+                                radius: 3
+                            },
+                            shadow: false,
+                            tooltip: {},
+                            data: []
+                        }, chart.extras);
+                        options = angular.extend(options, ChartHelper.resolvePosition(chart.position));
+                        delete options.position;
+                        return options;
+                    };
+
+                    var getContextualizedSeriesOptions = function(row, globalOptions) {
+                        var options = {
+                            'tooltip': {}
+                        };
+
+                        if (angular.isObject(row.x) && ('year' in row.x || 'month' in row.x || 'day' in row.x || 'hour' in row.x || 'minute' in row.x)) {
+                            // options.series[series_index + j].pointPlacement = 'between';
+                            options.pointPadding = 0;
+                            options.groupPadding = 0;
+                            options.borderWidth = 0;
+
+                            // TimeSerie structure is different
+                            // push row data into proper serie data array
+                            // var date;
+                            // // default to 2000 because it's a leap year
+                            // date = new Date(row.x.year || 2000, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
+                            // // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
+                            // date.setFullYear(row.x.year || 2000);
+                            var datePattern = '';
+                            if(! ('year' in row.x)){
+                                // if(minDate){
+                                //     date.setYear(minDate.getFullYear());
+                                // }
+                                if('month' in row.x){
+                                    datePattern = '%B';
+                                }
+                                if('day' in row.x){
+                                    if('month' in row.x){
+                                        datePattern = '%e %B';
+                                    } else {
+                                        datePattern = '%e';
+                                    }
+                                }
+                                if('weekday' in row.x){
+                                    // date.setDate(date.getDate() - (date.getDay() - 1) + row.x.weekday); // a bit ugly
+                                    // need to set a date that starts with a monday, then add the weekday offset ?
+                                    datePattern = '%a';
+                                }
+                                if('hour' in row.x){
+                                     datePattern = '%Hh';
+                                }
+                            } else {
+                                if('day' in row.x){
+                                    datePattern += ' %e';
+                                }
+                                if('month' in row.x){
+                                    datePattern += ' %B';
+                                }
+                                datePattern += ' %Y';
+
+                                if('hour' in row.x){
+                                    if('minute' in row.x){
+                                         datePattern += ' %Hh%M';
+                                    } else {
+                                        datePattern +=' %Hh';
+                                    }
+                                }
+                            }
+                            options.tooltip.xDateFormat = datePattern;
+
+                            if('month' in row.x){
+                                options.pointRange = 30.5*24*3600*1000;
+                            }
+                            if ('day' in row.x) {
+                                options.pointRange = 24*3600*1000;
+                            }
+                            if('weekday' in row.x){
+                                options.pointRange = 24*3600*1000;
+                            }
+                            if('hour' in row.x){
+                                 options.pointRange = 3600*1000;
+                            }
+                        } else {
+                            globalOptions.xAxis.categories.push(formatRowX(row.x));
+                        }
+                        return options;
+                    }
+
+                    var getDateFromRow = function(row, minDate) {
+                        var minYear = minDate ? minDate.getFullYear() : 2000;
+                        var minMonth = minDate ? minDate.getMonth() : 0;
+                        var minDay = minDate ? minDate.getDate() : 1;
+                        var minHour = minDate ? minDate.getHours() : 0;
+                        var minMinute = minDate ? minDate.getMinutes() : 0;
+                        if (angular.isObject(row.x) && ('year' in row.x || 'month' in row.x || 'day' in row.x || 'hour' in row.x || 'minute' in row.x)) {
+                            // default to 2000 because it's a leap year
+                            var date = new Date(row.x.year || minYear, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
+                            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
+                            if (!'month' in row.x) date.setMonth(minMonth);
+                            if (!'day' in row.x) date.setDate(minDay);
+                            if (!'hour' in row.x) date.setHours(minHour);
+                            if (!'minute' in row.x) date.setMinutes(minMinute);
+                            date.setFullYear(row.x.year || minYear);
+                            if(! ('year' in row.x)){
+                                if('weekday' in row.x){
+                                    date.setDate(date.getDate() - (date.getDay() - 1) + row.x.weekday); // a bit ugly
+                                }
+                            }
+                            if('day' in row.x){
+                                // handle bisextil years
+                                if(row.x.day == 29 && row.x.month == 2) {
+                                    date.setDate(28);
+                                    date.setMonth(1);
+                                }
+                            } else {
+                                if('month' in row.x){
+                                    date.setDate(16);
+                                }
+                            }
+                            return date;
+                        }
+                    };
+
+                    var last_parameters_hash;
+                    update = function(parameters) {
+                        if (typeof parameters === "undefined") {
+                            parameters = scope.parameters;
+                        }
+                        // make a copy of the parameters to make sure that we will not trigger any external watches by modifying this object
+                        parameters = angular.copy(parameters);
+
+                        if (last_parameters_hash === angular.toJson(parameters)) {
+                            return;
+                        }
+
+                        if (!parameters || !parameters.queries || parameters.queries.length === 0) {
+                            if (scope.chart) {
+                                angular.element(scope.chart.container).empty();
+                            }
+                            return;
+                        }
+
+                        var search_promises = [];
                         timeSerieMode = undefined;
                         precision = undefined;
                         periodic = undefined;
-                        if(nv && nv.queries && nv.queries.length){
-                            var options = {
-                                chart: {},
-                                title: {text: ''},
-                                // legend: {enabled: false},
-                                credits: {enabled: false},
-                                colors: [],
-                                series: [],
-                                xAxis: {
-                                    title: {
-                                        text: scope.parameters.xLabel || scope.parameters.queries[0].xAxis // all charts must use the same xAxis
-                                    },
-                                    labels: {
-                                        rotation: -45,
-                                        align: 'right'
-                                    },
-                                    minPadding: 0,
-                                    maxPadding: 0
-                                    // startOnTick: true,
-                                    // endOnTick: true,
-                                },
-                                yAxis: [],
-                                plotOptions: {
-                                    columnrange: {
-                                        pointPadding: 0,
-                                        groupPadding: 0,
-                                        borderWidth: 0
-                                    }
-                                },
-                                tooltip: {
-                                    valueDecimals: 2,
-                                    formatter: function (tooltip) {
-                                        var items = this.points || angular.isArray(this) ? this : [this],
-                                            series = items[0].series,
-                                            s;
+                        yAxisesIndexes = {};
+                        try {
+                            getDatasetUniqueId(parameters.queries[0].config.dataset);
+                        } catch (e) {
+                            ChartHelper.onLoad(update);
+                            return;
+                        }
 
-                                        // build the header
-                                        s = [series.tooltipHeaderFormatter(items[0])];
+                        last_parameters_hash = angular.toJson(parameters);
 
-                                        // build the values
-                                        angular.forEach(items, function (item) {
-                                            series = item.series;
-                                            var value = (series.tooltipFormatter && series.tooltipFormatter(item)) || item.point.tooltipFormatter(series.tooltipOptions.pointFormat);
-                                            value = value.replace(/(\.|,)00</, '<');
-                                            s.push(value);
-                                        });
-                                        // footer
-                                        s.push(tooltip.options.footerFormat || '');
-
-                                        return s.join('');
-                                    }
-                                },
-                                noData: {
-                                    style: {
-                                        fontFamily: 'Open Sans',
-                                        fontWeight: 'normal',
-                                        fontSize: '1.4em',
-                                        color: '#333',
-                                        opacity: '0.5'
-                                    }
-                                },
-                                lang: {
-                                    noData: translate("No data available yet")
-                                }
-                            };
-                            scope.chartoptions = options;
-
-                            // is it a timeSerie ? with default sort
-                            if(scope.parameters.timescale && $.grep(scope.parameters.queries, function(query){return query.sort;}).length === 0){
-                                 timeSerieMode = scope.parameters.timescale;
-                                 var tokens = timeSerieMode.split(' ');
-                                 precision = tokens[0];
-                                 periodic = tokens.length == 2 ? tokens[1] : '';
-                            }
-
-                            if (precision) {
-                                options.xAxis.type = 'datetime';
-                                options.xAxis.maxZoom = 3600000; // fourteen days
-                                options.chart.zoomType = 'xy';
-                            } else {
-                                options.xAxis.categories = [];
-                            }
-
-                            var yAxisesIndexes = {};
-
-                            // fetch all data with search options
-                            var search_promises = [];
-
-                            if(scope.parameters.singleAxis) {
-                                options.yAxis.push({
-                                    title: {
-                                        text: scope.parameters.singleAxisLabel || ""
-                                    },
-                                    type: scope.parameters.singleAxisScale || "linear"
-                                });
-                            }
-                            angular.forEach(scope.parameters.queries, function(query){
-                                var search_options = {
-                                    dataset: query.config.dataset,
-                                    x: query.xAxis,
-                                    sort: query.sort || '',
-                                    maxpoints: query.maxpoints || ''
-                                };
-                                if (timeSerieMode){
-                                    search_options.precision = precision;
-                                    search_options.periodic = periodic;
-                                }
-
-                                // is there a timescale override ?
-                                if(query.timescale){
-                                     var tokens = query.timescale.split(' ');
-                                     search_options.precision = tokens[0];
-                                     search_options.periodic = tokens.length == 2 ? tokens[1] : '';
-                                }
-
-                                yAxisesIndexes[query.config.dataset] = {};
-
-                                angular.forEach(query.charts, function(chart, index){
-                                    if(['arearange', 'areasplinerange', 'columnrange'].indexOf(chart.type) >= 0){
-                                        chart.func = 'COUNT';
-                                        if(!chart.charts){
-                                            chart.charts = [
-                                                {
-                                                    func: 'MIN',
-                                                    expr: chart.yAxis
-                                                },
-                                                {
-                                                    func: 'MAX',
-                                                    expr: chart.yAxis
-                                                }
-                                            ];
-                                        }
-                                        if(chart.charts[0].func === 'QUANTILES' && !chart.charts[0].subsets){
-                                            chart.charts[0].subsets = 5;
-                                        }
-                                        if(chart.charts[1].func === 'QUANTILES' && !chart.charts[1].subsets){
-                                            chart.charts[1].subsets = 95;
-                                        }
-                                        $.each(chart.charts[0], function(key, value){
-                                            search_options['y.serie' + (index+1) + 'min.'+key] = value;
-                                        });
-                                        $.each(chart.charts[1], function(key, value){
-                                            search_options['y.serie' + (index+1) + 'max.'+key] = value;
-                                        });
-
-                                        if(query.sort ===  'serie' + (index+1)) {
-                                            // cannot sort on range
-                                            search_options.sort = '';
-                                        }
-                                    } else {
-                                        if(chart.charts){
-                                            delete chart.charts;
-                                        }
-                                        search_options['y.serie' + (index+1) + '.expr'] = chart.yAxis;
-                                        search_options['y.serie' + (index+1) + '.func'] = chart.func;
-                                        search_options['y.serie' + (index+1) + '.cumulative'] = chart.cumulative || false;
-                                        if(chart.func === 'QUANTILES'){
-                                            if (!chart.subsets){
-                                                chart.subsets = 50;
+                        var options = getGlobalOptions(parameters);
+                        angular.forEach(parameters.queries, function(query) {
+                            var datasetid = getDatasetUniqueId(query.config.dataset);
+                            yAxisesIndexes[datasetid] = {};
+                            angular.forEach(query.charts, function(chart) {
+                                var yLabel = ChartHelper.getYLabel(datasetid, chart);
+                                if(!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])){
+                                    // we dont yet have an axis for this column :
+                                    // Create axis and register it in yAxisesIndexes
+                                    yAxisesIndexes[datasetid][yLabel] = options.yAxis.push({
+                                        // labels:
+                                        title: {
+                                            text: yLabel,
+                                            style: {
+                                                color: chart.color
                                             }
-                                            search_options['y.serie' + (index+1) + '.subsets'] = chart.subsets;
-                                        }
-                                    }
+                                        },
+                                        labels: {
+                                            style: {
+                                                color: chart.color
+                                            }
+                                        },
+                                        type: chart.scale || 'linear',
+                                        opposite: !!(options.yAxis.length)  //boolean casting
+                                    }) - 1;
+                                }
 
-                                    if(!scope.parameters.singleAxis && angular.isUndefined(yAxisesIndexes[query.config.dataset][chart.yAxis])){
-                                        // we dont yet have an axis for this column :
-                                        // Create axis and register it in yAxisesIndexes
-                                        yAxisesIndexes[query.config.dataset][chart.yAxis] = options.yAxis.push({
-                                           // labels:
-                                           title: {
-                                               text: chart.yLabel,
-                                               style: {
-                                                   color: chart.color
-                                               }
-                                           },
-                                           labels: {
-                                               style: {
-                                                   color: chart.color
-                                               }
-                                           },
-                                           type: chart.scale || 'linear',
-                                           opposite: !!(options.yAxis.length)  //boolean casting
-                                        }) - 1;
-                                    }
-
-                                    // instantiate series
-                                    options.series.push($.extend({}, {
-                                        name: chart.yLabel,
-                                        color: chart.color,
-                                        type: chart.type,
-                                        yAxis: scope.parameters.singleAxis ? 0 : yAxisesIndexes[query.config.dataset][chart.yAxis],
-                                        marker: { enabled: false },
-                                        shadow: false,
-                                        tooltip: {},
-                                        data: []
-                                    }, chart.extras));
-
-                                    if( chart.type == 'bar') {
-                                        // bar chart invert axis, thus we have to cancel the label rotation
-                                        options.xAxis.labels.rotation = 0;
-                                    }
-                                    options.colors.push(chart.color);
-                                });
-
-                                // Analyse request
-                                // We have to build virtual contexts from parameters because we can source charts from multiple
-                                // datasets.
-                                var virtualContext = {
-                                    domain: scope.domain,
-                                    domainUrl: ODSAPI.getDomainURL(scope.domain),
-                                    dataset: {'datasetid': search_options.dataset},
-                                    apikey: scope.apikey,
-                                    parameters: {}
-                                };
-
-                                search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, query.config.options, search_options)));
+                                // instantiate series
+                                options.series.push(getSerieOptions(parameters, query, chart));
+                                
+                                if( chart.type == 'bar') {
+                                    // bar chart invert axis, thus we have to cancel the label rotation
+                                    options.xAxis.labels.rotation = 0;
+                                }
+                                options.colors.push(chart.color);
                             });
 
-                            // wait for all datas to come back
-                            $q.all(search_promises).then(function(http_calls){
-                                // compute
-                                var series_index = 0;
+                        });
 
-                                // If there is both periodic & datetime timescale, we need to find the min date to properly offset the periodic data
-                                var minDate;
-                                if (precision) {
-                                    angular.forEach(http_calls, function(http_call, index){
-                                        var nb_series = scope.parameters.queries[index].charts.length;
-                                        for (var i=0; i < http_call.data.length; i++) {
-                                            var row = http_call.data[i];
-
-                                            if(row.x.year){
-                                                var date = new Date(row.x.year, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
-                                                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
-                                                date.setFullYear(row.x.year);
-                                                if(minDate === undefined || date < minDate) {
-                                                    minDate = date;
-                                                }
-                                            }
-                                        }
-                                    });
+                        function getValue(value, chart){
+                            if(chart.func === 'QUANTILES' && chart.subsets) {
+                                // elastic search now returns a float value as key, for now we just hack the thing to get the correct key
+                                return value[chart.subsets + ".0"];
+                            } else {
+                                if (typeof value === "undefined") {
+                                    return null;
+                                } else {
+                                    return value;
                                 }
+                            }
+                        }
 
-                                function getValue(value, chart){
-                                    if(chart.subsets) {
-                                        return value[chart.subsets + ".0"];
-                                    } else {
-                                        return value;
-                                    }
-                                }
+                        requestData(parameters.queries, timeSerieMode, precision, periodic, scope.domain, scope.apikey, function(http_calls){
+                            // compute
+                            var series_index = 0;
 
-                                angular.forEach(http_calls, function(http_call, index){
-                                    // transform data format to a format understood by the chart plugin
-                                    var nb_series = scope.parameters.queries[index].charts.length;
-
+                            // If there is both periodic & datetime timescale, we need to find the min date to properly offset the periodic data
+                            var minDate;
+                            if (precision) {
+                                for (var h = 0; h < http_calls.length; h++) {
+                                    var http_call = http_calls[h];
                                     for (var i=0; i < http_call.data.length; i++) {
                                         var row = http_call.data[i];
-                                        for (var j=0; j < nb_series; j++) {
-                                            var chart = scope.parameters.queries[index].charts[j];
-                                            if (precision) {
-                                                // options.series[series_index + j].pointPlacement = 'between';
-                                                options.series[series_index + j].pointPadding = 0;
-                                                options.series[series_index + j].groupPadding = 0;
-                                                options.series[series_index + j].borderWidth = 0;
+                                        if(row.x.year){
+                                            var date = new Date(row.x.year, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
+                                            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
+                                            date.setFullYear(row.x.year);
+                                            if(minDate === undefined || date < minDate) {
+                                                minDate = date;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            angular.forEach(http_calls, function(http_call, index){
+                                // transform data format to a format understood by the chart plugin
+                                var nb_series = parameters.queries[index].charts.length;
+                                for (var i=0; i < http_call.data.length; i++) {
+                                    var row = http_call.data[i];
+                                    var serie_options = getContextualizedSeriesOptions(row, options);
+                                    var dateX = getDateFromRow(row, minDate);
+                                    var valueX;
 
-                                                // TimeSerie structure is different
-                                                // push row data into proper serie data array
-                                                var date;
-                                                // default to 2000 because it's a leap year
-                                                date = new Date(row.x.year || 2000, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
-                                                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
-                                                date.setFullYear(row.x.year || 2000);
-                                                if(! ('year' in row.x)){
-                                                    if(minDate){
-                                                        date.setYear(minDate.getFullYear());
-                                                    }
-                                                    if('month' in row.x){
-                                                        options.series[series_index + j].tooltip.xDateFormat = '%B';
-                                                    }
-                                                    if('day' in row.x){
-                                                        if('month' in row.x){
-                                                            options.series[series_index + j].tooltip.xDateFormat = '%e %B';
-                                                        } else {
-                                                            options.series[series_index + j].tooltip.xDateFormat = '%e';
-                                                        }
-                                                    }
-                                                    if('weekday' in row.x){
-                                                        date.setDate(date.getDate() - (date.getDay() - 1) + row.x.weekday); // a bit ugly
-                                                        // need to set a date that starts with a monday, then add the weekday offset ?
-                                                        options.series[series_index + j].tooltip.xDateFormat = '%a';
-                                                    }
-                                                    if('hour' in row.x){
-                                                         options.series[series_index + j].tooltip.xDateFormat = '%Hh';
-                                                    }
+                                    if (dateX && precision) {
+                                        valueX = dateX.getTime();
+                                    } else if (dateX) {
+                                        valueX = Highcharts.dateFormat(serie_options.tooltip.xDateFormat, dateX);
+                                    } else {
+                                        valueX = "" + row.x;
+                                    }
+
+                                    for (var j=0; j < nb_series; j++) {
+                                        var current_serie = series_index + j;
+                                        var chart = parameters.queries[index].charts[j];
+                                        var serie = options.series[current_serie];
+
+                                        serie = angular.extend(serie, serie_options);
+
+                                        if (options.xAxis.type === 'datetime') {
+                                            if(['arearange', 'areasplinerange', 'columnrange'].indexOf(serie.type) >= 0){
+                                                var min = getValue(row["serie"+(j+1)+"min"], chart.charts[0]);
+                                                var max = getValue(row["serie"+(j+1)+"max"], chart.charts[1]);
+                                                if (scope.parameters.singleAxisScale === 'logarithmic' && (min <= 0 || max <= 0)) {
+                                                    serie.data.push([
+                                                        valueX,
+                                                        null,
+                                                        null
+                                                    ]);
                                                 } else {
-                                                    var pattern = '';
-                                                    if('day' in row.x){
-                                                        pattern += ' %e';
-                                                    }
-                                                    if('month' in row.x){
-                                                        pattern += ' %B';
-                                                    }
-                                                    pattern += ' %Y';
-
-                                                    if('hour' in row.x){
-                                                        if('minute' in row.x){
-                                                             pattern += ' %Hh%M';
-                                                        } else {
-                                                            pattern +=' %Hh';
-                                                        }
-                                                    }
-                                                    options.series[series_index + j].tooltip.xDateFormat = pattern;
+                                                    serie.data.push([
+                                                        valueX,
+                                                        min,
+                                                        max
+                                                    ]);
                                                 }
-
-                                                if('month' in row.x){
-                                                    options.series[series_index + j].pointRange = 30.5*24*3600*1000;
-                                                }
-                                                if('day' in row.x){
-                                                    // handle bisextil years
-                                                    if(row.x.day == 29 && row.x.month == 2) {
-                                                        date.setDate(28);
-                                                        date.setMonth(1);
-                                                    }
-                                                    options.series[series_index + j].pointRange = 24*3600*1000;
-                                                } else {
-                                                    if('month' in row.x){
-                                                        date.setDate(16);
-                                                    }
-                                                }
-                                                if('weekday' in row.x){
-                                                    options.series[series_index + j].pointRange = 24*3600*1000;
-                                                }
-                                                if('hour' in row.x){
-                                                     options.series[series_index + j].pointRange = 3600*1000;
-                                                }
-
-                                                if(['arearange', 'areasplinerange', 'columnrange'].indexOf(options.series[series_index + j].type) >= 0){
-                                                    options.series[series_index + j].data.push([date.getTime(), getValue(row["serie"+(j+1)+"min"], chart.charts[0]), getValue(row["serie"+(j+1)+"max"], chart.charts[1])]);
-                                                } else {
-                                                    options.series[series_index + j].data.push([date.getTime(), getValue(row["serie"+(j+1)], chart)]);
-                                                }
+                                            } else if (serie.type == 'pie') {
+                                                serie.data.push([
+                                                    Highcharts.dateFormat(serie_options.tooltip.xDateFormat, new Date(dateX)),
+                                                    getValue(row["serie"+(j+1)], chart)
+                                                ]);
                                             } else {
-                                                // push row data into proper serie data array
-                                                if(options.series[series_index + j].type == 'pie') {
-                                                    options.series[series_index + j].data.push([formatRowX(row.x) , getValue(row["serie"+(j+1)], chart)]);
+                                                var value = getValue(row["serie"+(j+1)], chart);
+                                                if (scope.parameters.singleAxisScale === 'logarithmic' && value <= 0) {
+                                                    serie.data.push([valueX, null]);
                                                 } else {
-                                                    if(['arearange', 'areasplinerange', 'columnrange'].indexOf(options.series[series_index + j].type) >= 0){
-                                                        options.series[series_index + j].data.push([getValue(row["serie"+(j+1)+"min"], chart.charts[0]), getValue(row["serie"+(j+1)+"max"], chart.charts[1])]);
+                                                    serie.data.push([valueX, value]);
+                                                }
+                                            }
+                                        } else { // !precision
+                                            // push row data into proper serie data array
+                                            if(serie.type == 'pie') {
+                                                serie.data.push([formatRowX(row.x), getValue(row["serie"+(j+1)], chart)]);
+                                            } else {
+                                                if(['arearange', 'areasplinerange', 'columnrange'].indexOf(serie.type) >= 0){
+                                                    var min = getValue(row["serie"+(j+1)+"min"], chart.charts[0]);
+                                                    var max = getValue(row["serie"+(j+1)+"max"], chart.charts[1]);
+                                                    if (scope.parameters.singleAxisScale === 'logarithmic' && (min <= 0 || max <= 0)) {
+                                                        serie.data.push([null, null]);
                                                     } else {
-                                                        options.series[series_index + j].data.push(getValue(row["serie"+(j+1)], chart));
+                                                        serie.data.push([min, max]);
+                                                    }
+                                                } else {
+                                                    var value = getValue(row["serie"+(j+1)], chart);
+                                                    if (scope.parameters.singleAxisScale === 'logarithmic' && value <= 0) {
+                                                        serie.data.push(null);
+                                                    } else {
+                                                        serie.data.push(value);
                                                     }
                                                 }
                                             }
                                         }
-                                        if(!precision){
-                                            options.xAxis.categories.push(formatRowX(row.x));
-                                        }
-                                    }
-                                    series_index += nb_series;
-                                });
-
-                                // render the charts
-                                try {
-                                    chartplaceholder.css('height', chartplaceholder.height());
-                                    scope.chart = chartplaceholder.highcharts(options);
-                                    chartplaceholder.css('height', '');
-                                } catch (errorMsg) {
-                                    if(errorMsg.indexOf('Highcharts error #19') === 0){
-                                        // too many ticks
-                                        angular.forEach(scope.parameters.queries, function(query){
-                                            query.maxpoints = 20;
-                                        });
                                     }
                                 }
+
+                                series_index += nb_series;
                             });
-                        }
-                    }, true);
+
+                            // render the charts
+                            if (scope.chart && options.chart.renderTo) {
+                                scope.chart.destroy();
+                                chartplaceholder = element.find('.chartplaceholder');
+                            }
+                            options.chart.renderTo = chartplaceholder[0];
+
+                            try {
+                                scope.chart = new Highcharts.Chart(options, function() {});
+                            } catch (errorMsg) {
+                                if(errorMsg.indexOf && errorMsg.indexOf('Highcharts error #19') === 0){
+                                    // too many ticks
+                                    odsErrorService.sendErrorNotification(translate("There was too many points to display, the maximum number of points has been decreased."));
+                                    angular.forEach(scope.parameters.queries, function(query){
+                                        query.maxpoints = 20;
+                                    });
+                                } else {
+                                    if (angular.isString(errorMsg)) {
+                                        odsErrorService.sendErrorNotification(errorMsg);
+                                    } else {
+                                        odsErrorService.sendErrorNotification(errorMsg.message);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    update();
                 });
+                
+                scope.$on('chartConfigReady', function(event, parameters) {
+                    update(parameters);
+                });
+
+                scope.updateChart = update;
             }
         };
     }]);
-
 
     mod.directive('odsHighcharts', function() {
         /**
@@ -6995,20 +8768,25 @@ else {
             },
             replace: true,
             template: '<div class="odswidget odswidget-highcharts"><div ods-chart="chart" domain="context.domain" apikey="context.apikey"></div></div>',
-            controller: ['$scope', 'ODSWidgetsConfig', function($scope, ODSWidgetsConfig) {
-                var color = ODSWidgetsConfig.chartColors || defaultColors;
+            controller: ['$scope', 'ODSWidgetsConfig', 'ChartHelper', function($scope, ODSWidgetsConfig, ChartHelper) {
+
+                var colors = ODSWidgetsConfig.chartColors || defaultColors;
                 if ($scope.color) {
-                    color = $scope.color.split(',').map(function(item) { return item.trim(); });
+                    colors = $scope.color.split(',').map(function(item) { return item.trim(); });
                 }
+
                 var unwatch = $scope.$watch('context.dataset', function(nv) {
                     if (nv) {
                         if ($scope.context.type !== 'dataset') {
                             console.error('ods-highcharts requires a Dataset Context');
                         }
+
+                        $scope.context.dataset.metas.domain = $scope.context.domain;
+                        ChartHelper.init($scope.context.dataset);
                         if (angular.isUndefined($scope.chartConfig)) {
                             var extras = {};
                             if ($scope.chartType === 'pie') {
-                                extras = {colors: color};
+                                extras = {'colors': colors};
                             }
                             // Sort: x, -x, y, -y
                             var sort = '';
@@ -7038,7 +8816,7 @@ else {
                                                 yAxis: $scope.expressionY,
                                                 yLabel: yLabel,
                                                 func: $scope.functionY,
-                                                color: color[0],
+                                                color: colors[0],
                                                 type: $scope.chartType,
                                                 extras: extras
                                             }
@@ -7053,6 +8831,14 @@ else {
                                 $scope.chart = $scope.chartConfig;
                             }
                         }
+                        $scope.$broadcast('chartConfigReady', $scope.chart);
+
+                        $scope.$watch('chart', function(nv) {
+                            if (nv || ov) {
+                                $scope.$broadcast('chartConfigReady', $scope.chart);
+                            }
+                        }, true);
+
                         unwatch();
                     }
                 });
@@ -7060,7 +8846,7 @@ else {
         };
     });
 
-    mod.directive('odsMultiHighcharts', function() {
+    mod.directive('odsMultiHighcharts', ["ODSAPI", 'ChartHelper', '$q', function(ODSAPI, ChartHelper, $q) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsMultiHighcharts
@@ -7086,17 +8872,38 @@ else {
                     if (nv.type !== 'catalog') {
                         console.error('ods-multi-highcharts requires a Catalog Context');
                     }
+                    var chartConfig;
                     if (angular.isString($scope.chartConfig)) {
-                        $scope.chart = JSON.parse(atob($scope.chartConfig));
+                        chartConfig = JSON.parse(atob($scope.chartConfig));
                     } else {
-                        $scope.chart = $scope.chartConfig;
+                        chartConfig = $scope.chartConfig;
                     }
+
+                    var datasets = [];
+                    for (var i = 0; i < chartConfig.queries.length; i++) {
+                        var datasetid = chartConfig.queries[i].config.dataset;
+                        if (datasets.indexOf(datasetid) === -1) {
+                            datasets.push(datasetid);
+                        }
+                    }
+                    var requests = [];
+                    for (var i = 0; i < datasets.length; i++) {
+                        requests.push(ODSAPI.datasets.get($scope.context, datasets[i], {extrametas: true}).
+                            success(function(data) {
+                                var dataset = new ODS.Dataset(data);
+                                dataset.metas.domain = $scope.context.domain;
+                                ChartHelper.init(dataset);
+                            }));
+                    }
+                    $q.all(requests).then(function(arg) {
+                        $scope.chart = chartConfig;
+                        $scope.$broadcast('chartConfigReady', $scope.chart);
+                    });
                     unwatch();
                 });
             }]
         };
-    });
-
+    }]);
 }());
 ;(function() {
     'use strict';
@@ -7132,7 +8939,7 @@ else {
                 '       <ods-theme-picto theme="{{dataset.metas.theme}}"></ods-theme-picto>' +
                 '       <div class="dataset-details">' +
                 '           <div class="title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
-                '           <div class="modified"><i class="icon-calendar"></i> <span title="{{ dataset.metas.modified|moment:\'LLL\' }}"><translate>Modified</translate> {{ dataset.metas.modified|timesince }}</span></div>' +
+                '           <div class="modified"><i class="icon-calendar"></i> <span title="{{ dataset.metas.modified|moment:\'LLL\' }}"><span translate>Modified</span> {{ dataset.metas.modified|timesince }}</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
@@ -7203,9 +9010,9 @@ else {
             controller: ['$scope', function($scope) {
                 var refresh = function() {
                     // TODO: If the context is a dataset-context
-                    ODSAPI.reuses($scope.context, {'rows': 5, 'sort': 'modified'}).
+                    ODSAPI.reuses($scope.context, {'rows': 5}).
                         success(function(data) {
-                            $scope.reuses = data;
+                            $scope.reuses = data.reuses;
                         });
                 };
                 $scope.$watch('context', function() {
@@ -7808,6 +9615,25 @@ else {
                 var refreshRecords = function(globalSearch) {
                     var DOWNLOAD_CAP = 200;
                     var SHAPEPREVIEW_HIGHCAP = 500000;
+
+                    var refresh = function(data) {
+                        if (data.count < DOWNLOAD_CAP || $scope.map.getZoom() === $scope.map.getMaxZoom()) {
+                            // Low enough: always download
+                            refreshRawGeo();
+                        } else if (data.count < SHAPEPREVIEW_HIGHCAP) {
+                            // We take our decision depending on the content of the envelope
+                            if (data.geometries.Point && data.geometries.Point > data.count/2) {
+                                refreshClusteredGeo();
+                            } else {
+                                refreshShapePreview();
+                            }
+
+                        } else {
+                            // Cluster no matter what
+                            refreshClusteredGeo();
+                        }
+                    };
+
                     var options = {};
                     if (!globalSearch) {
                         // Stay within the viewport
@@ -7821,32 +9647,19 @@ else {
                                 var oldBounds = $scope.map.getBounds();
                                 $scope.map.fitBounds([[data.bbox[1], data.bbox[0]], [data.bbox[3], data.bbox[2]]]);
                                 var newBounds = $scope.map.getBounds();
-
+                                // FIXME: This comparison doesn't seem to work very much... but worst case we run
+                                // two queries, and the first one is immediately cancelled
                                 if (angular.equals(oldBounds, newBounds)) {
                                     // We need a refresh even though the map didn't move
-                                    refreshRawGeo();
+                                    refresh(data);
                                 }
 
                             } else {
                                 // We know we have no data, and we can't count on a viewport move to refresh it
-                                refreshRawGeo();
+                                refresh(data);
                             }
                         } else {
-                            if (data.count < DOWNLOAD_CAP || $scope.map.getZoom() === $scope.map.getMaxZoom()) {
-                                // Low enough: always download
-                                refreshRawGeo();
-                            } else if (data.count < SHAPEPREVIEW_HIGHCAP) {
-                                // We take our decision depending on the content of the envelope
-                                if (data.geometries.Point && data.geometries.Point > data.count/2) {
-                                    refreshClusteredGeo();
-                                } else {
-                                    refreshShapePreview();
-                                }
-
-                            } else {
-                                // Cluster no matter what
-                                refreshClusteredGeo();
-                            }
+                            refresh(data);
                         }
                     });
                 };
@@ -7965,6 +9778,8 @@ else {
                                     DebugLogger.log(center, zoom);
                                     nv.setView(center, zoom);
 
+                                    refreshRecords(false);
+
                                     deferred.resolve();
                                 } else {
                                     DebugLogger.log('Use boundsRetrieval');
@@ -7988,8 +9803,6 @@ else {
                             setMapView().then(function() {
                                 DebugLogger.log('First onViewportMove');
                                 onViewportMove($scope.map);
-
-                                refreshRecords(false);
 
                                 $scope.map.on('moveend', function(e) {
                                     // Whenever the map moves, we update the displayed data
@@ -8208,7 +10021,7 @@ else {
                 '   <li ng-repeat="theme in themes" ng-if="themes">' +
                 '       <div class="dataset-details">' +
                 '           <div class="name"><a ng-href="{{ context.domainUrl }}/explore/?refine.theme={{ theme.path }}" target="_self">{{ theme.name }}</a></div>' +
-                '           <div class="count"><i class="icon-table"></i> <translate>Used by</translate> {{ theme.count }} ' + "<span ng-pluralize count=\"theme.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
+                '           <div class="count"><i class="icon-table"></i> <span translate>Used by</span> {{ theme.count }} ' + "<span ng-pluralize count=\"theme.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
@@ -8289,8 +10102,8 @@ else {
             template: '<div class="odswidget odswidget-result-enumerator">' +
                 '<div ods-results="items" ods-results-context="context" ods-results-max="{{max}}">' +
                 '<div ng-if="!items.length" class="no-results" translate>No results</div>' +
-                '<div ng-if="items.length && hitsCounter" class="results-count">{{items.length}} <translate>results</translate></div>' +
-                '<div ng-repeat="item in items" inject class="item""></div>' +
+                '<div ng-if="items.length && hitsCounter" class="results-count">{{items.length}} <span translate>results</span></div>' +
+                '<div ng-repeat="item in items" inject class="item"></div>' +
                 '</div>' +
                 '</div>',
             controller: ['$scope', function($scope) {
@@ -8346,10 +10159,10 @@ else {
             restrict: 'A',
             scope: true,
             priority: 1001, // ng-repeat need to be executed when the results is in the scope.
-            controller: function($scope, $attrs) {
-                var init = $scope.$watch($attrs['odsResultsContext'], function(nv) {
-                    var options = angular.extend({}, nv.parameters, {'rows': $attrs['odsResultsMax']});
-                    var variable = $attrs['odsResults'] || 'results';
+            controller: ['$scope', '$attrs', function($scope, $attrs) {
+                $scope.$watch($attrs.odsResultsContext, function(nv) {
+                    var options = angular.extend({}, nv.parameters, {'rows': $attrs.odsResultsMax});
+                    var variable = $attrs.odsResults || 'results';
                     if (nv.type === 'catalog') {
                         ODSAPI.datasets.search(nv, options).success(function(data) {
                             $scope[variable] = data.datasets;
@@ -8358,17 +10171,93 @@ else {
                         ODSAPI.records.search(nv, options).success(function(data) {
                             $scope[variable] = data.records;
                         });
-                    } else {
-                        return;
                     }
-                    init();
                 }, true);
-            }
+            }]
         };
     }]);
 
 }());
 ;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('odsReuses', ['ODSAPI', 'ODSWidgetsConfig', '$sce', function(ODSAPI, ODSWidgetsConfig, $sce) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsReuses
+         * @scope
+         * @restrict E
+         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
+         * @description
+         * This widget displays all reuses published on a domain, in a infinite list of large boxes that presents them
+         * in a clear display. The lists show the more recent reuses first.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="paris" paris-domain="http://opendata.paris.fr">
+         *              <ods-reuses context="paris"></ods-reuses>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
+         */
+        return {
+            restrict: 'E',
+            replace: true,
+            templateUrl: $sce.trustAsResourceUrl(ODSWidgetsConfig.basePath + 'templates/reuses.html'),
+            scope: {
+                context: '='
+            },
+            controller: ['$scope', function($scope) {
+                // Infinite scroll parameters
+                var done = false;
+                var fetching = false;
+                var numberReuses = 0;
+                var page = 1;
+                var resultsPerPage = 20;
+
+                $scope.reuses = [];
+
+                $scope.loadMore = function() {
+                    if ($scope.reuses.length && !done && !fetching) {
+                        fetching = true;
+                        var start = page * resultsPerPage;
+                        ODSAPI.reuses($scope.context, {'rows': resultsPerPage, 'start': start}).
+                            success(function(data) {
+                                $scope.reuses = $scope.reuses.concat(data.reuses);
+                                done = (page + 1) * resultsPerPage >= numberReuses;
+                                page++;
+                                fetching = false;
+                            }).
+                            error(function() {
+                                fetching = false;
+                            });
+                    }
+                };
+
+                var refresh = function() {
+                    fetching = true;
+                    ODSAPI.reuses($scope.context, {'rows': resultsPerPage}).
+                        success(function(data) {
+                            $scope.reuses = data.reuses;
+                            done = resultsPerPage >= data.nhits;
+                            numberReuses = data.nhits;
+                            fetching = false;
+                        }).
+                        error(function(data) {
+                            fetching = false;
+                        });
+                };
+                $scope.$watch('context', function() {
+                    refresh();
+                });
+            }]
+        };
+    }]);
+
+}());;(function() {
     'use strict';
     var mod = angular.module('ods-widgets');
 
@@ -8423,7 +10312,6 @@ else {
          * @scope
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {string} [displayedFields=all] A comma-separated list of fields to display. By default all the available fields are displayed.
-         * @param {string} [sort=none] Sort expression to apply initially (*field* or *-field*)
          *
          * @description
          * This widget displays a table view of a dataset, with infinite scroll and an ability to sort columns (depending on the
@@ -9064,7 +10952,7 @@ else {
             template: '<div class="odswidget odswidget-tag-cloud">' +
                     '<ul>' +
                     '<li class="no-data" ng-hide="tags" translate>No data available yet</li>' +
-                    '<li ng-repeat="tag in tags" class="tag tag{{ tag.weight }}" style="font-size: {{ tag.size }}em; opacity: {{ tag.opacity }}"><a ng-href="{{ context.domainUrl }}{{url }}/?refine.{{ facetName }}={{ tag.name }}">{{ tag.name }}</a></li>' +
+                    '<li ng-repeat="tag in tags" class="tag tag{{ tag.weight }}" ng-style="{\'font-size\': tag.size + \'em\', \'opacity\': tag.opacity}"><a ng-href="{{ context.domainUrl }}{{url }}/?refine.{{ facetName }}={{ tag.name }}">{{ tag.name }}</a></li>' +
                     '</ul>' +
                 '</div>',
             scope: {
@@ -9324,8 +11212,8 @@ else {
                 defaultTo: '@?'
             },
             template: '<div class="odswidget odswidget-timerange">' +
-                    '<span class="odswidget-timerange-from"><translate>From</translate> <input type="text"></span>' +
-                    '<span class="odswidget-timerange-to"><translate>to</translate> <input type="text"></span>' +
+                    '<span class="odswidget-timerange-from"><span translate>From</span> <input type="text"></span>' +
+                    '<span class="odswidget-timerange-to"><span translate>to</span> <input type="text"></span>' +
                 '</div>',
             link: function(scope, element, attrs) {
                 var inputs = element.find('input');
@@ -9361,9 +11249,20 @@ else {
             controller: ['$scope', function($scope) {
                 var timeField = $scope.timeField;
 
-                var init = $scope.$watch('context.dataset', function(nv) {
-                    if (nv) {
-                        if (angular.isUndefined(timeField)) {
+                var runWatcher = function() {
+                    $scope.$watch('[from, to]', function(nv) {
+                        if (nv[0] && nv[1]) {
+                            $scope.context.parameters.q = timeField+':[' + $scope.from + ' TO ' + $scope.to + ']';
+                        }
+                    }, true);
+                };
+
+                if (angular.isUndefined(timeField)) {
+                    // FIXME: By setting our filters later, we take the risk of having a first query sent somewhere else (e.g. a table) both before and after the filter.
+
+                    // We need to gather the time field before applying our filter
+                    var init = $scope.$watch('context.dataset', function(nv) {
+                        if (nv) {
                             var timeFields = nv.fields.filter(function(item) { return item.type === 'date' || item.type === 'datetime'; });
                             if (timeFields.length > 1) {
                                 console.log('Warning: the dataset "'+nv.datasetid+'" has more than one date or datetime field, the first date or datetime field will be used. You can specify the field to use using the "time-field" parameter.');
@@ -9372,17 +11271,13 @@ else {
                                 console.log('Error: the dataset "'+nv.datasetid+'" doesn\'t have any date or datetime field, which is required for the Timerange widget.');
                             }
                             timeField = timeFields[0].name;
+                            runWatcher();
+                            init();
                         }
-
-                        $scope.$watch('[from, to]', function(nv) {
-                            if (nv[0] && nv[1]) {
-                                $scope.context.parameters.q = timeField+':[' + $scope.from + ' TO ' + $scope.to + ']';
-                            }
-                        }, true);
-
-                        init();
-                    }
-                });
+                    });
+                } else {
+                    runWatcher();
+                }
 
             }]
         };
@@ -9555,7 +11450,7 @@ else {
                 '   <li ng-repeat="publisher in publishers" ng-if="publishers">' +
                 '       <div class="dataset-details">' +
                 '           <div class="name"><a ng-href="{{ context.domainUrl }}/explore/?refine.publisher={{ publisher.path }}" target="_self">{{ publisher.name }}</a></div>' +
-                '           <div class="count"><i class="icon-table"></i> <translate>Used by</translate> {{ publisher.count }} ' + "<span ng-pluralize count=\"publisher.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
+                '           <div class="count"><i class="icon-table"></i> <span translate>Used by</span> {{ publisher.count }} ' + "<span ng-pluralize count=\"publisher.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
@@ -9613,6 +11508,59 @@ else {
                     '<a class="twitter-timeline" href="https://twitter.com/twitterapi" data-widget-id="'+attrs.widgetId+'">Tweets</a>' +
                     '<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>';
                 element.append(html);
+            }
+        };
+    });
+}());;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('inject', function(){
+        // Thank you petebacondarwin: https://github.com/angular/angular.js/issues/7874#issuecomment-47647003
+        return {
+            link: function($scope, $element, $attrs, controller, $transclude) {
+                var innerScope = $scope.$new();
+                $transclude(innerScope, function(clone) {
+                    $element.empty();
+                    $element.append(clone);
+                    $element.on('$destroy', function() {
+                    innerScope.$destroy();
+                    });
+                });
+            }
+        };
+    });
+
+    mod.directive('fullClick', function(){
+        return {
+            restrict: 'A',
+            link: function(scope, element, attrs) {
+                if (attrs.fullClick) {
+                    element.find('[main-click]').attr('href', attrs.fullClick);
+                }
+                element.click(function(evt){
+                    if (!$(evt.target).is('a,button,[ng-click]') && // The element is not a link in itself
+                        ($(evt.target).parents('a,button,[ng-click]').length === 0) && // The element is not within a clickable element
+                        element.find('[main-click]').length) {
+                        if (document.createEvent){
+                            // Web Browsers
+                            // you cannot redispatch an existing event :(
+                            var cloneEvent = document.createEvent('MouseEvents');
+                            var e = evt.originalEvent;
+                            cloneEvent.initMouseEvent(e.type, e.bubbles, e.cancelable, window, e.detail,
+                                e.screenX, e.screenY, e.clientX, e.clientY, e.ctrlKey, e.altKey, e.shiftKey,
+                                e.metaKey, e.button, e.relatedTarget);
+
+                            element.find('[main-click]')[0].dispatchEvent(cloneEvent);
+                        } else if (document.createEventObject){
+                            // IE
+                            // This should be the proper way to do it, but it doesn't work :/
+                            // element.find('[main-click]')[0].fireEvent('onclick', document.createEventObject())
+                            window.location = element.find('[main-click]')[0].href;
+                        }
+                    }
+                });
             }
         };
     });

@@ -42,6 +42,8 @@
          *
          *  * **`apikey`** {@type string} (optional) API Key to use in every API call for this context
          *
+         *  * **`sort`** {@type string} (optional) Sort expression to apply initially (*field* or *-field*)
+         *
          *  * **`parameters`** {@type Object} (optional) An object holding parameters to apply to the context when it is created. Any parameter from the API can be used here (such as `q`, `refine.FIELD` ...)
          *
          *  * **`parametersFromContext`** {@type string} (optional) The name of a context to replicate the parameters from. Any change of the parameters
@@ -89,7 +91,7 @@
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
         var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext) {
             var contextParams;
-            if (parameters) {
+            if (!angular.equals(parameters, {})) {
                 contextParams = parameters;
             } else if (parametersFromContext) {
                 var unwatch = scope.$watch(parametersFromContext, function(nv, ov) {
@@ -111,9 +113,9 @@
                 'dataset': null,
                 'parameters': contextParams
             };
-            ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true}).
+            ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true, interopmetas: true}).
                 success(function(data) {
-                    scope[contextName].dataset = data;
+                    scope[contextName].dataset = new ODS.Dataset(data);
                 });
         };
 
@@ -137,8 +139,13 @@
                     }
 
                     var apikey = attrs[contextName+'Apikey'];
-                    var parameters = scope.$eval(attrs[contextName+'Parameters']);
+                    var sort = attrs[contextName+'Sort'];
+                    var parameters = scope.$eval(attrs[contextName+'Parameters']) || {};
                     var parametersFromContext = attrs[contextName+'ParametersFromContext'];
+
+                    if (sort) {
+                        parameters.sort = sort;
+                    }
 
                     exposeContext(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext);
                 }

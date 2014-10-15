@@ -11,7 +11,6 @@
          * @scope
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {string} [displayedFields=all] A comma-separated list of fields to display. By default all the available fields are displayed.
-         * @param {string} [sort=none] Sort expression to apply initially (*field* or *-field*)
          *
          * @description
          * This widget displays a table view of a dataset, with infinite scroll and an ability to sort columns (depending on the

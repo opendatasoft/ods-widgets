@@ -74,7 +74,12 @@ in the distribution.
 
 Note: When including the scripts in your page, you need to include jQuery, then AngularJS, then angular-sanitize, then ODS-Widgets.
 
-If you want to improve compatibility with Internet Explorer 8, you can also load `ieshiv.js` (or the minified version). It must be loaded before AngularJS is loaded.
+If you want to improve compatibility with Internet Explorer 8, you can also load `ieshiv.js` (or the minified version). It must be loaded in the HEAD part of the page.
+```html
+<!--[if lte IE 8]>
+<script type="text/javascript" src="dist/ieshiv.js"></script>
+<![endif]-->
+```
 
 ODS-Widgets require an AngularJS app to run, which can for example be done with a simple `ng-app="ods-widgets"`:
 ```html

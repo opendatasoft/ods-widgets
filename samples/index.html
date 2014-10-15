@@ -7,6 +7,9 @@
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
         <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
         <link rel="stylesheet" href="../dist/ods-widgets.css">
+        <!--[if lte IE 8]>
+        <script type="text/javascript" src="../dist/ieshiv.js"></script>
+        <![endif]-->
     </head>
     <body>
         <div class="container-fluid" ng-app="ods-widgets">
@@ -41,6 +44,9 @@
                         <div class="col-md-4">
                             <ods-last-reuses-feed context="catalog"></ods-last-reuses-feed>
                         </div>
+                    </div>
+                    <div class="row">
+                        <ods-reuses context="catalog"></ods-reuses>
                     </div>
                 </ods-dataset-context>
             </ods-catalog-context>

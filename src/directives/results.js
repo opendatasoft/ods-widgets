@@ -43,10 +43,10 @@
             restrict: 'A',
             scope: true,
             priority: 1001, // ng-repeat need to be executed when the results is in the scope.
-            controller: function($scope, $attrs) {
-                var init = $scope.$watch($attrs['odsResultsContext'], function(nv) {
-                    var options = angular.extend({}, nv.parameters, {'rows': $attrs['odsResultsMax']});
-                    var variable = $attrs['odsResults'] || 'results';
+            controller: ['$scope', '$attrs', function($scope, $attrs) {
+                $scope.$watch($attrs.odsResultsContext, function(nv) {
+                    var options = angular.extend({}, nv.parameters, {'rows': $attrs.odsResultsMax});
+                    var variable = $attrs.odsResults || 'results';
                     if (nv.type === 'catalog') {
                         ODSAPI.datasets.search(nv, options).success(function(data) {
                             $scope[variable] = data.datasets;
@@ -55,12 +55,9 @@
                         ODSAPI.records.search(nv, options).success(function(data) {
                             $scope[variable] = data.records;
                         });
-                    } else {
-                        return;
                     }
-                    init();
                 }, true);
-            }
+            }]
         };
     }]);
 

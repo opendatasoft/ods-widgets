@@ -138,7 +138,7 @@
                 return input.charAt(0).toUpperCase() + input.slice(1);
             },
             startsWith: function(input, searchedString) {
-                return input.indexOf(searchedString) === 0;
+                return input && input.indexOf(searchedString) === 0;
             }
         },
         DatasetUtils: {
@@ -158,6 +158,103 @@
                     }
                 }
                 return false;
+            }
+        },
+        Dataset: function(dataset) {
+            var types, facetsCount, filtersDescription;
+
+            var isFieldAnnotated = function(field, annotationName) {
+                if (field.annotations) {
+                    for (var i=0; i<field.annotations.length; i++) {
+                        if (field.annotations[i].name === annotationName) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            };
+
+            var iterateFields = function() {
+                filtersDescription = {'facets': []};
+                types = [];
+                facetsCount = 0;
+                for (var j=0; j< dataset.fields.length; j++) {
+                    var field = dataset.fields[j];
+                    if (isFieldAnnotated(field, 'facet')) {
+                        facetsCount++;
+                        filtersDescription.facets.push(field);
+                    }
+                    if (!types[field.type]) {
+                        types[field.type] = 1;
+                    } else {
+                        types[field.type] += 1;
+                    }
+                }
+            };
+
+            return {
+                datasetid: dataset.datasetid || "preview", // "preview" is here as a trick in publish as the dataset has no id
+                has_records: dataset.has_records,
+                metas: dataset.metas || {domain: 'preview'},
+                features: dataset.features,
+                attachments: dataset.attachments,
+                fields: dataset.fields,
+                extra_metas: dataset.extra_metas,
+                interop_metas: dataset.interop_metas,
+                setFields: function(fields) {
+                    this.fields = fields;
+                    iterateFields();
+                },
+                getUniqueId: function() {
+                    return this.metas.domain + '.' + this.datasetid;
+                },
+                getTypes: function() {
+                    if (typeof types === "undefined") {
+                        iterateFields();
+                    }
+                    return types;
+                },
+                hasFieldType: function(fieldType) {
+                    for (var i = 0; i < this.fields.length; i++) {
+                        if (this.fields[i].type == fieldType) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                getFacetsCount: function() {
+                    if (typeof facetsCount === "undefined") {
+                        iterateFields();
+                    }
+                    return facetsCount;
+                },
+                hasFacet: function() {
+                    if (typeof facetsCount === "undefined") {
+                        iterateFields();
+                    }
+                    return facetsCount > 0;
+                },
+                getFilterDescription: function() {
+                    if (typeof filtersDescription === "undefined") {
+                        iterateFields();
+                    }
+                    return filtersDescription;
+                },
+                getFacets: function() {
+                    return this.getFilterDescription().facets;
+                },
+                setMetas: function(metas) {
+                    this.metas = metas;
+                },
+                getField: function(fieldName) {
+                    for (var i=0; i<this.fields.length; i++) {
+                        var field = this.fields[i];
+                        if (field.name === fieldName) {
+                            return field;
+                        }
+                    }
+                    return null;
+                }
             }
         }
     };

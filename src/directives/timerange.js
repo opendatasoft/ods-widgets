@@ -58,8 +58,8 @@
                 defaultTo: '@?'
             },
             template: '<div class="odswidget odswidget-timerange">' +
-                    '<span class="odswidget-timerange-from"><translate>From</translate> <input type="text"></span>' +
-                    '<span class="odswidget-timerange-to"><translate>to</translate> <input type="text"></span>' +
+                    '<span class="odswidget-timerange-from"><span translate>From</span> <input type="text"></span>' +
+                    '<span class="odswidget-timerange-to"><span translate>to</span> <input type="text"></span>' +
                 '</div>',
             link: function(scope, element, attrs) {
                 var inputs = element.find('input');
@@ -95,9 +95,20 @@
             controller: ['$scope', function($scope) {
                 var timeField = $scope.timeField;
 
-                var init = $scope.$watch('context.dataset', function(nv) {
-                    if (nv) {
-                        if (angular.isUndefined(timeField)) {
+                var runWatcher = function() {
+                    $scope.$watch('[from, to]', function(nv) {
+                        if (nv[0] && nv[1]) {
+                            $scope.context.parameters.q = timeField+':[' + $scope.from + ' TO ' + $scope.to + ']';
+                        }
+                    }, true);
+                };
+
+                if (angular.isUndefined(timeField)) {
+                    // FIXME: By setting our filters later, we take the risk of having a first query sent somewhere else (e.g. a table) both before and after the filter.
+
+                    // We need to gather the time field before applying our filter
+                    var init = $scope.$watch('context.dataset', function(nv) {
+                        if (nv) {
                             var timeFields = nv.fields.filter(function(item) { return item.type === 'date' || item.type === 'datetime'; });
                             if (timeFields.length > 1) {
                                 console.log('Warning: the dataset "'+nv.datasetid+'" has more than one date or datetime field, the first date or datetime field will be used. You can specify the field to use using the "time-field" parameter.');
@@ -106,17 +117,13 @@
                                 console.log('Error: the dataset "'+nv.datasetid+'" doesn\'t have any date or datetime field, which is required for the Timerange widget.');
                             }
                             timeField = timeFields[0].name;
+                            runWatcher();
+                            init();
                         }
-
-                        $scope.$watch('[from, to]', function(nv) {
-                            if (nv[0] && nv[1]) {
-                                $scope.context.parameters.q = timeField+':[' + $scope.from + ' TO ' + $scope.to + ']';
-                            }
-                        }, true);
-
-                        init();
-                    }
-                });
+                    });
+                } else {
+                    runWatcher();
+                }
 
             }]
         };

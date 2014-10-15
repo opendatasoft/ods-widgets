@@ -3,7 +3,85 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive("odsChart", ['ODSAPI', '$q', 'translate', 'ModuleLazyLoader', function(ODSAPI, $q, translate, ModuleLazyLoader) {
+
+    mod.factory("requestData", ['ODSAPI', '$q', 'ChartHelper', 'AggregationHelper', function(ODSAPI, $q, ChartHelper, AggregationHelper) {
+        var buildSearchOptions = function(query, timeSerieMode, precision, periodic) {
+            var search_options = {
+                dataset: query.config.dataset,
+                x: query.xAxis,
+                sort: query.sort || '',
+                maxpoints: query.maxpoints || ''
+            };
+
+            if (timeSerieMode){
+                search_options.precision = precision;
+                search_options.periodic = periodic;
+            }
+
+            // is there a timescale override ?
+            if(query.timescale){
+                 var tokens = query.timescale.split(' ');
+                 search_options.precision = tokens[0];
+                 search_options.periodic = tokens.length == 2 ? tokens[1] : '';
+            }
+            return search_options;
+        };
+        var addSeriesToSearchOptions = function(search_options, chart, index) {
+            if(!ChartHelper.isChartSortable(chart.type)) {
+                $.each(chart.charts[0], function(key, value){
+                    search_options['y.serie' + (index+1) + 'min.'+key] = value;
+                });
+                $.each(chart.charts[1], function(key, value){
+                    search_options['y.serie' + (index+1) + 'max.'+key] = value;
+                });
+
+                if(search_options.sort ===  'serie' + (index+1)) {
+                    // cannot sort on range
+                    search_options.sort = '';
+                }
+            } else {
+                search_options['y.serie' + (index+1) + '.expr'] = chart.yAxis;
+                search_options['y.serie' + (index+1) + '.func'] = chart.func;
+                search_options['y.serie' + (index+1) + '.cumulative'] = chart.cumulative || false;
+                if(chart.func === 'QUANTILES'){
+                    if (!chart.subsets){
+                        chart.subsets = 50;
+                    }
+                    search_options['y.serie' + (index+1) + '.subsets'] = chart.subsets;
+                }
+            }
+            return search_options;
+        };
+
+        return function(queries, timeSerieMode, precision, periodic, domain, apikey, callback) {
+            var search_promises = [];
+            angular.forEach(queries, function(query){
+                var search_options = buildSearchOptions(query, timeSerieMode, precision, periodic);
+
+                angular.forEach(query.charts, function(chart, index){
+                    
+                    addSeriesToSearchOptions(search_options, chart, index);
+
+                });
+
+                // Analyse request
+                // We have to build virtual contexts from parameters because we can source charts from multiple
+                // datasets.
+                var virtualContext = {
+                    domain: domain,
+                    domainUrl: ODSAPI.getDomainURL(domain),
+                    dataset: {'datasetid': search_options.dataset},
+                    apikey: apikey,
+                    parameters: {}
+                };
+
+                search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, query.config.options, search_options)));
+            });
+            $q.all(search_promises).then(callback);
+        }
+    }]);
+
+    mod.directive("odsChart", ['requestData', 'translate', 'ModuleLazyLoader', 'AggregationHelper', 'ChartHelper', '$rootScope', 'odsErrorService', function(requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsErrorService) {
         // parameters : {
         //     timescale: year, month, week, day, hour, month year, day year, day month, day week
         //     xLabel:
@@ -46,21 +124,16 @@
             scope: {
                 parameters: '=odsChart',
                 domain: '=',
-                apikey: '='
+                apikey: '=',
+                colors: '='
             },
             template: '<div class="ods-chart"><div class="chartplaceholder"></div><debug data="chartoptions"></debug></div>',
             link: function(scope, element, attrs) {
+                var update = function() {};
                 var chartplaceholder = element.find('.chartplaceholder');
                 ModuleLazyLoader('highcharts').then(function() {
                     Highcharts.setOptions({
-                        global: {useUTC: false},
-                        plotOptions: {
-                            pie: {
-                                tooltip: {
-                                    pointFormat: '{series.name}: <b>{point.y} ({point.percentage:.1f}%)</b>'
-                                }
-                            }
-                        }
+                        global: {useUTC: false}
                     });
                     function formatRowX(value){
                         if (periodic) {
@@ -93,405 +166,549 @@
                                 case 'day':
                                     return value.day;
                                 default:
-                                    return value;
+                                    return "" + value;
                             }
                         } else {
                             if (angular.isObject(value) && ("day" in value || "month" in value || "year" in value)) {
                                 var date = new Date(value.year, value.month-1 || 0, value.day || 1, value.hour || 0, value.minute || 0);
                                 return Highcharts.dateFormat("%Y-%m-%d", date);
                             }
-                            return value;
+                            return "" + value;
                         }
                     }
 
-                    var timeSerieMode, precision, periodic;
-                    // scope.parameters = scope.$eval(attrs.chart);
-                    scope.$watch('parameters',function(nv, ov){
+                    var timeSerieMode, precision, periodic, yAxisesIndexes;
+                    var getDatasetUniqueId = function(dataset_id) {
+                        var datasetid;
+                        if (scope.domain) {
+                            datasetid = scope.domain + "." + dataset_id;
+                        } else {
+                            datasetid = ChartHelper.getDatasetUniqueId(dataset_id);
+                        }
+                        return datasetid;
+                    }
+
+                    var getGlobalOptions = function(parameters) {
+                        var height = chartplaceholder.height();
+                        var width = chartplaceholder.width();
+                        
+                        if (parameters.queries.length === 0) {
+                            parameters.xLabel = '';
+                        } else {
+
+                            var datasetid = getDatasetUniqueId(parameters.queries[0].config.dataset);
+                            parameters.xLabel = ChartHelper.getXLabel(datasetid, parameters.queries[0].xAxis, parameters.timescale);
+                        }
+
+                        var options = {
+                            chart: {
+                            },
+                            title: {text: ''},
+                            credits: {enabled: false},
+                            colors: [],
+                            series: [],
+                            xAxis: {
+                                title: {
+                                    text: (parameters.queries.length > 0) ? (parameters.xLabel || parameters.queries[0].xAxis) :  "" // all charts must use the same xAxis
+                                },
+                                labels: {
+                                    step: 1,
+                                    rotation: -45,
+                                    align: 'right'
+                                },
+                                minPadding: 0,
+                                maxPadding: 0,
+                                dateTimeLabelFormats: {
+                                    second: '%H:%M:%S',
+                                    minute: '%H:%M',
+                                    hour: '%H:%M',
+                                    day: '%e %b %y',
+                                    week: '%e. %b',
+                                    month: '%b \'%y',
+                                    year: '%Y'
+                                }
+                                // startOnTick: true,
+                                // endOnTick: true,
+                            },
+                            // legend: {
+                            //     // align: 'right',
+                            //     // verticalAlign: 'bottom',
+                            //     // layout: 'horizontal',
+                            //     // x: -10,
+                            //     y: 0,
+                            //     // floating: false,
+                            //     borderWidth: 0,
+                            //     // width: width/5
+                            // },
+                            yAxis: [],
+                            plotOptions: {
+                                columnrange: {
+                                    pointPadding: 0,
+                                    groupPadding: 0,
+                                    borderWidth: 0,
+                                    tooltip: {
+                                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
+                                    }
+                                },
+                                arearange: {
+                                    tooltip: {
+                                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
+                                    }
+                                },
+                                areasplinerange: {
+                                    tooltip: {
+                                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
+                                    }
+                                },
+                                pie: {
+                                    tooltip: {
+                                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y} ({point.percentage:.1f}%)</b>'
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                valueDecimals: 2,
+                                headerFormat: '{point.key}<br>',
+                                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b>',
+                                formatter: function (tooltip) {
+                                    var items = this.points || angular.isArray(this) ? this : [this],
+                                        series = items[0].series,
+                                        s;
+
+                                    // build the header
+                                    s = [tooltip.tooltipHeaderFormatter(items[0])];
+
+                                    // build the values
+                                    angular.forEach(items, function (item) {
+                                        series = item.series;
+                                        var value = (series.tooltipFormatter && series.tooltipFormatter(item)) || item.point.tooltipFormatter(series.tooltipOptions.pointFormat);
+                                        value = value.replace(/(\.|,)00</, '<');
+                                        s.push(value);
+                                    });
+                                    // footer
+                                    s.push(tooltip.options.footerFormat || '');
+
+                                    return s.join('');
+                                }
+                            },
+                            noData: {
+                                style: {
+                                    fontFamily: 'Open Sans',
+                                    fontWeight: 'normal',
+                                    fontSize: '1.4em',
+                                    color: '#333',
+                                    opacity: '0.5'
+                                }
+                            },
+                            lang: {
+                                noData: translate("No data available yet")
+                            }
+                        };
+                        scope.chartoptions = options;
+
+                        // is it a timeSerie ? with default sort
+                        if(parameters.timescale && $.grep(parameters.queries, function(query){return query.sort;}).length === 0){
+                             timeSerieMode = parameters.timescale;
+                             var tokens = timeSerieMode.split(' ');
+                             precision = tokens[0];
+                             periodic = tokens.length == 2 ? tokens[1] : '';
+                        } else {
+                            timeSerieMode = false;
+                            precision = false;
+                            periodic = false;
+                        }
+
+                        if (precision) {
+                            options.xAxis.type = 'datetime';
+                            options.xAxis.maxZoom = 3600000; // fourteen days
+                            options.chart.zoomType = 'xy';
+                        } else {
+                            options.xAxis.categories = [];
+                        }
+
+                        if (periodic === "month") {  // month of year
+                            options.xAxis.labels.format = "{value: %B}";
+                        } else if (periodic === "weekday") {  // day of week
+                            options.xAxis.labels.format = "{value: %A}";
+                        } else if (periodic === "day") {  // day of month
+                            options.xAxis.labels.format = "{value: %d}";
+                        } else if (periodic === "hour") {
+                            options.xAxis.labels.format = "{value: %H}";
+                        }
+
+                        if(parameters.singleAxis) {
+                            options.yAxis.push({
+                                title: {
+                                    text: parameters.singleAxisLabel || ""
+                                },
+                                type: parameters.singleAxisScale || "linear"
+                            });
+                        }
+                        
+                        return options;
+                    };
+                    var getSerieOptions = function(parameters, query, chart) {
+                        var datasetid = getDatasetUniqueId(query.config.dataset);
+                        var yLabel = ChartHelper.getYLabel(datasetid, chart);
+
+                        var options = angular.extend({}, {
+                            name: yLabel,
+                            color: chart.color,
+                            type: chart.type,
+                            yAxis: parameters.singleAxis ? 0 : yAxisesIndexes[datasetid][yLabel],
+                            marker: {
+                                enabled: (chart.type === 'scatter'),
+                                radius: 3
+                            },
+                            shadow: false,
+                            tooltip: {},
+                            data: []
+                        }, chart.extras);
+                        options = angular.extend(options, ChartHelper.resolvePosition(chart.position));
+                        delete options.position;
+                        return options;
+                    };
+
+                    var getContextualizedSeriesOptions = function(row, globalOptions) {
+                        var options = {
+                            'tooltip': {}
+                        };
+
+                        if (angular.isObject(row.x) && ('year' in row.x || 'month' in row.x || 'day' in row.x || 'hour' in row.x || 'minute' in row.x)) {
+                            // options.series[series_index + j].pointPlacement = 'between';
+                            options.pointPadding = 0;
+                            options.groupPadding = 0;
+                            options.borderWidth = 0;
+
+                            // TimeSerie structure is different
+                            // push row data into proper serie data array
+                            // var date;
+                            // // default to 2000 because it's a leap year
+                            // date = new Date(row.x.year || 2000, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
+                            // // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
+                            // date.setFullYear(row.x.year || 2000);
+                            var datePattern = '';
+                            if(! ('year' in row.x)){
+                                // if(minDate){
+                                //     date.setYear(minDate.getFullYear());
+                                // }
+                                if('month' in row.x){
+                                    datePattern = '%B';
+                                }
+                                if('day' in row.x){
+                                    if('month' in row.x){
+                                        datePattern = '%e %B';
+                                    } else {
+                                        datePattern = '%e';
+                                    }
+                                }
+                                if('weekday' in row.x){
+                                    // date.setDate(date.getDate() - (date.getDay() - 1) + row.x.weekday); // a bit ugly
+                                    // need to set a date that starts with a monday, then add the weekday offset ?
+                                    datePattern = '%a';
+                                }
+                                if('hour' in row.x){
+                                     datePattern = '%Hh';
+                                }
+                            } else {
+                                if('day' in row.x){
+                                    datePattern += ' %e';
+                                }
+                                if('month' in row.x){
+                                    datePattern += ' %B';
+                                }
+                                datePattern += ' %Y';
+
+                                if('hour' in row.x){
+                                    if('minute' in row.x){
+                                         datePattern += ' %Hh%M';
+                                    } else {
+                                        datePattern +=' %Hh';
+                                    }
+                                }
+                            }
+                            options.tooltip.xDateFormat = datePattern;
+
+                            if('month' in row.x){
+                                options.pointRange = 30.5*24*3600*1000;
+                            }
+                            if ('day' in row.x) {
+                                options.pointRange = 24*3600*1000;
+                            }
+                            if('weekday' in row.x){
+                                options.pointRange = 24*3600*1000;
+                            }
+                            if('hour' in row.x){
+                                 options.pointRange = 3600*1000;
+                            }
+                        } else {
+                            globalOptions.xAxis.categories.push(formatRowX(row.x));
+                        }
+                        return options;
+                    }
+
+                    var getDateFromRow = function(row, minDate) {
+                        var minYear = minDate ? minDate.getFullYear() : 2000;
+                        var minMonth = minDate ? minDate.getMonth() : 0;
+                        var minDay = minDate ? minDate.getDate() : 1;
+                        var minHour = minDate ? minDate.getHours() : 0;
+                        var minMinute = minDate ? minDate.getMinutes() : 0;
+                        if (angular.isObject(row.x) && ('year' in row.x || 'month' in row.x || 'day' in row.x || 'hour' in row.x || 'minute' in row.x)) {
+                            // default to 2000 because it's a leap year
+                            var date = new Date(row.x.year || minYear, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
+                            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
+                            if (!'month' in row.x) date.setMonth(minMonth);
+                            if (!'day' in row.x) date.setDate(minDay);
+                            if (!'hour' in row.x) date.setHours(minHour);
+                            if (!'minute' in row.x) date.setMinutes(minMinute);
+                            date.setFullYear(row.x.year || minYear);
+                            if(! ('year' in row.x)){
+                                if('weekday' in row.x){
+                                    date.setDate(date.getDate() - (date.getDay() - 1) + row.x.weekday); // a bit ugly
+                                }
+                            }
+                            if('day' in row.x){
+                                // handle bisextil years
+                                if(row.x.day == 29 && row.x.month == 2) {
+                                    date.setDate(28);
+                                    date.setMonth(1);
+                                }
+                            } else {
+                                if('month' in row.x){
+                                    date.setDate(16);
+                                }
+                            }
+                            return date;
+                        }
+                    };
+
+                    var last_parameters_hash;
+                    update = function(parameters) {
+                        if (typeof parameters === "undefined") {
+                            parameters = scope.parameters;
+                        }
+                        // make a copy of the parameters to make sure that we will not trigger any external watches by modifying this object
+                        parameters = angular.copy(parameters);
+
+                        if (last_parameters_hash === angular.toJson(parameters)) {
+                            return;
+                        }
+
+                        if (!parameters || !parameters.queries || parameters.queries.length === 0) {
+                            if (scope.chart) {
+                                angular.element(scope.chart.container).empty();
+                            }
+                            return;
+                        }
+
+                        var search_promises = [];
                         timeSerieMode = undefined;
                         precision = undefined;
                         periodic = undefined;
-                        if(nv && nv.queries && nv.queries.length){
-                            var options = {
-                                chart: {},
-                                title: {text: ''},
-                                // legend: {enabled: false},
-                                credits: {enabled: false},
-                                colors: [],
-                                series: [],
-                                xAxis: {
-                                    title: {
-                                        text: scope.parameters.xLabel || scope.parameters.queries[0].xAxis // all charts must use the same xAxis
-                                    },
-                                    labels: {
-                                        rotation: -45,
-                                        align: 'right'
-                                    },
-                                    minPadding: 0,
-                                    maxPadding: 0
-                                    // startOnTick: true,
-                                    // endOnTick: true,
-                                },
-                                yAxis: [],
-                                plotOptions: {
-                                    columnrange: {
-                                        pointPadding: 0,
-                                        groupPadding: 0,
-                                        borderWidth: 0
-                                    }
-                                },
-                                tooltip: {
-                                    valueDecimals: 2,
-                                    formatter: function (tooltip) {
-                                        var items = this.points || angular.isArray(this) ? this : [this],
-                                            series = items[0].series,
-                                            s;
+                        yAxisesIndexes = {};
+                        try {
+                            getDatasetUniqueId(parameters.queries[0].config.dataset);
+                        } catch (e) {
+                            ChartHelper.onLoad(update);
+                            return;
+                        }
 
-                                        // build the header
-                                        s = [series.tooltipHeaderFormatter(items[0])];
+                        last_parameters_hash = angular.toJson(parameters);
 
-                                        // build the values
-                                        angular.forEach(items, function (item) {
-                                            series = item.series;
-                                            var value = (series.tooltipFormatter && series.tooltipFormatter(item)) || item.point.tooltipFormatter(series.tooltipOptions.pointFormat);
-                                            value = value.replace(/(\.|,)00</, '<');
-                                            s.push(value);
-                                        });
-                                        // footer
-                                        s.push(tooltip.options.footerFormat || '');
-
-                                        return s.join('');
-                                    }
-                                },
-                                noData: {
-                                    style: {
-                                        fontFamily: 'Open Sans',
-                                        fontWeight: 'normal',
-                                        fontSize: '1.4em',
-                                        color: '#333',
-                                        opacity: '0.5'
-                                    }
-                                },
-                                lang: {
-                                    noData: translate("No data available yet")
-                                }
-                            };
-                            scope.chartoptions = options;
-
-                            // is it a timeSerie ? with default sort
-                            if(scope.parameters.timescale && $.grep(scope.parameters.queries, function(query){return query.sort;}).length === 0){
-                                 timeSerieMode = scope.parameters.timescale;
-                                 var tokens = timeSerieMode.split(' ');
-                                 precision = tokens[0];
-                                 periodic = tokens.length == 2 ? tokens[1] : '';
-                            }
-
-                            if (precision) {
-                                options.xAxis.type = 'datetime';
-                                options.xAxis.maxZoom = 3600000; // fourteen days
-                                options.chart.zoomType = 'xy';
-                            } else {
-                                options.xAxis.categories = [];
-                            }
-
-                            var yAxisesIndexes = {};
-
-                            // fetch all data with search options
-                            var search_promises = [];
-
-                            if(scope.parameters.singleAxis) {
-                                options.yAxis.push({
-                                    title: {
-                                        text: scope.parameters.singleAxisLabel || ""
-                                    },
-                                    type: scope.parameters.singleAxisScale || "linear"
-                                });
-                            }
-                            angular.forEach(scope.parameters.queries, function(query){
-                                var search_options = {
-                                    dataset: query.config.dataset,
-                                    x: query.xAxis,
-                                    sort: query.sort || '',
-                                    maxpoints: query.maxpoints || ''
-                                };
-                                if (timeSerieMode){
-                                    search_options.precision = precision;
-                                    search_options.periodic = periodic;
-                                }
-
-                                // is there a timescale override ?
-                                if(query.timescale){
-                                     var tokens = query.timescale.split(' ');
-                                     search_options.precision = tokens[0];
-                                     search_options.periodic = tokens.length == 2 ? tokens[1] : '';
-                                }
-
-                                yAxisesIndexes[query.config.dataset] = {};
-
-                                angular.forEach(query.charts, function(chart, index){
-                                    if(['arearange', 'areasplinerange', 'columnrange'].indexOf(chart.type) >= 0){
-                                        chart.func = 'COUNT';
-                                        if(!chart.charts){
-                                            chart.charts = [
-                                                {
-                                                    func: 'MIN',
-                                                    expr: chart.yAxis
-                                                },
-                                                {
-                                                    func: 'MAX',
-                                                    expr: chart.yAxis
-                                                }
-                                            ];
-                                        }
-                                        if(chart.charts[0].func === 'QUANTILES' && !chart.charts[0].subsets){
-                                            chart.charts[0].subsets = 5;
-                                        }
-                                        if(chart.charts[1].func === 'QUANTILES' && !chart.charts[1].subsets){
-                                            chart.charts[1].subsets = 95;
-                                        }
-                                        $.each(chart.charts[0], function(key, value){
-                                            search_options['y.serie' + (index+1) + 'min.'+key] = value;
-                                        });
-                                        $.each(chart.charts[1], function(key, value){
-                                            search_options['y.serie' + (index+1) + 'max.'+key] = value;
-                                        });
-
-                                        if(query.sort ===  'serie' + (index+1)) {
-                                            // cannot sort on range
-                                            search_options.sort = '';
-                                        }
-                                    } else {
-                                        if(chart.charts){
-                                            delete chart.charts;
-                                        }
-                                        search_options['y.serie' + (index+1) + '.expr'] = chart.yAxis;
-                                        search_options['y.serie' + (index+1) + '.func'] = chart.func;
-                                        search_options['y.serie' + (index+1) + '.cumulative'] = chart.cumulative || false;
-                                        if(chart.func === 'QUANTILES'){
-                                            if (!chart.subsets){
-                                                chart.subsets = 50;
+                        var options = getGlobalOptions(parameters);
+                        angular.forEach(parameters.queries, function(query) {
+                            var datasetid = getDatasetUniqueId(query.config.dataset);
+                            yAxisesIndexes[datasetid] = {};
+                            angular.forEach(query.charts, function(chart) {
+                                var yLabel = ChartHelper.getYLabel(datasetid, chart);
+                                if(!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])){
+                                    // we dont yet have an axis for this column :
+                                    // Create axis and register it in yAxisesIndexes
+                                    yAxisesIndexes[datasetid][yLabel] = options.yAxis.push({
+                                        // labels:
+                                        title: {
+                                            text: yLabel,
+                                            style: {
+                                                color: chart.color
                                             }
-                                            search_options['y.serie' + (index+1) + '.subsets'] = chart.subsets;
-                                        }
-                                    }
+                                        },
+                                        labels: {
+                                            style: {
+                                                color: chart.color
+                                            }
+                                        },
+                                        type: chart.scale || 'linear',
+                                        opposite: !!(options.yAxis.length)  //boolean casting
+                                    }) - 1;
+                                }
 
-                                    if(!scope.parameters.singleAxis && angular.isUndefined(yAxisesIndexes[query.config.dataset][chart.yAxis])){
-                                        // we dont yet have an axis for this column :
-                                        // Create axis and register it in yAxisesIndexes
-                                        yAxisesIndexes[query.config.dataset][chart.yAxis] = options.yAxis.push({
-                                           // labels:
-                                           title: {
-                                               text: chart.yLabel,
-                                               style: {
-                                                   color: chart.color
-                                               }
-                                           },
-                                           labels: {
-                                               style: {
-                                                   color: chart.color
-                                               }
-                                           },
-                                           type: chart.scale || 'linear',
-                                           opposite: !!(options.yAxis.length)  //boolean casting
-                                        }) - 1;
-                                    }
-
-                                    // instantiate series
-                                    options.series.push($.extend({}, {
-                                        name: chart.yLabel,
-                                        color: chart.color,
-                                        type: chart.type,
-                                        yAxis: scope.parameters.singleAxis ? 0 : yAxisesIndexes[query.config.dataset][chart.yAxis],
-                                        marker: { enabled: false },
-                                        shadow: false,
-                                        tooltip: {},
-                                        data: []
-                                    }, chart.extras));
-
-                                    if( chart.type == 'bar') {
-                                        // bar chart invert axis, thus we have to cancel the label rotation
-                                        options.xAxis.labels.rotation = 0;
-                                    }
-                                    options.colors.push(chart.color);
-                                });
-
-                                // Analyse request
-                                // We have to build virtual contexts from parameters because we can source charts from multiple
-                                // datasets.
-                                var virtualContext = {
-                                    domain: scope.domain,
-                                    domainUrl: ODSAPI.getDomainURL(scope.domain),
-                                    dataset: {'datasetid': search_options.dataset},
-                                    apikey: scope.apikey,
-                                    parameters: {}
-                                };
-
-                                search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, query.config.options, search_options)));
+                                // instantiate series
+                                options.series.push(getSerieOptions(parameters, query, chart));
+                                
+                                if( chart.type == 'bar') {
+                                    // bar chart invert axis, thus we have to cancel the label rotation
+                                    options.xAxis.labels.rotation = 0;
+                                }
+                                options.colors.push(chart.color);
                             });
 
-                            // wait for all datas to come back
-                            $q.all(search_promises).then(function(http_calls){
-                                // compute
-                                var series_index = 0;
+                        });
 
-                                // If there is both periodic & datetime timescale, we need to find the min date to properly offset the periodic data
-                                var minDate;
-                                if (precision) {
-                                    angular.forEach(http_calls, function(http_call, index){
-                                        var nb_series = scope.parameters.queries[index].charts.length;
-                                        for (var i=0; i < http_call.data.length; i++) {
-                                            var row = http_call.data[i];
-
-                                            if(row.x.year){
-                                                var date = new Date(row.x.year, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
-                                                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
-                                                date.setFullYear(row.x.year);
-                                                if(minDate === undefined || date < minDate) {
-                                                    minDate = date;
-                                                }
-                                            }
-                                        }
-                                    });
+                        function getValue(value, chart){
+                            if(chart.func === 'QUANTILES' && chart.subsets) {
+                                // elastic search now returns a float value as key, for now we just hack the thing to get the correct key
+                                return value[chart.subsets + ".0"];
+                            } else {
+                                if (typeof value === "undefined") {
+                                    return null;
+                                } else {
+                                    return value;
                                 }
+                            }
+                        }
 
-                                function getValue(value, chart){
-                                    if(chart.subsets) {
-                                        return value[chart.subsets + ".0"];
-                                    } else {
-                                        return value;
-                                    }
-                                }
+                        requestData(parameters.queries, timeSerieMode, precision, periodic, scope.domain, scope.apikey, function(http_calls){
+                            // compute
+                            var series_index = 0;
 
-                                angular.forEach(http_calls, function(http_call, index){
-                                    // transform data format to a format understood by the chart plugin
-                                    var nb_series = scope.parameters.queries[index].charts.length;
-
+                            // If there is both periodic & datetime timescale, we need to find the min date to properly offset the periodic data
+                            var minDate;
+                            if (precision) {
+                                for (var h = 0; h < http_calls.length; h++) {
+                                    var http_call = http_calls[h];
                                     for (var i=0; i < http_call.data.length; i++) {
                                         var row = http_call.data[i];
-                                        for (var j=0; j < nb_series; j++) {
-                                            var chart = scope.parameters.queries[index].charts[j];
-                                            if (precision) {
-                                                // options.series[series_index + j].pointPlacement = 'between';
-                                                options.series[series_index + j].pointPadding = 0;
-                                                options.series[series_index + j].groupPadding = 0;
-                                                options.series[series_index + j].borderWidth = 0;
+                                        if(row.x.year){
+                                            var date = new Date(row.x.year, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
+                                            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
+                                            date.setFullYear(row.x.year);
+                                            if(minDate === undefined || date < minDate) {
+                                                minDate = date;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            angular.forEach(http_calls, function(http_call, index){
+                                // transform data format to a format understood by the chart plugin
+                                var nb_series = parameters.queries[index].charts.length;
+                                for (var i=0; i < http_call.data.length; i++) {
+                                    var row = http_call.data[i];
+                                    var serie_options = getContextualizedSeriesOptions(row, options);
+                                    var dateX = getDateFromRow(row, minDate);
+                                    var valueX;
 
-                                                // TimeSerie structure is different
-                                                // push row data into proper serie data array
-                                                var date;
-                                                // default to 2000 because it's a leap year
-                                                date = new Date(row.x.year || 2000, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
-                                                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
-                                                date.setFullYear(row.x.year || 2000);
-                                                if(! ('year' in row.x)){
-                                                    if(minDate){
-                                                        date.setYear(minDate.getFullYear());
-                                                    }
-                                                    if('month' in row.x){
-                                                        options.series[series_index + j].tooltip.xDateFormat = '%B';
-                                                    }
-                                                    if('day' in row.x){
-                                                        if('month' in row.x){
-                                                            options.series[series_index + j].tooltip.xDateFormat = '%e %B';
-                                                        } else {
-                                                            options.series[series_index + j].tooltip.xDateFormat = '%e';
-                                                        }
-                                                    }
-                                                    if('weekday' in row.x){
-                                                        date.setDate(date.getDate() - (date.getDay() - 1) + row.x.weekday); // a bit ugly
-                                                        // need to set a date that starts with a monday, then add the weekday offset ?
-                                                        options.series[series_index + j].tooltip.xDateFormat = '%a';
-                                                    }
-                                                    if('hour' in row.x){
-                                                         options.series[series_index + j].tooltip.xDateFormat = '%Hh';
-                                                    }
+                                    if (dateX && precision) {
+                                        valueX = dateX.getTime();
+                                    } else if (dateX) {
+                                        valueX = Highcharts.dateFormat(serie_options.tooltip.xDateFormat, dateX);
+                                    } else {
+                                        valueX = "" + row.x;
+                                    }
+
+                                    for (var j=0; j < nb_series; j++) {
+                                        var current_serie = series_index + j;
+                                        var chart = parameters.queries[index].charts[j];
+                                        var serie = options.series[current_serie];
+
+                                        serie = angular.extend(serie, serie_options);
+
+                                        if (options.xAxis.type === 'datetime') {
+                                            if(['arearange', 'areasplinerange', 'columnrange'].indexOf(serie.type) >= 0){
+                                                var min = getValue(row["serie"+(j+1)+"min"], chart.charts[0]);
+                                                var max = getValue(row["serie"+(j+1)+"max"], chart.charts[1]);
+                                                if (scope.parameters.singleAxisScale === 'logarithmic' && (min <= 0 || max <= 0)) {
+                                                    serie.data.push([
+                                                        valueX,
+                                                        null,
+                                                        null
+                                                    ]);
                                                 } else {
-                                                    var pattern = '';
-                                                    if('day' in row.x){
-                                                        pattern += ' %e';
-                                                    }
-                                                    if('month' in row.x){
-                                                        pattern += ' %B';
-                                                    }
-                                                    pattern += ' %Y';
-
-                                                    if('hour' in row.x){
-                                                        if('minute' in row.x){
-                                                             pattern += ' %Hh%M';
-                                                        } else {
-                                                            pattern +=' %Hh';
-                                                        }
-                                                    }
-                                                    options.series[series_index + j].tooltip.xDateFormat = pattern;
+                                                    serie.data.push([
+                                                        valueX,
+                                                        min,
+                                                        max
+                                                    ]);
                                                 }
-
-                                                if('month' in row.x){
-                                                    options.series[series_index + j].pointRange = 30.5*24*3600*1000;
-                                                }
-                                                if('day' in row.x){
-                                                    // handle bisextil years
-                                                    if(row.x.day == 29 && row.x.month == 2) {
-                                                        date.setDate(28);
-                                                        date.setMonth(1);
-                                                    }
-                                                    options.series[series_index + j].pointRange = 24*3600*1000;
-                                                } else {
-                                                    if('month' in row.x){
-                                                        date.setDate(16);
-                                                    }
-                                                }
-                                                if('weekday' in row.x){
-                                                    options.series[series_index + j].pointRange = 24*3600*1000;
-                                                }
-                                                if('hour' in row.x){
-                                                     options.series[series_index + j].pointRange = 3600*1000;
-                                                }
-
-                                                if(['arearange', 'areasplinerange', 'columnrange'].indexOf(options.series[series_index + j].type) >= 0){
-                                                    options.series[series_index + j].data.push([date.getTime(), getValue(row["serie"+(j+1)+"min"], chart.charts[0]), getValue(row["serie"+(j+1)+"max"], chart.charts[1])]);
-                                                } else {
-                                                    options.series[series_index + j].data.push([date.getTime(), getValue(row["serie"+(j+1)], chart)]);
-                                                }
+                                            } else if (serie.type == 'pie') {
+                                                serie.data.push([
+                                                    Highcharts.dateFormat(serie_options.tooltip.xDateFormat, new Date(dateX)),
+                                                    getValue(row["serie"+(j+1)], chart)
+                                                ]);
                                             } else {
-                                                // push row data into proper serie data array
-                                                if(options.series[series_index + j].type == 'pie') {
-                                                    options.series[series_index + j].data.push([formatRowX(row.x) , getValue(row["serie"+(j+1)], chart)]);
+                                                var value = getValue(row["serie"+(j+1)], chart);
+                                                if (scope.parameters.singleAxisScale === 'logarithmic' && value <= 0) {
+                                                    serie.data.push([valueX, null]);
                                                 } else {
-                                                    if(['arearange', 'areasplinerange', 'columnrange'].indexOf(options.series[series_index + j].type) >= 0){
-                                                        options.series[series_index + j].data.push([getValue(row["serie"+(j+1)+"min"], chart.charts[0]), getValue(row["serie"+(j+1)+"max"], chart.charts[1])]);
+                                                    serie.data.push([valueX, value]);
+                                                }
+                                            }
+                                        } else { // !precision
+                                            // push row data into proper serie data array
+                                            if(serie.type == 'pie') {
+                                                serie.data.push([formatRowX(row.x), getValue(row["serie"+(j+1)], chart)]);
+                                            } else {
+                                                if(['arearange', 'areasplinerange', 'columnrange'].indexOf(serie.type) >= 0){
+                                                    var min = getValue(row["serie"+(j+1)+"min"], chart.charts[0]);
+                                                    var max = getValue(row["serie"+(j+1)+"max"], chart.charts[1]);
+                                                    if (scope.parameters.singleAxisScale === 'logarithmic' && (min <= 0 || max <= 0)) {
+                                                        serie.data.push([null, null]);
                                                     } else {
-                                                        options.series[series_index + j].data.push(getValue(row["serie"+(j+1)], chart));
+                                                        serie.data.push([min, max]);
+                                                    }
+                                                } else {
+                                                    var value = getValue(row["serie"+(j+1)], chart);
+                                                    if (scope.parameters.singleAxisScale === 'logarithmic' && value <= 0) {
+                                                        serie.data.push(null);
+                                                    } else {
+                                                        serie.data.push(value);
                                                     }
                                                 }
                                             }
                                         }
-                                        if(!precision){
-                                            options.xAxis.categories.push(formatRowX(row.x));
-                                        }
-                                    }
-                                    series_index += nb_series;
-                                });
-
-                                // render the charts
-                                try {
-                                    chartplaceholder.css('height', chartplaceholder.height());
-                                    scope.chart = chartplaceholder.highcharts(options);
-                                    chartplaceholder.css('height', '');
-                                } catch (errorMsg) {
-                                    if(errorMsg.indexOf('Highcharts error #19') === 0){
-                                        // too many ticks
-                                        angular.forEach(scope.parameters.queries, function(query){
-                                            query.maxpoints = 20;
-                                        });
                                     }
                                 }
+
+                                series_index += nb_series;
                             });
-                        }
-                    }, true);
+
+                            // render the charts
+                            if (scope.chart && options.chart.renderTo) {
+                                scope.chart.destroy();
+                                chartplaceholder = element.find('.chartplaceholder');
+                            }
+                            options.chart.renderTo = chartplaceholder[0];
+
+                            try {
+                                scope.chart = new Highcharts.Chart(options, function() {});
+                            } catch (errorMsg) {
+                                if(errorMsg.indexOf && errorMsg.indexOf('Highcharts error #19') === 0){
+                                    // too many ticks
+                                    odsErrorService.sendErrorNotification(translate("There was too many points to display, the maximum number of points has been decreased."));
+                                    angular.forEach(scope.parameters.queries, function(query){
+                                        query.maxpoints = 20;
+                                    });
+                                } else {
+                                    if (angular.isString(errorMsg)) {
+                                        odsErrorService.sendErrorNotification(errorMsg);
+                                    } else {
+                                        odsErrorService.sendErrorNotification(errorMsg.message);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    update();
                 });
+                
+                scope.$on('chartConfigReady', function(event, parameters) {
+                    update(parameters);
+                });
+
+                scope.updateChart = update;
             }
         };
     }]);
-
 
     mod.directive('odsHighcharts', function() {
         /**
@@ -556,20 +773,25 @@
             },
             replace: true,
             template: '<div class="odswidget odswidget-highcharts"><div ods-chart="chart" domain="context.domain" apikey="context.apikey"></div></div>',
-            controller: ['$scope', 'ODSWidgetsConfig', function($scope, ODSWidgetsConfig) {
-                var color = ODSWidgetsConfig.chartColors || defaultColors;
+            controller: ['$scope', 'ODSWidgetsConfig', 'ChartHelper', function($scope, ODSWidgetsConfig, ChartHelper) {
+
+                var colors = ODSWidgetsConfig.chartColors || defaultColors;
                 if ($scope.color) {
-                    color = $scope.color.split(',').map(function(item) { return item.trim(); });
+                    colors = $scope.color.split(',').map(function(item) { return item.trim(); });
                 }
+
                 var unwatch = $scope.$watch('context.dataset', function(nv) {
                     if (nv) {
                         if ($scope.context.type !== 'dataset') {
                             console.error('ods-highcharts requires a Dataset Context');
                         }
+
+                        $scope.context.dataset.metas.domain = $scope.context.domain;
+                        ChartHelper.init($scope.context.dataset);
                         if (angular.isUndefined($scope.chartConfig)) {
                             var extras = {};
                             if ($scope.chartType === 'pie') {
-                                extras = {colors: color};
+                                extras = {'colors': colors};
                             }
                             // Sort: x, -x, y, -y
                             var sort = '';
@@ -599,7 +821,7 @@
                                                 yAxis: $scope.expressionY,
                                                 yLabel: yLabel,
                                                 func: $scope.functionY,
-                                                color: color[0],
+                                                color: colors[0],
                                                 type: $scope.chartType,
                                                 extras: extras
                                             }
@@ -614,6 +836,14 @@
                                 $scope.chart = $scope.chartConfig;
                             }
                         }
+                        $scope.$broadcast('chartConfigReady', $scope.chart);
+
+                        $scope.$watch('chart', function(nv) {
+                            if (nv || ov) {
+                                $scope.$broadcast('chartConfigReady', $scope.chart);
+                            }
+                        }, true);
+
                         unwatch();
                     }
                 });
@@ -621,7 +851,7 @@
         };
     });
 
-    mod.directive('odsMultiHighcharts', function() {
+    mod.directive('odsMultiHighcharts', ["ODSAPI", 'ChartHelper', '$q', function(ODSAPI, ChartHelper, $q) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsMultiHighcharts
@@ -647,15 +877,36 @@
                     if (nv.type !== 'catalog') {
                         console.error('ods-multi-highcharts requires a Catalog Context');
                     }
+                    var chartConfig;
                     if (angular.isString($scope.chartConfig)) {
-                        $scope.chart = JSON.parse(atob($scope.chartConfig));
+                        chartConfig = JSON.parse(atob($scope.chartConfig));
                     } else {
-                        $scope.chart = $scope.chartConfig;
+                        chartConfig = $scope.chartConfig;
                     }
+
+                    var datasets = [];
+                    for (var i = 0; i < chartConfig.queries.length; i++) {
+                        var datasetid = chartConfig.queries[i].config.dataset;
+                        if (datasets.indexOf(datasetid) === -1) {
+                            datasets.push(datasetid);
+                        }
+                    }
+                    var requests = [];
+                    for (var i = 0; i < datasets.length; i++) {
+                        requests.push(ODSAPI.datasets.get($scope.context, datasets[i], {extrametas: true}).
+                            success(function(data) {
+                                var dataset = new ODS.Dataset(data);
+                                dataset.metas.domain = $scope.context.domain;
+                                ChartHelper.init(dataset);
+                            }));
+                    }
+                    $q.all(requests).then(function(arg) {
+                        $scope.chart = chartConfig;
+                        $scope.$broadcast('chartConfigReady', $scope.chart);
+                    });
                     unwatch();
                 });
             }]
         };
-    });
-
+    }]);
 }());

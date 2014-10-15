@@ -297,11 +297,11 @@
     }
 }
 
-.odswidget-highcharts,
-.odswidget-multihighcharts {
-    height: 400px;
+.ods-chart {
+    height: 100%;
 
-    .ods-chart, .chartplaceholder {
+    .chartplaceholder {
+        width: 100%;
         height: 100%;
     }
 }
@@ -327,7 +327,7 @@
     position: relative;
     div.card-container {
         background-color: white;
-        box-shadow:  0px 3px 12px 0px rgba(50, 50, 50, 0.75);
+        box-shadow:  0 3px 12px 0 rgba(50, 50, 50, 0.75);
         display: block;
         box-sizing: border-box;
         padding-left: 5px;
@@ -337,6 +337,12 @@
         top: 0;
         left: 0;
         right: 0;
+
+        &.bottom {
+            top: auto;
+            bottom: 0;
+        }
+
         &.multidatasets {
             &:not(.expandable) {
                 h3.datasets-counter {
@@ -490,7 +496,13 @@
     }
 
     div.dataset-item {
-        position: relative;
+        position: absolute;
+        width: 100%;
+        height: auto;
+        & > .odswidget {
+            position: relative;
+            height: 100%;
+        }
     }
 }
 
@@ -601,5 +613,82 @@
     table {
         border-collapse: separate;
         border-spacing: 2px;
+    }
+}
+
+.odswidget-reuses {
+    height: 400px;
+    overflow-y: auto;
+    .reuse-card {
+        background-color: #fff;
+        margin-bottom: 20px;
+        padding: 1em;
+        text-align: center;
+        &:last-child {
+            margin-bottom: 0;
+        }
+        h2 {
+            border-bottom: 1px solid #dadada;
+            margin-bottom: 0.5em;
+        }
+        .infos {
+            .thumbnail {
+                float: left;
+                margin: 0 10px 10px 0;
+                width: 100px;
+                height: 100px;
+                img {
+                    border-radius: 0.25em;
+                    max-width: 100px;
+                    max-height: 100px;
+                }
+            }
+            .no-preview {
+                position: relative;
+                color: rgba(150,150,150,0.4);
+                font-size: 6em;
+                font-weight: bold;
+                i {
+                    position: absolute;
+                    left: 10px;
+                    top: 10px;
+                }
+            }
+            .description {
+                text-align: justify;
+            }
+        }
+        .author-date {
+            clear: both;
+            border-top: 1px solid #dadada;
+            padding-top: 5px;
+            i {
+                padding-left: 20px;
+            }
+        }
+    }
+}
+
+.odswidget-facet {
+    &.category-list, .category-list {
+        list-style: none;
+
+        a.active {
+            font-weight: bold;
+        }
+
+        .expansion-control {
+            font-style: italic;
+        }
+
+        .category-count {
+            opacity: 0.6;
+            &:before {
+                content: '(';
+            }
+            &:after {
+                content: ')';
+            }
+        }
     }
 }

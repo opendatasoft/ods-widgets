@@ -3,6 +3,23 @@
 
     var mod = angular.module('ods-widgets');
 
+    var renderCard = function(transcludeService, scope, elem) {
+        var datasetItem = elem.find('.dataset-item').first();
+        var cardContainer = elem.find('.card-container');
+        var cardHeight = $(cardContainer).outerHeight();
+        if (scope.position == "bottom") {
+            $(datasetItem).css('top', 0);
+            $(datasetItem).css('bottom', cardHeight);
+        } else { // top
+            $(datasetItem).css('top', cardHeight);
+            $(datasetItem).height(elem.outerHeight() - cardHeight);
+        }
+        transcludeService(function(clone) {
+            $(datasetItem).html(clone);
+        });
+        scope.$apply();
+    }
+
     mod.directive('odsDatasetCard', function() {
         /**
          * @ngdoc directive
@@ -31,9 +48,9 @@
                 context: '='
             },
             template: '<div class="odswidget odswidget-dataset-card">' +
-                         '<div class="card-container" ng-class="{expanded: expanded, expandable: isExpandable()}">' +
+                         '<div class="card-container" ng-class="{bottom: position == \'bottom\', expanded: expanded, expandable: isExpandable()}">' +
                             '<h2 class="dataset-title" ng-click="expanded = !expanded" ng-show="!expanded || (expanded && !context.dataset.metas.description)">{{context.dataset.metas.title}}</h2>' +
-                            '<div ng-click="expanded = !expanded" class="expand-control"><translate>Details</translate> <i class="icon-chevron-down" ng-show="!expanded"></i><i class="icon-chevron-up" ng-hide="!expanded"></i></div>' +
+                            '<div ng-click="expanded = !expanded" class="expand-control"><span translate>Details</span> <i class="icon-chevron-down" ng-show="!expanded"></i><i class="icon-chevron-up" ng-hide="!expanded"></i></div>' +
                             '<div class="dataset-expanded" ng-click="expanded = !expanded"">'+
                                 '<h2 class="dataset-title" ng-show="expanded">{{context.dataset.metas.title}}</h2>' +
                                 '<p class="dataset-description" ng-if="expanded" ng-bind-html="safeHtml(context.dataset.metas.description)"></p>' +
@@ -44,26 +61,12 @@
                 '</div>',
             replace: true,
             transclude: true,
-            link: function($scope, elem) {
-
+            link: function(scope, elem, attrs) {
+                scope.position = attrs['position'] || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
-                $scope.renderContent = function(transcludeService) {
-                    var datasetItem = elem.find('.dataset-item').first();
-                    var cardContainer = elem.find('.card-container');
-                    var cardHeight = $(cardContainer).outerHeight();
-                    $(datasetItem).css('top', cardHeight);
-                    $(datasetItem).height(elem.outerHeight() - cardHeight);
-
-                    transcludeService(function(clone) {
-                        // Make the element take all the available space
-                        clone.css('height', '100%');
-//                        clone.height($(datasetItem).height());
-                        $(datasetItem).append(clone);
-                    });
-                    $scope.$apply();
-                };
+                scope.renderContent = renderCard;
             },
-            controller: ['$scope', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, ODSWidgetsConfig, $transclude, $sce) {
+            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, $element, ODSWidgetsConfig, $transclude, $sce) {
                 $scope.websiteName = ODSWidgetsConfig.websiteName;
                 $scope.expanded = false;
 
@@ -90,7 +93,7 @@
                     }
                     // waiting for re-render
                     setTimeout(function() {
-                        $scope.renderContent($transclude);
+                        $scope.renderContent($transclude, $scope, $element);
                     }, 0);
                     $scope.expanded = false;
                     $scope.datasetUrl = $scope.context.domainUrl + '/explore/dataset/' + $scope.context.dataset.datasetid + '/';
@@ -114,26 +117,12 @@
             templateUrl: ODSWidgetsConfig.basePath + 'templates/multidatasets_card.html',
             replace: true,
             transclude: true,
-            link: function($scope, elem) {
-
+            link: function(scope, elem, attrs) {
+                scope.position = attrs['position'] || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
-                $scope.renderContent = function(transcludeService) {
-                    var datasetItem = elem.find('.dataset-item').first();
-                    var cardContainer = elem.find('.card-container');
-                    var cardHeight = $(cardContainer).outerHeight();
-                    $(datasetItem).css('top', cardHeight);
-                    $(datasetItem).height(elem.outerHeight() - cardHeight);
-
-                    transcludeService(function(clone) {
-                        // Make the element take all the available space
-                        clone.css('height', '100%');
-                        //clone.height($(datasetItem).height());
-                        $(datasetItem).html(clone);
-                    });
-                    $scope.$apply();
-                };
+                scope.renderContent = renderCard;
             },
-            controller: ['$scope', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, ODSWidgetsConfig, $transclude, $sce) {
+            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, $element, ODSWidgetsConfig, $transclude, $sce) {
                 $scope.datasetObjectKeys = [];
                 $scope.websiteName = ODSWidgetsConfig.websiteName;
 
@@ -163,7 +152,7 @@
 
                     // waiting for re-render
                     setTimeout(function() {
-                        $scope.renderContent($transclude);
+                        $scope.renderContent($transclude, $scope, $element);
                     }, 0);
                     $scope.expanded = false;
                     unwatch();

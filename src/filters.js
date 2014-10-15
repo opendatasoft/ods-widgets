@@ -123,9 +123,11 @@
             } else if (field.type === 'date') {
                 var precision = getPrecision(field);
                 if (precision === 'year') {
-                    return $filter('moment')(value, 'YYYY');
+                    return value;
                 } else if (precision === 'month') {
-                    return $filter('capitalize')($filter('moment')(value, 'MMMM YYYY'));
+                    // Parse the partial date properly
+                    var partialDate = moment(value, 'YYYY-MM');
+                    return $filter('capitalize')($filter('moment')(partialDate, 'MMMM YYYY'));
                 }
                 return $filter('moment')(value, 'LL');
             } else if (field.type === 'datetime') {

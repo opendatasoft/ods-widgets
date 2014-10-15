@@ -90,7 +90,8 @@
                     }
                     return function preLink(scope, el, attrs) {
                         if (translateInnerHtml) {
-                            el.html(translate(el.html()));
+                            var translation = translate(el.html());
+                            el.empty().append(translation);
                         }
                         try{
                             $compile(el.contents())(scope);

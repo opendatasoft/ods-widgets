@@ -38,7 +38,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "A &quot;dataset context&quot; represents a dataset, and a set of parameters used to query its data. A context can be used",
-      "keywords": "absolute access accessible address ae alphanum api apikey applied apply arbresalignementparis2010 assume attribute attributes bike call case change child clocks clocks-dataset clocks-domain commas configure configured construct context contexts contract_name create created creates current data dataset declare defaultdomain described directive directives directly displayed displays domain domainurl element example exposed exposes field filter find fr full holding horloges_exterieures_et_interieures hostname http identifier indicate initialize inside jcdecaux_bike_data key links list local map mycontext-domain mydomain named names nest object ods-widgets odsdatasetcontext odswidgetsconfig odswidgetsconfigprovider opendatasoft original parameter parameters parametersfromcontext paris path place plugged prefixed properties public query refine replicate represents retrieved root scope separated set settings share simple single specific stations stations-dataset stations-domain stations-parameters string table time trees trees-dataset trees-domain trees-in-paris url user variable view"
+      "keywords": "absolute access accessible address ae alphanum api apikey applied apply arbresalignementparis2010 assume attribute attributes bike call case change child clocks clocks-dataset clocks-domain commas configure configured construct context contexts contract_name create created creates current data dataset declare defaultdomain described directive directives directly displayed displays domain domainurl element example exposed exposes expression field filter find fr full holding horloges_exterieures_et_interieures hostname http identifier indicate initialize initially inside jcdecaux_bike_data key links list local map mycontext-domain mydomain named names nest object ods-widgets odsdatasetcontext odswidgetsconfig odswidgetsconfigprovider opendatasoft original parameter parameters parametersfromcontext paris path place plugged prefixed properties public query refine replicate represents retrieved root scope separated set settings share simple single sort specific stations stations-dataset stations-domain stations-parameters string table time trees trees-dataset trees-domain trees-in-paris url user variable view"
     },
     {
       "section": "api",
@@ -66,6 +66,15 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "This widget enumerates the values (&quot;categories&quot;) of a facet and repeats the template (the content of the directive element) for each of them. For each facet category, the following AngularJS variables are available:",
       "keywords": "angularjs api catalog catalog-domain categories category content context count dataset directive displayed element enumerate enumerates facet facet-name facetname html item label module number ods-widgets opendatasoft path public records refine refined repeats template theme values variables widget"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsFacets",
+      "shortName": "odsFacets",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays filters (facets) for a dataset or a domain&#39;s catalog of datasets, allowing the users",
+      "keywords": "allowing alphanum angularjs api based boolean catalog categories category change class clicking collapsed complete configuration configure context count data dataset datasets default directive display displayed displays domain don dynamically evaluate evaluates evenements-publics-cibul events events-dataset events-domain excluded expanded expression facet facetname facets field fields filter filters hiddencategory hide-category-if hide-if-single-category hierarchical html icon-tag icon-tags including items levels link metadata module mycontext myfield mysecondfield num number ods-widgets odsfacet odsfacets odstable opendatasoft parameters path public refine regular restrict row-fluid sort span4 span8 string supports tag tags template title true typical typically updated_at users variables visible-items widget write"
     },
     {
       "section": "api",
@@ -158,6 +167,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsReuses",
+      "shortName": "odsReuses",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays all reuses published on a domain, in a infinite list of large boxes that presents them",
+      "keywords": "api boxes catalog clear context directive display displays domain fr html http infinite large list lists module ods-widgets paris paris-domain presents published reuses widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsSearchbox",
       "shortName": "odsSearchbox",
       "type": "directive",
@@ -172,7 +190,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a table view of a dataset, with infinite scroll and an ability to sort columns (depending on the",
-      "keywords": "ability api apply column columns comma-separated context dataset default directive display displayed displays expression fields html infinite initially jcdecaux_bike_data list module ods-widgets opendatasoft public scroll sort stations stations-dataset stations-domain table types view widget"
+      "keywords": "ability api column columns comma-separated context dataset default directive display displayed displays fields html infinite jcdecaux_bike_data list module ods-widgets opendatasoft public scroll sort stations stations-dataset stations-domain table types view widget"
     },
     {
       "section": "api",

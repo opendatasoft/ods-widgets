@@ -591,6 +591,25 @@
                 var refreshRecords = function(globalSearch) {
                     var DOWNLOAD_CAP = 200;
                     var SHAPEPREVIEW_HIGHCAP = 500000;
+
+                    var refresh = function(data) {
+                        if (data.count < DOWNLOAD_CAP || $scope.map.getZoom() === $scope.map.getMaxZoom()) {
+                            // Low enough: always download
+                            refreshRawGeo();
+                        } else if (data.count < SHAPEPREVIEW_HIGHCAP) {
+                            // We take our decision depending on the content of the envelope
+                            if (data.geometries.Point && data.geometries.Point > data.count/2) {
+                                refreshClusteredGeo();
+                            } else {
+                                refreshShapePreview();
+                            }
+
+                        } else {
+                            // Cluster no matter what
+                            refreshClusteredGeo();
+                        }
+                    };
+
                     var options = {};
                     if (!globalSearch) {
                         // Stay within the viewport
@@ -604,32 +623,19 @@
                                 var oldBounds = $scope.map.getBounds();
                                 $scope.map.fitBounds([[data.bbox[1], data.bbox[0]], [data.bbox[3], data.bbox[2]]]);
                                 var newBounds = $scope.map.getBounds();
-
+                                // FIXME: This comparison doesn't seem to work very much... but worst case we run
+                                // two queries, and the first one is immediately cancelled
                                 if (angular.equals(oldBounds, newBounds)) {
                                     // We need a refresh even though the map didn't move
-                                    refreshRawGeo();
+                                    refresh(data);
                                 }
 
                             } else {
                                 // We know we have no data, and we can't count on a viewport move to refresh it
-                                refreshRawGeo();
+                                refresh(data);
                             }
                         } else {
-                            if (data.count < DOWNLOAD_CAP || $scope.map.getZoom() === $scope.map.getMaxZoom()) {
-                                // Low enough: always download
-                                refreshRawGeo();
-                            } else if (data.count < SHAPEPREVIEW_HIGHCAP) {
-                                // We take our decision depending on the content of the envelope
-                                if (data.geometries.Point && data.geometries.Point > data.count/2) {
-                                    refreshClusteredGeo();
-                                } else {
-                                    refreshShapePreview();
-                                }
-
-                            } else {
-                                // Cluster no matter what
-                                refreshClusteredGeo();
-                            }
+                            refresh(data);
                         }
                     });
                 };
@@ -748,6 +754,8 @@
                                     DebugLogger.log(center, zoom);
                                     nv.setView(center, zoom);
 
+                                    refreshRecords(false);
+
                                     deferred.resolve();
                                 } else {
                                     DebugLogger.log('Use boundsRetrieval');
@@ -771,8 +779,6 @@
                             setMapView().then(function() {
                                 DebugLogger.log('First onViewportMove');
                                 onViewportMove($scope.map);
-
-                                refreshRecords(false);
 
                                 $scope.map.on('moveend', function(e) {
                                     // Whenever the map moves, we update the displayed data

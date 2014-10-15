@@ -83,7 +83,7 @@
             template: '<div class="odswidget odswidget-tag-cloud">' +
                     '<ul>' +
                     '<li class="no-data" ng-hide="tags" translate>No data available yet</li>' +
-                    '<li ng-repeat="tag in tags" class="tag tag{{ tag.weight }}" style="font-size: {{ tag.size }}em; opacity: {{ tag.opacity }}"><a ng-href="{{ context.domainUrl }}{{url }}/?refine.{{ facetName }}={{ tag.name }}">{{ tag.name }}</a></li>' +
+                    '<li ng-repeat="tag in tags" class="tag tag{{ tag.weight }}" ng-style="{\'font-size\': tag.size + \'em\', \'opacity\': tag.opacity}"><a ng-href="{{ context.domainUrl }}{{url }}/?refine.{{ facetName }}={{ tag.name }}">{{ tag.name }}</a></li>' +
                     '</ul>' +
                 '</div>',
             scope: {

@@ -1,5 +1,11 @@
-if (window.myCustomTags) {
-    window.myCustomTags = window.myCustomTags.concat([
+(function() {
+    'use strict';
+
+    var customTags = [
+        "ngInclude",
+        "ngPluralize",
+        "ngView",
+        "ngSwitch",
         'odsCatalogContext',
         'odsDatasetCard',
         'odsDatasetContext',
@@ -15,6 +21,7 @@ if (window.myCustomTags) {
         'odsMostUsedThemes',
         'odsResultEnumerator',
         'odsResults',
+        'odsReuses',
         'odsSearchBox',
         'odsTable',
         'odsTagCloud',
@@ -24,6 +31,17 @@ if (window.myCustomTags) {
         'odsTimerange',
         'odsTimescale',
         'odsTopPublishers',
-        'odsTwitterTimeline'
-    ]);
-}
+        'odsTwitterTimeline',
+        'odsFacet',
+        'odsFacets',
+        'odsFacetCategoryList',
+        'odsFacetCategory'
+    ];
+    for (var i=0; i<customTags.length; i++) {
+        var elementName = customTags[i];
+        var elementTagName = elementName.replace(/([A-Z])/g, function (match) {
+          return "-" + match.toLowerCase();
+        });
+        document.createElement(elementTagName);
+    }
+}());

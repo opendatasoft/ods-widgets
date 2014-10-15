@@ -47,9 +47,9 @@
             controller: ['$scope', function($scope) {
                 var refresh = function() {
                     // TODO: If the context is a dataset-context
-                    ODSAPI.reuses($scope.context, {'rows': 5, 'sort': 'modified'}).
+                    ODSAPI.reuses($scope.context, {'rows': 5}).
                         success(function(data) {
-                            $scope.reuses = data;
+                            $scope.reuses = data.reuses;
                         });
                 };
                 $scope.$watch('context', function() {

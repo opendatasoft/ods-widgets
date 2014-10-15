@@ -7,7 +7,7 @@ mod.directive('infiniteScroll', [
   '$rootScope', '$window', '$timeout', function($rootScope, $window, $timeout) {
     return {
       link: function(scope, elem, attrs) {
-        var $scrollParent, checkWhenEnabled, elementTop, handler, scrollDistance, scrollEnabled;
+        var $scrollParent, checkWhenEnabled, elementTop, handler, scrollDistance, scrollEnabled, parentTop;
         $window = angular.element($window);
         $scrollParent = elem.parents().filter(function() {
           return /(auto|scroll)/.test(($.css(this, 'overflow')) + ($.css(this, 'overflow-y')));
@@ -37,7 +37,8 @@ mod.directive('infiniteScroll', [
             }
           });
         }
-        elementTop = elem.position().top;
+        parentTop = $scrollParent !== $window ? $scrollParent.position().top : 0;
+        elementTop = elem.position().top - parentTop;
         handler = function() {
           var elementBottom, remaining, scrollBottom, shouldScroll;
 

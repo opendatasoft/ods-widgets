@@ -325,14 +325,11 @@
   font-family: monospace;
   text-align: right;
 }
-.odswidget-highcharts,
-.odswidget-multihighcharts {
-  height: 400px;
+.ods-chart {
+  height: 100%;
 }
-.odswidget-highcharts .ods-chart,
-.odswidget-multihighcharts .ods-chart,
-.odswidget-highcharts .chartplaceholder,
-.odswidget-multihighcharts .chartplaceholder {
+.ods-chart .chartplaceholder {
+  width: 100%;
   height: 100%;
 }
 .odswidget-theme-picto svg,
@@ -355,7 +352,7 @@
 .odswidget-dataset-card div.card-container,
 .odswidget-multidatasets-card div.card-container {
   background-color: white;
-  box-shadow: 0px 3px 12px 0px rgba(50, 50, 50, 0.75);
+  box-shadow: 0 3px 12px 0 rgba(50, 50, 50, 0.75);
   display: block;
   box-sizing: border-box;
   padding-left: 5px;
@@ -365,6 +362,11 @@
   top: 0;
   left: 0;
   right: 0;
+}
+.odswidget-dataset-card div.card-container.bottom,
+.odswidget-multidatasets-card div.card-container.bottom {
+  top: auto;
+  bottom: 0;
 }
 .odswidget-dataset-card div.card-container.multidatasets:not(.expandable) h3.datasets-counter span.count-text,
 .odswidget-multidatasets-card div.card-container.multidatasets:not(.expandable) h3.datasets-counter span.count-text {
@@ -522,7 +524,14 @@
 }
 .odswidget-dataset-card div.dataset-item,
 .odswidget-multidatasets-card div.dataset-item {
+  position: absolute;
+  width: 100%;
+  height: auto;
+}
+.odswidget-dataset-card div.dataset-item > .odswidget,
+.odswidget-multidatasets-card div.dataset-item > .odswidget {
   position: relative;
+  height: 100%;
 }
 .odswidget-table,
 .odswidget-map {
@@ -620,4 +629,78 @@
 .odswidgets-rd-container table {
   border-collapse: separate;
   border-spacing: 2px;
+}
+.odswidget-reuses {
+  height: 400px;
+  overflow-y: auto;
+}
+.odswidget-reuses .reuse-card {
+  background-color: #fff;
+  margin-bottom: 20px;
+  padding: 1em;
+  text-align: center;
+}
+.odswidget-reuses .reuse-card:last-child {
+  margin-bottom: 0;
+}
+.odswidget-reuses .reuse-card h2 {
+  border-bottom: 1px solid #dadada;
+  margin-bottom: 0.5em;
+}
+.odswidget-reuses .reuse-card .infos .thumbnail {
+  float: left;
+  margin: 0 10px 10px 0;
+  width: 100px;
+  height: 100px;
+}
+.odswidget-reuses .reuse-card .infos .thumbnail img {
+  border-radius: 0.25em;
+  max-width: 100px;
+  max-height: 100px;
+}
+.odswidget-reuses .reuse-card .infos .no-preview {
+  position: relative;
+  color: rgba(150, 150, 150, 0.4);
+  font-size: 6em;
+  font-weight: bold;
+}
+.odswidget-reuses .reuse-card .infos .no-preview i {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+.odswidget-reuses .reuse-card .infos .description {
+  text-align: justify;
+}
+.odswidget-reuses .reuse-card .author-date {
+  clear: both;
+  border-top: 1px solid #dadada;
+  padding-top: 5px;
+}
+.odswidget-reuses .reuse-card .author-date i {
+  padding-left: 20px;
+}
+.odswidget-facet.category-list,
+.odswidget-facet .category-list {
+  list-style: none;
+}
+.odswidget-facet.category-list a.active,
+.odswidget-facet .category-list a.active {
+  font-weight: bold;
+}
+.odswidget-facet.category-list .expansion-control,
+.odswidget-facet .category-list .expansion-control {
+  font-style: italic;
+}
+.odswidget-facet.category-list .category-count,
+.odswidget-facet .category-list .category-count {
+  opacity: 0.6;
+}
+.odswidget-facet.category-list .category-count:before,
+.odswidget-facet .category-list .category-count:before {
+  content: '(';
+}
+.odswidget-facet.category-list .category-count:after,
+.odswidget-facet .category-list .category-count:after {
+  content: ')';
 }

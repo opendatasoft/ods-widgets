@@ -3,7 +3,9 @@
 
 var JS_FILES = [
     'libs-included/*.js',
+    'src/polyfills.js',
     'src/ods-widgets.js',
+    'src/services.js',
     'src/filters.js',
     'src/functions.js',
     'src/directives/*.js'

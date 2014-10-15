@@ -43,7 +43,7 @@
                 '<div class="no-data" ng-hide="items" translate>No data available yet</div>' +
                 '<div ng-repeat="item in items" inject class="item"></div>' +
                 '</div>',
-            controller: function($scope) {
+            controller: ['$scope', function($scope) {
                 var init = $scope.$watch('context', function(nv) {
                     var query;
                     if (nv.type === 'catalog') {
@@ -62,7 +62,7 @@
                     });
                     init();
                 }, true);
-            }
+            }]
         };
     }]);
 

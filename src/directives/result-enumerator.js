@@ -55,8 +55,8 @@
             template: '<div class="odswidget odswidget-result-enumerator">' +
                 '<div ods-results="items" ods-results-context="context" ods-results-max="{{max}}">' +
                 '<div ng-if="!items.length" class="no-results" translate>No results</div>' +
-                '<div ng-if="items.length && hitsCounter" class="results-count">{{items.length}} <translate>results</translate></div>' +
-                '<div ng-repeat="item in items" inject class="item""></div>' +
+                '<div ng-if="items.length && hitsCounter" class="results-count">{{items.length}} <span translate>results</span></div>' +
+                '<div ng-repeat="item in items" inject class="item"></div>' +
                 '</div>' +
                 '</div>',
             controller: ['$scope', function($scope) {
