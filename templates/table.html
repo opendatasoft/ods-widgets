@@ -11,10 +11,9 @@
                     <div>
                         <span ng-bind="field.label"></span>
                         <div class="sort-icons" ng-show="isFieldSortable(field)">
-                            <i class="icon-caret-up"></i>
-                            <i class="icon-caret-down"></i>
+                            <i class="icon-caret-up" ng-hide="'-'+field.name === context.parameters.sort"></i>
+                            <i class="icon-caret-down" ng-hide="field.name === context.parameters.sort"></i>
                         </div>
-                        <i ng-class="{'icon-caret-down': context.parameters.sort[0] === '-', 'icon-caret-up': context.parameters.sort[0] !== '-'}" ng-show="isFieldSortable(field)"></i>
                     </div>
                 </th>
             </tr>

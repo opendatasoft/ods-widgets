@@ -367,5 +367,36 @@
         };
     }]);
 
+    mod.filter('imageUrl', function() {
+        return function(fieldValue, context) {
+            if (!fieldValue || angular.equals(fieldValue, {})) {
+                return null;
+            }
+            if (!context) {
+                console.log('ERROR : This filter requires a context as second parameter.');
+            }
+            if (!context.dataset) {
+                return null;
+            }
+            if (!angular.isObject(fieldValue)) {
+                console.log('ERROR : This field is not an image field.');
+            }
+            var url = context.domainUrl;
+            url += '/api/datasets/1.0/'+context.dataset.datasetid+'/images/'+fieldValue.id+'/';
+            return url;
+        };
+    });
+
+    mod.filter('thumbnailUrl', ['imageUrlFilter', function(imageUrlFilter) {
+        return function(fieldValue, context) {
+            var url = imageUrlFilter(fieldValue, context);
+            if (url) {
+                return url + '300/';
+            } else {
+                return null;
+            }
+        };
+    }]);
+
 
 }());

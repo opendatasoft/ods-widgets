@@ -337,12 +337,18 @@
                         }
 
                         if(parameters.singleAxis) {
-                            options.yAxis.push({
+                            var hasMin = typeof parameters.yRangeMin !== "undefined" && parameters.yRangeMin !== '',
+                                hasMax = typeof parameters.yRangeMax !== "undefined" && parameters.yRangeMax !== '';
+                            options.yAxis = [{
                                 title: {
                                     text: parameters.singleAxisLabel || ""
                                 },
-                                type: parameters.singleAxisScale || "linear"
-                            });
+                                type: parameters.singleAxisScale || "linear",
+                                min: hasMin ? parameters.yRangeMin : null,
+                                max: hasMax ? parameters.yRangeMax : null,
+                                startOnTick: hasMin ? false : true,
+                                endOnTick: hasMax ? false : true
+                            }];
                         }
                         
                         return options;
@@ -524,6 +530,8 @@
                                 if(!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])){
                                     // we dont yet have an axis for this column :
                                     // Create axis and register it in yAxisesIndexes
+                                    var hasMin = typeof chart.yRangeMin !== "undefined" && chart.yRangeMin !== '';
+                                    var hasMax = typeof chart.yRangeMax !== "undefined" && chart.yRangeMax !== '';
                                     yAxisesIndexes[datasetid][yLabel] = options.yAxis.push({
                                         // labels:
                                         title: {
@@ -538,7 +546,11 @@
                                             }
                                         },
                                         type: chart.scale || 'linear',
-                                        opposite: !!(options.yAxis.length)  //boolean casting
+                                        min: hasMin ? chart.yRangeMin : null,
+                                        max: hasMax ? chart.yRangeMax : null,
+                                        startOnTick: hasMin ? true : false,
+                                        endOnTick: hasMax ? true : false,
+                                        opposite: !!(options.yAxis.length % 2)  //boolean casting
                                     }) - 1;
                                 }
 

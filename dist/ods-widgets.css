@@ -267,14 +267,11 @@
 .odswidget-table table th:hover .sort-icons i {
   opacity: 0.8;
 }
-.odswidget-table table th.active i {
-  display: inline;
+.odswidget-table table th.active .sort-icons i.icon-caret-up {
+  top: 0.1em;
 }
-.odswidget-table table th.active .sort-icons {
-  display: none;
-}
-.odswidget-table table th i {
-  display: none;
+.odswidget-table table th.active .sort-icons i.icon-caret-down {
+  bottom: 0.1em;
 }
 .odswidget-table table th .sort-icons {
   position: relative;

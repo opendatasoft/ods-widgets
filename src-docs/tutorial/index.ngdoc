@@ -5,41 +5,7 @@
 This section is dedicated to tutorials on how to use ODS Widgets, from basic uses (a simple visualization on your page) to
 building advanced interactive dashboards or visualization applications.
 
-**> You can start by {@link firstpage building a first page}.**
+Here, you will find various documented examples of what you can achieve using widgets and data. All examples
+are built using publicly available data, so that you can reproduce (and extend) it easily on your own.
 
-
-
-You can reproduce and extend all the examples from the tutorial, as they are using public data. You can use [the following
-Plunkr as a sandbox](http://plnkr.co/edit/VHtvNxUkN212WQipMRtw?p=preview), or create your own HTML page using your favorite editor. You can use the following template to
-quickly be up to speed:
-
-<pre>
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>ODS Widgets Sandbox</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
-        <link rel="stylesheet" href="https://opendatasoft.github.io/ods-widgets/dist/ods-widgets.css">
-    </head>
-    <body>
-        <div class="container-fluid" ng-app="ods-widgets">
-
-            <!-- Your code goes here! -->
-
-        </div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.18/angular-sanitize.min.js"></script>
-        <script type="text/javascript" src="https://opendatasoft.github.io/ods-widgets/dist/ods-widgets.js"></script>
-    </body>
-</html>
-</pre>
-
-<div class="alert alert-warning alert-block">
-Currently, due to some technical limitations with cross-domain requests, some widgets (odsTable and odsMap) may not work if you load the ODS-Widgets
-files from opendatasoft.github.io, like in the proposed Plunkr or template above.<br><br>
-The problem will not occur if you download and use a local version of ODS-Widgets.
-</div>
+## Let's start with: {@link 01firstpage Part 1: Building a first page}.

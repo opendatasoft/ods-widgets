@@ -66,11 +66,34 @@
                '#a6c96a'
             ],
             availableCharts = [
-                {label: translate('Line'), type: 'line', group: translate('line charts')},
-                {label: translate('Spline'), type: 'spline', group: translate('line charts')},
-                {label: translate('Range'), type: 'arearange', group: translate('Area charts')},
-                {label: translate('Range spline'), type: 'areasplinerange', group: translate('Area charts')},
-                {label: translate('Column range'), type: 'columnrange', group: translate('Area charts')},
+                {
+                    label: translate('Line'),
+                    type: 'line',
+                    group: translate('line charts')
+                },
+                {
+                    label: translate('Spline'),
+                    type: 'spline',
+                    group: translate('line charts')
+                },
+                {
+                    label: translate('Range'),
+                    type: 'arearange',
+                    group: translate('Area charts'),
+                    filter: 'hasNumericField'
+                },
+                {
+                    label: translate('Range spline'),
+                    type: 'areasplinerange',
+                    group: translate('Area charts'),
+                    filter: 'hasNumericField'
+                },
+                {
+                    label: translate('Column range'),
+                    type: 'columnrange',
+                    group: translate('Area charts'),
+                    filter: 'hasNumericField'
+                },
                 {label: translate('Area'), type: 'area', group: translate('Area charts')},
                 {label: translate('Area spline'), type: 'areaspline', group: translate('Area charts')},
                 {label: translate('Column chart'), type: 'column', group: translate('Bar charts')},
@@ -298,8 +321,17 @@
                     return color;
                 }
             },
-            getAvailableCharts: function() {
-                return availableCharts;
+            getAvailableChartTypes: function(datasetid) {
+                var availableChartTypes = [];
+                for (var i = 0; i < availableCharts.length; i++) {
+                    // console.log(datasets[datasetid][availableCharts[i].filter]());
+                    if (typeof availableCharts[i].filter === 'undefined') {
+                        availableChartTypes.push(availableCharts[i]);
+                    } else if (datasets[datasetid][availableCharts[i].filter]()) {
+                        availableChartTypes.push(availableCharts[i]);
+                    }
+                }
+                return availableChartTypes;
             },
             setDefaultValues: function(datasetid, chart) {
                 // Compute default labels

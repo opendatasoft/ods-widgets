@@ -254,6 +254,15 @@
                         }
                     }
                     return null;
+                },
+                hasNumericField: function() {
+                    for (var i=0; i < this.fields.length; i++) {
+                        var field = this.fields[i];
+                        if (field.type === 'int' || field.type === 'double') {
+                            return true;
+                        }
+                    }
+                    return false;
                 }
             }
         }

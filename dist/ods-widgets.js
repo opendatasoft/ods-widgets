@@ -5509,11 +5509,34 @@ else {
                '#a6c96a'
             ],
             availableCharts = [
-                {label: translate('Line'), type: 'line', group: translate('line charts')},
-                {label: translate('Spline'), type: 'spline', group: translate('line charts')},
-                {label: translate('Range'), type: 'arearange', group: translate('Area charts')},
-                {label: translate('Range spline'), type: 'areasplinerange', group: translate('Area charts')},
-                {label: translate('Column range'), type: 'columnrange', group: translate('Area charts')},
+                {
+                    label: translate('Line'),
+                    type: 'line',
+                    group: translate('line charts')
+                },
+                {
+                    label: translate('Spline'),
+                    type: 'spline',
+                    group: translate('line charts')
+                },
+                {
+                    label: translate('Range'),
+                    type: 'arearange',
+                    group: translate('Area charts'),
+                    filter: 'hasNumericField'
+                },
+                {
+                    label: translate('Range spline'),
+                    type: 'areasplinerange',
+                    group: translate('Area charts'),
+                    filter: 'hasNumericField'
+                },
+                {
+                    label: translate('Column range'),
+                    type: 'columnrange',
+                    group: translate('Area charts'),
+                    filter: 'hasNumericField'
+                },
                 {label: translate('Area'), type: 'area', group: translate('Area charts')},
                 {label: translate('Area spline'), type: 'areaspline', group: translate('Area charts')},
                 {label: translate('Column chart'), type: 'column', group: translate('Bar charts')},
@@ -5741,8 +5764,17 @@ else {
                     return color;
                 }
             },
-            getAvailableCharts: function() {
-                return availableCharts;
+            getAvailableChartTypes: function(datasetid) {
+                var availableChartTypes = [];
+                for (var i = 0; i < availableCharts.length; i++) {
+                    // console.log(datasets[datasetid][availableCharts[i].filter]());
+                    if (typeof availableCharts[i].filter === 'undefined') {
+                        availableChartTypes.push(availableCharts[i]);
+                    } else if (datasets[datasetid][availableCharts[i].filter]()) {
+                        availableChartTypes.push(availableCharts[i]);
+                    }
+                }
+                return availableChartTypes;
             },
             setDefaultValues: function(datasetid, chart) {
                 // Compute default labels
@@ -6529,6 +6561,37 @@ else {
         };
     }]);
 
+    mod.filter('imageUrl', function() {
+        return function(fieldValue, context) {
+            if (!fieldValue || angular.equals(fieldValue, {})) {
+                return null;
+            }
+            if (!context) {
+                console.log('ERROR : This filter requires a context as second parameter.');
+            }
+            if (!context.dataset) {
+                return null;
+            }
+            if (!angular.isObject(fieldValue)) {
+                console.log('ERROR : This field is not an image field.');
+            }
+            var url = context.domainUrl;
+            url += '/api/datasets/1.0/'+context.dataset.datasetid+'/images/'+fieldValue.id+'/';
+            return url;
+        };
+    });
+
+    mod.filter('thumbnailUrl', ['imageUrlFilter', function(imageUrlFilter) {
+        return function(fieldValue, context) {
+            var url = imageUrlFilter(fieldValue, context);
+            if (url) {
+                return url + '300/';
+            } else {
+                return null;
+            }
+        };
+    }]);
+
 
 }());;(function(target) {
     var ODS = {
@@ -6786,6 +6849,15 @@ else {
                         }
                     }
                     return null;
+                },
+                hasNumericField: function() {
+                    for (var i=0; i < this.fields.length; i++) {
+                        var field = this.fields[i];
+                        if (field.type === 'int' || field.type === 'double') {
+                            return true;
+                        }
+                    }
+                    return false;
                 }
             }
         }
@@ -8332,12 +8404,18 @@ else {
                         }
 
                         if(parameters.singleAxis) {
-                            options.yAxis.push({
+                            var hasMin = typeof parameters.yRangeMin !== "undefined" && parameters.yRangeMin !== '',
+                                hasMax = typeof parameters.yRangeMax !== "undefined" && parameters.yRangeMax !== '';
+                            options.yAxis = [{
                                 title: {
                                     text: parameters.singleAxisLabel || ""
                                 },
-                                type: parameters.singleAxisScale || "linear"
-                            });
+                                type: parameters.singleAxisScale || "linear",
+                                min: hasMin ? parameters.yRangeMin : null,
+                                max: hasMax ? parameters.yRangeMax : null,
+                                startOnTick: hasMin ? false : true,
+                                endOnTick: hasMax ? false : true
+                            }];
                         }
                         
                         return options;
@@ -8519,6 +8597,8 @@ else {
                                 if(!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])){
                                     // we dont yet have an axis for this column :
                                     // Create axis and register it in yAxisesIndexes
+                                    var hasMin = typeof chart.yRangeMin !== "undefined" && chart.yRangeMin !== '';
+                                    var hasMax = typeof chart.yRangeMax !== "undefined" && chart.yRangeMax !== '';
                                     yAxisesIndexes[datasetid][yLabel] = options.yAxis.push({
                                         // labels:
                                         title: {
@@ -8533,7 +8613,11 @@ else {
                                             }
                                         },
                                         type: chart.scale || 'linear',
-                                        opposite: !!(options.yAxis.length)  //boolean casting
+                                        min: hasMin ? chart.yRangeMin : null,
+                                        max: hasMax ? chart.yRangeMax : null,
+                                        startOnTick: hasMin ? true : false,
+                                        endOnTick: hasMax ? true : false,
+                                        opposite: !!(options.yAxis.length % 2)  //boolean casting
                                     }) - 1;
                                 }
 

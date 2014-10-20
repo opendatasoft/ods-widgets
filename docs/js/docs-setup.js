@@ -298,14 +298,23 @@ NG_DOCS={
       "type": "overview",
       "moduleName": "index",
       "shortDescription": "This section is dedicated to tutorials on how to use ODS Widgets, from basic uses (a simple visualization on your page) to",
-      "keywords": "advanced alert alert-block alert-warning applications basic bootstrapcdn building charset class cloudflare code container-fluid content create cross-domain css currently dashboards data dedicated download editor examples extend favorite files firstpage github href html https initial-scale interactive io js limitations load local min ng-app occur ods ods-widgets odsmap opendatasoft overview plunkr problem proposed public rel reproduce requests sandbox simple speed src start stylesheet technical template text tutorial tutorials type utf-8 version viewport visualization widgets width work"
+      "keywords": "achieve advanced applications basic building built dashboards data dedicated documented easily examples extend find interactive ods overview publicly reproduce simple start tutorial tutorials visualization widgets"
     },
     {
       "section": "tutorial",
-      "id": "firstpage",
-      "shortName": "A first page",
+      "id": "00setup",
+      "shortName": "Setup for the tutorials",
       "type": "overview",
-      "moduleName": "A first page",
+      "moduleName": "Setup for the tutorials",
+      "shortDescription": "Setup for the tutorials",
+      "keywords": "alert alert-block alert-warning bootstrapcdn charset class cloudflare code container-fluid content context create cross-domain css currently data download editor examples experience extend favorite files github href html https initial-scale io jcdecaux_bike_data js limitations load local min ng-app occur ods-widgets odsmap opendatasoft overview plunkr problem proposed public rel reproduce requests sandbox setup speed src stations stations-dataset stations-domain stylesheet technical template text tutorial tutorials type utf-8 version viewport widgets width work"
+    },
+    {
+      "section": "tutorial",
+      "id": "01firstpage",
+      "shortName": "1. A first page",
+      "type": "overview",
+      "moduleName": "1. A first page",
       "shortDescription": "Tutorial: A first page",
       "keywords": "add adding allow allows analog api attribute attributes books browsing build case catalog class closely consumption content context contexts covers create crowdsourced data dataset datasets date_end directive display displayed documentation domain element ended evenements-publics-cibul events events-dataset events-domain exactly example features field fill filter filtered find full geographical happened html identifier indicated inside interact interacting interaction job lack library list located location luckily mandatory map metadata month ng-embed-app nice occured ods ods-widgets odsmap odstimescale opendatasoft opening overview parameter perfect plug portal prefixed provide public range reading ready represents requires search select shared shelves simply source specific step syntax target time-field tool tutorial types users week widget widgets"
     }
