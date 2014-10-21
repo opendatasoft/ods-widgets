@@ -342,6 +342,7 @@ NG_DOCS={
     "tutorial": false
   },
   "html5Mode": false,
+  "editExample": true,
   "startPage": "/api",
   "scripts": [
     "jquery-1.11.1.min.js",
@@ -350,6 +351,5 @@ NG_DOCS={
     "angular-sanitize.js",
     "ods-widgets.js",
     "docs-load-css.js"
-  ],
-  "editExample": true
+  ]
 };
