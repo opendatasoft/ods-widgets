@@ -1,0 +1,71 @@
+<h1><code ng:non-bindable=""></code>
+<div><span class="hint"></span>
+</div>
+</h1>
+<div><div class="2-a-catalog-homepage-page"><h2 id="tutorial-a-catalog-homepage">Tutorial: A catalog homepage</h2>
+<p>In this tutorial, we will build a homepage for an Open Data portal.</p>
+<p>Datasets are usually gathered in catalogs, which are collections organized using the various metadata of the datasets;
+for example, an Open Data portal is a catalog of datasets. Of course, that doesn&#39;t look very sexy in itself, and it is
+often a good idea to present a nice preview of a catalog to engage visitors to explore it further. We have several widgets
+that will help us to achieve that.</p>
+<p>First, let&#39;s create a new <a href="#/api/ods-widgets.directive:odsCatalogContext">catalog context</a> plugged on OpenDataSoft&#39;s
+public portal.</p>
+<pre class="prettyprint linenums">
+&lt;ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com"&gt;&lt;/ods-catalog-context&gt;
+</pre>
+<p>We want to write a nice welcome sentence that contains the number of datasets available, to make it look alive. We have
+a widget that can help us to this: <a href="#/api/ods-widgets.directive:odsDomainStatistics">odsDomainStatistics</a> exposes
+a number of statistics about the domain of the context it is declared on, as variables in our page; for example, we can
+obtain a <code>catalog.stats.dataset</code> variable containing the number of datasets.</p>
+<pre class="prettyprint linenums">
+&lt;ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com" ods-domain-statistics&gt;
+    Welcome on our public portal! Take a tour of our {{catalog.stats.dataset}} available datasets!
+&lt;/ods-catalog-context&gt;
+</pre>
+<div class="well" ng-embed-app="ods-widgets">
+<ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com" ods-domain-statistics>
+    Welcome on our public portal! Take a tour of our {{catalog.stats.dataset}} available datasets!
+</ods-catalog-context>
+</div>
+
+<p>A simple number doesn&#39;t say much: what are most datasets talking about? What are the most recent datasets and the most popular ones?
+We have a number of widgets that can answer these questions in a simple manner:
+<a href="#/api/ods-widgets.directive:odsTagCloud">odsTagCloud</a>,
+<a href="#/api/ods-widgets.directive:odsLastDatasetsFeed">odsLastDatasetsFeed</a>,
+and <a href="#/api/ods-widgets.directive:odsMostPopularDatasets">odsMostPopularDatasets</a>. We just need to tell our tag cloud
+widget which metadata to use (here, we need the keywords).</p>
+<pre class="prettyprint linenums">
+&lt;ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com" ods-domain-statistics&gt;
+    &lt;h2&gt;Welcome on our public portal! Take a tour of our {{catalog.stats.dataset}} available datasets!&lt;/h2&gt;
+    &lt;div class="row-fluid"&gt;
+        &lt;div class="span6"&gt;
+            &lt;ods-tag-cloud facet-name="keyword" context="catalog"&gt;&lt;/ods-tag-cloud&gt;
+        &lt;/div&gt;
+        &lt;div class="span6"&gt;
+            &lt;h3&gt;Last datasets&lt;/h3&gt;
+            &lt;ods-last-datasets-feed context="catalog"&gt;&lt;/ods-last-datasets-feed&gt;
+            &lt;h3&gt;Most popular&lt;/h3&gt;
+            &lt;ods-most-popular-datasets context="catalog"&gt;&lt;/ods-most-popular-datasets&gt;
+            &lt;ods-last-reuses-feed context="catalog"&gt;&lt;/ods-last-reuses-feed&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/ods-catalog-context&gt;
+</pre>
+<div class="well" ng-embed-app="ods-widgets">
+<ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com" ods-domain-statistics>
+    <h3 id="tutorial-a-catalog-homepage_welcome-on-our-public-portal-take-a-tour-of-our-{{catalogstatsdataset}}-available-datasets">Welcome on our public portal! Take a tour of our {{catalog.stats.dataset}} available datasets!</h3>
+    <div class="row-fluid">
+        <div class="span6">
+            <h4 id="tutorial-a-catalog-homepage_welcome-on-our-public-portal-take-a-tour-of-our-{{catalogstatsdataset}}-available-datasets_keywords">Keywords</h4>
+            <ods-tag-cloud facet-name="keyword" context="catalog"></ods-tag-cloud>
+        </div>
+        <div class="span6">
+            <h4 id="tutorial-a-catalog-homepage_welcome-on-our-public-portal-take-a-tour-of-our-{{catalogstatsdataset}}-available-datasets_last-datasets">Last datasets</h4>
+            <ods-last-datasets-feed context="catalog"></ods-last-datasets-feed>
+
+            <h4 id="tutorial-a-catalog-homepage_welcome-on-our-public-portal-take-a-tour-of-our-{{catalogstatsdataset}}-available-datasets_most-popular">Most popular</h4>
+            <ods-most-popular-datasets context="catalog"></ods-most-popular-datasets>
+        </div>
+    </div>
+</ods-catalog-context>
+</div></div></div>

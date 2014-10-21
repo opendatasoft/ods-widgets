@@ -60,6 +60,9 @@
   width: 70%;
   min-width: 150px;
 }
+.odswidget-text-search .searchbox {
+  margin-bottom: 0;
+}
 .odswidget-last-datasets-feed ul,
 .odswidget-most-popular-datasets ul,
 .odswidget-last-reuses-feed ul,

@@ -317,6 +317,24 @@ NG_DOCS={
       "moduleName": "1. A first page",
       "shortDescription": "Tutorial: A first page",
       "keywords": "add adding allow allows analog api attribute attributes books browsing build case catalog class closely consumption content context contexts covers create crowdsourced data dataset datasets date_end directive display displayed documentation domain element ended evenements-publics-cibul events events-dataset events-domain exactly example features field fill filter filtered find full geographical happened html identifier indicated inside interact interacting interaction job lack library list located location luckily mandatory map metadata month ng-embed-app nice occured ods ods-widgets odsmap odstimescale opendatasoft opening overview parameter perfect plug portal prefixed provide public range reading ready represents requires search select shared shelves simply source specific step syntax target time-field tool tutorial types users week widget widgets"
+    },
+    {
+      "section": "tutorial",
+      "id": "02catalogpage",
+      "shortName": "2. A catalog homepage",
+      "type": "overview",
+      "moduleName": "2. A catalog homepage",
+      "shortDescription": "Tutorial: A catalog homepage",
+      "keywords": "achieve alive answer api build catalog catalog-domain catalogs class cloud collections context course create data dataset datasets declared directive doesn domain engage example explore exposes facet-name gathered good help homepage idea keyword keywords manner metadata ng-embed-app nice number ods-domain-statistics ods-widgets odsdomainstatistics odslastdatasetsfeed odsmostpopulardatasets odstagcloud open opendatasoft organized overview plugged popular portal preview public questions row-fluid sentence sexy simple span6 statistics stats tag talking tour tutorial variable variables visitors widget widgets write"
+    },
+    {
+      "section": "tutorial",
+      "id": "03searchdatasets",
+      "shortName": "3. A dataset search page",
+      "type": "overview",
+      "moduleName": "3. A dataset search page",
+      "shortDescription": "Tutorial: A dataset search page",
+      "keywords": "achieve add adding allow api apply browse build built catalog catalog-domain catalog-parameters center class configured context custom data dataset datasets descending directive directly discover display displayed documentation drill eager earlier engine ensure explore faceted features filter filters finely full-text help homepage license ll max metas modification modified ng-embed-app ods-widgets odsfacets odsresultenumerator odstextsearch offer offering open opendatasoft options ordered overview parameter plugging portal provide public requires row-fluid search show-hits-counter simple simply sort sorted span4 span8 style text-align theme themes title tools treasures true tutorial visitors ways widgets work"
     }
   ],
   "apis": {
