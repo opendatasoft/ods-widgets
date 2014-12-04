@@ -388,7 +388,7 @@
                 template: '@'
             },
             template: '<div class="odswidget odswidget-facet-category">' +
-                '   <a href="#" ng-click="toggleRefinement($event, category.path)" ng-class="{\'refined\': category.state === \'refined\'}">' +
+                '   <a href="#" ng-click="toggleRefinement($event, category.path)" ng-class="{\'refined\': category.state === \'refined\'}" title="{{ category.name }}">' +
                 '   </a>' +
                 '</div>',
             link: function(scope, element, attrs, facetCtrl) {

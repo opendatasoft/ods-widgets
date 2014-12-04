@@ -27,6 +27,7 @@ L.ODSTileLayer = L.TileLayer.extend({
         return attribution;
     },
     _initLayer: function(basemap, disableAttribution, prependAttribution, appendAttribution) {
+        var layerOptions = {};
         var attrib = this._addAttributionPart('', prependAttribution);
         if (basemap.provider === 'mapquest') {
             // OSM MapQuest
@@ -65,15 +66,20 @@ L.ODSTileLayer = L.TileLayer.extend({
         } else if (basemap.provider === 'mapbox') {
             attrib = this._addAttributionPart(attrib, 'Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
-            L.TileLayer.prototype.initialize.call(this, this._mapboxUrl(basemap.mapid),
-                {
-                    minZoom: 1,
-                    maxZoom: 21,
-                    attribution: !disableAttribution ? attrib : '',
-                    subdomains: "abcd"
-                });
+            layerOptions = {
+                minZoom: 1,
+                maxZoom: 21,
+                attribution: !disableAttribution ? attrib : '',
+                subdomains: "abcd"
+            };
+            if (basemap.minZoom) {
+                layerOptions.minZoom = basemap.minZoom;
+            }
+            if (basemap.maxZoom) {
+                layerOptions.maxZoom = basemap.maxZoom;
+            }
+            L.TileLayer.prototype.initialize.call(this, this._mapboxUrl(basemap.mapid), layerOptions);
         } else {
-            var layerOptions = {};
             if (basemap.subdomains) {
                 layerOptions.subdomains = basemap.subdomains;
             }

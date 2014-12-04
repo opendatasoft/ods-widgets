@@ -158,8 +158,12 @@
                         dataset = value;
                     }
                     return false;
-                })
-                return dataset.getUniqueId();
+                });
+                if (dataset) {
+                    return dataset.getUniqueId();
+                } else {
+                    throw new Exception("dataset " + datasetid + " not loaded yet.");
+                }
             },
             getDataset: function(uniqueid) {
                 var dataset;
@@ -598,13 +602,17 @@
                     "https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.css",
                     "libs/ods-geobox/geobox.css",
                     "libs/ods-vectormarker/vectormarker.css",
-                    "libs/ods-clustermarker/clustermarker.css"
+                    "libs/ods-clustermarker/clustermarker.css",
+                    "libs/leaflet-label/leaflet.label.css"
                 ],
                 'js': [
-                    ["L@https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"],
+                    [
+                        "L@https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"
+                    ],
                     [
                         "L.Control.FullScreen@https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.3/Leaflet.fullscreen.min.js",
                         "L.Control.Locate@https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.js",
+                        "L.Label@libs/leaflet-label/leaflet.label.js",
                         "L.ODSMap@libs/ods-map/ods-map.js",
                         "L.ODSTileLayer@libs/ods-map/ods-tilelayer.js",
                         "L.Control.GeoBox@libs/ods-geobox/geobox.js",

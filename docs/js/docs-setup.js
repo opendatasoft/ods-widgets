@@ -110,7 +110,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays the last 5 reuses published on a domain.",
-      "keywords": "api catalog context directive displays domain fr html http module ods-widgets paris paris-domain published reuses widget"
+      "keywords": "adding api catalog context created_at customize dataset datetime description directive display displays domain first_name format fr html http inside iso last_name lll maximum module number ods-widgets original paris paris-domain published reuse reuses submission submitter tag template thumbnail title url user variables widget"
     },
     {
       "section": "api",
@@ -245,6 +245,15 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "Displays a control to select either:",
       "keywords": "api cibul cibul-dataset cibul-domain context control dataset datetime day directive displays evenements-publics-cibul field filter html module month ods-widgets opendatasoft public select week year"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsToggleModel",
+      "shortName": "odsToggleModel",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget, when used on a checkbox, alows the checkbox to be used to &quot;toggle&quot; a value in an object, that is, to add it or remove when the checkbox",
+      "keywords": "add alows api apply array bank case catalog catalog-domain checkbox checkboxes checked context created directive government hold holds key model multiple object ods-toggle-key ods-toggle-model ods-toggle-value ods-widgets odstogglekey odstogglemodel odstogglvalue opendatasoft parameters public publisher refine remove toggle toggled type unchecked values widget world"
     },
     {
       "section": "api",

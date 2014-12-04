@@ -200,15 +200,28 @@
         }());
     }
 
+    // slightly adapted from
+    // https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith
+    // removed Object.defineProperty reference as it is not IE8 compatible
     if (!String.prototype.startsWith) {
-      String.prototype.startsWith = function(searchedString) {
-        return this.indexOf(searchedString) === 0;
+      String.prototype.startsWith = function(searchString, position) {
+        position = position || 0;
+        return this.lastIndexOf(searchString, position) === position;
       };
     }
 
+    // slightly adapted from 
+    // https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
+    // removed Object.defineProperty reference as it is not IE8 compatible
     if (!String.prototype.endsWith) {
-      String.prototype.endsWith = function(searchedString) {
-        return this.lastIndexOf(searchedString) === this.length - searchedString.length;
+      String.prototype.endsWith = function(searchString, position) {
+        var subjectString = this.toString();
+        if (position === undefined || position > subjectString.length) {
+          position = subjectString.length;
+        }
+        position -= searchString.length;
+        var lastIndex = subjectString.indexOf(searchString, position);
+        return lastIndex !== -1 && lastIndex === position;
       };
     }
 
@@ -217,5 +230,34 @@
         window.hasOwnProperty = function(name) {
             return Object.prototype.hasOwnProperty.call(window, name);
         };
+    }
+
+    // not really a polyfill but still a useful function to visually select the content of an html element
+    window.selectText = function (element) {
+        var doc = document,
+            range,
+            selection;
+        if (doc.body.createTextRange) {
+            range = document.body.createTextRange();
+            range.moveToElementText(element);
+            range.select();
+        } else if (window.getSelection) {
+            selection = window.getSelection();
+            range = document.createRange();
+            range.selectNodeContents(element);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+
+    window.utf8_to_b64 = function(str) {
+        // we escape the unicode string before encoding it in base64 becase btoa does not support unicode characters
+        return window.btoa(jsesc(str, {
+            'json': true
+        }));
+    }
+
+    window.b64_to_utf8 = function(str) {
+        return window.atob(str);
     }
 }());

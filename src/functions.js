@@ -97,6 +97,10 @@
                 } else {
                     // We are only working on the first set of coordinates
                     coordinates = geoJsonPolygon.coordinates[0];
+                    // For MutliPolygon, we are only working on the first polygon
+                    if (geoJsonPolygon.type === 'MultiPolygon') {
+                        coordinates = coordinates[0];
+                    }
                     for (var i=0; i<coordinates.length; i++) {
                         var bound = angular.copy(coordinates[i]);
                         if (bound.length > 2) {
@@ -119,7 +123,11 @@
                 } else if (spatial.type === 'Point') {
                     parameters["geofilter.distance"] = spatial.coordinates[1]+','+spatial.coordinates[0];
                 } else {
-                    parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
+                    // Right now we can't trust the API (yet) to properly handle geofilter.polygon queries for complex
+                    // shapes
+                    var bounds = L.geoJson(spatial).getBounds();
+                    parameters["geofilter.polygon"] = this.getBoundsAsPolygonParameter(bounds);
+//                    parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
                 }
             }
         },
@@ -255,6 +263,13 @@
                     }
                     return null;
                 },
+                getFieldLabel: function(fieldName) {
+                    var field = this.getField(fieldName);
+                    if (!field) {
+                        return field;
+                    }
+                    return field.label;
+                },
                 hasNumericField: function() {
                     for (var i=0; i < this.fields.length; i++) {
                         var field = this.fields[i];
@@ -268,5 +283,8 @@
         }
     };
 
-    target.ODS = ODS;
+    if (typeof target.ODS === 'undefined') {
+        target.ODS = {};
+    }
+    target.ODS = angular.extend(target.ODS, ODS);
 })(window);

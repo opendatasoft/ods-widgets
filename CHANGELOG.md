@@ -2,6 +2,20 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 0.1.3 - 2014-12-04
+### Added
+- New widget: `odsToggleModel`. It can be used on a checkbox, to add/remove a parameter depending on the state of the checkbox.
+- It is now possible to customize the template of reuses in the `odsLastReusesFeed` widget. See the widget's documentation for more information.
+- `odsLastReusesFeed` now has a `max` parameter to set a maximum number of reuses to display.
+- `odsMap` custom tooltips have been simplified and do not require including some code for scrolling between multiple records anymore. Documentation is coming soon!
+- `odsResults` widget, when used with an `odsCatalogContext`, now retrieves every metadata, including DCAT and others, so that you can use them in results display.
+- Facet values are now also displayed as a tooltip on mouse hover (title), making it possible to read long values that have been truncated.
+
+### Fixed
+- The sort icons on the `odsTable` widget now show the proper direction, and sorting on an alphanumeric field now sorts
+in the right direction the first time.
+- `odsMap` now handles massive amounts of data much faster than before.
+
 ## 0.1.2 - 2014-10-15
 ### Added
 - New widget: `odsFacets`. This widget allows you to insert and finely configure filters for your data, including customizing the way each available

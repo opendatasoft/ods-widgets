@@ -27,19 +27,21 @@ L.ClusterMarker = L.FeatureGroup.extend({
         this.addLayer(new L.Marker(latlng, {icon: this._getMarkerIcon(options.color, options.value, ratio, options.numberFormattingFunction)}));
         this._latlng = latlng;
 
-        // Handle the shape display on hovering
-        this.on('mouseover', function(e) {
-            if (e.originalEvent.which === 0) {
-                // Don't trigger this if there is a mouse button used (this is done to prevent triggering the style change
-                // during a map move, which triggers a cascade of moveend events)
-                e.target.setStyle(styles.highlight);
-            }
-        });
-        this.on('mouseout', function(e) {
-            if (e.originalEvent.which === 0) {
-                e.target.setStyle(styles['default']);
-            }
-        });
+        if (this._clusterShape) {
+            // Handle the shape display on hovering
+            this.on('mouseover', function(e) {
+                if (e.originalEvent.which === 0) {
+                    // Don't trigger this if there is a mouse button used (this is done to prevent triggering the style change
+                    // during a map move, which triggers a cascade of moveend events)
+                    e.target.setStyle(styles.highlight);
+                }
+            });
+            this.on('mouseout', function(e) {
+                if (e.originalEvent.which === 0) {
+                    e.target.setStyle(styles['default']);
+                }
+            });
+        }
     },
     getLatLng: function() {
         return this._latlng;
@@ -60,11 +62,11 @@ L.ClusterMarker = L.FeatureGroup.extend({
                 color = "#44BB44";
             }
 
-            bgcolor = color;
-            textcolor = '#111111';
+            bgcolor = chroma(color);
+            textcolor = chroma('#111111');
         } else {
-            bgcolor = tinycolor.lighten(color, (1-ratio)*20);
-            textcolor = tinycolor(bgcolor).toHsl().l > 0.7 ? '#111111': '#EEEEEE';
+            bgcolor = chroma(color).brighter((1-ratio)*20);
+            textcolor = chroma(bgcolor).hsl()[2] > 0.7 ? chroma('#111111'): chroma('#EEEEEE');
         }
 
         var displayedNumber = count;
@@ -79,13 +81,13 @@ L.ClusterMarker = L.FeatureGroup.extend({
             // Fallback for IE8 that doesn't handle the 'ch' unit
             size = Math.max(((ratio * 0.5) + 0.5) * 60, 50) + 'px';
         }
-        var rgbColor = tinycolor(bgcolor).toRgb();
-        bgcolor = tinycolor(bgcolor).toHexString();
-        var bordercolor = "rgba("+rgbColor.r+", "+rgbColor.g+", "+rgbColor.b+", 0.5)";
+        // var rgbColor = chroma(bgcolor).rgb();
+        // bgcolor = chroma(bgcolor).hex();
+        var bordercolor = chroma(bgcolor).alpha(0.5);
 
         return L.divIcon({
-            html: '<div class="cluster-marker-circle" style="width: '+size+'; height: '+size+'; background-color: '+bgcolor+'; border: solid 4px '+bordercolor+'; top: calc(-'+size+'/2); left: calc(-'+size+'/2); font-size: '+textsize+'px;">' +
-                '<span style="color: '+textcolor+'; line-height: '+size+';">' + displayedNumber + '</span>' +
+            html: '<div class="cluster-marker-circle" style="width: ' + size + '; height: ' + size + '; background-color: ' + bgcolor.css() + '; border: solid 4px '+ bordercolor.css('rgba') +'; top: calc(-'+size+'/2); left: calc(-'+size+'/2); font-size: '+textsize+'px;">' +
+                '<span style="color: ' + textcolor.css() + '; line-height: ' + size + ';">' + displayedNumber + '</span>' +
                 '</div>',
             className: 'cluster-marker'
         });

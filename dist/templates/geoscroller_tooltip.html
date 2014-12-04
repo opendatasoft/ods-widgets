@@ -1,4 +1,4 @@
-<div ng-repeat="record in records" ng-show="$index == selectedIndex" class="infoPaneLayout">
+<div class="infoPaneLayout">
     <h2 ng-show="getTitle(record)" ng-bind="getTitle(record)"></h2>
     <dl>
         <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:'map'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields" ng-show="record.fields[field.name]|isDefined">

@@ -48,6 +48,10 @@
                     var options = angular.extend({}, nv.parameters, {'rows': $attrs.odsResultsMax});
                     var variable = $attrs.odsResults || 'results';
                     if (nv.type === 'catalog') {
+                        angular.extend(options, {
+                            extrametas: 'true',
+                            interopmetas: 'true'
+                        });
                         ODSAPI.datasets.search(nv, options).success(function(data) {
                             $scope[variable] = data.datasets;
                         });

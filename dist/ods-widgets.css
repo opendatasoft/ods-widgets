@@ -604,6 +604,9 @@
   color: Black;
   background-color: #EEEEEE;
 }
+.odswidget-geo-scroller .map-tooltip {
+  overflow: auto;
+}
 #odswidget-geotooltip {
   border: solid 1px Black;
 }

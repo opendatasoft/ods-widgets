@@ -10,8 +10,21 @@
          * @scope
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
+         * @param {number} [max=5] Maximum number of reuses to show
          * @description
          * This widget displays the last 5 reuses published on a domain.
+         *
+         * It is possible to customize the template used to display each reuse, by adding HTML inside the widget's tag.
+         * The following variables are available:
+         *
+         * * reuse.url: URL to the reuse's dataset page
+         * * reuse.title: Title of the reuse
+         * * reuse.thumbnail: URL to the thumbnail of the reuse
+         * * reuse.description: Description of the reuse
+         * * reuse.created_at: ISO datetime of reuse's original submission (can be used as `reuse.created_at|moment:'LLL'` to format it)
+         * * reuse.dataset.title: Title of the reuse's dataset
+         * * reuse.user.last_name: Last name of the reuse's submitter
+         * * reuse.user.first_name: First name of the reuse's submitter
          *
          * @example
          *  <example module="ods-widgets">
@@ -25,30 +38,36 @@
         return {
             restrict: 'E',
             replace: true,
+            transclude: true,
             template: '<div class="odswidget odswidget-last-reuses-feed">' +
                 '<ul>' +
                 '   <li class="no-data" ng-hide="reuses" translate>No data available yet</li>' +
-                '   <li ng-repeat="reuse in reuses" ng-if="reuses">' +
+                '   <li ng-repeat="reuse in reuses" ng-if="reuses" inject>' +
                 '       <div class="reuse-thumbnail">' +
                 '           <span style="display: inline-block; height: 100%; vertical-align: middle;"></span>' +
-                '           <a ng-href="{{context.domainUrl}}/explore/dataset/{{reuse.dataset.id}}/" target="_self"><img ng-if="reuse.thumbnail" ng-src="{{ reuse.thumbnail }}"></a>' +
+                '           <a ng-href="{{reuse.url}}" target="_self"><img ng-if="reuse.thumbnail" ng-src="{{ reuse.thumbnail }}"></a>' +
                 '       </div>' +
                 '       <div class="reuse-details">' +
-                '           <div class="title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{reuse.dataset.id}}/" target="_self">{{ reuse.title }}</a></div>' +
-                '           <div class="dataset"><a ng-href="{{context.domainUrl}}/explore/dataset/{{reuse.dataset.id}}/" target="_self">{{ reuse.dataset.title }}</a></div>' +
+                '           <div class="title"><a ng-href="{{reuse.url}}" target="_self">{{ reuse.title }}</a></div>' +
+                '           <div class="dataset"><a ng-href="{{reuse.url}}" target="_self">{{ reuse.dataset.title }}</a></div>' +
                 '           <div class="modified"><span title="{{ reuse.created_at|moment:\'LLL\' }}"><i class="icon-calendar"></i> {{ reuse.created_at|timesince }}</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
                 '</div>',
             scope: {
-                context: '='
+                context: '=',
+                max: '@'
             },
             controller: ['$scope', function($scope) {
+                $scope.max = $scope.max || 5;
                 var refresh = function() {
                     // TODO: If the context is a dataset-context
-                    ODSAPI.reuses($scope.context, {'rows': 5}).
+                    ODSAPI.reuses($scope.context, {'rows': $scope.max}).
                         success(function(data) {
+                            angular.forEach(data.reuses, function(reuse) {
+                                reuse.url = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/';
+                            });
                             $scope.reuses = data.reuses;
                         });
                 };

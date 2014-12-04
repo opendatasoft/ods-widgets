@@ -31,9 +31,21 @@
                 $.each(chart.charts[0], function(key, value){
                     search_options['y.serie' + (index+1) + 'min.'+key] = value;
                 });
+                if(chart.charts[0].func === 'QUANTILES'){
+                    if (!chart.charts[0].subsets){
+                        chart.charts[0].subsets = 50;
+                    }
+                    search_options['y.serie' + (index+1) + 'min.subsets'] = chart.charts[0].subsets;
+                }
                 $.each(chart.charts[1], function(key, value){
                     search_options['y.serie' + (index+1) + 'max.'+key] = value;
                 });
+                if(chart.charts[1].func === 'QUANTILES'){
+                    if (!chart.charts[1].subsets){
+                        chart.charts[1].subsets = 50;
+                    }
+                    search_options['y.serie' + (index+1) + 'max.subsets'] = chart.charts[1].subsets;
+                }
 
                 if(search_options.sort ===  'serie' + (index+1)) {
                     // cannot sort on range
@@ -512,11 +524,14 @@
                         precision = undefined;
                         periodic = undefined;
                         yAxisesIndexes = {};
-                        try {
-                            getDatasetUniqueId(parameters.queries[0].config.dataset);
-                        } catch (e) {
-                            ChartHelper.onLoad(update);
-                            return;
+                        // make sure all required datasets metadata are loaded
+                        for (var i = 0; i < parameters.queries.length; i++) {
+                            try {
+                                getDatasetUniqueId(parameters.queries[i].config.dataset);
+                            } catch (e) {
+                                ChartHelper.onLoad(update);
+                                return;
+                            }
                         }
 
                         last_parameters_hash = angular.toJson(parameters);
@@ -548,8 +563,8 @@
                                         type: chart.scale || 'linear',
                                         min: hasMin ? chart.yRangeMin : null,
                                         max: hasMax ? chart.yRangeMax : null,
-                                        startOnTick: hasMin ? true : false,
-                                        endOnTick: hasMax ? true : false,
+                                        startOnTick: hasMin ? false : true,
+                                        endOnTick: hasMax ? false : true,
                                         opposite: !!(options.yAxis.length % 2)  //boolean casting
                                     }) - 1;
                                 }
@@ -843,7 +858,7 @@
                             };
                         } else {
                             if (angular.isString($scope.chartConfig)) {
-                                $scope.chart = JSON.parse(atob($scope.chartConfig));
+                                $scope.chart = JSON.parse(b64_to_utf8($scope.chartConfig));
                             } else {
                                 $scope.chart = $scope.chartConfig;
                             }
@@ -891,7 +906,7 @@
                     }
                     var chartConfig;
                     if (angular.isString($scope.chartConfig)) {
-                        chartConfig = JSON.parse(atob($scope.chartConfig));
+                        chartConfig = JSON.parse(b64_to_utf8($scope.chartConfig));
                     } else {
                         chartConfig = $scope.chartConfig;
                     }

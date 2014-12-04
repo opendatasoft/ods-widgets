@@ -320,7 +320,8 @@
 
     mod.filter('shortSummary', [function() {
         // Return a short summary from the given text, usually the first paragraph
-        return function(summary) {
+        return function(summary, length) {
+            length = length || 400;
             if (!summary) {
                 return '';
             }
@@ -360,8 +361,8 @@
                 }
             }
             // Limit text length
-            if (text.length > 400) {
-                text = text.substring(0, 397) + '…';
+            if (text.length > length) {
+                text = text.substring(0, length-3) + '…';
             }
             return text;
         };
@@ -398,5 +399,54 @@
         };
     }]);
 
+    mod.filter('firstValue', function() {
+        /* If it is an array, returns the first value, else returns the value itself */
+        return function(value) {
+            if (angular.isArray(value)) {
+                return value.length > 0 ? value[0] : null;
+            } else {
+                return value;
+            }
+        };
+    });
+
+    mod.filter('split', function() {
+        return function(list, separator) {
+            if (!list) {
+                return list;
+            }
+            if (!separator) {
+                separator = ';';
+            }
+            var values = list.split(separator);
+            return values;
+        };
+    });
+
+    mod.filter('join', function() {
+        return function(value, separator) {
+            if (!value) {
+                return value;
+            }
+            if (!separator) {
+                separator = ', ';
+            }
+            if (angular.isArray(value)) {
+                return value.join(separator);
+            } else {
+                return value;
+            }
+        };
+    });
+
+    mod.filter('stringify', function() {
+        return function(value) {
+            if (angular.isObject(value)) {
+                return JSON.stringify(value);
+            } else {
+                return value;
+            }
+        };
+    });
 
 }());

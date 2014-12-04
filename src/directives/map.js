@@ -66,12 +66,23 @@
                 basemap: '@',
                 isStatic: '@',
                 showFilters: '@',
-                itemClickContext: '='
+                itemClickContext: '=',
+                colorBy: '@',
+                colorByContext: '=',
+                colorByAggregationKey: '@',
+                colorByKey: '@',
+                colorByExpression: '@',
+                colorByFunction: '@',
+                colorByRanges: '@',
+                colorByRangesColors: '@'
             },
             replace: true,
             template: function(tElement) {
-                tElement.children().wrapAll('<div>');
-                tElement.data('tooltip-template', tElement.children().html());
+                tElement.contents().wrapAll('<div>');
+                if (tElement.contents().length > 0 && tElement.contents().html().trim().length > 0) {
+                    tElement.contents().wrapAll('<div>');
+                    tElement.data('tooltip-template', tElement.children().html());
+                }
                 return '<div class="odswidget odswidget-map">' +
                         '<div class="map"></div>' +
                         '<div class="overlay map opaque-overlay" ng-show="pendingRequests.length && initialLoading"><spinner class="spinner"></spinner></div>' +
@@ -214,6 +225,7 @@
 
                 var shapeField = null;
                 var createMarker = null;
+                var colorAggregation;
 
                 var locationParameterFunctions = {
                     delimiter: ',',
@@ -313,13 +325,17 @@
                             autoPan: !$scope.mapViewFilter && !$scope.staticMap
                         };
                         var html = $element.data('tooltip-template');
-
                         if (angular.isUndefined(html) || !angular.isString(html) || html.trim() === '') {
-                            html = '';
-                            newScope.template = $scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.map_tooltip_template || ODSWidgetsConfig.basePath + "templates/geoscroller_tooltip.html";
+                            // If no template explicitely passed in the odsMap tag, we look into the map map_tooltip_html.
+                            if ($scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.map_tooltip_html) {
+                                html = $scope.context.dataset.extra_metas.visualization.map_tooltip_html;
+                            } else {
+                                html = '';
+                            }
                         }
+                        newScope.template = html;
                         var popup = new L.Popup(popupOptions).setLatLng(latLng)
-                            .setContent($compile('<geo-scroller shape="shape" context="context" recordid="recordid" map="map" template="{{ template }}">'+html+'</geo-scroller>')(newScope)[0]);
+                            .setContent($compile('<geo-scroller shape="shape" context="context" recordid="recordid" map="map" template="{{template}}"></geo-scroller>')(newScope)[0]);
                         popup.openOn($scope.map);
                     }
                 };
@@ -351,30 +367,34 @@
                                     } else {
                                         // Get the boundingbox for the content
                                         $scope.$apply(function () {
-                                            if (cluster.cluster.type === 'Point') {
-                                                $scope.map.fitBounds([
-                                                    [cluster.cluster.coordinates[1], cluster.cluster.coordinates[0]],
-                                                    [cluster.cluster.coordinates[1], cluster.cluster.coordinates[0]]
-                                                ]);
-                                            } else {
-                                                var options = {};
-                                                // The geofilter.polygon has to be added last because if we are in mapViewFilter mode,
-                                                // the searchOptions already contains a geofilter
-
-                                                // FIXME: This is a workaround until we know we can safely do polygon requests for the clusters.
-                                                // See https://github.com/opendatasoft/platform/issues/2116
-//                                                var polygonParameter = ODS.GeoFilter.getGeoJSONPolygonAsPolygonParameter(cluster.cluster); // This is the normal good one
-                                                var polygonParameter = ODS.GeoFilter.getBoundsAsPolygonParameter(L.geoJson(cluster.cluster).getBounds()); // This is the workaround
-
-                                                jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {
-                                                    'geofilter.polygon': polygonParameter
-                                                });
-                                                ODSAPI.records.boundingbox($scope.context, options).success(function (data) {
+                                            if (cluster.cluster) {
+                                                if (cluster.cluster.type === 'Point') {
                                                     $scope.map.fitBounds([
-                                                        [data.bbox[1], data.bbox[0]],
-                                                        [data.bbox[3], data.bbox[2]]
+                                                        [cluster.cluster.coordinates[1], cluster.cluster.coordinates[0]],
+                                                        [cluster.cluster.coordinates[1], cluster.cluster.coordinates[0]]
                                                     ]);
-                                                });
+                                                } else {
+                                                    var options = {};
+                                                    // The geofilter.polygon has to be added last because if we are in mapViewFilter mode,
+                                                    // the searchOptions already contains a geofilter
+
+                                                    // FIXME: This is a workaround until we know we can safely do polygon requests for the clusters.
+                                                    // See https://github.com/opendatasoft/platform/issues/2116
+    //                                                var polygonParameter = ODS.GeoFilter.getGeoJSONPolygonAsPolygonParameter(cluster.cluster); // This is the normal good one
+                                                    var polygonParameter = ODS.GeoFilter.getBoundsAsPolygonParameter(L.geoJson(cluster.cluster).getBounds()); // This is the workaround
+
+                                                    jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {
+                                                        'geofilter.polygon': polygonParameter
+                                                    });
+                                                    ODSAPI.records.boundingbox($scope.context, options).success(function (data) {
+                                                        $scope.map.fitBounds([
+                                                            [data.bbox[1], data.bbox[0]],
+                                                            [data.bbox[3], data.bbox[2]]
+                                                        ]);
+                                                    });
+                                                }
+                                            } else {
+                                                $scope.map.setView(e.latlng, $scope.map.getZoom()+2);
                                             }
                                         });
                                     }
@@ -392,11 +412,12 @@
                     };
                 };
 
-                var refreshClusteredGeo = function() {
+                var refreshClusteredGeo = function(showPolygons) {
                     var options = {
                         'geofilter.polygon': ODS.GeoFilter.getBoundsAsPolygonParameter($scope.map.getBounds()),
                         'clusterprecision': $scope.map.getZoom(),
-                        'clusterdistance': 50
+                        'clusterdistance': 50,
+                        'return_polygons': showPolygons
                     };
                     jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters);
                     if ($scope.currentClusterRequestCanceler) {
@@ -405,7 +426,7 @@
                     $scope.currentClusterRequestCanceler = $q.defer();
                     ODSAPI.records.geo($scope.context, options, $scope.currentClusterRequestCanceler.promise).success(function(data) {
                         var clusters = data.clusters;
-                        $scope.records = clusters.length;
+                        $scope.records = clusters ? clusters.length : 0;
                         var layerGroup = new L.LayerGroup();
         //                var bounds = new L.LatLngBounds();
                         var clusterStacker = addClusterToLayerGroup(layerGroup);
@@ -480,6 +501,51 @@
                     });
                 };
 
+                var getAggregationColor = function(value) {
+                    var i;
+
+                    for (i=0; i<colorAggregation.ranges.length; i++) {
+                        if (value < colorAggregation.ranges[i]) {
+                            return colorAggregation.colors[i];
+                        }
+                    }
+                    return colorAggregation.colors[colorAggregation.colors.length-1];
+                };
+
+                var refreshAggregation = function() {
+                    var options = angular.extend({}, colorAggregation.context.parameters, {
+                        'join.geo.remotedataset': $scope.context.dataset.datasetid,
+                        'join.geo.localkey': colorAggregation.localkey,
+                        'join.geo.remotekey': colorAggregation.remotekey,
+                        'y.agg.expr': colorAggregation.expr,
+                        'y.agg.func': colorAggregation.func
+                    });
+                    var layerGroup = new L.LayerGroup();
+                    var bounds = new L.LatLngBounds();
+                    var markers = new L.FeatureGroup();
+
+                    // We're stubbing a dataset context
+                    ODSAPI.records.analyze(colorAggregation.context, options).
+                        success(function(data) {
+                            angular.forEach(data, function(result) {
+                                var records = result.x;
+                                var value = result.agg;
+                                angular.forEach(records, function(record) {
+                                    drawGeoJSON(record, layerGroup, bounds, markers, getAggregationColor(value));
+                                });
+                            });
+
+                            if ($scope.layerGroup) {
+                                $scope.map.removeLayer($scope.layerGroup);
+                            }
+                            layerGroup.addLayer(markers);
+                            layerGroup.addTo($scope.map);
+                            $scope.layerGroup = layerGroup;
+
+                            $scope.initialLoading = false;
+                        });
+                };
+
                 var refreshRawGeo = function() {
                     var options = {};
                     options['geofilter.polygon'] = ODS.GeoFilter.getBoundsAsPolygonParameter($scope.map.getBounds());
@@ -514,7 +580,7 @@
                         });
                 };
 
-                var drawGeoJSON = function(record, layerGroup, bounds, markers) {
+                var drawGeoJSON = function(record, layerGroup, bounds, markers, color) {
                     var geoJSON;
                     if (shapeField) {
                         if (record.fields[shapeField]) {
@@ -537,14 +603,23 @@
                     if (geoJSON.type == 'Point') {
                         // We regroup all the markers in one layer so that we can clusterize them
                         var point = new L.LatLng(geoJSON.coordinates[1], geoJSON.coordinates[0]);
-                        var marker = createMarker(point);
+                        var marker = createMarker(point, color);
                         marker.on('click', function(e) {
                             clickOnItem(e.target.getLatLng(), geoJSON, null, record);
                         });
                         markers.addLayer(marker);
                         bounds.extend(point);
                     } else {
-                        var layer = new L.GeoJSON(geoJSON);
+                        var layer;
+                        if (color) {
+                            layer = new L.GeoJSON(geoJSON, {
+                                style: function() {
+                                    return {color: color};
+                                }
+                            });
+                        } else {
+                            layer = new L.GeoJSON(geoJSON);
+                        }
                         layer.on('click', function(e) {
                             // For geometries, we bind the popup query to the center
                             clickOnItem(L.latLng(record.geometry.coordinates[1], record.geometry.coordinates[0]), geoJSON, record.recordid, record); //shape
@@ -582,6 +657,14 @@
                     }
                 }, true);
 
+                if ($scope.colorBy === 'aggregation') {
+                    $scope.$watch('colorByContext.parameters', function() {
+                        if ($scope.map) {
+                            refreshRecords(false);
+                        }
+                    }, true);
+                }
+
                 $scope.$watch('mapContext.location', function() {
                     if ($scope.map) {
                         refreshRecords(false);
@@ -591,26 +674,32 @@
                 var refreshRecords = function(globalSearch) {
                     var DOWNLOAD_CAP = 200;
                     var SHAPEPREVIEW_HIGHCAP = 500000;
+                    // The number of points where we stop asking for the polygon representing the cluster's content
+                    var POLYGONCLUSTERS_HIGHCAP = 500000;
 
                     var refresh = function(data) {
-                        if (data.count < DOWNLOAD_CAP || $scope.map.getZoom() === $scope.map.getMaxZoom()) {
+                        if ($scope.colorBy === 'aggregation') {
+                            refreshAggregation();
+                        } else if (data.count < DOWNLOAD_CAP || $scope.map.getZoom() === $scope.map.getMaxZoom()) {
                             // Low enough: always download
                             refreshRawGeo();
                         } else if (data.count < SHAPEPREVIEW_HIGHCAP) {
                             // We take our decision depending on the content of the envelope
                             if (data.geometries.Point && data.geometries.Point > data.count/2) {
-                                refreshClusteredGeo();
+                                refreshClusteredGeo(data.count <= POLYGONCLUSTERS_HIGHCAP);
                             } else {
                                 refreshShapePreview();
                             }
 
                         } else {
                             // Cluster no matter what
-                            refreshClusteredGeo();
+                            refreshClusteredGeo(data.count <= POLYGONCLUSTERS_HIGHCAP);
                         }
                     };
 
-                    var options = {};
+                    var options = {
+                        'without_bbox': !globalSearch
+                    };
                     if (!globalSearch) {
                         // Stay within the viewport
                         options['geofilter.polygon'] = ODS.GeoFilter.getBoundsAsPolygonParameter($scope.map.getBounds());
@@ -653,8 +742,25 @@
                     }
                 };
 
-                var unwatchSchema = $scope.$watch('context.dataset', function(newValue, oldValue) {
-                    if (!newValue || !newValue.datasetid) return;
+                var unwatchSchema = $scope.$watch('[context.dataset, colorByContext.dataset]', function(newValue, oldValue) {
+                    if (!newValue[0] || !newValue[0].datasetid) return;
+
+                    if ($scope.colorBy === 'aggregation' && (!newValue[1] || !newValue[1].datasetid)) return;
+
+                    if ($scope.colorBy === 'aggregation') {
+                        // We want to color our geo depending on an aggregation on a remote dataset
+                        colorAggregation = {
+                            context: $scope.colorByContext,
+                            localkey: $scope.colorByAggregationKey || $scope.colorByKey,
+                            remotekey: $scope.colorByKey,
+                            expr: $scope.colorByExpression,
+                            func: $scope.colorByFunction,
+                            ranges: $scope.colorByRanges.split(','),
+                            colors: $scope.colorByRangesColors.split(',')
+                        };
+                    }
+
+                    newValue = newValue[0];
 
                     // For now the only way to have the geofilter parameter is to enable the map view filter
                     if ($scope.context.parameters['geofilter.polygon']) {
@@ -693,9 +799,9 @@
                         visualization = newValue.extra_metas.visualization;
                     }
                     $scope.markerColor = visualization.map_marker_color || '#29398C';
-                    createMarker = function(latLng) {
+                    createMarker = function(latLng, color) {
                         return new L.VectorMarker(latLng, {
-                            color: $scope.markerColor,
+                            color: color || $scope.markerColor,
                             icon: visualization.map_marker_picto || 'icon-circle',
                             marker: !visualization.map_marker_hidemarkershape
                         });
@@ -813,7 +919,7 @@
         };
     }]);
 
-    mod.directive('geoScroller', function() {
+    mod.directive('geoScroller', ['$compile', '$templateCache', function($compile, $templateCache) {
         // FIXME: remove the ugly div from the DL tag, once we migrate to Angular 1.2+
         return {
             restrict: 'E',
@@ -826,8 +932,10 @@
                         '<i class="icon-chevron-right" ng-click="moveIndex(1)"></i>' +
                     '</h2>' +
                     '<div class="ng-leaflet-tooltip-cloak limited-results" ng-show="records && records.length == RECORD_LIMIT" translate>(limited to the first {{RECORD_LIMIT}} records)</div>' +
-                    '<div ng-if="template" ng-include src="safeUrl(template)"></div>' +
-                    '<div inject></div>' +
+                    '<div ng-repeat="record in records" ng-show="$index == selectedIndex" class="map-tooltip">' +
+                        '<div ng-if="!template" ng-include src="safeDefaultTemplateUrl()"></div>' +
+                        '<div ng-if="template" ng-include src="\'custom-tooltip-\'+context.dataset.datasetid"></div>' +
+                    '</div>' +
                 '</div>',
             scope: {
                 shape: '=',
@@ -837,18 +945,23 @@
                 template: '@'
             },
             replace: true,
-            link: function(scope, element) {
+            link: function(scope, element, attrs) {
                 element.bind('popupclose', function() {
                     scope.$destroy();
                 });
                 scope.unCloak = function() {
                     jQuery('.ng-leaflet-tooltip-cloak', element).removeClass('ng-leaflet-tooltip-cloak');
                 };
+                if (attrs.template && attrs.template !== '') {
+                    $templateCache.put('custom-tooltip-' + scope.context.dataset.datasetid, attrs.template);
+                }
+
             },
             controller: ['$scope', '$filter', 'ODSAPI', 'ODSWidgetsConfig', '$sce', function($scope, $filter, ODSAPI, ODSWidgetsConfig, $sce) {
                 $scope.RECORD_LIMIT = 100;
                 $scope.records = [];
                 $scope.selectedIndex = 0;
+
                 $scope.moveIndex = function(amount) {
                     var newIndex = ($scope.selectedIndex + amount) % $scope.records.length;
                     if (newIndex < 0) {
@@ -857,13 +970,8 @@
                     $scope.selectedIndex = newIndex;
                 };
 
-                $scope.safeUrl = function(url) {
-                    // FIXME: Don't allow URLs of templates as parameters: it is a recipe for failure (and XSS)
-                    if (url === ODSWidgetsConfig.basePath + "templates/geoscroller_tooltip.html") {
-                        return $sce.trustAsResourceUrl(url);
-                    } else {
-                        return url;
-                    }
+                $scope.safeDefaultTemplateUrl = function() {
+                    return $sce.trustAsResourceUrl(ODSWidgetsConfig.basePath + "templates/geoscroller_tooltip.html");
                 };
 
                 // Prepare the geofilter parameter
@@ -906,6 +1014,6 @@
                 };
             }]
         };
-    });
+    }]);
 
 }());

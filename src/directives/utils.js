@@ -9,11 +9,17 @@
             link: function($scope, $element, $attrs, controller, $transclude) {
                 var innerScope = $scope.$new();
                 $transclude(innerScope, function(clone) {
-                    $element.empty();
-                    $element.append(clone);
-                    $element.on('$destroy', function() {
-                    innerScope.$destroy();
-                    });
+                    var testClone = clone.clone();
+                    testClone.contents().wrapAll('<div>');
+                    if (testClone.contents().length > 0 && testClone.contents().html().trim().length > 0) {
+                        // Only do that if there is content to use. That way, we can keep the HTML inside the element
+                        // that has the inject directive, and use it as a "default" template if there is nothing to transclude.
+                        $element.empty();
+                        $element.append(clone);
+                        $element.on('$destroy', function () {
+                            innerScope.$destroy();
+                        });
+                    }
                 });
             }
         };

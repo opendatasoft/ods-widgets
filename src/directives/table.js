@@ -116,9 +116,26 @@
                     return ODS.DatasetUtils.isFieldSortable(field);
                 };
 
+                $scope.isAscendingSorted = function(field) {
+                    if (field.type === 'text') {
+                        return field.name === $scope.context.parameters.sort;
+                    } else {
+                        return '-'+field.name === $scope.context.parameters.sort;
+                    }
+                };
+
+                $scope.isDescendingSorted = function(field) {
+                    if (field.type === 'text') {
+                        return '-'+field.name === $scope.context.parameters.sort;
+                    } else {
+                        return field.name === $scope.context.parameters.sort;
+                    }
+                };
+
                 $scope.toggleSort = function(field){
                     // Not all the sorts are supported yet
                     if($scope.isFieldSortable(field)){
+                        // Reversing an existing sort
                         if($scope.context.parameters.sort == field.name){
                             $scope.context.parameters.sort = '-' + field.name;
                             return;
@@ -127,7 +144,8 @@
                             $scope.context.parameters.sort = field.name;
                             return;
                         }
-                        $scope.context.parameters.sort = '-'+field.name;
+                        // Ascending is "-" for numeric
+                        $scope.context.parameters.sort = field.type === 'text' ? field.name : '-'+field.name;
                     } else {
                         delete $scope.context.parameters.sort;
                     }
