@@ -13,7 +13,7 @@
          * @param {string} odsToggleKey The key that holds the toggled value
          * @param {string} odsTogglValue The toggled value
          * @description
-         * This widget, when used on a checkbox, alows the checkbox to be used to "toggle" a value in an object, that is, to add it or remove when the checkbox
+         * This widget, when used on a checkbox, allows the checkbox to be used to "toggle" a value in an object, in other words to add it or remove when the checkbox
          * is respectively checked and unchecked. Multiple checkboxes can be used on the same model and key, in which case if two or more are toggled, an array
          * will be created to hold the values.
          *

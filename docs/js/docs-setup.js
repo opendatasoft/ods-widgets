@@ -252,8 +252,8 @@ NG_DOCS={
       "shortName": "odsToggleModel",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget, when used on a checkbox, alows the checkbox to be used to &quot;toggle&quot; a value in an object, that is, to add it or remove when the checkbox",
-      "keywords": "add alows api apply array bank case catalog catalog-domain checkbox checkboxes checked context created directive government hold holds key model multiple object ods-toggle-key ods-toggle-model ods-toggle-value ods-widgets odstogglekey odstogglemodel odstogglvalue opendatasoft parameters public publisher refine remove toggle toggled type unchecked values widget world"
+      "shortDescription": "This widget, when used on a checkbox, allows the checkbox to be used to &quot;toggle&quot; a value in an object, in other words to add it or remove when the checkbox",
+      "keywords": "add allows api apply array bank case catalog catalog-domain checkbox checkboxes checked context created directive government hold holds key model multiple object ods-toggle-key ods-toggle-model ods-toggle-value ods-widgets odstogglekey odstogglemodel odstogglvalue opendatasoft parameters public publisher refine remove toggle toggled type unchecked values widget world"
     },
     {
       "section": "api",
