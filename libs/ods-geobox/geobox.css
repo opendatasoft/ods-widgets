@@ -4,6 +4,7 @@
     /* Don't stack vertically, just move on the left */
     clear: none;
     float: none;
+    z-index: 6;
 }
 
 .leaflet-control-geobox form {

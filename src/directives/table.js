@@ -86,6 +86,16 @@
                     }
                     jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {start: start});
 
+                    if (options.sort) {
+                        // If there is a sort parameter on a field that doesn't exist, we remove it. The idea is to ensure that
+                        // if there is an embed somewhere with a sort in the URL, we don't want to completely break it if the publisher
+                        // changes the name of the field: we just want to cancel the sort.
+                        var sortedFieldName = options.sort.replace('-', '');
+                        if (!$scope.context.dataset.getField(sortedFieldName)) {
+                            delete options.sort;
+                        }
+                    }
+
                     ODSAPI.records.search($scope.context, options).
                         success(function(data, status, headers, config) {
                             if (!data.records.length) {
@@ -154,7 +164,8 @@
                 // Is there a custom template into the directive's tag?
                 var customTemplate = false;
                 $transclude(function(clone) {
-                    customTemplate = clone.length > 0;
+                    clone.contents().wrapAll('<div>');
+                    customTemplate = clone.contents().length > 0 && clone.contents().html().trim().length > 0;
                 });
 
                 var renderOneRecord = function(index, records, position) {
@@ -476,9 +487,9 @@
                     for (var i=0; i<$scope.layout.length; i++) {
                         var j = i+1;
                         var maxWidth = disableMaxWidth ? 'max-width: none; ' : ''; // Table with few columns
-                        styles += '#' + tableId + ' .records-header tr th:nth-child(' + j + ') > div, '
-                                + '#' + tableId + ' .records-body tr td:nth-child(' + j + ') > div '
-                                + '{ width: ' + $scope.layout[i] + 'px; ' + maxWidth + '} ';
+                        styles += '#' + tableId + ' .records-header tr th:nth-child(' + j + ') > div, ' +
+                                  '#' + tableId + ' .records-body tr td:nth-child(' + j + ') > div ' +
+                                  '{ width: ' + $scope.layout[i] + 'px; ' + maxWidth + '} ';
 
                     }
                     return styles;

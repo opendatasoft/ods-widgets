@@ -707,3 +707,27 @@
 .odswidget-facet .category-list .category-count:after {
   content: ')';
 }
+.odswidget-pagination {
+  margin: 20px 0;
+  text-align: center;
+}
+.odswidget-pagination ul {
+  margin: 0;
+  display: inline-block;
+}
+.odswidget-pagination ul li {
+  display: inline;
+}
+.odswidget-pagination ul li a {
+  margin-left: 2px;
+  margin-right: 2px;
+  padding: 4px 8px;
+  font-size: 16px;
+}
+.odswidget-pagination ul li a:hover {
+  text-decoration: none;
+  background: rgba(0, 0, 0, 0.1);
+}
+.odswidget-pagination ul li.active a {
+  background: rgba(0, 0, 0, 0.2);
+}

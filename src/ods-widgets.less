@@ -699,3 +699,28 @@
         }
     }
 }
+
+.odswidget-pagination {
+    margin: 20px 0;
+    text-align: center;
+    ul {
+        margin: 0;
+        display: inline-block;
+        li {
+            display: inline;
+            a {
+                margin-left: 2px;
+                margin-right: 2px;
+                padding: 4px 8px;
+                font-size: 16px;
+                &:hover {
+                    text-decoration: none;
+                    background: rgba(0, 0, 0, 0.1)
+                }
+            }
+            &.active a {
+                background: rgba(0, 0, 0, 0.2)
+            }
+        }
+    }
+}

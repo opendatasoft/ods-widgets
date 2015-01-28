@@ -6058,8 +6058,6 @@ mod.directive('infiniteScroll', [
     {
       Array.prototype.filter = function(fun /*, thisArg */)
       {
-        "use strict";
-
         if (this === void 0 || this === null)
           throw new TypeError();
 
@@ -6099,7 +6097,7 @@ mod.directive('infiniteScroll', [
 
         var T, A, k;
 
-        if (this == null) {
+        if (this === null) {
           throw new TypeError(" this is null or not defined");
         }
 
@@ -6191,7 +6189,6 @@ mod.directive('infiniteScroll', [
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
     if (!Object.keys) {
         Object.keys = (function () {
-            'use strict';
             var hasOwnProperty = Object.prototype.hasOwnProperty,
                 hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
                 dontEnums = [
@@ -6257,9 +6254,11 @@ mod.directive('infiniteScroll', [
 
     // IE8 doesn't define hasOwnProperty on the window object
     if (!window.hasOwnProperty) {
+        /*jshint -W001 */
         window.hasOwnProperty = function(name) {
             return Object.prototype.hasOwnProperty.call(window, name);
         };
+        /*jshint +W001 */
     }
 
     // not really a polyfill but still a useful function to visually select the content of an html element
@@ -6278,25 +6277,25 @@ mod.directive('infiniteScroll', [
             selection.removeAllRanges();
             selection.addRange(range);
         }
-    }
+    };
 
     window.utf8_to_b64 = function(str) {
         // we escape the unicode string before encoding it in base64 becase btoa does not support unicode characters
         return window.btoa(jsesc(str, {
             'json': true
         }));
-    }
+    };
 
     window.b64_to_utf8 = function(str) {
         return window.atob(str);
-    }
+    };
 }());;(function() {
     'use strict';
 
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '0.1.3';
+    var version = '0.1.4';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate', 'translate.directives', 'translate.filters']);
@@ -7212,7 +7211,7 @@ mod.directive('infiniteScroll', [
     }]);
 
     mod.filter('imagify', ['$sce', function($sce) {
-        var re = /^(http(?:s?):\/\/[^;,]*(?:jpg|jpeg|png|gif))(?:$|\?.*|;|,|&)/i;
+        var re = /^(http(?:s?):\/\/[^;,]*(?:jpg|jpeg|png|gif)(?:\?[^,;]*)?)(?:$|;|,|&)/i;
         return function(value) {
             if (angular.isString(value)) {
                 value = value.trim();
@@ -7223,6 +7222,23 @@ mod.directive('infiniteScroll', [
                 }
             }
             return value;
+        };
+    }]);
+
+    mod.filter('youtubify', ['$sce', function($sce) {
+        // Formats:
+        // http(s)://youtu.be/Hh-0y8Qe0Sw
+        // http(s)://(www.)youtube.com/watch?v=Hh-0y8Qe0Sw
+        var re = /^https?:\/\/(?:(?:youtu.be\/)|(?:(?:www.)?youtube.com\/watch\?v=))([0-9a-zA-Z-]*)$/i;
+        return function(url) {
+            if (angular.isString(url)) {
+                var match = re.exec(url.trim());
+                if (match !== null) {
+                    // The first match is the Youtube ID
+                    return $sce.trustAsHtml('<iframe width="200" height="113" src="//www.youtube.com/embed/'+match[1]+'" frameborder="0" allowfullscreen></iframe>');
+                }
+            }
+            return url;
         };
     }]);
 
@@ -7618,6 +7634,19 @@ mod.directive('infiniteScroll', [
         };
     });
 
+    mod.filter('themeColor', function(ODSWidgetsConfig) {
+        return function(theme) {
+            if (!theme) {
+                return '';
+            }
+            if (ODSWidgetsConfig.themes[theme]) {
+                return ODSWidgetsConfig.themes[theme].color;
+            } else {
+                return '';
+            }
+        };
+    });
+
 }());;(function(target) {
     var ODS = {
         GeoFilter: {
@@ -7899,7 +7928,7 @@ mod.directive('infiniteScroll', [
                     }
                     return false;
                 }
-            }
+            };
         }
     };
 
@@ -8014,7 +8043,7 @@ mod.directive('infiniteScroll', [
             $(datasetItem).html(clone);
         });
         scope.$apply();
-    }
+    };
 
     mod.directive('odsDatasetCard', function() {
         /**
@@ -8058,7 +8087,7 @@ mod.directive('infiniteScroll', [
             replace: true,
             transclude: true,
             link: function(scope, elem, attrs) {
-                scope.position = attrs['position'] || "top";
+                scope.position = attrs.position || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
                 scope.renderContent = renderCard;
             },
@@ -8114,7 +8143,7 @@ mod.directive('infiniteScroll', [
             replace: true,
             transclude: true,
             link: function(scope, elem, attrs) {
-                scope.position = attrs['position'] || "top";
+                scope.position = attrs.position || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
                 scope.renderContent = renderCard;
             },
@@ -8137,7 +8166,7 @@ mod.directive('infiniteScroll', [
                     if ($scope.isExpandable()) {
                         $scope.expanded = !$scope.expanded;
                     }
-                }
+                };
 
                 var unwatch = $scope.$watch('datasets', function(nv, ov) {
                     var keys = Object.keys(nv);
@@ -8154,7 +8183,7 @@ mod.directive('infiniteScroll', [
                     unwatch();
                 }, true);
             }]
-        }
+        };
     }]);
 })();
 ;(function() {
@@ -8559,6 +8588,7 @@ mod.directive('infiniteScroll', [
          *
          * - **`sort`** {@type string} (optional, default is count) How to sort the categories: either `count`, `-count` (sort by number of items in each category),
          * `num`, `-num` (sort by the name of category if it is a number), `alphanum`, `-alphanum` (sort by the name of the category).
+         * It is also possible to configure a specific order by setting a list of values: `['value1', 'value2']`.
          *
          * - **`visible-items`** {@type number} (optional, default 6) the number of categories to show; if there are more,
          * they are collapsed and can be expanded by clicking on a "more" link.
@@ -8729,7 +8759,7 @@ mod.directive('infiniteScroll', [
                         facet: $scope.facets.map(function(facetInfo) { return facetInfo.name; })
                     });
                     $scope.facets.map(function(facetInfo) {
-                        if (facetInfo.sort) {
+                        if (facetInfo.sort && facetInfo.sort.length && facetInfo.sort[0] !== '[') {
                             params['facetsort.'+facetInfo.name] = facetInfo.sort;
                         }
                     });
@@ -8743,20 +8773,39 @@ mod.directive('infiniteScroll', [
 
                     req.success(function(data) {
                         $scope.context.nhits = data.nhits;
-                        var facetGroup, categories, facetItem;
+                        var facetGroup, categories, facetItem, addedCategories;
                         angular.forEach($scope.facets, function(facet) {
                             facet.categories.splice(0, facet.categories.length);
                         });
                         if (data.facet_groups) {
-                            for (var i=0; i<data.facet_groups.length; i++) {
-                                facetGroup = data.facet_groups[i];
+                            angular.forEach(data.facet_groups, function(facetGroup) {
                                 facetItem = $scope.facets.filter(function(f) { return f.name === facetGroup.name; });
                                 if (facetItem.length > 0) {
                                     categories = facetItem[0].categories;
                                     // Add all the categories in the array
-                                    Array.prototype.push.apply(categories, facetGroup.facets);
+                                    addedCategories = [];
+                                    if (facetItem[0].sort && facetItem[0].sort.length && facetItem[0].sort[0] === '[') {
+                                        // This is an explicit order
+                                        var explicitOrder = $scope.$eval(facetItem[0].sort);
+                                        angular.forEach(explicitOrder, function(value) {
+                                            var j, cat;
+                                            for (j=0; j<facetGroup.facets.length; j++) {
+                                                cat = facetGroup.facets[j];
+                                                if (cat.path === value) {
+                                                    addedCategories.push(cat);
+                                                    facetGroup.facets.splice(j, 1);
+                                                    break;
+                                                }
+                                            }
+                                        });
+                                        // Append the rest, as is
+                                        Array.prototype.push.apply(addedCategories, facetGroup.facets);
+                                    } else {
+                                        addedCategories = facetGroup.facets;
+                                    }
+                                    Array.prototype.push.apply(categories, addedCategories);
                                 }
-                            }
+                            });
                         }
                     });
                 };
@@ -10177,7 +10226,7 @@ mod.directive('infiniteScroll', [
                     ODSAPI.reuses($scope.context, {'rows': $scope.max}).
                         success(function(data) {
                             angular.forEach(data.reuses, function(reuse) {
-                                reuse.url = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/';
+                                reuse.url = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/?tab=metas';
                             });
                             $scope.reuses = data.reuses;
                         });
@@ -10259,6 +10308,7 @@ mod.directive('infiniteScroll', [
                 showFilters: '@',
                 itemClickContext: '=',
                 colorBy: '@',
+                colorByField: '@',
                 colorByContext: '=',
                 colorByAggregationKey: '@',
                 colorByKey: '@',
@@ -10773,6 +10823,13 @@ mod.directive('infiniteScroll', [
 
                 var drawGeoJSON = function(record, layerGroup, bounds, markers, color) {
                     var geoJSON;
+                    var drawColor = color;
+                    if ($scope.colorBy === 'value') {
+                        var colorByVal = record.fields[colorAggregation.field];
+                        if (colorByVal) {
+                            drawColor = getAggregationColor(colorByVal);
+                        }
+                    }
                     if (shapeField) {
                         if (record.fields[shapeField]) {
                             geoJSON = record.fields[shapeField];
@@ -10794,7 +10851,7 @@ mod.directive('infiniteScroll', [
                     if (geoJSON.type == 'Point') {
                         // We regroup all the markers in one layer so that we can clusterize them
                         var point = new L.LatLng(geoJSON.coordinates[1], geoJSON.coordinates[0]);
-                        var marker = createMarker(point, color);
+                        var marker = createMarker(point, drawColor);
                         marker.on('click', function(e) {
                             clickOnItem(e.target.getLatLng(), geoJSON, null, record);
                         });
@@ -10802,10 +10859,24 @@ mod.directive('infiniteScroll', [
                         bounds.extend(point);
                     } else {
                         var layer;
-                        if (color) {
+                        if (drawColor) {
                             layer = new L.GeoJSON(geoJSON, {
-                                style: function() {
-                                    return {color: color};
+                                style: function(feature) {
+                                    var opts = {
+                                        radius: 3,
+                                        weight: 1,
+                                        opacity: 0.9,
+                                        fillOpacity: 0.5,
+                                        color: drawColor
+                                    };
+                                    opts.fillColor = drawColor;
+                                    if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
+                                        opts.weight = 5;
+                                        opts.color = drawColor;
+                                    } else {
+                                        opts.color = "#fff";
+                                    }
+                                    return opts;
                                 }
                             });
                         } else {
@@ -10871,7 +10942,7 @@ mod.directive('infiniteScroll', [
                     var refresh = function(data) {
                         if ($scope.colorBy === 'aggregation') {
                             refreshAggregation();
-                        } else if (data.count < DOWNLOAD_CAP || $scope.map.getZoom() === $scope.map.getMaxZoom()) {
+                        } else if ($scope.colorBy === 'value' || data.count < DOWNLOAD_CAP || $scope.map.getZoom() === $scope.map.getMaxZoom()) {
                             // Low enough: always download
                             refreshRawGeo();
                         } else if (data.count < SHAPEPREVIEW_HIGHCAP) {
@@ -10946,6 +11017,12 @@ mod.directive('infiniteScroll', [
                             remotekey: $scope.colorByKey,
                             expr: $scope.colorByExpression,
                             func: $scope.colorByFunction,
+                            ranges: $scope.colorByRanges.split(','),
+                            colors: $scope.colorByRangesColors.split(',')
+                        };
+                    } else if ($scope.colorBy === 'value') {
+                        colorAggregation = {
+                            field: $scope.colorByField,
                             ranges: $scope.colorByRanges.split(','),
                             colors: $scope.colorByRangesColors.split(',')
                         };
@@ -11325,6 +11402,122 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
+    mod.directive('odsPaginationBlock', ['$location', function($location) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsPaginationBlock
+         * @scope
+         * @restrict E
+         * @param {CatalogContext|DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {number} perPage How many results should be contained per page.
+         * @param {boolean} [nofollow=false] If true, all links within the widget (used to change page) will contain a `rel="nofollow"` attribute.
+         * It should be used if you don't want search engines to crawl all the pages of your widget.
+         * @description
+         * This widget displays a pagination control that you can use to make the context "scroll" through a list of results. It doesn't display
+         * results by itself, and therefore should be paired with another widget. Note that by itself it also doesn't control the number of results fetched by the context,
+         * and the `perPage` parameter should be the same as the `rows` parameter on the context.
+         *
+         * If you just want to display results with a pagination system, you can have a look at {@link ods-widgets.directive:odsResultsEnumerator odsResultsEnumerator}
+         * which already include this directive (if the relevant parameter is active on the widget).
+         */
+
+        /*
+        This directive builds a pagination block.
+         */
+        return {
+            restrict: 'E',
+            replace: true,
+            template: '<div class="odswidget odswidget-pagination" ng-show="pages.length > 1">' +
+                    '<ul>' +
+                    '    <li ng-repeat="page in pages" ng-class="{\'active\': page.start == (context.parameters.start||0)}">' +
+                    '        <a ng-if="nofollow==\'true\'" ng-click="click($event, page.start)" href="?start={{ page.start }}" rel="nofollow">{{ page.label }}</a>' +
+                    '        <a ng-if="nofollow!=\'true\'" ng-click="click($event, page.start)" href="?start={{ page.start }}">{{ page.label }}</a>' +
+                    '    </li>' +
+                    '</ul>' +
+                    '</div>',
+            scope: {
+                context: '=',
+                perPage: '@',
+                nofollow: '@'
+            },
+            controller: ['$scope', '$anchorScroll', function($scope, $anchorScroll) {
+                $scope.location = $location;
+                $scope.pages = [];
+
+                $scope.click = function(e, start) {
+                    e.preventDefault();
+                    $scope.context.parameters.start = start;
+                };
+                var buildPages = function() {
+                    if ($scope.context.nhits === 0) {
+                        $scope.pages = [];
+                        return;
+                    }
+                    var pagesCount = Math.max(1, Math.floor(($scope.context.nhits-1) / $scope.perPage) + 1);
+                    var pages = [];
+                    var pageNum;
+                    if (pagesCount <= 8) {
+                        for (pageNum=1; pageNum<=pagesCount; pageNum++) {
+                            pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
+                        }
+                    } else {
+                        // If too many items, cut them : "first", the 3 before the current page,
+                        // the current page, the 3 after, and "last"
+                        var currentPage;
+                        if (!$scope.context.parameters.start) {
+                            currentPage = 1;
+                        } else {
+                            currentPage = Math.floor($scope.context.parameters.start / $scope.perPage) + 1;
+                        }
+                        if (currentPage <= 5) {
+                            for (pageNum=1; pageNum<=8; pageNum++) {
+                                pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
+                            }
+                            pages.push({'label': '>>', 'start': (pagesCount-1)*$scope.perPage});
+                        } else if (currentPage >= (pagesCount-4)) {
+                            pages.push({'label': '<<', 'start': 0});
+                            for (pageNum=(pagesCount-7); pageNum<=pagesCount; pageNum++) {
+                                pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
+                            }
+                        } else {
+                            pages.push({'label': '<<', 'start': 0});
+                            for (pageNum=(currentPage-3); pageNum<=(currentPage+3); pageNum++) {
+                                pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
+                            }
+                            pages.push({'label': '>>', 'start': (pagesCount-1)*$scope.perPage});
+                        }
+                    }
+                    $scope.pages = pages;
+                };
+
+                var unwatch = $scope.$watch('context', function(nv, ov) {
+                    if (nv) {
+                        $scope.$watch('context.nhits', function(newValue, oldValue) {
+                            if ($scope.context.nhits !== undefined && $scope.perPage)
+                                buildPages();
+                        });
+                        $scope.$watch('perPage', function(newValue, oldValue) {
+                            if ($scope.context.nhits && $scope.perPage)
+                                buildPages();
+                        });
+                        $scope.$watch('context.parameters.start', function(newValue, oldValue) {
+                            if ($scope.context.nhits && $scope.perPage)
+                                buildPages();
+                            $anchorScroll();
+                        });
+                        unwatch();
+                    }
+                });
+
+            }]
+        };
+    }]);
+
+}());;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
     mod.directive('odsResultEnumerator', ['ODSAPI', function(ODSAPI) {
         /**
          * @ngdoc directive
@@ -11334,6 +11527,7 @@ mod.directive('infiniteScroll', [
          * @param {CatalogContext|DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {number} [max=10] Maximum number of results to show
          * @param {boolean} [showHitsCounter=false] Display the number of hits (search results). This is the number of results available on the API, not the number of results displayed in the widget.
+         * @param {boolean} [showPagination=false] Display a pagination block below the results, to be able to browse them all.
          * @description
          * This widget enumerates the results of a search (records for a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, datasets for a {@link ods-widgets.directive:odsCatalogContext Catalog Context}) and repeats the template (the content of the directive element) for each of them.
          *
@@ -11372,18 +11566,21 @@ mod.directive('infiniteScroll', [
             scope: {
                 context: '=',
                 max: '@?',
-                showHitsCounter: '@?'
+                showHitsCounter: '@?',
+                showPagination: '@?'
             },
             template: '<div class="odswidget odswidget-result-enumerator">' +
-                '<div ods-results="items" ods-results-context="context" ods-results-max="{{max}}">' +
-                '<div ng-if="!items.length" class="no-results" translate>No results</div>' +
-                '<div ng-if="items.length && hitsCounter" class="results-count">{{items.length}} <span translate>results</span></div>' +
-                '<div ng-repeat="item in items" inject class="item"></div>' +
+                '<div ods-results="items" ods-results-context="context" ods-results-max="{{maxHits}}">' +
+                    '<div ng-if="!items.length" class="no-results" translate>No results</div>' +
+                    '<div ng-if="items.length && hitsCounter" class="results-count">{{context.nhits}} <span translate>results</span></div>' +
+                    '<div ng-repeat="item in items" inject class="item"></div>' +
                 '</div>' +
+                '<ods-pagination-block ng-if="pagination" context="context" per-page="{{maxHits}}"></ods-pagination-block>' +
                 '</div>',
             controller: ['$scope', function($scope) {
-                $scope.max = $scope.max || 10;
+                $scope.maxHits = $scope.max || 10;
                 $scope.hitsCounter = (angular.isString($scope.showHitsCounter) && $scope.showHitsCounter.toLowerCase() === 'true');
+                $scope.pagination = (angular.isString($scope.showPagination) && $scope.showPagination.toLowerCase() === 'true');
             }]
         };
     }]);
@@ -11445,10 +11642,12 @@ mod.directive('infiniteScroll', [
                         });
                         ODSAPI.datasets.search(nv, options).success(function(data) {
                             $scope[variable] = data.datasets;
+                            nv.nhits = data.nhits;
                         });
                     } else if (nv.type === 'dataset' && nv.dataset) {
                         ODSAPI.records.search(nv, options).success(function(data) {
                             $scope[variable] = data.records;
+                            nv.nhits = data.nhits;
                         });
                     }
                 }, true);
@@ -11557,7 +11756,7 @@ mod.directive('infiniteScroll', [
             restrict: 'E',
             replace: true,
             template: '<div class="odswidget odswidget-searchbox">' +
-                    '<form method="GET" action="{{ actionUrl }}">' +
+                    '<form method="GET" action="{{ actionUrl }}" ng-if="actionUrl">' +
                     '<input class="searchbox" name="q" type="text" placeholder="{{placeholder}}">' +
                     '</form>' +
                 '</div>',
@@ -11666,6 +11865,16 @@ mod.directive('infiniteScroll', [
                     }
                     jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {start: start});
 
+                    if (options.sort) {
+                        // If there is a sort parameter on a field that doesn't exist, we remove it. The idea is to ensure that
+                        // if there is an embed somewhere with a sort in the URL, we don't want to completely break it if the publisher
+                        // changes the name of the field: we just want to cancel the sort.
+                        var sortedFieldName = options.sort.replace('-', '');
+                        if (!$scope.context.dataset.getField(sortedFieldName)) {
+                            delete options.sort;
+                        }
+                    }
+
                     ODSAPI.records.search($scope.context, options).
                         success(function(data, status, headers, config) {
                             if (!data.records.length) {
@@ -11734,7 +11943,8 @@ mod.directive('infiniteScroll', [
                 // Is there a custom template into the directive's tag?
                 var customTemplate = false;
                 $transclude(function(clone) {
-                    customTemplate = clone.length > 0;
+                    clone.contents().wrapAll('<div>');
+                    customTemplate = clone.contents().length > 0 && clone.contents().html().trim().length > 0;
                 });
 
                 var renderOneRecord = function(index, records, position) {
@@ -12056,9 +12266,9 @@ mod.directive('infiniteScroll', [
                     for (var i=0; i<$scope.layout.length; i++) {
                         var j = i+1;
                         var maxWidth = disableMaxWidth ? 'max-width: none; ' : ''; // Table with few columns
-                        styles += '#' + tableId + ' .records-header tr th:nth-child(' + j + ') > div, '
-                                + '#' + tableId + ' .records-body tr td:nth-child(' + j + ') > div '
-                                + '{ width: ' + $scope.layout[i] + 'px; ' + maxWidth + '} ';
+                        styles += '#' + tableId + ' .records-header tr th:nth-child(' + j + ') > div, ' +
+                                  '#' + tableId + ' .records-body tr td:nth-child(' + j + ') > div ' +
+                                  '{ width: ' + $scope.layout[i] + 'px; ' + maxWidth + '} ';
 
                     }
                     return styles;
@@ -12322,6 +12532,14 @@ mod.directive('infiniteScroll', [
             },
             controller: ['$scope', 'translate', function($scope, translate) {
                 $scope.buttonText = $scope.button || translate("Search");
+                
+                var unwatch = $scope.$watch('context', function(nv, ov) {
+                    if (nv) {
+                        $scope.searchExpression = $scope.context.parameters.q;
+                        unwatch();
+                    }
+                });
+
                 $scope.applySearch = function() {
                     $scope.context.parameters.q = $scope.searchExpression;
                 };

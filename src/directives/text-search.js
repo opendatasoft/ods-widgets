@@ -31,6 +31,14 @@
             },
             controller: ['$scope', 'translate', function($scope, translate) {
                 $scope.buttonText = $scope.button || translate("Search");
+                
+                var unwatch = $scope.$watch('context', function(nv, ov) {
+                    if (nv) {
+                        $scope.searchExpression = $scope.context.parameters.q;
+                        unwatch();
+                    }
+                });
+
                 $scope.applySearch = function() {
                     $scope.context.parameters.q = $scope.searchExpression;
                 };

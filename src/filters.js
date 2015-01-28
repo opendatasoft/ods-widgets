@@ -43,7 +43,7 @@
     }]);
 
     mod.filter('imagify', ['$sce', function($sce) {
-        var re = /^(http(?:s?):\/\/[^;,]*(?:jpg|jpeg|png|gif))(?:$|\?.*|;|,|&)/i;
+        var re = /^(http(?:s?):\/\/[^;,]*(?:jpg|jpeg|png|gif)(?:\?[^,;]*)?)(?:$|;|,|&)/i;
         return function(value) {
             if (angular.isString(value)) {
                 value = value.trim();
@@ -54,6 +54,23 @@
                 }
             }
             return value;
+        };
+    }]);
+
+    mod.filter('youtubify', ['$sce', function($sce) {
+        // Formats:
+        // http(s)://youtu.be/Hh-0y8Qe0Sw
+        // http(s)://(www.)youtube.com/watch?v=Hh-0y8Qe0Sw
+        var re = /^https?:\/\/(?:(?:youtu.be\/)|(?:(?:www.)?youtube.com\/watch\?v=))([0-9a-zA-Z-]*)$/i;
+        return function(url) {
+            if (angular.isString(url)) {
+                var match = re.exec(url.trim());
+                if (match !== null) {
+                    // The first match is the Youtube ID
+                    return $sce.trustAsHtml('<iframe width="200" height="113" src="//www.youtube.com/embed/'+match[1]+'" frameborder="0" allowfullscreen></iframe>');
+                }
+            }
+            return url;
         };
     }]);
 
@@ -445,6 +462,19 @@
                 return JSON.stringify(value);
             } else {
                 return value;
+            }
+        };
+    });
+
+    mod.filter('themeColor', function(ODSWidgetsConfig) {
+        return function(theme) {
+            if (!theme) {
+                return '';
+            }
+            if (ODSWidgetsConfig.themes[theme]) {
+                return ODSWidgetsConfig.themes[theme].color;
+            } else {
+                return '';
             }
         };
     });

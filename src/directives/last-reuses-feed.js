@@ -66,7 +66,7 @@
                     ODSAPI.reuses($scope.context, {'rows': $scope.max}).
                         success(function(data) {
                             angular.forEach(data.reuses, function(reuse) {
-                                reuse.url = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/';
+                                reuse.url = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/?tab=metas';
                             });
                             $scope.reuses = data.reuses;
                         });

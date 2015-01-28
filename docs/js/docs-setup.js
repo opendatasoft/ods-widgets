@@ -74,7 +74,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays filters (facets) for a dataset or a domain&#39;s catalog of datasets, allowing the users",
-      "keywords": "allowing alphanum angularjs api based boolean catalog categories category change class clicking collapsed complete configuration configure context count data dataset datasets default directive display displayed displays domain don dynamically evaluate evaluates evenements-publics-cibul events events-dataset events-domain excluded expanded expression facet facetname facets field fields filter filters hiddencategory hide-category-if hide-if-single-category hierarchical html icon-tag icon-tags including items levels link metadata module mycontext myfield mysecondfield num number ods-widgets odsfacet odsfacets odstable opendatasoft parameters path public refine regular restrict row-fluid sort span4 span8 string supports tag tags template title true typical typically updated_at users variables visible-items widget write"
+      "keywords": "allowing alphanum angularjs api based boolean catalog categories category change class clicking collapsed complete configuration configure context count data dataset datasets default directive display displayed displays domain don dynamically evaluate evaluates evenements-publics-cibul events events-dataset events-domain excluded expanded expression facet facetname facets field fields filter filters hiddencategory hide-category-if hide-if-single-category hierarchical html icon-tag icon-tags including items levels link list metadata module mycontext myfield mysecondfield num number ods-widgets odsfacet odsfacets odstable opendatasoft order parameters path public refine regular restrict row-fluid setting sort span4 span8 specific string supports tag tags template title true typical typically updated_at users value1 value2 values variables visible-items widget write"
     },
     {
       "section": "api",
@@ -149,12 +149,21 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsPaginationBlock",
+      "shortName": "odsPaginationBlock",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays a pagination control that you can use to make the context &quot;scroll&quot; through a list of results. It doesn&#39;t display",
+      "keywords": "active api attribute catalog change contained context control crawl dataset directive display displays doesn don engines fetched include links list nofollow note number ods-widgets odsresultsenumerator pagination paired parameter perpage rel relevant rows scroll search system true widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsResultEnumerator",
       "shortName": "odsResultEnumerator",
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget enumerates the results of a search (records for a Dataset Context, datasets for a Catalog Context) and repeats the template (the content of the directive element) for each of them.",
-      "keywords": "_blank angularjs api belongs catalog content context dataset datasetid datasets directive display displayed domainurl element enumerates fields geojson geometrical geometry hits hold holding holds html identifier item key maximum metadata metas module ng-href number object ods-widgets opendatasoft public public-domain record repeats representation result search target template title variables widget"
+      "keywords": "_blank angularjs api belongs block browse catalog content context dataset datasetid datasets directive display displayed domainurl element enumerates fields geojson geometrical geometry hits hold holding holds html identifier item key maximum metadata metas module ng-href number object ods-widgets opendatasoft pagination public public-domain record repeats representation result search target template title variables widget"
     },
     {
       "section": "api",

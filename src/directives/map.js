@@ -68,6 +68,7 @@
                 showFilters: '@',
                 itemClickContext: '=',
                 colorBy: '@',
+                colorByField: '@',
                 colorByContext: '=',
                 colorByAggregationKey: '@',
                 colorByKey: '@',
@@ -582,6 +583,13 @@
 
                 var drawGeoJSON = function(record, layerGroup, bounds, markers, color) {
                     var geoJSON;
+                    var drawColor = color;
+                    if ($scope.colorBy === 'value') {
+                        var colorByVal = record.fields[colorAggregation.field];
+                        if (colorByVal) {
+                            drawColor = getAggregationColor(colorByVal);
+                        }
+                    }
                     if (shapeField) {
                         if (record.fields[shapeField]) {
                             geoJSON = record.fields[shapeField];
@@ -603,7 +611,7 @@
                     if (geoJSON.type == 'Point') {
                         // We regroup all the markers in one layer so that we can clusterize them
                         var point = new L.LatLng(geoJSON.coordinates[1], geoJSON.coordinates[0]);
-                        var marker = createMarker(point, color);
+                        var marker = createMarker(point, drawColor);
                         marker.on('click', function(e) {
                             clickOnItem(e.target.getLatLng(), geoJSON, null, record);
                         });
@@ -611,10 +619,24 @@
                         bounds.extend(point);
                     } else {
                         var layer;
-                        if (color) {
+                        if (drawColor) {
                             layer = new L.GeoJSON(geoJSON, {
-                                style: function() {
-                                    return {color: color};
+                                style: function(feature) {
+                                    var opts = {
+                                        radius: 3,
+                                        weight: 1,
+                                        opacity: 0.9,
+                                        fillOpacity: 0.5,
+                                        color: drawColor
+                                    };
+                                    opts.fillColor = drawColor;
+                                    if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
+                                        opts.weight = 5;
+                                        opts.color = drawColor;
+                                    } else {
+                                        opts.color = "#fff";
+                                    }
+                                    return opts;
                                 }
                             });
                         } else {
@@ -680,7 +702,7 @@
                     var refresh = function(data) {
                         if ($scope.colorBy === 'aggregation') {
                             refreshAggregation();
-                        } else if (data.count < DOWNLOAD_CAP || $scope.map.getZoom() === $scope.map.getMaxZoom()) {
+                        } else if ($scope.colorBy === 'value' || data.count < DOWNLOAD_CAP || $scope.map.getZoom() === $scope.map.getMaxZoom()) {
                             // Low enough: always download
                             refreshRawGeo();
                         } else if (data.count < SHAPEPREVIEW_HIGHCAP) {
@@ -755,6 +777,12 @@
                             remotekey: $scope.colorByKey,
                             expr: $scope.colorByExpression,
                             func: $scope.colorByFunction,
+                            ranges: $scope.colorByRanges.split(','),
+                            colors: $scope.colorByRangesColors.split(',')
+                        };
+                    } else if ($scope.colorBy === 'value') {
+                        colorAggregation = {
+                            field: $scope.colorByField,
                             ranges: $scope.colorByRanges.split(','),
                             colors: $scope.colorByRangesColors.split(',')
                         };

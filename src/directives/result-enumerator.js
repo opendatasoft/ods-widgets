@@ -12,6 +12,7 @@
          * @param {CatalogContext|DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {number} [max=10] Maximum number of results to show
          * @param {boolean} [showHitsCounter=false] Display the number of hits (search results). This is the number of results available on the API, not the number of results displayed in the widget.
+         * @param {boolean} [showPagination=false] Display a pagination block below the results, to be able to browse them all.
          * @description
          * This widget enumerates the results of a search (records for a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, datasets for a {@link ods-widgets.directive:odsCatalogContext Catalog Context}) and repeats the template (the content of the directive element) for each of them.
          *
@@ -50,18 +51,21 @@
             scope: {
                 context: '=',
                 max: '@?',
-                showHitsCounter: '@?'
+                showHitsCounter: '@?',
+                showPagination: '@?'
             },
             template: '<div class="odswidget odswidget-result-enumerator">' +
-                '<div ods-results="items" ods-results-context="context" ods-results-max="{{max}}">' +
-                '<div ng-if="!items.length" class="no-results" translate>No results</div>' +
-                '<div ng-if="items.length && hitsCounter" class="results-count">{{items.length}} <span translate>results</span></div>' +
-                '<div ng-repeat="item in items" inject class="item"></div>' +
+                '<div ods-results="items" ods-results-context="context" ods-results-max="{{maxHits}}">' +
+                    '<div ng-if="!items.length" class="no-results" translate>No results</div>' +
+                    '<div ng-if="items.length && hitsCounter" class="results-count">{{context.nhits}} <span translate>results</span></div>' +
+                    '<div ng-repeat="item in items" inject class="item"></div>' +
                 '</div>' +
+                '<ods-pagination-block ng-if="pagination" context="context" per-page="{{maxHits}}"></ods-pagination-block>' +
                 '</div>',
             controller: ['$scope', function($scope) {
-                $scope.max = $scope.max || 10;
+                $scope.maxHits = $scope.max || 10;
                 $scope.hitsCounter = (angular.isString($scope.showHitsCounter) && $scope.showHitsCounter.toLowerCase() === 'true');
+                $scope.pagination = (angular.isString($scope.showPagination) && $scope.showPagination.toLowerCase() === 'true');
             }]
         };
     }]);

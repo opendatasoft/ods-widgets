@@ -54,10 +54,12 @@
                         });
                         ODSAPI.datasets.search(nv, options).success(function(data) {
                             $scope[variable] = data.datasets;
+                            nv.nhits = data.nhits;
                         });
                     } else if (nv.type === 'dataset' && nv.dataset) {
                         ODSAPI.records.search(nv, options).success(function(data) {
                             $scope[variable] = data.records;
+                            nv.nhits = data.nhits;
                         });
                     }
                 }, true);

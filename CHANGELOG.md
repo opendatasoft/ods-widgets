@@ -2,6 +2,25 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 0.1.4 - 2015-01-28
+### Added
+- New `odsPaginationBlock` widget, especially used in `odsResultEnumerator` where you can use a new `showPagination` attribute
+to display a pagination control below your results.
+- `odsFacets` now support the configuration of a specific order for facet values. It can be used for example to ensure
+ "Monday", "Tuesday", "Wednesday", "Thursday"... are displayed in the right order. 
+ See documentation of the `sort` parameter for more information.
+- In `odsMap` default tooltips, if a field contains a link to a YouTube video, a mini video player is displayed.
+- Clicking on a reuse's source will now open in a new tab by default.
+- When `odsTextSearch` initialized, it now takes the `q=` parameter of its context as a default value.
+
+### Fixed
+- The `imagify` filter no longer cuts URL parameters from detected image links; this means you'll no longer see this problem
+in `odsMap` tooltips for example.
+- Linebreaks between start and end of the `odsTable` tag no longer triggers an empty custom template for cells.
+- Clicking on a reuse (from `odsReuses` or `odsLastReusesFeed`) will bring you to the dataset's information tab where all
+the reuses are listed, instead of a default visualization.
+- `odsSearchBox` now works in every case; previously, depending on how it was initialized, it may have been not working when submitting a search.
+
 ## 0.1.3 - 2014-12-04
 ### Added
 - New widget: `odsToggleModel`. It can be used on a checkbox, to add/remove a parameter depending on the state of the checkbox.

@@ -79,7 +79,10 @@ L.Control.GeoBox = L.Control.extend({
                 } else {
                     L.DomUtil.addClass(geobox._input, 'notfound');
                 }
-
+            },
+            error: function(data, textStatus, jqXHR) {
+                L.DomUtil.setOpacity(geobox._spinner, 0);
+                L.DomUtil.addClass(geobox._input, 'notfound');
             }
         });
 

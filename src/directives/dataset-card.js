@@ -18,7 +18,7 @@
             $(datasetItem).html(clone);
         });
         scope.$apply();
-    }
+    };
 
     mod.directive('odsDatasetCard', function() {
         /**
@@ -62,7 +62,7 @@
             replace: true,
             transclude: true,
             link: function(scope, elem, attrs) {
-                scope.position = attrs['position'] || "top";
+                scope.position = attrs.position || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
                 scope.renderContent = renderCard;
             },
@@ -118,7 +118,7 @@
             replace: true,
             transclude: true,
             link: function(scope, elem, attrs) {
-                scope.position = attrs['position'] || "top";
+                scope.position = attrs.position || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
                 scope.renderContent = renderCard;
             },
@@ -141,7 +141,7 @@
                     if ($scope.isExpandable()) {
                         $scope.expanded = !$scope.expanded;
                     }
-                }
+                };
 
                 var unwatch = $scope.$watch('datasets', function(nv, ov) {
                     var keys = Object.keys(nv);
@@ -158,6 +158,6 @@
                     unwatch();
                 }, true);
             }]
-        }
+        };
     }]);
 })();

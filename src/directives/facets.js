@@ -44,6 +44,7 @@
          *
          * - **`sort`** {@type string} (optional, default is count) How to sort the categories: either `count`, `-count` (sort by number of items in each category),
          * `num`, `-num` (sort by the name of category if it is a number), `alphanum`, `-alphanum` (sort by the name of the category).
+         * It is also possible to configure a specific order by setting a list of values: `['value1', 'value2']`.
          *
          * - **`visible-items`** {@type number} (optional, default 6) the number of categories to show; if there are more,
          * they are collapsed and can be expanded by clicking on a "more" link.
@@ -214,7 +215,7 @@
                         facet: $scope.facets.map(function(facetInfo) { return facetInfo.name; })
                     });
                     $scope.facets.map(function(facetInfo) {
-                        if (facetInfo.sort) {
+                        if (facetInfo.sort && facetInfo.sort.length && facetInfo.sort[0] !== '[') {
                             params['facetsort.'+facetInfo.name] = facetInfo.sort;
                         }
                     });
@@ -228,20 +229,39 @@
 
                     req.success(function(data) {
                         $scope.context.nhits = data.nhits;
-                        var facetGroup, categories, facetItem;
+                        var facetGroup, categories, facetItem, addedCategories;
                         angular.forEach($scope.facets, function(facet) {
                             facet.categories.splice(0, facet.categories.length);
                         });
                         if (data.facet_groups) {
-                            for (var i=0; i<data.facet_groups.length; i++) {
-                                facetGroup = data.facet_groups[i];
+                            angular.forEach(data.facet_groups, function(facetGroup) {
                                 facetItem = $scope.facets.filter(function(f) { return f.name === facetGroup.name; });
                                 if (facetItem.length > 0) {
                                     categories = facetItem[0].categories;
                                     // Add all the categories in the array
-                                    Array.prototype.push.apply(categories, facetGroup.facets);
+                                    addedCategories = [];
+                                    if (facetItem[0].sort && facetItem[0].sort.length && facetItem[0].sort[0] === '[') {
+                                        // This is an explicit order
+                                        var explicitOrder = $scope.$eval(facetItem[0].sort);
+                                        angular.forEach(explicitOrder, function(value) {
+                                            var j, cat;
+                                            for (j=0; j<facetGroup.facets.length; j++) {
+                                                cat = facetGroup.facets[j];
+                                                if (cat.path === value) {
+                                                    addedCategories.push(cat);
+                                                    facetGroup.facets.splice(j, 1);
+                                                    break;
+                                                }
+                                            }
+                                        });
+                                        // Append the rest, as is
+                                        Array.prototype.push.apply(addedCategories, facetGroup.facets);
+                                    } else {
+                                        addedCategories = facetGroup.facets;
+                                    }
+                                    Array.prototype.push.apply(categories, addedCategories);
                                 }
-                            }
+                            });
                         }
                     });
                 };

@@ -28,8 +28,6 @@
     {
       Array.prototype.filter = function(fun /*, thisArg */)
       {
-        "use strict";
-
         if (this === void 0 || this === null)
           throw new TypeError();
 
@@ -69,7 +67,7 @@
 
         var T, A, k;
 
-        if (this == null) {
+        if (this === null) {
           throw new TypeError(" this is null or not defined");
         }
 
@@ -161,7 +159,6 @@
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
     if (!Object.keys) {
         Object.keys = (function () {
-            'use strict';
             var hasOwnProperty = Object.prototype.hasOwnProperty,
                 hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
                 dontEnums = [
@@ -227,9 +224,11 @@
 
     // IE8 doesn't define hasOwnProperty on the window object
     if (!window.hasOwnProperty) {
+        /*jshint -W001 */
         window.hasOwnProperty = function(name) {
             return Object.prototype.hasOwnProperty.call(window, name);
         };
+        /*jshint +W001 */
     }
 
     // not really a polyfill but still a useful function to visually select the content of an html element
@@ -248,16 +247,16 @@
             selection.removeAllRanges();
             selection.addRange(range);
         }
-    }
+    };
 
     window.utf8_to_b64 = function(str) {
         // we escape the unicode string before encoding it in base64 becase btoa does not support unicode characters
         return window.btoa(jsesc(str, {
             'json': true
         }));
-    }
+    };
 
     window.b64_to_utf8 = function(str) {
         return window.atob(str);
-    }
+    };
 }());
