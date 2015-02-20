@@ -189,7 +189,7 @@
             &::after {
                 font-family: 'FontAwesome';
                 font-size: 16px;
-                content: "\f002";
+                content: "\f0B0";
                 position: absolute;
                 left: 8px;
                 top: 3px;
@@ -309,7 +309,7 @@
     }
 }
 
-.odswidget-theme-picto {
+.odswidget-picto {
     svg, img {
         width: 100%;
         height: 100%;
@@ -538,6 +538,17 @@
     }
 }
 
+.odswidget-map .loading-tiles {
+    position: absolute;
+    right: 10px;
+    bottom: 30px; // Room for the attribution line
+    background: rgba(255,255,255,0.9);
+    padding: 5px 12px;
+    color: #333;
+    font-size: 30px;
+    pointer-events: none;
+}
+
 .odswidget-geo-scroller {
     min-height: 30px;
     position: relative;
@@ -697,7 +708,129 @@
                 content: ')';
             }
         }
+
+        .value-search {
+            // The searchbox for a facet's values
+            position: relative;
+            input {
+                padding: 0 2em;
+                box-sizing : border-box;
+                width: 100%;
+            }
+            &::before {
+                font-family: 'FontAwesome';
+                content: "\f002";
+                position: absolute;
+                left: 0.5em;
+                width: 1em;
+                text-align: center;
+                display: block;
+                line-height: 2;
+                opacity: 0.5;
+            }
+            .value-search-cancel {
+                position: absolute;
+                right: 0.5em;
+                line-height: 2;
+                opacity: 0.5;
+                cursor: pointer;
+            }
+        }
     }
+}
+
+.legend {
+    border-radius: 2px;
+    text-align: left;
+    line-height: 18px;
+    color: #555;
+    background-color: white;
+    padding: 0.4em;
+    min-width: 200px;
+    // border: 1px solid red;
+    box-sizing: border-box;
+
+    div { box-sizing: border-box; }
+
+    .title {
+        text-align: center;
+        overflow: hidden;
+        font-weight: bold;
+    }
+
+    .colors i {
+        height: 18px;
+        width: 10%;
+        padding: 0;
+        display: inline-block;
+        opacity: 0.8;
+        box-sizing: border-box;
+        border: 1px solid black;
+        border-width: 1px 1px 1px 0;
+
+        &:first-child {
+            margin-left: 5%;
+            border-left-width: 1px;
+        }
+        &:last-child {
+            margin-right: 5%;
+            border-right-width: 1px;
+        }
+    }
+
+    div.counts {
+        text-align: center;
+
+        span {
+            padding: 1px;
+            line-height: 0.7rem;
+            font-size: 0.7rem;
+        }
+    }
+
+    span:first-child {
+        float: left;
+    }
+    span:last-child {
+        float: right;
+    }
+
+    span:first-child:last-child {
+        float: none;
+    }
+}
+
+.leaflet-control-geocoder {
+    // Fixing a few style side effect from outside, and improving a bit
+
+    input[type="text"] {
+        padding: 0!important;
+        box-shadow: none !important;
+        line-height: 36px !important;
+        font-size: 18px;
+        width: 0 !important;
+        border: none;
+    }
+
+    .leaflet-control-geocoder-icon {
+        height: 36px;
+        width: 36px;
+    }
+
+    &.leaflet-control-geocoder-expanded {
+        input {
+            padding-left: 5px !important;
+            width: 226px !important;
+        }
+    }
+}
+.leaflet-geocoder-highlight {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+}
+
+.geocoder-highlight-on .leaflet-geocoder-highlight {
+    opacity: 0;
 }
 
 .odswidget-pagination {

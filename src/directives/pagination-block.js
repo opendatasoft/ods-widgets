@@ -18,7 +18,7 @@
          * results by itself, and therefore should be paired with another widget. Note that by itself it also doesn't control the number of results fetched by the context,
          * and the `perPage` parameter should be the same as the `rows` parameter on the context.
          *
-         * If you just want to display results with a pagination system, you can have a look at {@link ods-widgets.directive:odsResultsEnumerator odsResultsEnumerator}
+         * If you just want to display results with a pagination system, you can have a look at {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}
          * which already include this directive (if the relevant parameter is active on the widget).
          */
 

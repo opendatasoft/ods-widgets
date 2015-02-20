@@ -1,0 +1,72 @@
+<h1><code ng:non-bindable="">odsMapLegacy</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-map-legacy
+       context="{DatasetContext}"
+       auto-resize="{boolean}"
+       location="{string}"
+       basemap="{string}"
+       is-static="{boolean}"
+       show-filters="{boolean}"
+       map-context="{Object}"
+       item-click-context="{DatasetContext}"
+       item-click-map-field="{string}"
+       item-click-context-field="{string}"&gt;
+&lt;/ods-map-legacy&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive creates new scope.</li>
+</ul>
+</div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmaplegacy-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
+</div></td></tr><tr><td>autoResize</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmaplegacy-page"><p>If true, the map will attempt to resize itself to always take up all the space to the bottom of the viewport.
+It is only useful in very specific cases, when the map is the main focus of the page and should take all the window real estate available.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>location</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmaplegacy-page"><p>Initial location of the map, under the format &quot;zoom,latitude,longitude&quot; (e.g. <em>12,48.85887,2.3292</em>)</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>basemap</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmaplegacy-page"><p>Identifier of the basemap to apply. Basemaps are configured using <a href="#/api/ods-widgets.ODSWidgetsConfigProvider">ODSWidgetsConfig.basemaps</a>.</p>
+</div> <p><em>(default: default basemap)</em></p></td></tr><tr><td>isStatic</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmaplegacy-page"><p>If true, the map can&#39;t be panned or zoomed; in other words the map is static and can only show the initial view. Interaction with the data is still active,
+for example you can still click on a marker to have a tooltip.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>showFilters</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmaplegacy-page"><p>If true, displays additional tools to use the map to filter the data in the context. For example if you use a table and a map on the same context,
+this makes you able to use the map to refine the data displayed in the table.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>mapContext</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmaplegacy-page"><p>An object that you can use to share the map state (location and basemap) between two or more map widgets when they are not in the same context.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>itemClickContext</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmaplegacy-page"><p>Instead of popping a tooltip when you click on an item on the map, you can decide to add a filter to another context using this parameter.
+Clicks that would normally make a popup appear (markers, clusters that can&#39;t be expanded more, shapes) will instead filter the specified context.</p>
+<p>By default this is a spatial filter:
+if you clicked a point, then the filter is the exact location; if you clicked a shape, then the filter is the content of this shape.</p>
+<p>Note that you can specify more than one context by passing an array:
+<pre class="prettyprint linenums">
+    &lt;ods-map-legacy context="myctx"
+             item-click-context="[context2, context3]"&gt;
+    &lt;/ods-map-legacy&gt;
+</pre>
+In that case, the <code>itemClickMapField</code> and <code>itemClickContextField</code> (as described below) need to contain the name of the context they apply to:
+<pre class="prettyprint linenums">
+    &lt;ods-map-legacy context="myctx"
+             item-click-context="[trees, roads]"
+             item-click-trees-map-field="field1"
+             item-click-trees-context-field="field2"
+             item-click-roads-map-field="field1"
+             item-click-roads-context-field="field3"&gt;
+    &lt;/ods-map-legacy&gt;
+</pre>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>itemClickMapField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmaplegacy-page"><p>If you are using <code>itemClickContext</code> and want to filter on the value of a field instead of a spatial query, you can use this parameter to specify the name of the field to take
+the value from. This must be a field from the dataset displayed on the map. It must be used together with <code>itemClickContextField</code>.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>itemClickContextField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmaplegacy-page"><p>This parameter specifies the field to filter on in the context configured in <code>itemClickContext</code>. It must be used together with <code>itemClickMapField</code>.
+The field must be a facet.</p>
+</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsmaplegacy-page"><h4 id="example_source">Source</h4>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-8" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html-8" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-8">
+    <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
+        <ods-map-legacy context="stations"></ods-map-legacy>
+    </ods-dataset-context>
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-8" ng-eval-javascript=""></div>
+</div></div>
+</div>

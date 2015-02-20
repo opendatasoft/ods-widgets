@@ -15,12 +15,48 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsAggregation",
+      "shortName": "odsAggregation",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget exposes the results of an aggregation function over a context. Can be used for example to expose the average temperature of a weather dataset.",
+      "keywords": "aggregation api apply arbresremarquablesparis2011 average avg catalog class context count dataset directive directly example expose exposed exposes expression field function hauteur height html max meters min module ods-aggregation ods-aggregation-context ods-aggregation-expression ods-aggregation-function ods-widgets odsaggregationcontext opendatasoft optional parisdata result row-fluid sort span4 span8 stddev sum temperature tree tree-dataset tree-domain tree-parameters typically variable weather widget widgets"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsCatalogContext",
       "shortName": "odsCatalogContext",
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "A &quot;catalog context&quot; represents the entire catalog (list) of datasets from a given domain, and a set of parameters used to query this catalog. A context can be used",
       "keywords": "absolute access accessible ae alphanum alphanumerical angularjs api apikey apply assume attribute attributes call case catalog characters child commas configure configured construct context contexts conventions create created creates current data dataset datasetid datasets declare defaultdomain described directive directives directly displayed displays domain domainurl element entire example exposed exposes filter find full holding hostname indicate initialize inside key links list lowercase mycontext-domain mydomain named names naming nest object ods-widgets odscatalogcontext odswidgetsconfig odswidgetsconfigprovider opendatasoft parameters path places plugged prefixed properties public query represents root scope separated set settings share simple single specific string time url variable"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsChart",
+      "shortName": "odsChart",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget can display a multiple chart generated using the &quot;Charts&quot; interface of OpenDataSoft.",
+      "keywords": "angular api base64 catalog chart charts complete configuration context directive directly display expects expression generated interface multiple object ods-widgets opendatasoft parameter quoted string widget"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsChartQuery",
+      "shortName": "odsChartQuery",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget can display a multiple chart generated using the &quot;Charts&quot; interface of OpenDataSoft.",
+      "keywords": "angular api base64 chart charts complete configuration context dataset directive directly display expects expression generated interface multiple object ods-widgets opendatasoft parameter quoted string widget"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsChartSerie",
+      "shortName": "odsChartSerie",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget can display a multiple chart generated using the &quot;Charts&quot; interface of OpenDataSoft.",
+      "keywords": "angular api base64 catalog chart charts complete configuration context directive directly display expects expression generated interface multiple object ods-widgets opendatasoft parameter quoted string widget"
     },
     {
       "section": "api",
@@ -74,7 +110,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays filters (facets) for a dataset or a domain&#39;s catalog of datasets, allowing the users",
-      "keywords": "allowing alphanum angularjs api based boolean catalog categories category change class clicking collapsed complete configuration configure context count data dataset datasets default directive display displayed displays domain don dynamically evaluate evaluates evenements-publics-cibul events events-dataset events-domain excluded expanded expression facet facetname facets field fields filter filters hiddencategory hide-category-if hide-if-single-category hierarchical html icon-tag icon-tags including items levels link list metadata module mycontext myfield mysecondfield num number ods-widgets odsfacet odsfacets odstable opendatasoft order parameters path public refine regular restrict row-fluid setting sort span4 span8 specific string supports tag tags template title true typical typically updated_at users value1 value2 values variables visible-items widget write"
+      "keywords": "allowing alphanum angularjs api based blue boolean box catalog categories category change character class click clicking collapsed combined complete configuration configure context count data dataset datasets default directive disjunctive display displayed displays domain don dynamically easily effectively evaluate evaluates evenements-publics-cibul events events-dataset events-domain example excluded expanded expression facet facetname facets field fields filter filters green hiddencategory hide-category-if hide-if-single-category hierarchical html icon-tag icon-tags including items levels link list making matching metadata mode module mycontext myfield mysecondfield num number ods-widgets odsfacet odsfacets odstable opendatasoft order parameters path possibles public red refine regular restrict row-fluid search select selected setting sort span4 span8 specific string suggest-like supports tag tags template title true typed typical typically updated_at users value1 value2 values valuesearch variables visible-items widget write"
     },
     {
       "section": "api",
@@ -118,6 +154,15 @@ NG_DOCS={
       "shortName": "odsMap",
       "type": "directive",
       "moduleName": "ods-widgets",
+      "shortDescription": "This widget allows you to build a map visualization and show data using various modes of display using layers.",
+      "keywords": "ability advanced aggregated aggregating aggregation allows alphanumerically angular anither apart api area associated auto automatic automatically based basemap basemaps best browser build categories centered changes chosen chronologically click clicking close cluster clustering clusters clustersforced code color colorbrewer colorbyfield colorranges colors colorscale combine combined configurable configuration configurations configure context contexts control css custom data dataset datasets datetime decide decreasing default define defined density depending directive directly display displayed displaying displays downloaded draw dynamic exact example ff0000 ff0f05 field field1 field2 field3 field4 fields filter filters fit format france freeze function geo geometrical geometry heatmap hex hide hoverfield hovers identifier indicating initialization initializing item items join joincontext joined kind large latitude layer layers level local localkey location longitude map markers maximum mode modes mot mouse move multiple mycontext mycontext2 mycontext3 mycontext5 names ngif note number numeric object occurs ods-widgets odsmaplayer odswidgetsconfig odswidgetsconfigprovider orange order org paris point points prefixed properties property propose ranges raw read record records red refine refine-on-click-context refine-on-click-mycontext-context-field refine-on-click-mycontext-map-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-map-field refineonclick refineonclickcontext refineonclickcontextfield refineonclickmapfield refits refreshed relevant remote remotekey represent represents result reverse reversed road scheme second selection sense serie settings shape shapes show-if showheatmap showif simple simplification simply single sort sorted sources spatially specific stacked stay support supports table tag text three time tooltip tooltip-sort tooltipsort traffic trigger triggers true type types user users view visualization ways widget widgets won ylgnbu zones zoom"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsMapLegacy",
+      "shortName": "odsMapLegacy",
+      "type": "directive",
+      "moduleName": "ods-widgets",
       "keywords": "active add additional api appear apply array attempt basemap basemaps bottom case cases click clicked clicks clusters configured content context context3 data dataset decide default described directive displayed displays estate exact example expanded facet field field1 field2 field3 filter focus format html identifier initial interaction item item-click-context item-click-roads-context-field item-click-roads-map-field item-click-trees-context-field item-click-trees-map-field itemclickcontext itemclickcontextfield itemclickmapfield jcdecaux_bike_data latitude location longitude main map marker module myctx note object ods-widgets odswidgetsconfig odswidgetsconfigprovider opendatasoft panned parameter passing point popping popup public query real refine resize roads shape shapes share space spatial specific specifies static stations stations-dataset stations-domain table tools tooltip true view viewport widgets window zoom zoomed"
     },
     {
@@ -154,7 +199,16 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a pagination control that you can use to make the context &quot;scroll&quot; through a list of results. It doesn&#39;t display",
-      "keywords": "active api attribute catalog change contained context control crawl dataset directive display displays doesn don engines fetched include links list nofollow note number ods-widgets odsresultsenumerator pagination paired parameter perpage rel relevant rows scroll search system true widget"
+      "keywords": "active api attribute catalog change contained context control crawl dataset directive display displays doesn don engines fetched include links list nofollow note number ods-widgets odsresultenumerator pagination paired parameter perpage rel relevant rows scroll search system true widget"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsPicto",
+      "shortName": "odsPicto",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays a &quot;picto&quot; specified by a url and force a fill color on it.",
+      "keywords": "api color defs directive display displays element fallback fill force ie8 image implement ods-widgets picto styled svg url vectorial widget width"
     },
     {
       "section": "api",
@@ -244,7 +298,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays two fields to select the two bounds of a date and time range.",
-      "keywords": "api bounds cibul cibul-dataset cibul-domain context dataset datetime default default-from default-to directive displays evenements-publics-cibul field fields filter html module ods-widgets opendatasoft public range select time widget yesterday"
+      "keywords": "api array bounds cibul cibul-dataset cibul-domain context contexts dataset datetime default default-from default-to define directive displayed displays donnees-sur-les-medecins-accredites evenements-publics-cibul example field fields filter format hh html inputs medecins medecins-dataset medecins-domain module multiple ods-timerange ods-widgets opendatasoft public range representing select selector set string time widget yesterday yyyy-mm-dd"
     },
     {
       "section": "api",
@@ -253,7 +307,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "Displays a control to select either:",
-      "keywords": "api cibul cibul-dataset cibul-domain context control dataset datetime day directive displays evenements-publics-cibul field filter html module month ods-widgets opendatasoft public select week year"
+      "keywords": "api array cibul cibul-dataset cibul-domain context control dataset datetime day default default-value define directive displays evenements-publics-cibul field filter html module month ods-widgets opendatasoft public select set timescale week year"
     },
     {
       "section": "api",
@@ -330,29 +384,47 @@ NG_DOCS={
     {
       "section": "tutorial",
       "id": "01firstpage",
-      "shortName": "1. A first page",
+      "shortName": "1. First page",
       "type": "overview",
-      "moduleName": "1. A first page",
+      "moduleName": "1. First page",
       "shortDescription": "Tutorial: A first page",
       "keywords": "add adding allow allows analog api attribute attributes books browsing build case catalog class closely consumption content context contexts covers create crowdsourced data dataset datasets date_end directive display displayed documentation domain element ended evenements-publics-cibul events events-dataset events-domain exactly example features field fill filter filtered find full geographical happened html identifier indicated inside interact interacting interaction job lack library list located location luckily mandatory map metadata month ng-embed-app nice occured ods ods-widgets odsmap odstimescale opendatasoft opening overview parameter perfect plug portal prefixed provide public range reading ready represents requires search select shared shelves simply source specific step syntax target time-field tool tutorial types users week widget widgets"
     },
     {
       "section": "tutorial",
       "id": "02catalogpage",
-      "shortName": "2. A catalog homepage",
+      "shortName": "2. Catalog homepage",
       "type": "overview",
-      "moduleName": "2. A catalog homepage",
+      "moduleName": "2. Catalog homepage",
       "shortDescription": "Tutorial: A catalog homepage",
       "keywords": "achieve alive answer api build catalog catalog-domain catalogs class cloud collections context course create data dataset datasets declared directive doesn domain engage example explore exposes facet-name gathered good help homepage idea keyword keywords manner metadata ng-embed-app nice number ods-domain-statistics ods-widgets odsdomainstatistics odslastdatasetsfeed odsmostpopulardatasets odstagcloud open opendatasoft organized overview plugged popular portal preview public questions row-fluid sentence sexy simple span6 statistics stats tag talking tour tutorial variable variables visitors widget widgets write"
     },
     {
       "section": "tutorial",
       "id": "03searchdatasets",
-      "shortName": "3. A dataset search page",
+      "shortName": "3. Dataset search page",
       "type": "overview",
-      "moduleName": "3. A dataset search page",
+      "moduleName": "3. Dataset search page",
       "shortDescription": "Tutorial: A dataset search page",
       "keywords": "achieve add adding allow api apply browse build built catalog catalog-domain catalog-parameters center class configured context custom data dataset datasets descending directive directly discover display displayed documentation drill eager earlier engine ensure explore faceted features filter filters finely full-text help homepage license ll max metas modification modified ng-embed-app ods-widgets odsfacets odsresultenumerator odstextsearch offer offering open opendatasoft options ordered overview parameter plugging portal provide public requires row-fluid search show-hits-counter simple simply sort sorted span4 span8 style text-align theme themes title tools treasures true tutorial visitors ways widgets work"
+    },
+    {
+      "section": "tutorial",
+      "id": "04advancedmap",
+      "shortName": "3. Advanced dynamic map",
+      "type": "overview",
+      "moduleName": "3. Advanced dynamic map",
+      "shortDescription": "Tutorial: An advanced dynamic map",
+      "keywords": "ability advanced age allows attribute build categories checkbox chicago chicagoincidents chicagoincidents-dataset chicagoincidents-domain chronologically class clustered context data dataset default-from default-to define display displayed dynamic explore heatmap heatmapmode incident individual interact killings-by-law-enforcement-officers-in-the-usa layer layers map ng-embed-app ng-model occurrences ods-widgets offer option overview public refine row-fluid show-if span4 span8 toggle tutorial type users victim volume"
+    },
+    {
+      "section": "tutorial",
+      "id": "05filterwithmap",
+      "shortName": "4. Filter using a map",
+      "type": "overview",
+      "moduleName": "4. Filter using a map",
+      "shortDescription": "Tutorial: Filter data using zones on a map",
+      "keywords": "aggregate aggregation allows appears class click clicked colored contained context contexts create data dataset default-from default-to density depending display displayed districts draw enforcement ensure fields filter initialize join-context killing killings killings-by-law-enforcement-officers-in-the-usa killings-dataset killings-domain killingslist killingslist-dataset killingslist-domain killingslist-parameters law list ll local-key map meaning natural-earth-us-states-provinces-1110m ng-embed-app ods-widgets officers overview particularities points public refine refine-on-click-context refined remain remote-key row-fluid scrollable second separate side sort span6 states-dataset states-domain tutorial usa users victim victims zones"
     }
   ],
   "apis": {

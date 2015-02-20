@@ -1042,8 +1042,13 @@
           c = getClass(val);
           t = c / (_numClasses - 1);
         } else {
-          t = f0 = (val - _min) / (_max - _min);
-          t = Math.min(1, Math.max(0, t));
+          // fix https://github.com/gka/chroma.js/issues/37
+          if (_max !== _min) {
+            t = f0 = (val - _min) / (_max - _min);
+            t = Math.min(1, Math.max(0, t));
+          } else {
+            t = _min;
+          }
         }
       } else {
         t = val;
@@ -1507,6 +1512,8 @@
     Pastel2: ['#b3e2cd', '#fdcdac', '#cbd5e8', '#f4cae4', '#e6f5c9', '#fff2ae', '#f1e2cc', '#cccccc'],
     Pastel1: ['#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec', '#f2f2f2']
   };
+
+
 
   /**
     X11 color names
@@ -6279,6 +6286,15 @@ mod.directive('infiniteScroll', [
         }
     };
 
+    window.isObjectEmpty = function(obj) {
+        for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     window.utf8_to_b64 = function(str) {
         // we escape the unicode string before encoding it in base64 becase btoa does not support unicode characters
         return window.btoa(jsesc(str, {
@@ -6295,7 +6311,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '0.1.4';
+    var version = '0.1.5';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate', 'translate.directives', 'translate.filters']);
@@ -6350,7 +6366,8 @@ mod.directive('infiniteScroll', [
             mapPrependAttribution: null,
             basePath: null,
             websiteName: null,
-            themes: {}
+            themes: {},
+            defaultMapLocation: "12,48.85218,2.36996" // Paris
         };
 
         this.customConfig = {};
@@ -6412,6 +6429,122 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
+    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsErrorService', function($http, ODSWidgetsConfig, odsErrorService) {
+        /**
+         * This service exposes OpenDataSoft APIs.
+         *
+         * Each method take a context, and specific parameters to append to this request (without modifying the context).
+         * A context is an object usually created by a directive such as dataset-context or catalog-context.
+         */
+        var request = function(context, path, params, timeout) {
+            var url = context ? context.domainUrl : '';
+            url += path;
+            params = params || {};
+            params.timezone = jstz.determine().name();
+            if (context && context.apikey) {
+                params.apikey = context.apikey;
+            }
+            var options = {
+                params: params
+            };
+            if (timeout) {
+                options.timeout = timeout;
+            }
+            if (ODSWidgetsConfig.customAPIHeaders) {
+                options.headers = ODSWidgetsConfig.customAPIHeaders;
+            } else {
+                options.headers = {};
+            }
+            options.headers['ODS-Widgets-Version'] = ODSWidgetsConfig.ODSWidgetsVersion;
+            if (!context.domainUrl || Modernizr.cors) {
+                return $http.
+                    get(url, options).
+                    error(function(data) {
+                        if (data) {
+                            odsErrorService.sendErrorNotification(data);
+                        }
+                    });
+            } else {
+                // Fallback for non-CORS browsers (IE8, IE9)
+                // In that case we won't have proper errors from the API
+                url += url.indexOf('?') > -1 ? '&' : '?';
+                url += 'callback=JSON_CALLBACK';
+                return $http.jsonp(url, options);
+            }
+
+        };
+        return {
+            'getDomainURL': function(domain) {
+                var root = null;
+                if (angular.isUndefined(domain) || domain === null || domain === '') {
+                    root = ODSWidgetsConfig.defaultDomain;
+                } else {
+                    if (domain.substr(0, 1) !== '/' && domain.indexOf('.') === -1) {
+                        root = domain+'.opendatasoft.com';
+                    } else {
+                        root = domain;
+                    }
+                    if (root.substr(0, 1) !== '/' && root.indexOf('http://') === -1 && root.indexOf('https://') === -1) {
+                        root = 'https://' + root;
+                    }
+                }
+
+                if (root.substr(-1) === '/') {
+                    // Remove trailing slash
+                    root = root.substr(0, root.length-1);
+                }
+
+                return root;
+            },
+            'datasets': {
+                'get': function(context, datasetID, parameters) {
+                    return request(context, '/api/datasets/1.0/'+datasetID+'/', parameters);
+                },
+                'search': function(context, parameters) {
+                    var queryParameters = angular.extend({}, context.parameters, parameters);
+                    return request(context, '/api/datasets/1.0/search/', queryParameters);
+                },
+                'facets': function(context, facetName) {
+                    return this.search(context, {'rows': 0, 'facet': facetName});
+                }
+            },
+            'records': {
+                // FIXME: Why don't we implicitely use the parameters from the context, instead of requiring the widgets
+                // to explicitely send them together with the other parameters?
+                'analyze': function(context, parameters, timeout) {
+//                    return request(context, '/api/datasets/1.0/'+context.dataset.datasetid+'/records/analyze/', parameters);
+                    return request(context, '/api/records/1.0/analyze/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);
+                },
+                'search': function(context, parameters, timeout) {
+                    return request(context, '/api/records/1.0/search/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);
+                },
+                'download': function(context, parameters, timeout) {
+                    return request(context, '/api/records/1.0/download/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);
+                },
+                'geo': function(context, parameters, timeout) {
+                    return request(context, '/api/records/1.0/geocluster/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);
+                },
+                'geopreview': function(context, parameters, timeout) {
+                    return request(context, '/api/records/1.0/geopreview/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);
+                },
+                'boundingbox': function(context, parameters, timeout) {
+                    return request(context, '/api/records/1.0/boundingbox/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);
+                },
+                'geopolygon': function(context, parameters, timeout) {
+                    return request(context, '/api/records/1.0/geopolygon/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);
+                }
+            },
+            'reuses': function(context, parameters) {
+                return request(context, '/explore/reuses/', parameters);
+            }
+        };
+    }]);
+
+}());;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
     mod.factory('AggregationHelper', ['translate', function(translate) {
         var availableFunctions = [
             {label: translate('Count'), func: 'COUNT'},
@@ -6420,12 +6553,21 @@ mod.directive('infiniteScroll', [
             {label: translate('Maximum'), func: 'MAX'},
             {label: translate('Standard deviation'), func: 'STDDEV'},
             {label: translate('Sum'), func: 'SUM'},
-            {label: translate('Percentile'), func: 'QUANTILES'}
+            {label: translate('Percentile'), func: 'QUANTILES'},
+            // {label: translate('Custom expression'), func: 'CUSTOM'},
+            {label: translate('Constant value'), func: 'CONSTANT'}
         ];
-        
+
         return {
-            getAvailableFunctions: function() {
-                return availableFunctions;
+            getAvailableFunctions: function(availableYCount) {
+                if (availableYCount === 0) {
+                    return [
+                        availableFunctions[0],
+                        availableFunctions[availableFunctions.length - 1]
+                    ];
+                } else {
+                    return availableFunctions;
+                }
             },
             getAvailableFunction: function(f) {
                 return availableFunctions[f];
@@ -6437,7 +6579,7 @@ mod.directive('infiniteScroll', [
         }
     }]);
 
-    mod.factory('ChartHelper', ['translate', 'AggregationHelper', 'ODSWidgetsConfig', function(translate, AggregationHelper, ODSWidgetsConfig) {
+    mod.factory('ChartHelper', ['translate', 'AggregationHelper', 'ODSWidgetsConfig', 'colorScale', function(translate, AggregationHelper, ODSWidgetsConfig, colorScale) {
         var availableX = {},
             availableY = {},
             availableFunctions = [],
@@ -6462,18 +6604,7 @@ mod.directive('infiniteScroll', [
                 'bottom right': {center: ['85%', '80%'], size: '25%'},
                 'center': {}
             },
-            defaultColors = ODSWidgetsConfig.chartColors || [
-               '#2f7ed8',
-               '#0d233a',
-               '#8bbc21',
-               '#910000',
-               '#1aadce',
-               '#492970',
-               '#f28f43',
-               '#77a1e5',
-               '#c42525',
-               '#a6c96a'
-            ],
+            defaultColors = ODSWidgetsConfig.chartColors || chroma.brewer.Set2,
             availableCharts = [
                 {
                     label: translate('Line'),
@@ -6571,7 +6702,7 @@ mod.directive('infiniteScroll', [
                 if (dataset) {
                     return dataset.getUniqueId();
                 } else {
-                    throw new Exception("dataset " + datasetid + " not loaded yet.");
+                    throw "dataset " + datasetid + " not loaded yet.";
                 }
             },
             getDataset: function(uniqueid) {
@@ -6585,22 +6716,48 @@ mod.directive('infiniteScroll', [
                 return dataset;
             },
             isChartSortable: function(chartType) {
-                return ['arearange', 'areasplinerange', 'columnrange'].indexOf(chartType) < 0;
+                return !this.isRangeChart(chartType);
+            },
+            isRangeChart: function(chartType) {
+                return ['arearange', 'areasplinerange', 'columnrange'].indexOf(chartType) > -1;
             },
             getAllTimescales: function() {
                 return getAvailableTimescalesFromPrecision('minute', 'datetime', true);
             },
-            getAvailableX: function(datasetid, i) {
-                if (typeof i === "undefined") 
-                    return availableX[datasetid];
+            getAvailableX: function(datasetid, i, limitToTimeSeries) {
+                limitToTimeSeries = !!limitToTimeSeries;
+                var that = this;
+                if (typeof i === "undefined") {
+                    if (!limitToTimeSeries) {
+                        return availableX[datasetid];
+                    } else {
+                        return $.grep(availableX[datasetid], (function(x) { return (['date', 'datetime'].indexOf(that.getFieldType(datasetid, x.name)) !== -1) }));
+                    }
+                }
                 return availableX[datasetid][i];
             },
+            getAvailableBreakDowns: function(datasetid, currentX) {
+                if (!currentX) {
+                    return [];
+                }
+
+                var xIsDatetime = (['date', 'datetime'].indexOf(this.getFieldType(datasetid, currentX)) !== -1);
+                var a = [];
+                for (var i = 0; i < availableX[datasetid].length; i++) {
+                    if (availableX[datasetid][i].name !== currentX) {
+                        if (!xIsDatetime || ['date', 'datetime'].indexOf(this.getFieldType(datasetid, availableX[datasetid][i].name)) === -1) {
+                            a.push({label: availableX[datasetid][i].label, name: availableX[datasetid][i].name});
+                        }
+                    }
+                }
+                return a;
+            },
             getAvailableY: function(datasetid, i) {
-                if (typeof i === "undefined") 
+                if (typeof i === "undefined")
                     return availableY[datasetid];
                 return availableY[datasetid][i];
             },
-            getTimescales: function(datasetid, fieldName) {
+            getTimescales: function(datasetid, fieldName, advanced) {
                 var precision;
                 var field;
                 for (var i = 0; i< fields[datasetid].length; i++) {
@@ -6621,23 +6778,23 @@ mod.directive('infiniteScroll', [
                     }
                 }
 
-                return getAvailableTimescalesFromPrecision(precision, field.type, timeSeries);
+                return getAvailableTimescalesFromPrecision(precision, field.type, advanced);
             },
-            init: function(dataset, limitToTimeSeries, force) {
+            getDatasetId: function(context) {
+                return (context.domain || "") + "." + context.dataset.datasetid;
+            },
+            init: function(context, limitToTimeSeries, force) {
                 if (typeof force === "undefined") {
                     force = false;
                 }
-                if (typeof limitToTimeSeries === "undefined") {
-                    limitToTimeSeries = false;
-                }
-                timeSeries = limitToTimeSeries;
+
                 var availableX = [], availableY = [];
-                var datasetid = dataset.getUniqueId();
+                var datasetid = this.getDatasetId(context);
 
                 if (!force && !!(datasetid in initialized)) {
                     return;
                 }
-                fields[datasetid] = dataset.fields;
+                fields[datasetid] = context.dataset.fields;
 
                 for (var i = 0; i< fields[datasetid].length; i++) {
                     var field = fields[datasetid][i];
@@ -6646,7 +6803,7 @@ mod.directive('infiniteScroll', [
                     }
                     if (field.type == 'datetime' || field.type == 'date') {
                         availableX.unshift(field);
-                    } else if (!limitToTimeSeries) {
+                    } else {
                         // Find out if this is a facet
                         if (field.annotations) {
                             for (var a=0; a<field.annotations.length; a++) {
@@ -6661,7 +6818,7 @@ mod.directive('infiniteScroll', [
                 this.setAvailableX(datasetid, availableX);
                 this.setAvailableY(datasetid, availableY);
                 initialized[datasetid] = true;
-                datasets[datasetid] = dataset;
+                datasets[datasetid] = context.dataset;
                 this.load(datasetid);
             },
             isInitialized: function(datasetid) {
@@ -6722,67 +6879,217 @@ mod.directive('infiniteScroll', [
             getDefaultColors: function() {
                 return defaultColors;
             },
-            getDefaultColor: function(currentColor, backupColor) {
-                if (typeof currentColor !== "undefined" && currentColor !== "") {
-                    colorIdx++;
-                    return currentColor;
-                } else if (typeof backupColor !== "undefined" && backupColor !== "") {
-                    // coming back from a pie chart, we don't want to increase the color counter
-                    return backupColor;
-                } else {
-                    var color = defaultColors[colorIdx++%defaultColors.length];
-                    return color;
-                }
+            getDefaultColor: function(currentColor, serieType, breakdown, index) {
+                return colorScale.getDefaultColor(currentColor, this.getAllowedColors(serieType, breakdown), index);
             },
-            getAvailableChartTypes: function(datasetid) {
+            getAllowedColors: function(serietype, breakdown) {
+                var allowedColors = [];
+                if (breakdown || ['pie'].indexOf(serietype) !== -1) {
+                    allowedColors.push('range');
+                }
+                if (!breakdown && ['pie'].indexOf(serietype) === -1) {
+                    allowedColors.push('single');
+                }
+                return allowedColors;
+            },
+            getAvailableChartTypes: function(datasetid, stacked) {
                 var availableChartTypes = [];
-                for (var i = 0; i < availableCharts.length; i++) {
-                    // console.log(datasets[datasetid][availableCharts[i].filter]());
-                    if (typeof availableCharts[i].filter === 'undefined') {
-                        availableChartTypes.push(availableCharts[i]);
-                    } else if (datasets[datasetid][availableCharts[i].filter]()) {
-                        availableChartTypes.push(availableCharts[i]);
+                if (datasets[datasetid]) {
+                    for (var i = 0; i < availableCharts.length; i++) {
+                        if ((stacked && ['column', 'area', 'areaspline', 'line', 'spline'].indexOf(availableCharts[i].type) !== -1) || !stacked) {
+                            if (typeof availableCharts[i].filter === 'undefined') {
+                                availableChartTypes.push(availableCharts[i]);
+                            } else if (datasets[datasetid][availableCharts[i].filter]()) {
+                                availableChartTypes.push(availableCharts[i]);
+                            }
+                        }
                     }
                 }
                 return availableChartTypes;
             },
-            setDefaultValues: function(datasetid, chart) {
-                // Compute default labels
-                // Enveloppe
-                if(chart.yAxis === ''){
-                    if (this.getAvailableY(datasetid).length === 0) {
-                        chart.func = 'COUNT';
-                    } else {
-                        chart.yAxis = this.getAvailableY(datasetid, 0).name;
+            getSerieTemplate: function() {
+                return angular.copy({
+                });
+            },
+            setChartDefaultValues: function(datasetid, chart, conservative) {
+                var cumulatedQueriesTimescale = '',
+                    xType;
+                if (typeof conservative === "undefined") {
+                    conservative = false;
+                }
+                if (!chart.timescale) {
+                    for (var i = 0; i < chart.queries.length; i++) {
+                        xType = this.getFieldType(datasetid, chart.queries[i].xAxis);
+                        if (chart.queries[i].timescale && (xType === 'date' || xType === "datetime")) {
+                            cumulatedQueriesTimescale = chart.queries[i].timescale;
+                        }
                     }
-                } else if (chart.func === 'COUNT') {
-                    // chart.func = 'AVG';
+
+                    if (cumulatedQueriesTimescale) {
+                        chart.timescale = chart.queries[0].timescale;
+                    }
+                } else {
+                    for (var i = 0; i < chart.queries.length; i++) {
+                        xType = this.getFieldType(datasetid, chart.queries[i].xAxis);
+                        if (chart.queries[i].timescale && (xType === 'date' || xType === "datetime")) {
+                            cumulatedQueriesTimescale = chart.queries[i].timescale;
+                        }
+                    }
+                    if (!cumulatedQueriesTimescale) {
+                        chart.timescale = '';
+                    }
                 }
 
-                if(!this.isChartSortable(chart.type)){
+                // apply global timscale to queries that eventually might not anything set
+                if (chart.timescale) {
+                    for (var i = 0; i < chart.queries.length; i++) {
+                        if (!chart.queries[i].timescale) {
+                            chart.queries[i].timescale = chart.timescale;
+                        }
+                    }
+                }
+                if (!chart.singleAxis) {
+                    delete(chart.singleAxisLabel);
+                    delete(chart.singleAxisScale);
+                    delete(chart.yRangeMin);
+                    delete(chart.yRangeMax);
+                }
+                // cleanup unwanted values
+                if (!conservative) {
+                    delete chart.xLabel;
+                }
+            },
+            setDefaultQueryValues: function(datasetid, query, advancedFeatures, dontTouchMaxpoints, globalTimescale) {
+                if (!query) {
+                    query = {};
+                }
+                var searchOptions = {};
+                var defaultX = searchOptions.x || this.getAvailableX(datasetid, 0).name;
+                var defaultMaxpoints = 50;
+                var defaultTimescale = '';
+                if (this.getFieldType(datasetid, defaultX) == 'date' || this.getFieldType(datasetid, defaultX) == 'datetime') {
+                    // If the default X is a date/datetime, then we assume timeserie mode and we remove any limitation
+                    defaultMaxpoints = '';
+                    defaultTimescale = searchOptions.timescale || 'year';
+                }
+                if (!query.xAxis) {
+                    query.xAxis = defaultX;
+                }
+
+                if (typeof query.maxpoints === "undefined") {
+                    query.maxpoints = defaultMaxpoints;
+                }
+                if (!query.charts) {
+                    query.charts = [];
+                }
+
+                // if (defaultTimescale) {
+                //     query.timescale = query.timescale || defaultTimescale;
+                // }
+                var xAxis = query.xAxis;
+                var xType = this.getFieldType(datasetid, xAxis);
+
+                if (xType == 'date' || xType == 'datetime') {
+                    if(!query.timescale || this.getTimescales(datasetid, xAxis, advancedFeatures).map(function(t){return t.name;}).indexOf(query.timescale) === -1) {
+                        // Set a default timescale value
+                        query.timescale = 'year';
+                        if (advancedFeatures && globalTimescale) {
+                            query.timescale = globalTimescale;
+                        } else {
+                            // TODO use precision annotation to set the timescale more precisely by default
+                            // don't go lower than day
+                            query.timescale = 'year';
+                        }
+                    }
+                } else {
+                    if (query.timescale){
+                        query.timescale = '';
+                    }
+                }
+                if (query.seriesBreakdown === xAxis) {
+                    query.seriesBreakdown = '';
+                    query.seriesBreakdownTimescale = '';
+                }
+
+                if (!query.seriesBreakdown && query.charts.length < 2) {
+                    delete query.stacked;
+                }
+
+                if (!query.sort || query.seriesBreakdown) {
+                    query.sort = '';
+                }
+            },
+            setSerieDefaultValues: function(datasetid, chart, xAxis) {
+                // Compute default labels
+                // Enveloppe
+                if (typeof xAxis === "undefined") {
+                    return;
+                }
+
+                var availableY = this.getAvailableY(datasetid)
+                if (!chart.type) {
+                    chart.type = 'column';
+                    if (xAxis && (this.getFieldType(datasetid, xAxis) == 'date' || this.getFieldType(datasetid, xAxis) == 'datetime')) {
+                        chart.type = 'line';
+                    }
+                }
+
+                if (!chart.func) {
+                    chart.func = availableY.length > 0 ? 'AVG' : 'COUNT';
+                }
+
+                if (typeof chart.expr !== "undefined" && typeof chart.yAxis === "undefined") {
+                    chart.yAxis = chart.expr;
+                    delete chart.expr;
+                }
+
+                if (typeof chart.yAxis === "undefined" || chart.yAxis === "") {
+                    // there is no yAxis defined, check if it's ok or if need to define one
+                    if (availableY.length === 0 && ['COUNT', 'CONSTANT', 'CUSTOM'].indexOf(chart.func) === -1) {
+                        chart.func = 'COUNT';
+                    }
+                    if (['COUNT', 'CONSTANT', 'CUSTOM'].indexOf(chart.func) === -1) {
+                        // the current function needs an yAxis
+                        chart.yAxis = availableY[0].name;
+                    // } else { // remove current yAxis, not needed by the current function
+                    //     chart.yAxis = '';
+                    }
+                } else {
+                    // there is an yAxis defined, we need to check if it still exists
+                    if (['COUNT', 'CONSTANT', 'CUSTOM'].indexOf(chart.func) === -1) {
+                        if ($.grep(availableY, function(y) {return y.name === chart.yAxis}).length === 0) {
+                            // the currently defined y does not seem to exists anymore, fallback on the first available one
+                            chart.yAxis = availableY[0].name;
+                        }
+                    }
+                }
+
+                if(chart.type && this.isRangeChart(chart.type)){
                     chart.func = 'COUNT';
                     if(!chart.charts){
                         chart.charts = [
                             {
                                 func: 'MIN',
-                                expr: chart.yAxis
+                                yAxis: chart.yAxis
                             },
                             {
                                 func: 'MAX',
-                                expr: chart.yAxis
+                                yAxis: chart.yAxis
                             }
                         ];
                     }
-                    if (!chart.charts[0].expr) {
-                        chart.charts[0].expr = chart.yAxis;
+                    if (typeof chart.charts[0].yAxis === "undefined" || chart.charts[0].yAxis === "") {
+                        chart.charts[0].yAxis = chart.charts[0].expr || chart.yAxis;
+                        delete chart.charts[0].expr;
                     }
-                    if (!chart.charts[1].expr) {
-                        chart.charts[1].expr = chart.yAxis;
+                    if (typeof chart.charts[1].yAxis === "undefined" || chart.charts[1].yAxis === "") {
+                        chart.charts[1].yAxis =  chart.charts[1].expr || chart.yAxis;
+                        delete chart.charts[1].expr;
                     }
-                    if(chart.charts[0].func === 'QUANTILES' && !chart.charts[0].subsets){
+                    if(chart.charts[0].func === 'QUANTILES' && (chart.charts[0].subsets === "" || typeof chart.charts[0].subsets === "undefined")){
                         chart.charts[0].subsets = 5;
                     }
-                    if(chart.charts[1].func === 'QUANTILES' && !chart.charts[1].subsets){
+                    if(chart.charts[1].func === 'QUANTILES' && (chart.charts[1].subsets === "" || typeof chart.charts[1].subsets === "undefined")){
                         chart.charts[1].subsets = 95;
                     }
 
@@ -6810,17 +7117,13 @@ mod.directive('infiniteScroll', [
                 if (chart.type === "pie" && !chart.position) {
                     chart.position = "center";
                 }
-                this.setColor(chart);
+
+                // cleanup unwanted values
+                delete chart.yLabel;
+                delete chart.extras;
             },
-            setColor: function(chart) {
-                if(chart.type === 'pie'){
-                    chart._color = chart.color;
-                    delete chart.color;
-                    chart.extras = this.resolvePosition(chart.position);
-                    chart.extras.colors = this.getDefaultColors();
-                } else {
-                    chart.color = this.getDefaultColor(chart.color, chart._color);
-                }
+            setSerieDefaultColors: function(serie, breakdown, index) {
+                serie.color = this.getDefaultColor(serie.color, serie.type, breakdown, index);
             },
             getXLabel: function(datasetid, xAxis, timescale, precision) {
                 var xType = this.getFieldType(datasetid, xAxis);
@@ -6836,13 +7139,13 @@ mod.directive('infiniteScroll', [
                 if (chart.yLabelOverride) {
                     return chart.yLabelOverride;
                 } else {
-                    if (!this.isChartSortable(chart.type)) {
+                    if (this.isRangeChart(chart.type)) {
                         return this.getYLabel(datasetid, chart.charts[0]) + " / " + this.getYLabel(datasetid, chart.charts[1]);
                     } else {
                         var funcLabel = AggregationHelper.getFunctionLabel(chart.func);
                         var nameY = chart.yAxis || chart.expr;
                         var possibleYAxis = $.grep(this.getAvailableY(datasetid), function(y){return y.name == nameY;});
-                        if (possibleYAxis.length > 0 && chart.func !== "COUNT") {
+                        if (possibleYAxis.length > 0 && chart.func !== "COUNT" && chart.func !== "CONSTANT" && chart.func !== "CUSTOM") {
                             return funcLabel + ' ' + possibleYAxis[0].label;
                         } else {
                             return funcLabel;
@@ -6874,123 +7177,1234 @@ mod.directive('infiniteScroll', [
                 }
                 return field.type;
             },
-            getAvailableFunctions: function(datasetid, fieldName) {
-                if (fieldName == '' || typeof this.getFieldType(fieldName) === "undefined") {
-                    return [{label: translate('Count'), func: 'COUNT'}];
-                } else {
-                    return AggregationHelper.getAvailableFunctions();
-                }
+            getAvailableFunctions: function(datasetid) {
+                return AggregationHelper.getAvailableFunctions(this.getAvailableY(datasetid).length);
+            },
+            allowThresholds: function(type) {
+                return ['column', 'bar', 'scatter'].indexOf(type) !== -1;
             }
         };
     }]);
 
-    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsErrorService', function($http, ODSWidgetsConfig, odsErrorService) {
-        /**
-         * This service exposes OpenDataSoft APIs.
-         *
-         * Each method take a context, and specific parameters to append to this request (without modifying the context).
-         * A context is an object usually created by a directive such as dataset-context or catalog-context.
-         */
-        var request = function(context, path, params, timeout) {
-            var url = context ? context.domainUrl : '';
-            url += path;
-            params = params || {};
-            params.timezone = jstz.determine().name();
-            if (context && context.apikey) {
-                params.apikey = context.apikey;
-            }
-            var options = {
-                params: params
-            };
-            if (timeout) {
-                options.timeout = timeout;
-            }
-            if (ODSWidgetsConfig.customAPIHeaders) {
-                options.headers = ODSWidgetsConfig.customAPIHeaders;
+}());;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.factory("colorScale", ['ODSWidgetsConfig', function(ODSWidgetsConfig) {
+
+        var orderedBrewer = [
+                {label: 'Accent', colors: chroma.brewer.Accent},
+                {label: 'Dark2', colors: chroma.brewer.Dark2},
+                {label: 'Pastel2', colors: chroma.brewer.Pastel2},
+                {label: 'Pastel1', colors: chroma.brewer.Pastel1},
+                {label: 'Set2', colors: chroma.brewer.Set2},
+                {label: 'Set1', colors: chroma.brewer.Set1},
+                {label: 'Paired', colors: chroma.brewer.Paired},
+                {label: 'Set3', colors: chroma.brewer.Set3},
+                {label: 'OrRd', colors: chroma.brewer.OrRd.slice(1)},
+                {label: 'PuBu', colors: chroma.brewer.PuBu.slice(1)},
+                {label: 'BuPu', colors: chroma.brewer.BuPu.slice(1)},
+                {label: 'Oranges', colors: chroma.brewer.Oranges.slice(1)},
+                {label: 'YlOrBr', colors: chroma.brewer.YlOrBr.slice(1)},
+                {label: 'YlGn', colors: chroma.brewer.YlGn.slice(1)},
+                {label: 'Reds', colors: chroma.brewer.Reds.slice(1)},
+                {label: 'RdPu', colors: chroma.brewer.RdPu.slice(1)},
+                {label: 'Greens', colors: chroma.brewer.Greens.slice(1)},
+                {label: 'YlGnBu', colors: chroma.brewer.YlGnBu.slice(1)},
+                {label: 'Purples', colors: chroma.brewer.Purples.slice(1)},
+                {label: 'GnBu', colors: chroma.brewer.GnBu.slice(1)},
+                {label: 'Greys', colors: chroma.brewer.Greys.slice(1)},
+                {label: 'YlOrRd', colors: chroma.brewer.YlOrRd.slice(1)},
+                {label: 'PuRd', colors: chroma.brewer.PuRd.slice(1)},
+                {label: 'Blues', colors: chroma.brewer.Blues.slice(1)},
+                {label: 'PuBuGn', colors: chroma.brewer.PuBuGn.slice(1)},
+                {label: 'Spectral', colors: chroma.brewer.Spectral},
+                {label: 'RdYlGn', colors: chroma.brewer.RdYlGn},
+                {label: 'RdBu', colors: chroma.brewer.RdBu},
+                {label: 'PiYG', colors: chroma.brewer.PiYG},
+                {label: 'PRGn', colors: chroma.brewer.PRGn},
+                {label: 'RdYlBu', colors: chroma.brewer.RdYlBu},
+                {label: 'BrBG', colors: chroma.brewer.BrBG},
+                {label: 'RdGy', colors: chroma.brewer.RdGy},
+                {label: 'PuOr', colors: chroma.brewer.PuOr}
+            ],
+            defaultColorSet = 'Set2',
+            domainDefaultColorSet = '',
+            colorIdx = 0;
+
+        if (ODSWidgetsConfig.chartColors && ODSWidgetsConfig.chartColors.length > 0) {
+            domainDefaultColorSet = 'custom';
+            orderedBrewer.unshift({
+                label: 'custom',
+                colors: ODSWidgetsConfig.chartColors
+            });
+            chroma.brewer['custom'] = ODSWidgetsConfig.chartColors;
+        }
+        function getBrewName(colorString) {
+            var brewName;
+
+            if (!colorString) {
+                brewName = domainDefaultColorSet || defaultColorSet;
             } else {
-                options.headers = {};
+                if (colorString.startsWith('custom-')) {
+                    colorString = colorString.replace('custom-', '');
+                }
+                if (colorString.startsWith('range-')) {
+                    colorString = colorString.replace('range-', '');
+                } else if (colorString.startsWith('single-')) {
+                    colorString = colorString.replace('single-', '');
+                }
+                if (chroma.brewer[colorString]) {
+                    brewName = colorString;
+                }
             }
-            options.headers['ODS-Widgets-Version'] = ODSWidgetsConfig.ODSWidgetsVersion;
-            if (!context.domainUrl || Modernizr.cors) {
-                return $http.
-                    get(url, options).
-                    error(function(data) {
-                        if (data) {
-                            odsErrorService.sendErrorNotification(data);
+
+            return brewName;
+        }
+        function getScaleFromString(colorString) {
+            var brewName = getBrewName(colorString),
+                colorScale;
+
+            if (brewName) {
+                colorScale = chroma.scale(brewName);
+            } else {
+                colorString = colorString.replace('custom-', '');
+                colorString = colorString.replace('single-', '');
+                colorScale = chroma.scale().range([colorString, colorString]);
+            }
+
+            return colorScale;
+        }
+        return {
+            getScale: function(colorString, min, max) {
+                var brewName, colorScale;
+
+                min = typeof min !== "undefined" ? min : 0;
+                max = typeof max !== "undefined" ? max : 1;
+
+                return getScaleFromString(colorString).domain([min, max]);
+            },
+            getUniqueColor: function(colorString) {
+                return getScaleFromString(colorString)(1).hex();
+            },
+            getColorAtIndex: function(colorString, index) {
+                var brewName = getBrewName(colorString),
+                    brew;
+                if (brewName) {
+                    brew = chroma.brewer[brewName];
+                    return brew[index % brew.length];
+                } else {
+                    return colorString;
+                }
+            },
+            getColors: function(colorString) {
+                var brewName = getBrewName(colorString);
+                if (brewName) {
+                    return chroma.brewer[brewName];
+                } else {
+                    return [colorString, colorString];
+                }
+            },
+            getColorSets: function() {
+                return chroma.brewer;
+            },
+            getOrderedColorSets: function() {
+                return orderedBrewer;
+            },
+            getDefaultColorSet: function() {
+                return domainDefaultColorSet || defaultColorSet;
+            },
+            getDefaultColor: function(currentColor, allowedColors, index) {
+                var defaultColors = this.getColorList(allowedColors),
+                    color;
+
+                if (typeof currentColor !== "undefined" && currentColor !== "") {
+                    return currentColor;
+                } else if (typeof backupColor !== "undefined" && backupColor !== "") {
+                    // coming back from a pie chart, we don't want to increase the color counter
+                    return backupColor;
+                } else {
+                    if (defaultColors[colorIdx].label.startsWith('custom-')) {
+                        colorIdx = (colorIdx + 1) % defaultColors.length;
+                    }
+                    if (typeof index !== "undefined") {
+                        color = defaultColors[index % defaultColors.length].label;
+                    } else {
+                        color = defaultColors[colorIdx].label;
+                        colorIdx = (colorIdx + 1) % defaultColors.length;
+                    }
+                    return color;
+                }
+            },
+            getColorList: function(allowedcolors, currentcolor) {
+                var colorlist = [];
+                if (allowedcolors.indexOf('single') !== -1) {
+                    var colors = this.getColors(this.getDefaultColorSet());
+                    angular.forEach(colors, function(color) {
+                        colorlist.push({'label': color, 'color': color});
+                    });
+                }
+                if (allowedcolors.indexOf('range') !== -1) {
+                    angular.forEach(this.getOrderedColorSets(), function(colorrange) {
+                        colorlist.push({'label': 'range-' + colorrange['label'], 'color': colorrange['colors']});
+                    });
+                }
+                return colorlist;
+            },
+            isColorAllowed: function(checkedColor, colorlist, allowedcolors) {
+                var found = false;
+
+                if (!checkedColor) {
+                    return false;
+                }
+
+                if (allowedcolors.indexOf('range') === -1) {
+                    if (checkedColor.startsWith('range-') || checkedColor.startsWith('custom-range-')) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+
+                if (allowedcolors.indexOf('range') !== -1) {
+                    if (checkedColor.startsWith('custom-single-')) {
+                        return false;
+                    } else {
+                        angular.forEach(colorlist, function(color) {
+                            if (color.label === checkedColor) {
+                                found = true;
+                            }
+                        });
+
+                        return found;
+                    }
+                }
+            }
+
+        }
+    }]);
+
+}());;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.factory('MapHelper', ['ODSWidgetsConfig', 'ODSAPI', '$q', function(ODSWidgetsConfig, ODSAPI, $q) {
+        var locationAccuracy = 5;
+        var locationDelimiter = ',';
+
+        return {
+            WORLD_BOUNDS: [[-60, -180], [80, 180]],
+            retrieveBounds: function(contextList) {
+                var service = this;
+                /* Retrieves a bounding box that includes all the data visible from the context list */
+                var deferred = $q.defer();
+
+                if (contextList.length === 0) {
+                    deferred.resolve(null);
+                } else {
+                    var promises = [];
+                    angular.forEach(contextList, function(ctx) {
+                        var options = {};
+                        jQuery.extend(options, ctx.parameters);
+                        promises.push(ODSAPI.records.boundingbox(ctx, options));
+                    });
+
+                    $q.all(promises).then(function(results) {
+                        var bounds;
+
+                        angular.forEach(results, function(result) {
+                            var data = result.data;
+                            var newBounds = [[data.bbox[1], data.bbox[0]], [data.bbox[3], data.bbox[2]]];
+                            if (data.count > 0) {
+                                if (!bounds) {
+                                    bounds = L.latLngBounds(newBounds);
+                                } else {
+                                    bounds.extend(newBounds);
+                                }
+                            }
+                        });
+
+                        if (bounds && bounds.isValid()) {
+                            deferred.resolve(bounds);
+                        } else {
+                            // Fallback to... the world
+                            deferred.resolve(service.WORLD_BOUNDS);
                         }
                     });
-            } else {
-                // Fallback for non-CORS browsers (IE8, IE9)
-                // In that case we won't have proper errors from the API
-                url += url.indexOf('?') > -1 ? '&' : '?';
-                url += 'callback=JSON_CALLBACK';
-                return $http.jsonp(url, options);
-            }
-
-        };
-        return {
-            'getDomainURL': function(domain) {
-                var root = null;
-                if (angular.isUndefined(domain) || domain === null || domain === '') {
-                    root = ODSWidgetsConfig.defaultDomain;
-                } else {
-                    if (domain.substr(0, 1) !== '/' && domain.indexOf('.') === -1) {
-                        root = domain+'.opendatasoft.com';
-                    } else {
-                        root = domain;
-                    }
-                    if (root.substr(0, 1) !== '/' && root.indexOf('http://') === -1 && root.indexOf('https://') === -1) {
-                        root = 'https://' + root;
-                    }
                 }
 
-                if (root.substr(-1) === '/') {
-                    // Remove trailing slash
-                    root = root.substr(0, root.length-1);
-                }
-
-                return root;
+                return deferred.promise;
             },
-            'datasets': {
-                'get': function(context, datasetID, parameters) {
-                    return request(context, '/api/datasets/1.0/'+datasetID+'/', parameters);
-                },
-                'search': function(context, parameters) {
-                    var queryParameters = angular.extend({}, context.parameters, parameters);
-                    return request(context, '/api/datasets/1.0/search/', queryParameters);
-                },
-                'facets': function(context, facetName) {
-                    return this.search(context, {'rows': 0, 'facet': facetName});
-                }
+            getLocationStructure: function(location) {
+                /* Takes a "location" parameter (zoom, lat,lng) and returns a structured object */
+                var tokens = location.split(locationDelimiter);
+                return {
+                    center: [tokens[1], tokens[2]],
+                    zoom: tokens[0]
+                };
             },
-            'records': {
-                // FIXME: Why don't we implicitely use the parameters from the context, instead of requiring the widgets
-                // to explicitely send them together with the other parameters?
-                'analyze': function(context, parameters) {
-//                    return request(context, '/api/datasets/1.0/'+context.dataset.datasetid+'/records/analyze/', parameters);
-                    return request(context, '/api/records/1.0/analyze/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}));
-                },
-                'search': function(context, parameters) {
-                    return request(context, '/api/records/1.0/search/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}));
-                },
-                'download': function(context, parameters) {
-                    return request(context, '/api/records/1.0/download/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}));
-                },
-                'geo': function(context, parameters, timeout) {
-                    return request(context, '/api/records/1.0/geocluster/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);
-                },
-                'geopreview': function(context, parameters, timeout) {
-                    return request(context, '/api/records/1.0/geopreview/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);
-                },
-                'boundingbox': function(context, parameters, timeout) {
-                    return request(context, '/api/records/1.0/boundingbox/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);
+            getLocationParameter: function(center, zoom) {
+                /* Takes a center and a zoom, and returns a "location" parameter suitable for sharing. The position
+                * is "blurred" to ensure the URL does not change at every pixel, to enhance performance a bit and avoid
+                * weird side effects like this problem where Chrome pops an option to allow geolocalisation of the user,
+                * but the URL changes immediately because the viewport is shrinked by a few pixels, and the option disappears. */
+                if (angular.isArray(center)) {
+                    center = L.latLng(center);
                 }
+                var lat = L.Util.formatNum(center.lat, locationAccuracy);
+                var lng = L.Util.formatNum(center.lng, locationAccuracy);
+                return zoom + locationDelimiter + lat + locationDelimiter + lng;
             },
-            'reuses': function(context, parameters) {
-                return request(context, '/explore/reuses/', parameters);
+            MapConfiguration: {
+                getActiveContextList: function(config, geoOnly) {
+                    var contexts = [];
+                    /* Returns all the contexts from active layergroups */
+                    angular.forEach(config.layers, function(group) {
+                        if (group.displayed) {
+                            angular.forEach(group.activeDatasets, function(datasetConfig) {
+                                if (geoOnly) {
+                                    // Ensure the dataset is geo
+                                    if (datasetConfig.context.dataset.hasGeoField()) {
+                                        contexts.push(datasetConfig.context);
+                                    }
+                                } else {
+                                    contexts.push(datasetConfig.context);
+                                }
+                            });
+                        }
+                    });
+                    return contexts;
+                },
+                createLayerGroupConfiguration: function() {
+                    return {
+                        "color": "#369",
+                        "title": "Calque #1",
+                        "displayed": true,
+                        "picto": "icon-circle",
+                        "activeDatasets": []
+                    };
+                },
+                createLayerConfiguration: function(template, color, picto, display, func, expr, localKey, remoteKey, tooltipSort, hoverField) {
+                    display = display || 'auto';
+                    if (display === 'clusters') { display = 'polygon'; }
+                    if (display === 'clustersforced') { display = 'polygonforced'; }
+                    if (display === 'raw') { display = 'none'; }
+                    return {
+                        "context": null,
+                        "color": color,
+                        "picto": picto,
+                        "clusterMode": display,
+                        "func": func || (expr ? "AVG" : "COUNT"), // If there is a field, default to the average
+                        "expr": expr || null,
+                        "marker": null,
+                        "tooltipTemplate": template,
+                        "localKey": localKey || null,
+                        "remoteKey": remoteKey || null,
+                        "tooltipSort": tooltipSort,
+                        "hoverField": hoverField || null
+                    };
+                }
             }
         };
     }]);
+
+    mod.factory('MapLayerRenderer', ['ODSAPI', 'AggregationHelper', 'SVGInliner', 'PictoHelper', '$q', '$filter', '$rootScope', '$compile', '$timeout', function(ODSAPI, AggregationHelper, SVGInliner, PictoHelper, $q, $filter, $rootScope, $compile, $timeout) {
+        // TODO: Query interruption when moving
+        return {
+            updateDataLayer: function (layerConfig, map) {
+                var service = this;
+                var previousRenderedLayer = layerConfig.rendered;
+
+                // Depending on the rendering mode, we either replace the previous layer with a new one, or we update
+                // the existing one (tiles).
+
+                // Available modes:
+                // none: downloading all points
+                // polygon, polygonforced: circles clustering
+                // heatmap
+                // aggregation (former "shape") - local and remote
+
+                if (layerConfig.currentRequestTimeout) {
+                    layerConfig.currentRequestTimeout.resolve();
+                }
+                var timeout = $q.defer();
+                layerConfig.currentRequestTimeout = timeout;
+                var deferred = $q.defer();
+                if (layerConfig.clusterMode === 'tiles') {
+                    // TODO
+                    // If the bundlelayer already exists in layerConfig.layer, then setUrl to it.
+                    if (!layerConfig.rendered) {
+                        layerConfig.rendered = new L.BundleTileLayer('', {
+                            tileSize: 512,
+                            minZoom: map.getMinZoom(),
+                            maxZoom: map.getMaxZoom(),
+                            gridLayer: {
+                                options: {
+                                    resolution: 4
+                                }
+                            }
+                        });
+                        map.addLayer(layerConfig.rendered);
+
+                        $timeout(function() {
+                            // We have to bootstrap them outside of the angular cycle, otherwise it will directly trigger
+                            // the first time and make a "digest already in progress"
+                            layerConfig.rendered.on('loading', function () {
+                                layerConfig.loading = true;
+                                $rootScope.$apply();
+                            });
+                            layerConfig.rendered.on('load', function () {
+                                layerConfig.loading = false;
+                                $rootScope.$apply();
+                            });
+                        }, 0);
+
+                        service.bindTooltip(map, layerConfig.rendered, layerConfig);
+                    }
+                    var tilesOptions = {
+                        color: layerConfig.color
+                        //icon: $scope.context.dataset.getExtraMeta('visualization', 'map_marker_picto'),
+                        //showmarker: !$scope.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape')
+                    };
+                    angular.extend(tilesOptions, layerConfig.context.parameters);
+                    // Change tile URL
+                    var url = '/api/datasets/1.0/' + layerConfig.context.dataset.datasetid + '/tiles/simple/{z}/{x}/{y}.bundle';
+                    //var url = '/api/tiles/icons/{z}/{x}/{y}.bundle';
+                    var params = '';
+                    angular.forEach(tilesOptions, function(value, key) {
+                        if (value !== null) {
+                            params += params ? '&' : '?';
+                            params += key + '=' + encodeURIComponent(value);
+                        }
+                    });
+                    url += params;
+                    if (layerConfig.rendered._url !== url) {
+                        layerConfig.rendered.setUrl(url);
+                    }
+                    // FIXME: Bind to load/unload to not resolve until all is loaded
+                    deferred.resolve();
+                } else if (layerConfig.clusterMode === 'none' || map.getZoom() === map.getMaxZoom() && layerConfig.clusterMode === 'polygon') {
+                    layerConfig.loading = true;
+                    this.buildRawLayer(layerConfig, map, timeout).then(function(rawLayer) {
+                        service.swapLayers(map, previousRenderedLayer, rawLayer);
+                        layerConfig.rendered = rawLayer;
+                        layerConfig.currentRequestTimeout = null;
+                        layerConfig.loading = false;
+                        deferred.resolve();
+                    });
+                } else if (layerConfig.clusterMode === 'polygon' || layerConfig.clusterMode === 'polygonforced') {
+                    layerConfig.loading = true;
+                    this.buildClusteredLayer(layerConfig, map, timeout, true).then(function(clusteredLayer) {
+                        service.swapLayers(map, previousRenderedLayer, clusteredLayer);
+                        layerConfig.rendered = clusteredLayer;
+                        layerConfig.currentRequestTimeout = null;
+                        layerConfig.loading = false;
+                        deferred.resolve();
+                    });
+                } else if (layerConfig.clusterMode === 'heatmap') {
+                    layerConfig.loading = true;
+                    this.buildHeatmapLayer(layerConfig, map, timeout).then(function (heatmapLayer) {
+                        service.swapLayers(map, previousRenderedLayer, heatmapLayer);
+                        layerConfig.rendered = heatmapLayer;
+                        layerConfig.currentRequestTimeout = null;
+                        layerConfig.loading = false;
+                        deferred.resolve();
+                    });
+                } else if (layerConfig.clusterMode === 'shape' || layerConfig.clusterMode === 'aggregation') { // 'shape' is legacy
+                    layerConfig.loading = true;
+                    this.buildAggregationLayer(layerConfig, map, timeout).then(function(shapeLayer) {
+                        service.swapLayers(map, previousRenderedLayer, shapeLayer);
+                        layerConfig.rendered = shapeLayer;
+                        layerConfig.currentRequestTimeout = null;
+                        layerConfig.loading = false;
+                        deferred.resolve();
+                    });
+                } else if (layerConfig.clusterMode === 'auto') {
+                    layerConfig.loading = true;
+                    // Auto-decide what to do depending on the number of items
+                    var parameters = angular.extend({}, layerConfig.context.parameters, {
+                        'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
+                    });
+                    ODSAPI.records.boundingbox(layerConfig.context, parameters).success(function(data) {
+                        /*
+                            0 < x < DOWNLOAD_CAP : Download all points
+                            DOWWNLOAD_CAP < x < [SHAPEPREVIEW/POLYGONCLUSTERS]_HIGHCAP: call geopreview/geopolygon
+                         */
+                        // TODO: Use geopreview when low cap?
+                        // TODO: Factorize the "service.buildRawLayer..." which is already used above
+                        var DOWNLOAD_CAP = 200;
+                        var SHAPEPREVIEW_HIGHCAP = 500000;
+                        // The number of points where we stop asking for the polygon representing the cluster's content
+                        var POLYGONCLUSTERS_HIGHCAP = 500000;
+
+                        var returnPolygons = (data.count < POLYGONCLUSTERS_HIGHCAP);
+
+                        if (data.count < DOWNLOAD_CAP || map.getZoom() === map.getMaxZoom()) {
+                            // Low enough: always download
+                            service.buildRawLayer(layerConfig, map, timeout).then(function(rawLayer) {
+                                service.swapLayers(map, previousRenderedLayer, rawLayer);
+                                layerConfig.rendered = rawLayer;
+                                layerConfig.currentRequestTimeout = null;
+                                layerConfig.loading = false;
+                                deferred.resolve();
+                            });
+                        } else if (data.count < SHAPEPREVIEW_HIGHCAP) {
+                            // We take our decision depending on the content of the envelope
+                            if (data.geometries.Point && data.geometries.Point > data.count/2) {
+                                // Geo polygons
+                                service.buildClusteredLayer(layerConfig, map, timeout, returnPolygons).then(function(clusteredLayer) {
+                                    service.swapLayers(map, previousRenderedLayer, clusteredLayer);
+                                    layerConfig.rendered = clusteredLayer;
+                                    layerConfig.currentRequestTimeout = null;
+                                    layerConfig.loading = false;
+                                    deferred.resolve();
+                                });
+                            } else {
+                                // Geo preview
+                                service.buildShapePreviewLayer(layerConfig, map, timeout).then(function(previewLayer) {
+                                    service.swapLayers(map, previousRenderedLayer, previewLayer);
+                                    layerConfig.rendered = previewLayer;
+                                    layerConfig.currentRequestTimeout = null;
+                                    layerConfig.loading = false;
+                                    deferred.resolve();
+                                });
+                            }
+                        } else {
+                            // Clusters
+                            service.buildClusteredLayer(layerConfig, map, timeout, returnPolygons).then(function(clusteredLayer) {
+                                service.swapLayers(map, previousRenderedLayer, clusteredLayer);
+                                layerConfig.rendered = clusteredLayer;
+                                layerConfig.currentRequestTimeout = null;
+                                layerConfig.loading = false;
+                                deferred.resolve();
+                            });
+                        }
+                    });
+                }
+                return deferred.promise;
+            },
+            swapLayers: function(map, oldLayer, newLayer) {
+                if (oldLayer) {
+                    map.removeLayer(oldLayer);
+                }
+                map.addLayer(newLayer);
+            },
+            /*                               */
+            /*          RENDERING            */
+            /*                               */
+            buildRawLayer: function(layerConfig, map, timeout) {
+                var service = this;
+                var deferred = $q.defer();
+                var markerLayerGroup = new L.LayerGroup();
+                var parameters = angular.extend({}, layerConfig.context.parameters, {
+                    'rows': 10000,
+                    'format': 'json',
+                    'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
+                });
+                // Which fields holds the geometry?
+                var shapeFields = layerConfig.context.dataset.getFieldsForType('geo_shape');
+                var shapeField = shapeFields.length ? shapeFields[0].name : null;
+                ODSAPI.records.download(layerConfig.context, parameters, timeout.promise).success(function (data) {
+                    for (var i = 0; i < data.length; i++) {
+                        var record = data[i];
+                        var geoJSON;
+
+                        if (shapeField) {
+                            if (record.fields[shapeField]) {
+                                geoJSON = record.fields[shapeField];
+                                if (geoJSON.type === 'Point' && angular.isDefined(record.geometry)) {
+                                    // Due to a problem with how we handke precisions, we query a point with a lower precision than
+                                    // the geoJSON, so we need to use the geometry field instead.
+                                    geoJSON = record.geometry;
+                                }
+                            } else {
+                                // The designated shapefield has no value, skip
+                                return;
+                            }
+                        } else if (record.geometry) {
+                            geoJSON = record.geometry;
+                        } else {
+                            return;
+                        }
+
+                        if (geoJSON.type === 'Point') {
+                            (function(geoJSON, record) {
+                                SVGInliner.getPromise(PictoHelper.mapPictoToURL(layerConfig.picto, layerConfig.context), layerConfig.marker ? 'white' : layerConfig.color).then(function(svg) {
+                                    var singleMarker = new L.VectorMarker([geoJSON.coordinates[1], geoJSON.coordinates[0]], {
+                                        color: service.getRecordColor(record, layerConfig),
+                                        icon: svg,
+                                        marker: layerConfig.marker
+                                    });
+                                    service.bindTooltip(map, singleMarker, layerConfig, geoJSON, record.recordid);
+                                    markerLayerGroup.addLayer(singleMarker);
+                                });
+                            }(geoJSON, record));
+                        } else {
+                            var shapeLayer = new L.GeoJSON(geoJSON, {
+                                style: function(feature) {
+                                    var opts = {
+                                        radius: 3,
+                                        weight: 1,
+                                        opacity: 0.9,
+                                        fillOpacity: 0.5,
+                                        color: service.getRecordColor(record, layerConfig)
+                                    };
+                                    opts.fillColor = service.getRecordColor(record, layerConfig);
+                                    if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
+                                        opts.weight = 5;
+                                        opts.color = service.getRecordColor(record, layerConfig);
+                                    } else {
+                                        opts.color = "#fff";
+                                    }
+                                    return opts;
+                                }
+                            });
+                            service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, record.recordid);
+                            markerLayerGroup.addLayer(shapeLayer);
+                        }
+
+
+                    }
+                    deferred.resolve(markerLayerGroup);
+                });
+                return deferred.promise;
+            },
+            buildClusteredLayer: function(layerConfig, map, timeout, showPolygons) {
+                var service = this;
+                var deferred = $q.defer();
+                var layerGroup = new L.LayerGroup();
+                var parameters = angular.extend({}, layerConfig.context.parameters, {
+                    'clusterdistance': 50,
+                    'clusterprecision': map.getZoom(),
+                    'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds()),
+                    'return_polygons': showPolygons
+                });
+
+                if (layerConfig.func !== 'COUNT' && service.isAnalyzeEnabledClustering(layerConfig)) {
+                    parameters['y.serie1.expr'] = layerConfig.expr;
+                    parameters['y.serie1.func'] = layerConfig.func;
+                }
+
+                ODSAPI.records.geo(layerConfig.context, parameters, timeout.promise).success(function(data) {
+                    // Display the clusters
+                    var records = data.clusters;
+                    for (var i=0; i<records.length; i++) {
+                        var record = records[i];
+                        if (record.count === 1 && layerConfig.clusterMode !== 'polygonforced') {
+                            (function(record) {
+                                SVGInliner.getPromise(PictoHelper.mapPictoToURL(layerConfig.picto, layerConfig.context), layerConfig.marker ? 'white' : layerConfig.color).then(function(svg) {
+                                    var singleMarker = new L.VectorMarker(record.cluster_center, {
+                                        color: layerConfig.color,
+                                        icon: svg,
+                                        marker: layerConfig.marker
+                                    });
+                                    service.bindTooltip(map, singleMarker, layerConfig, record.cluster);
+                                    layerGroup.addLayer(singleMarker);
+                                });
+                            }(record));
+                            //layerGroup.addLayer(new L.Marker(record.cluster_center)); // Uncomment to debug pointer alignment
+                        } else {
+                            var clusterValue = service.getClusterValue(record, layerConfig);
+                            if (clusterValue !== null) {
+                                var clusterMarker = new L.ClusterMarker(record.cluster_center, {
+                                    geojson: record.cluster,
+                                    value: service.getClusterValue(record, layerConfig),
+                                    total: service.getClusterMax(data, layerConfig),
+                                    color: layerConfig.color,
+                                    numberFormattingFunction: service.formatNumber
+                                });
+                                service.bindZoomable(map, clusterMarker, layerConfig);
+                                layerGroup.addLayer(clusterMarker);
+                            }
+                        }
+                    }
+                    deferred.resolve(layerGroup);
+                });
+                return deferred.promise;
+            },
+            buildHeatmapLayer: function(layerConfig, map, timeout) {
+                var service = this;
+                var deferred = $q.defer();
+                var heatmapLayer = L.TileLayer.heatMap({
+                    zIndex: 10,
+                    radius: {
+                        absolute: false,
+                        value: 20
+                    },
+                    opacity: 0.8,
+                    gradient: {
+                        0.45: "rgb(0,0,255)",
+                        0.55: "rgb(0,255,255)",
+                        0.65: "rgb(0,255,0)",
+                        0.95: "yellow",
+                        1.0: "rgb(255,0,0)"
+                    }
+                });
+                var parameters = angular.extend({}, layerConfig.context.parameters, {
+                    'clustermode': 'heatmap',
+                    'clusterdistance': 15,
+                    'clusterprecision': map.getZoom(),
+                    'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
+                });
+
+                if (layerConfig.func !== 'COUNT' && service.isAnalyzeEnabledClustering(layerConfig)) {
+                    parameters['y.serie1.expr'] = layerConfig.expr;
+                    parameters['y.serie1.func'] = layerConfig.func;
+                }
+
+                ODSAPI.records.geo(layerConfig.context, parameters, timeout.promise).success(function(data) {
+                    // Display the clusters
+                    var records = data.clusters;
+
+                    heatmapLayer.options.radius.value = Math.min((1/data.clusters.length)*4000 + 20, 50);
+
+                    var heatmapData = [];
+                    for (var i=0; i<records.length; i++) {
+                        var record = records[i];
+                        var clusterValue = service.getClusterValue(record, layerConfig);
+                        if (clusterValue !== null) {
+                            heatmapData.push({
+                                lat: record.cluster_center[0],
+                                lon: record.cluster_center[1],
+                                value: service.getClusterValue(record, layerConfig) - service.getClusterMin(data, layerConfig) + 1 // FIXME: the 1 should be proportional (and if the min is really 0 then it is false)
+                            });
+                        }
+                    }
+                    if (heatmapData.length > 0) {
+                        heatmapLayer.setData(heatmapData);
+                    }
+                    deferred.resolve(heatmapLayer);
+                });
+                return deferred.promise;
+            },
+            buildAggregationLayer: function(layerConfig, map, timeout) {
+                var service = this;
+                var deferred = $q.defer();
+                var shapeLayerGroup = new L.LayerGroup();
+
+                // Either we self-join, or we join on a remote dataset
+                // Remote requires:
+                // - a remote dataset
+                // - a local key, and optionally a remote key (else, assumes the remote is the local)
+                var getShape, getItems, parameters;
+                if (layerConfig.joinContext) {
+                    // Remote!
+                    var localKey = layerConfig.localKey;
+                    var remoteKey = layerConfig.remoteKey;
+
+                    if (!localKey || !remoteKey) {
+                        console.error('An aggregation layer with a remote dataset requires a local-key and a remote-key');
+                    }
+
+                    var shapefields = layerConfig.joinContext.dataset.getFieldsForType('geo_shape');
+                    if (!shapefields.length) {
+                        console.error('You can only join an aggregation layer with a dataset that contains a geo_shape field.');
+                    }
+                    var shapefield = shapefields[0].name;
+                    getShape = function(item) {
+                        if (item.x[0].fields) {
+                            return item.x[0].fields[shapefield];
+                        } else {
+                            return null;
+                        }
+                    };
+                    getItems = function(rawResult) {
+                        return rawResult.results;
+                    };
+                    var joinedFields = shapefield;
+                    if (layerConfig.hoverField) {
+                        joinedFields += ',' + layerConfig.hoverField
+                    }
+                    parameters = angular.extend({}, layerConfig.context.parameters, {
+                        'clusterprecision': map.getZoom(),
+                        'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds()),
+                        'join.agg1.fields': joinedFields,
+                        'join.agg1.remotedataset': layerConfig.joinContext.dataset.datasetid,
+                        'join.agg1.remotekey': remoteKey,
+                        'join.agg1.localkey': localKey,
+                        'agg.agg1.func': 'MIN,MAX',
+                        'agg.agg1.expr': 'serie1',
+                        'y.serie1.expr': layerConfig.expr,
+                        'y.serie1.func': layerConfig.func
+                    });
+
+                    ODSAPI.records.analyze(layerConfig.context, parameters, timeout.promise).success(handleResult);
+
+                } else {
+                    // Local
+                    getShape = function(item) {
+                        return item.cluster;
+                    };
+                    getItems = function(rawResult) {
+                        return rawResult.clusters;
+                    };
+
+                    parameters = angular.extend({}, layerConfig.context.parameters, {
+                        'clusterprecision': map.getZoom(),
+                        'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
+                    });
+
+                    if (layerConfig.func !== 'COUNT' && service.isAnalyzeEnabledClustering(layerConfig)) {
+                        parameters['y.serie1.expr'] = layerConfig.expr;
+                        parameters['y.serie1.func'] = layerConfig.func;
+                    }
+
+                    ODSAPI.records.geopolygon(layerConfig.context, parameters, timeout.promise).success(handleResult);
+                }
+
+                function handleResult(rawResult) {
+                    var records = getItems(rawResult);
+                    if (records.length === 0) {
+                        deferred.resolve(shapeLayerGroup);
+                        return;
+                    }
+                    var min = service.getClusterMin(rawResult, layerConfig);
+                    var max = service.getClusterMax(rawResult, layerConfig);
+                    var values = service.getClusterValues(rawResult, layerConfig);
+
+                    var colorScale = function(value) { return service.getColor(value, layerConfig, min, max, values.length); };
+
+                    var geojsonOptions = {
+                        radius: 3,
+                        color: "#fff",
+                        weight: 1,
+                        opacity: 0.9,
+                        fillOpacity: 0.5
+                    };
+
+                    // Legend is only supported for "scale" colors (we may implement it for "range" as well later)
+                    if (!(angular.isObject(layerConfig.color) && layerConfig.color.type === 'range') && ((layerConfig.func !== 'COUNT' && service.isAnalyzeEnabledClustering(layerConfig)) || min !== max)) {
+                        L.Legend = L.Control.extend({
+                            initialize: function(options) {
+                                L.Control.prototype.initialize.call(this, options);
+                            },
+                            onAdd: function(map) {
+                                var grades = chroma.scale().domain([min, max], Math.min(10, values.length)).domain(),
+                                    htmlContent = '';
+
+                                var legendDiv = L.DomUtil.create('div', 'info legend');
+                                var datasetTitle = layerConfig.context.dataset.datasetid;
+                                var fieldName = layerConfig.expr;
+                                //if ($scope.datasetSchemas && $scope.datasetSchemas[datasetConfig.datasetid]) {
+                                    if (fieldName) {
+                                        fieldName = layerConfig.context.dataset.getFieldLabel(layerConfig.expr);
+                                    }
+                                    datasetTitle = layerConfig.context.dataset.metas.title;
+                                //}
+                                htmlContent += '<div class="title">' + datasetTitle + '<br/>' + AggregationHelper.getFunctionLabel(layerConfig.func);
+                                if (layerConfig.func !== 'COUNT') {
+                                    htmlContent += ' ' + fieldName;
+                                }
+                                htmlContent += '</div>';
+                                htmlContent += '<div class="colors">';
+                                if (values.length === 1) {
+                                    htmlContent += '<i class="color_0" style="width: 90%; background-color:' + colorScale((grades[0] + grades[1]) / 2) + '; opacity: 1;"></i>';
+                                    htmlContent += '</div><div class="counts">';
+                                    htmlContent += '<span>';
+                                    htmlContent += service.formatNumber(grades[0]);
+                                    htmlContent += '</span>';
+                                } else {
+                                    var widthPercent = 90 / (grades.length - 1);
+                                    // loop through our density intervals and generate a label with a colored square for each interval
+                                    for (var i = 0; i < grades.length - 1; i++) {
+                                        htmlContent += '<i class="color_' + i + '" style="width:' + widthPercent + '%; background-color:' + colorScale((grades[i] + grades[i + 1]) / 2) + '; opacity: 1;"></i>';
+                                    }
+                                    htmlContent += '</div><div>';
+                                    htmlContent += '<span>';
+                                    htmlContent += service.formatNumber(grades[0]);
+                                    htmlContent += '</span>';
+                                    htmlContent += '<span>';
+                                    htmlContent += service.formatNumber(grades[grades.length - 1]);
+                                    htmlContent += '</span>';
+                                }
+                                htmlContent += '</div>';
+
+                                legendDiv.innerHTML = htmlContent;
+                                return legendDiv;
+                            }
+                        });
+                        var legend = new L.Legend({position: 'bottomleft'});
+                        var addLegend = function(e) {
+                            if (e.layer === shapeLayerGroup) {
+                                map.addControl(legend);
+                                map.off('layeradd', addLegend);
+                            }
+                        };
+                        map.on('layeradd', addLegend);
+                        var removeLegend = function(e) {
+                            if (e.layer === shapeLayerGroup) {
+                                map.removeControl(legend);
+                                map.off('layerremove', removeLegend);
+                            }
+                        };
+                        map.on('layerremove', removeLegend);
+                    }
+
+                    var bindMarkerOver = function(layerConfig, marker, record, recordid) {
+                        marker.on('mouseover', function(e) {
+                            var layer = e.target;
+                            layer.setStyle({
+                                weight: 2
+                            });
+                        });
+                        marker.on('mouseout', function(e) {
+                            var layer = e.target;
+                            layer.setStyle({
+                                weight: 1
+                            });
+                        });
+                    };
+
+                    for (var i=0; i < records.length; i++) {
+                        var record = records[i];
+                        var value = service.getClusterValue(record, layerConfig);
+                        var shapeLayer, shape;
+                        var pointToLayer = function (feature, latlng) { return L.circleMarker(latlng, geojsonOptions); };
+
+                        if (value !== null) {
+                            shape = getShape(record);
+                            if (shape) {
+                                shapeLayer = new L.GeoJSON(shape, {
+                                    pointToLayer: pointToLayer,
+                                    highlight: service.getColor(value, layerConfig, min, max, values.length),
+                                    style: function (feature) {
+                                        var opts = angular.copy(geojsonOptions);
+                                        opts.fillColor = colorScale(value);
+                                        if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
+                                            opts.weight = 5;
+                                            opts.color = colorScale(value);
+                                        } else {
+                                            opts.color = "#fff";
+                                        }
+                                        return opts;
+                                    }
+                                });
+
+                                if (layerConfig.refineOnClick) {
+                                    // We're not sure yet what we want to show when we click on an aggregated shape, so we just handled
+                                    // refine on click for now.
+                                    service.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest);
+                                }
+
+                                if (shape.type !== 'LineString' && shape.type !== 'MultiLineString') {
+                                    bindMarkerOver(layerConfig, shapeLayer, record, null);
+                                }
+                                if (layerConfig.joinContext && layerConfig.hoverField) {
+                                    // Always show the value if it exists
+                                    if (record.x[0].fields[layerConfig.hoverField]) {
+                                        // TODO: We may want to make the value prettier (e.g. format number if it is one)
+                                        shapeLayer.bindLabel(record.x[0].fields[layerConfig.hoverField]);
+                                    }
+                                } else {
+                                    if ((layerConfig.func !== 'COUNT' && service.isAnalyzeEnabledClustering(layerConfig)) || min !== max) {
+                                        shapeLayer.bindLabel(service.formatNumber(value));
+                                    }
+                                }
+                                shapeLayerGroup.addLayer(shapeLayer);
+                            }
+                        }
+                    }
+                    deferred.resolve(shapeLayerGroup);
+                }
+
+
+                return deferred.promise;
+            },
+            buildShapePreviewLayer: function(layerConfig, map, timeout) {
+                var service = this;
+                var deferred = $q.defer();
+                var parameters = angular.extend({}, layerConfig.context.parameters, {
+                    'rows': 1000,
+                    'clusterprecision': map.getZoom(),
+                    'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
+                });
+                var layerGroup = new L.LayerGroup();
+                ODSAPI.records.geopreview(layerConfig.context, parameters, timeout.promise).success(function(data) {
+                    var shape;
+                    for (var i = 0; i < data.length; i++) {
+                        shape = data[i];
+                        var geojsonOptions = {
+                            radius: 3,
+                            color: "#fff",
+                            weight: 1,
+                            opacity: 0.9,
+                            fillOpacity: 0.5,
+                            fillColor: layerConfig.color
+                        };
+
+                        var shapeLayer = new L.GeoJSON(shape.geometry, {
+                            pointToLayer: function (feature, latlng) {
+                                return L.circleMarker(latlng, geojsonOptions);
+                            },
+                            style: function(feature) {
+                                var opts = angular.copy(geojsonOptions);
+                                if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
+                                    opts.weight = 5;
+                                    opts.color = layerConfig.color;
+                                }
+                                return opts;
+                            }
+                        });
+
+                        layerGroup.addLayer(shapeLayer);
+                        service.bindTooltip(map, shapeLayer, layerConfig, shape.geometry, shape.id);
+                    }
+                    deferred.resolve(layerGroup);
+                });
+                return deferred.promise;
+            },
+            getRecordColor: function(record, layerConfig) {
+                // A record may only be colored if there is a configured field to color it from
+                // Aggregation results may be colored from their values
+                if (angular.isString(layerConfig.color)) {
+                    return layerConfig.color;
+                } else if (layerConfig.color.type === 'range') {
+                    if (layerConfig.color.field) {
+                        var value = record.fields[layerConfig.color.field];
+                        if (angular.isUndefined(value)) {
+                            return layerConfig.color.ranges[0];
+                        }
+                        return this.getColor(value, layerConfig);
+                    } else {
+                        console.error('Range coloring requires a field');
+                        return layerConfig.color.ranges[0];
+                    }
+                    // TODO
+                } else {
+                    // Scale is not supported for records (yet?)
+                    console.error('Scale coloring is not supported for simple records');
+                    return chroma.scale(layerConfig.color.scale).out('hex').scale(0);
+                }
+            },
+            getColor: function(value, layerConfig, min, max, scaleSteps) {
+                scaleSteps = scaleSteps || 10;
+                if (angular.isString(layerConfig.color)) {
+                    if (angular.isDefined(min) && angular.isDefined(max)) {
+                        return chroma.scale([chroma(layerConfig.color).brighten(50), layerConfig.color]).domain([min, max], Math.min(10, scaleSteps)).out('hex')(value);
+                    } else {
+                        // Simple color
+                        return layerConfig.color;
+                    }
+                } else {
+                    if (layerConfig.color.type === 'scale') {
+                        return chroma.scale(layerConfig.color.scale).domain([min, max], Math.min(10, scaleSteps)).out('hex')(value);
+                    } else if (layerConfig.color.type === 'range') {
+                        var i;
+                        for (i=0; i<layerConfig.color.ranges.length; i++) {
+                            if (value < layerConfig.color.ranges[i]) {
+                                return layerConfig.color.colors[i];
+                            }
+                        }
+                        return layerConfig.color.colors[layerConfig.color.colors.length-1];
+                    }
+                }
+            },
+            /*                                  */
+            /*          INTERACTIONS            */
+            /*                                  */
+            bindTooltip: function(map, feature, layerConfig, clusterShape, recordid, geoDigest) {
+                var service = this;
+                if (layerConfig.refineOnClick) {
+                    feature.on('click', function(e) {
+                        if (map.isDrawing) {
+                            return;
+                        }
+                        // TODO: Support tiles and refineOnClick
+                        service.refineContextOnClick(layerConfig, clusterShape);
+                    });
+                } else {
+                    // Binds on a feature (marker, shape) so that it shows a popup on click
+                    feature.on('click', function(e) {
+                        if (map.isDrawing) {
+                            return;
+                        }
+                        if (!clusterShape && !recordid && !geoDigest && !e.data) {
+                            // An UTFGrid event with no grid data
+                            return;
+                        }
+                        var latLng, yOffset;
+                        if (angular.isDefined(e.target.getLatLng)) {
+                            latLng = e.target.getLatLng();
+                        } else {
+                            latLng = e.latlng;
+                            yOffset = 0; // Displayed where the user clicked
+                        }
+                        // FIXME: We assume that if the event contains a data, it is a gridData
+                        service.showPopup(map, layerConfig, latLng, clusterShape, recordid, geoDigest, yOffset, e.data || null);
+                    });
+                }
+            },
+            refineContextOnClick: function(layerConfig, shape, digest) {
+                var refineContext = function(refineConfig) {
+                    var contextField = refineConfig.contextField;
+                    var mapField = refineConfig.mapField;
+                    var context = refineConfig.context;
+
+                    if (!mapField && !contextField) {
+                        $rootScope.$apply(function() {
+                            // We are using the real shape so that we match anythinh within the shape
+                            ODS.GeoFilter.addGeoFilterFromSpatialObject(context.parameters, shape);
+                        });
+                    } else {
+                        // We need to retrieve a record for this to work
+                        // FIXME: Factorize with the same code just above
+                        var options = {
+                            format: 'json'
+                        };
+                        if (digest) {
+                            options.geo_digest = digest;
+                        } else {
+                            ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
+                        }
+                        angular.extend(options, context.parameters, {rows: 1});
+                        ODSAPI.records.download(layerConfig.context, options).success(function(data) {
+                            if (angular.isDefined(data[0].fields[mapField])) {
+                                // Until we can have named parameters, we need to avoid using the q= parameter as it will quickly
+                                // conflict with other widgets that need to interact with the query.
+                                context.parameters['refine.'+contextField] = data[0].fields[mapField];
+                                //context.parameters.q = contextField + ':"' + record.fields[mapField] + '"';
+                            }
+                        });
+                    }
+                };
+                // This layer is configured to refine another context on click
+                angular.forEach(layerConfig.refineOnClick, refineContext);
+            },
+            bindZoomable: function(map, feature, layerConfig) {
+                // Binds on a feature (marker, shape) so that when clicked, it attemps to zoom on it, or show a regular
+                // tooltip if at maximum zoom
+                feature.on('click', function(e) {
+                    if (map.isDrawing) {
+                        return;
+                    }
+                    if (map.getZoom() === map.getMaxZoom()) {
+                        this.showPopup(map, layerConfig, e.target.getLatLng(), e.target.getClusterShape());
+                    } else {
+                        map.setView(e.latlng, map.getZoom()+2);
+                    }
+                });
+            },
+            showPopup: function(map, layerConfig, latLng, shape, recordid, geoDigest, yOffset, gridData) {
+                // TODO: How to pass custom template?
+                // Displays a popup
+                var newScope = $rootScope.$new(true);
+                if (recordid) {
+                    newScope.recordid = recordid;
+                }
+                if (shape) {
+                    newScope.shape = shape;
+                }
+                if (gridData) {
+                    newScope.gridData = gridData;
+                }
+                var dataset = layerConfig.context.dataset;
+                newScope.map = map;
+                newScope.template = layerConfig.tooltipTemplate || dataset.extra_metas && dataset.extra_metas.visualization && dataset.extra_metas.visualization.map_tooltip_html || '';
+                var popupOptions = {
+                    offset: [0, angular.isDefined(yOffset) ? yOffset : -30],
+                    maxWidth: 250,
+                    minWidth: 250
+                    //autoPanPaddingTopLeft: [50, 305]
+                };
+                newScope.context = layerConfig.context;
+                // TODO: Move the custom template detection from the dataset inside geoscroller? (the dataset object is available in the context)
+                var popup = new L.Popup(popupOptions).setLatLng(latLng)
+                    .setContent($compile('<geo-scroller tooltip-sort="'+(layerConfig.tooltipSort||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" grid-data="gridData" geo-digest="'+(geoDigest||'')+'"></geo-scroller>')(newScope)[0]);
+                popup.openOn(map);
+            },
+            /*                              */
+            /*          UTILITIES           */
+            /*                              */
+            formatNumber: function(number) {
+                /* Passed as a callback for the cluster markers, to allow them to format their displayed value */
+                // Limiting the digits
+                number = Math.round(number*100)/100;
+                // Formatting the digits
+                number = $filter('number')(number);
+                return number;
+            },
+            getClusterValue: function(cluster, layerConfig) {
+                if (layerConfig.clusterMode === 'aggregation' && layerConfig.joinContext) {
+                    // This is a join
+                    return cluster.serie1;
+                }
+
+                if (layerConfig.func !== 'COUNT' && this.isAnalyzeEnabledClustering(layerConfig)) {
+                    if (cluster.series) {
+                        return cluster.series.serie1;
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return cluster.count;
+                }
+            },
+            getClusterMin: function(apiResult, layerConfig) {
+                if (layerConfig.clusterMode === 'aggregation' && layerConfig.joinContext) {
+                    // This is a join
+                    return apiResult.aggregations.agg1.min;
+                }
+
+                if (layerConfig.func !== 'COUNT' && this.isAnalyzeEnabledClustering(layerConfig)) {
+                    return apiResult.series.serie1.min;
+                } else {
+                    return apiResult.count.min;
+                }
+            },
+            getClusterMax: function(apiResult, layerConfig) {
+                if (layerConfig.clusterMode === 'aggregation' && layerConfig.joinContext) {
+                    // This is a join
+                    return apiResult.aggregations.agg1.max;
+                }
+
+                if (layerConfig.func !== 'COUNT' && this.isAnalyzeEnabledClustering(layerConfig)) {
+                    return apiResult.series.serie1.max;
+                } else {
+                    return apiResult.count.max;
+                }
+            },
+            getClusterValues: function(apiResult, layerConfig) {
+                var values = [], i;
+                if (layerConfig.clusterMode === 'aggregation' && layerConfig.joinContext) {
+                    // This is a join
+                    for (i = 0; i < apiResult.results.length; i++) {
+                        values.push(apiResult.results[i].serie1);
+                    }
+                } else if (layerConfig.func !== 'COUNT' && this.isAnalyzeEnabledClustering(layerConfig)) {
+                    for (i = 0; i < apiResult.clusters.length; i++) {
+                        if (apiResult.clusters[i].series) {
+                            values.push(apiResult.clusters[i].series.serie1);
+                        }
+                    }
+                } else {
+                    for (i = 0; i < apiResult.clusters.length; i++) {
+                        values.push(apiResult.clusters[i].count);
+                    }
+                }
+                return values;
+            },
+            isAnalyzeEnabledClustering: function(layerConfig) {
+                /* Are the analyze features enabled for this clustering? */
+                return layerConfig.clusterMode === 'heatmap' || layerConfig.clusterMode === 'polygonforced' || layerConfig.clusterMode === 'shape' || layerConfig.clusterMode === 'aggregation';
+            },
+            doesLayerRefreshOnLocationChange: function(layerConfig) {
+                if (layerConfig.clusterMode === 'tiles') {
+                    return false;
+                } else if ((layerConfig.clusterMode === 'shape' || layerConfig.clusterMode === 'aggregation') && layerConfig.joinContext) {
+                    // We got all the data at once
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        };
+    }]);
+}());;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
 
     mod.provider('ModuleLazyLoader', function() {
         // We always load from https://, because if we don't put a scheme in the URL, local testing (from filesystem)
@@ -7009,10 +8423,11 @@ mod.directive('infiniteScroll', [
                     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css",
                     "https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.3/leaflet.fullscreen.css",
                     "https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.css",
-                    "libs/ods-geobox/geobox.css",
+                    "libs/leaflet-control-geocoder/Control.Geocoder.css",
                     "libs/ods-vectormarker/vectormarker.css",
                     "libs/ods-clustermarker/clustermarker.css",
-                    "libs/leaflet-label/leaflet.label.css"
+                    "libs/leaflet-label/leaflet.label.css",
+                    "libs/leaflet-draw/leaflet.draw.css"
                 ],
                 'js': [
                     [
@@ -7024,9 +8439,15 @@ mod.directive('infiniteScroll', [
                         "L.Label@libs/leaflet-label/leaflet.label.js",
                         "L.ODSMap@libs/ods-map/ods-map.js",
                         "L.ODSTileLayer@libs/ods-map/ods-tilelayer.js",
-                        "L.Control.GeoBox@libs/ods-geobox/geobox.js",
+                        "L.Control.Geocoder@libs/leaflet-control-geocoder/Control.Geocoder.js",
                         "L.VectorMarker@libs/ods-vectormarker/vectormarker.js",
-                        "L.ClusterMarker@libs/ods-clustermarker/clustermarker.js"
+                        "L.ClusterMarker@libs/ods-clustermarker/clustermarker.js",
+                        //"L.UtfGrid@libs/leaflet-utfgrid/leaflet.utfgrid.js",
+                        "L.Draw@libs/leaflet-draw/leaflet.draw.js",
+                        //"L.BundleTileLayer@libs/ods-bundletilelayer/bundletilelayer.js",
+                        "QuadTree@libs/leaflet-heatmap/QuadTree.js",
+                        "h337@libs/leaflet-heatmap/heatmap.js",
+                        "L.TileLayer.HeatMap@libs/leaflet-heatmap/heatmap-leaflet.js"
                     ]
                 ]
             },
@@ -7165,8 +8586,264 @@ mod.directive('infiniteScroll', [
             }
         };
     });
-}());
-;(function() {
+
+    mod.provider('SVGInliner', function() {
+        /*
+        var element = SVGInliner(url);
+         */
+        var inlineImages = {};
+
+        // This is the SVG used when the URLs raises a 404
+        var FALLBACK = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' +
+            '<svg id="dot-icon" width="19px" height="19px" viewBox="0 0 19 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">' +
+            '    <path d="M13,9.50004202 C13,11.4330618 11.4329777,13.000084 9.49995798,13.000084 C7.56693813,13.000084 5.99991595,11.4330618 5.99991595,9.50004202 C5.99991595,7.56702218 7.56693813,6 9.49995798,6 C11.4329777,6 13,7.56702218 13,9.50004202 L13,9.50004202 Z" id="path8568" fill="#000000"></path>' +
+            '    <rect style="opacity: 0" x="0" y="0" width="19" height="19"></rect>' +
+            '</svg>';
+
+        var loadImageInline = function(element, code, color) {
+            var svg = angular.element(code);
+            if (color) {
+                svg.css('fill', color);
+                svg.find('path, polygon, circle, rect').css('fill', color); // Needed for our legacy SVGs of various quality...
+            }
+            element.append(svg);
+        };
+
+        this.$get = ['$http', '$q', function($http, $q) {
+            var retrieve = function(url, color, getPromise) {
+                var deferred;
+                if (getPromise) {
+                    deferred = $q.defer();
+                }
+                var element = angular.element('<div></div>');
+                if (url.indexOf('.svg') === -1) {
+                    // Normal image
+                    element.append(angular.element('<img src="' + url + '"/>'));
+                } else {
+                    // SVG
+                    if (inlineImages[url]) {
+                        if (inlineImages[url].code) {
+                            loadImageInline(element, inlineImages[url].code, color);
+                            if (getPromise) { deferred.resolve(element); }
+                        } else {
+                            inlineImages[url].promise.success(function (data) {
+                                loadImageInline(element, data, color);
+                                if (getPromise) { deferred.resolve(element); }
+                            }).error(function() {
+                                loadImageInline(element, FALLBACK, color);
+                                if (getPromise) { deferred.resolve(element); }
+                            });
+                        }
+
+                    } else {
+                        var promise = $http.get(url);
+                        inlineImages[url] = {promise: promise};
+                        promise.success(function (data) {
+                            inlineImages[url].code = data;
+                            loadImageInline(element, data, color);
+                            if (getPromise) { deferred.resolve(element); }
+                        }).error(function(data, status) {
+                            // Ignore it silently
+                            console.log('WARNING: Unable to fetch SVG image', url, 'HTTP status:', status);
+                            inlineImages[url].code = FALLBACK;
+                            loadImageInline(element, FALLBACK, color);
+                            if (getPromise) { deferred.resolve(element); }
+                        });
+                    }
+                }
+                if (getPromise) {
+                    return deferred.promise;
+                } else {
+                    return element;
+                }
+            };
+
+            return {
+                getElement: function(url, color) {
+                    return retrieve(url, color);
+                },
+                getPromise: function(url, color) {
+                    return retrieve(url, color, true);
+                }
+            };
+
+        }];
+    });
+
+    mod.service('PictoHelper', function() {
+        var FONTAWESOME_3_TO_4 = {
+            'ban-circle': 'ban',
+            'bar-chart': 'bar-chart-o',
+            'beaker': 'flask',
+            'bell': 'bell-o',
+            'bell-alt': 'bell',
+            'bitbucket-sign': 'bitbucket-square',
+            'bookmark-empty': 'bookmark-o',
+            'building': 'building-o (4.0.2)',
+            'calendar-empty': 'calendar-o',
+            'check-empty': 'square-o',
+            'check-minus': 'minus-square-o',
+            'check-sign': 'check-square',
+            'check': 'check-square-o',
+            'chevron-sign-down': 'chevron-down',
+            'chevron-sign-left': 'chevron-left',
+            'chevron-sign-right': 'chevron-right',
+            'chevron-sign-up': 'chevron-up',
+            'circle-arrow-down': 'arrow-circle-down',
+            'circle-arrow-left': 'arrow-circle-left',
+            'circle-arrow-right': 'arrow-circle-right',
+            'circle-arrow-up': 'arrow-circle-up',
+            'circle-blank': 'circle-o',
+            'cny': 'rub',
+            'collapse-alt': 'minus-square-o',
+            'collapse-top': 'caret-square-o-up',
+            'collapse': 'caret-square-o-down',
+            'comment-alt': 'comment-o',
+            'comments-alt': 'comments-o',
+            'copy': 'files-o',
+            'cut': 'scissors',
+            'dashboard': 'tachometer',
+            'double-angle-down': 'angle-double-down',
+            'double-angle-left': 'angle-double-left',
+            'double-angle-right': 'angle-double-right',
+            'double-angle-up': 'angle-double-up',
+            'download': 'arrow-circle-o-down',
+            'download-alt': 'download',
+            'edit-sign': 'pencil-square',
+            'edit': 'pencil-square-o',
+            'ellipsis-horizontal': 'ellipsis-h (4.0.2)',
+            'ellipsis-vertical': 'ellipsis-v (4.0.2)',
+            'envelope-alt': 'envelope-o',
+            'exclamation-sign': 'exclamation-circle',
+            'expand-alt': 'plus-square-o (4.0.2)',
+            'expand': 'caret-square-o-right',
+            'external-link-sign': 'external-link-square',
+            'eye-close': 'eye-slash',
+            'eye-open': 'eye',
+            'facebook-sign': 'facebook-square',
+            'facetime-video': 'video-camera',
+            'file-alt': 'file-o',
+            'file-text-alt': 'file-text-o',
+            'flag-alt': 'flag-o',
+            'folder-close-alt': 'folder-o',
+            'folder-close': 'folder',
+            'folder-open-alt': 'folder-open-o',
+            'food': 'cutlery',
+            'frown': 'frown-o',
+            'fullscreen': 'arrows-alt (4.0.2)',
+            'github-sign': 'github-square',
+            'google-plus-sign': 'google-plus-square',
+            'group': 'users (4.0.2)',
+            'h-sign': 'h-square',
+            'hand-down': 'hand-o-down',
+            'hand-left': 'hand-o-left',
+            'hand-right': 'hand-o-right',
+            'hand-up': 'hand-o-up',
+            'hdd': 'hdd-o (4.0.1)',
+            'heart-empty': 'heart-o',
+            'hospital': 'hospital-o (4.0.2)',
+            'indent-left': 'outdent',
+            'indent-right': 'indent',
+            'info-sign': 'info-circle',
+            'keyboard': 'keyboard-o',
+            'legal': 'gavel',
+            'lemon': 'lemon-o',
+            'lightbulb': 'lightbulb-o',
+            'linkedin-sign': 'linkedin-square',
+            'meh': 'meh-o',
+            'microphone-off': 'microphone-slash',
+            'minus-sign-alt': 'minus-square',
+            'minus-sign': 'minus-circle',
+            'mobile-phone': 'mobile',
+            'moon': 'moon-o',
+            'move': 'arrows (4.0.2)',
+            'off': 'power-off',
+            'ok-circle': 'check-circle-o',
+            'ok-sign': 'check-circle',
+            'ok': 'check',
+            'paper-clip': 'paperclip',
+            'paste': 'clipboard',
+            'phone-sign': 'phone-square',
+            'picture': 'picture-o',
+            'pinterest-sign': 'pinterest-square',
+            'play-circle': 'play-circle-o',
+            'play-sign': 'play-circle',
+            'plus-sign-alt': 'plus-square',
+            'plus-sign': 'plus-circle',
+            'pushpin': 'thumb-tack',
+            'question-sign': 'question-circle',
+            'remove-circle': 'times-circle-o',
+            'remove-sign': 'times-circle',
+            'remove': 'times',
+            'reorder': 'bars (4.0.2)',
+            'resize-full': 'expand (4.0.2)',
+            'resize-horizontal': 'arrows-h (4.0.2)',
+            'resize-small': 'compress (4.0.2)',
+            'resize-vertical': 'arrows-v (4.0.2)',
+            'rss-sign': 'rss-square',
+            'save': 'floppy-o',
+            'screenshot': 'crosshairs',
+            'share-alt': 'share',
+            'share-sign': 'share-square',
+            'share': 'share-square-o',
+            'sign-blank': 'square',
+            'signin': 'sign-in',
+            'signout': 'sign-out',
+            'smile': 'smile-o',
+            'sort-by-alphabet-alt': 'sort-alpha-desc',
+            'sort-by-alphabet': 'sort-alpha-asc',
+            'sort-by-attributes-alt': 'sort-amount-desc',
+            'sort-by-attributes': 'sort-amount-asc',
+            'sort-by-order-alt': 'sort-numeric-desc',
+            'sort-by-order': 'sort-numeric-asc',
+            'sort-down': 'sort-desc',
+            'sort-up': 'sort-asc',
+            'stackexchange': 'stack-overflow',
+            'star-empty': 'star-o',
+            'star-half-empty': 'star-half-o',
+            'sun': 'sun-o',
+            'thumbs-down-alt': 'thumbs-o-down',
+            'thumbs-up-alt': 'thumbs-o-up',
+            'time': 'clock-o',
+            'trash': 'trash-o',
+            'tumblr-sign': 'tumblr-square',
+            'twitter-sign': 'twitter-square',
+            'unlink': 'chain-broken',
+            'upload': 'arrow-circle-o-up',
+            'upload-alt': 'upload',
+            'warning-sign': 'exclamation-triangle',
+            'xing-sign': 'xing-square',
+            'youtube-sign': 'youtube-square',
+            'zoom-in': 'search-plus',
+            'zoom-out': 'search-minus'
+        };
+
+        return {
+            mapPictoToURL: function(picto, context) {
+                if (!picto) {
+                    return null;
+                }
+                var url = context && context.domainUrl || '';
+                if (picto.startsWith('icon-')) {
+                    // Old icon set (v1), from fontawesome 3.2.1
+                    var pictoName = picto.replace('icon-', '');
+                    if (FONTAWESOME_3_TO_4[pictoName]) {
+                        pictoName = FONTAWESOME_3_TO_4[pictoName];
+                    }
+                    url += '/static/pictos/img/set-v1/fa/' + pictoName + '.svg';
+                } else if (picto.startsWith('pdpicto-') || picto.startsWith('odspicto-')) {
+                    // Legacy - old picto set
+                    picto = picto.replace('pdpicto-', 'pdpicto/').replace('odspicto-', 'odspicto/');
+                    url += '/static/pictos/img/set-v1/' + picto + '.svg';
+                } else {
+                    // New picto set
+                    url += '/static/pictos/img/set-v2/' + picto + '.svg';
+                }
+                return url;
+            }
+        };
+    });
+}());;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -7369,6 +9046,14 @@ mod.directive('infiniteScroll', [
         return function(isoDate, format) {
             if (isoDate)
                 return moment(isoDate).format(format);
+        };
+    }]);
+
+    mod.filter('momentadd', [function() {
+        return function(isoDate, precision, number) {
+            if (isoDate) {
+                return moment(isoDate).add(precision, parseInt(number, 10)).toISOString().replace('.000Z', 'Z');
+            }
         };
     }]);
 
@@ -7647,6 +9332,18 @@ mod.directive('infiniteScroll', [
         };
     });
 
+    mod.filter('isBefore', function() {
+        return function(date1, date2) {
+            return moment(date1).isBefore(date2);
+        };
+    });
+
+    mod.filter('isAfter', function() {
+        return function(date1, date2) {
+            return moment(date1).isAfter(date2);
+        };
+    });
+
 }());;(function(target) {
     var ODS = {
         GeoFilter: {
@@ -7710,8 +9407,8 @@ mod.directive('infiniteScroll', [
                 var members = parameter.replace(/[()]/g, '').split(',');
                 var minlat, minlng, maxlat, maxlng;
                 for (var i=0; i<members.length; i+=2) {
-                    var lat = members[i];
-                    var lng = members[i+1];
+                    var lat = parseFloat(members[i]);
+                    var lng = parseFloat(members[i+1]);
 
                     if (!minlat || minlat > lat) { minlat = lat; }
                     if (!minlng || minlng > lng) { minlng = lng; }
@@ -7722,6 +9419,19 @@ mod.directive('infiniteScroll', [
                     [ minlat, minlng ],
                     [ maxlat, maxlng ]
                 ];
+            },
+            getPolygonParameterAsGeoJSON: function(parameter) {
+                var geojson = {
+                    'type': 'Polygon',
+                    'coordinates': [[]]
+                };
+                var members = parameter.replace(/[()]/g, '').split(',');
+                for (var i=0; i<members.length; i+=2) {
+                    var lat = parseFloat(members[i]);
+                    var lng = parseFloat(members[i + 1]);
+                    geojson.coordinates[0].push([lng, lat]);
+                }
+                return geojson;
             },
             getBboxParameterAsPolygonParameter: function(bbox) {
                 /*  Input: a Bbox
@@ -7919,6 +9629,16 @@ mod.directive('infiniteScroll', [
                     }
                     return field.label;
                 },
+                getFieldsForType: function(fieldType) {
+                    var fields = [];
+                    for (var i=0; i<this.fields.length; i++) {
+                        var field = this.fields[i];
+                        if (field.type === fieldType) {
+                            fields.push(field);
+                        }
+                    }
+                    return fields;
+                },
                 hasNumericField: function() {
                     for (var i=0; i < this.fields.length; i++) {
                         var field = this.fields[i];
@@ -7927,6 +9647,22 @@ mod.directive('infiniteScroll', [
                         }
                     }
                     return false;
+                },
+                hasGeoField: function() {
+                    for (var i=0; i < this.fields.length; i++) {
+                        var field = this.fields[i];
+                        if (field.type === 'geo_point_2d' || field.type === 'geo_shape') {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                getExtraMeta: function(template, name) {
+                    if (this.extra_metas && this.extra_metas[template] && this.extra_metas[template][name]) {
+                        return this.extra_metas[template][name];
+                    } else {
+                        return null;
+                    }
                 }
             };
         }
@@ -7938,6 +9674,64 @@ mod.directive('infiniteScroll', [
     target.ODS = angular.extend(target.ODS, ODS);
 })(window);
 ;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('odsAggregation', ['ODSAPI', function(ODSAPI) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsAggregation
+         * @scope
+         * @restrict A
+         * @param {string} [odsAggregation=aggregation] Variable name to use
+         * @param {CatalogContext|DatasetContext} odsAggregationContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {string} [odsAggregationFunction=COUNT] Aggregation function to apply (AVG, COUNT, MIN, MAX, STDDEV, SUM)
+         * @param {string} [odsAggregationExpression=none] Expression to apply the function on, typically the name of a field. Optional only when the function is "COUNT".
+         * @description
+         * This widget exposes the results of an aggregation function over a context. Can be used for example to expose the average temperature of a weather dataset.
+         * The result is exposed into a new variable that you can use in other widgets or directly in your HTML.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com" tree-parameters="{'sort': '-objectid'}">
+         *              <div class="row-fluid">
+         *                  <div class="span4">
+         *                      <ods-facets context="tree"></ods-facets>
+         *                  </div>
+         *                  <div class="span8" ods-aggregation="height" ods-aggregation-context="tree" ods-aggregation-expression="hauteur" ods-aggregation-function="AVG">
+         *                      Average height is {{ height }} meters.
+         *                  </div>
+         *              </div>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
+         */
+
+        return {
+            restrict: 'A',
+            scope: true,
+            controller: ['$scope', '$attrs', function ($scope, $attrs) {
+                var context = $scope.$eval($attrs.odsAggregationContext);
+                var func = $attrs.odsAggregationFunction || 'COUNT';
+                var expr = $attrs.odsAggregationExpression;
+                var variableName = $attrs.odsAggregation || 'aggregation';
+                context.wait().then(function() {
+                    $scope.$watch(context.name+'.parameters', function(nv, ov) {
+                        var options = angular.extend({}, nv, {
+                            'y.serie1.expr': expr,
+                            'y.serie1.func': func
+                        });
+                        ODSAPI.records.analyze(context, options).success(function(data) {
+                            $scope[variableName] = data[0].serie1;
+                        });
+                    }, true);
+                });
+            }]
+        };
+    }]);
+}());;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -8191,7 +9985,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsDatasetContext', ['ODSAPI', function(ODSAPI) {
+    mod.directive('odsDatasetContext', ['ODSAPI', '$q', function(ODSAPI, $q) {
         /**
          *
          *  @ngdoc directive
@@ -8295,7 +10089,12 @@ mod.directive('infiniteScroll', [
             } else {
                 contextParams = {};
             }
+            var deferred = $q.defer();
+
             scope[contextName] = {
+                'wait': function() {
+                    return deferred.promise;
+                },
                 'name': contextName,
                 'type': 'dataset',
                 'domain': domain,
@@ -8304,9 +10103,13 @@ mod.directive('infiniteScroll', [
                 'dataset': null,
                 'parameters': contextParams
             };
+
             ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true, interopmetas: true}).
                 success(function(data) {
                     scope[contextName].dataset = new ODS.Dataset(data);
+                    deferred.resolve(scope[contextName].dataset);
+                }).error(function(data) {
+                    deferred.reject("Failed to fetch " + contextName + " context.");
                 });
         };
 
@@ -8314,33 +10117,33 @@ mod.directive('infiniteScroll', [
             restrict: 'AE',
             scope: true,
             replace: true,
-            link: function(scope, element, attrs) {
-                var contextNames = attrs.context.split(',');
+            controller: ['$scope', '$attrs', function($scope, $attrs) {
+                var contextNames = $attrs.context.split(',');
                 for (var i=0; i<contextNames.length; i++) {
                     var contextName = contextNames[i].trim();
 
                     // We need a dataset ID
-                    var datasetID = attrs[contextName+'Dataset'];
+                    var datasetID = $attrs[contextName+'Dataset'];
 
                     // Do we have a domain ID?
-                    var domain = attrs[contextName+'Domain'];
+                    var domain = $attrs[contextName+'Domain'];
 
                     if (!datasetID) {
                         console.log('ERROR : Context ' + contextName + ' : Missing dataset parameter');
                     }
 
-                    var apikey = attrs[contextName+'Apikey'];
-                    var sort = attrs[contextName+'Sort'];
-                    var parameters = scope.$eval(attrs[contextName+'Parameters']) || {};
-                    var parametersFromContext = attrs[contextName+'ParametersFromContext'];
+                    var apikey = $attrs[contextName+'Apikey'];
+                    var sort = $attrs[contextName+'Sort'];
+                    var parameters = $scope.$eval($attrs[contextName+'Parameters']) || {};
+                    var parametersFromContext = $attrs[contextName+'ParametersFromContext'];
 
                     if (sort) {
                         parameters.sort = sort;
                     }
 
-                    exposeContext(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext);
+                    exposeContext(domain, datasetID, $scope, contextName, apikey, parameters, parametersFromContext);
                 }
-            }
+            }]
         };
     }]);
 
@@ -8600,6 +10403,14 @@ mod.directive('infiniteScroll', [
          * the category is displayed. You can use `category.name` (the value of the category), `category.path` (the complete path
          * to the category, including hierarchical levels) and `category.state` (refined, excluded, or displayed) in the expression.
          *
+         * - **`disjunctive`** {@type boolean} (optional) if 'true', then the facet is in "disjunctive" mode, which means that after a first value selected,
+         * you can select other possibles values that are all combined as "or". For example, if you click "red", then you can also click "green" and "blue",
+         * and the resulting values can be green, red, or blue.
+         *
+         * - **`valueSearch`** {@type string} (optional) if 'true', then a search box is displayed above the categories, so that you can search within them easily.
+         * If 'suggest', then the matching categories are not displayed until there is at least one character typed into the search box, effectively making it
+         * into a suggest-like search box.
+         *
          * <pre>
          *     <ods-facets context="mycontext">
          *         <ods-facet name="myfield" sort="-num" visible-items="10"></ods-facet>
@@ -8816,6 +10627,10 @@ mod.directive('infiniteScroll', [
                     return categories;
                 };
 
+                this.setDisjunctive = function(name) {
+                    $scope.context.parameters['disjunctive.'+name] = true;
+                };
+
                 this.toggleRefinement = function(facetName, path) {
                     var refineKey = 'refine.'+facetName;
                     if (angular.isDefined($scope.context.parameters[refineKey])) {
@@ -8864,13 +10679,15 @@ mod.directive('infiniteScroll', [
                 visibleItems: '@',
                 hideIfSingleCategory: '@',
                 hideCategoryIf: '@',
-                sort: '@'
+                sort: '@',
+                disjunctive: '@',
+                valueSearch: '@'
             },
             template: function(tElement) {
                 tElement.data('facet-template', tElement.html());
                 return '<div class="odswidget odswidget-facet">' +
                 '<h3 class="facet-title" ng-if="title && categories.length && visible()">{{title}}</h3>' +
-                '<ods-facet-category-list ng-if="visible()" facet-name="{{ name }}" hide-category-if="{{ hideCategoryIf }}" categories="categories" template="{{ customTemplate }}"></ods-facet-category-list>' +
+                '<ods-facet-category-list ng-if="visible()" facet-name="{{ name }}" value-search="{{ valueSearch }}" hide-category-if="{{ hideCategoryIf }}" categories="categories" template="{{ customTemplate }}"></ods-facet-category-list>' +
                 '</div>';
             },
             require: '^odsFacets',
@@ -8880,10 +10697,13 @@ mod.directive('infiniteScroll', [
                 }
                 scope.categories = facetsCtrl.registerFacet(scope.name, scope.sort);
                 scope.facetsCtrl = facetsCtrl;
-
+                if (angular.isString(scope.disjunctive) && scope.disjunctive.toLowerCase() === 'true') {
+                    facetsCtrl.setDisjunctive(scope.name);
+                }
             },
             controller: ['$scope', '$element', function($scope, $element) {
                 $scope.visibleItemsNumber = $scope.visibleItems || 6;
+
                 this.toggleRefinement = function(path) {
                     $scope.facetsCtrl.toggleRefinement($scope.name, path);
                 };
@@ -8907,14 +10727,19 @@ mod.directive('infiniteScroll', [
                 categories: '=',
                 template: '@',
                 facetName: '@',
-                hideCategoryIf: '@'
+                hideCategoryIf: '@',
+                valueSearch: '@'
             },
             require: '^odsFacet',
             template: '<ul class="category-list">' +
-                '<li ng-repeat="category in categories">' +
+                '<li class="value-search" ng-show="valueSearchEnabled">' +
+                    '<input ng-model="valueFilter">' +
+                    '<i ng-show="valueFilter" class="value-search-cancel icon-remove" ng-click="valueFilter=\'\'"></i>' +
+                '</li>' +
+                '<li ng-repeat="category in categories|filter:searchValue(valueFilter)">' +
                 '<ods-facet-category ng-if="!categoryIsHidden(category)" facet-name="{{ facetName }}" category="category" template="{{template}}" ng-show="visible($index)"></ods-facet-category>' +
                 '</li>' +
-                '<li ng-if="visibleItems < categories.length" class="expansion-control">' +
+                '<li ng-if="!suggestMode && visibleItems < (categories|filter:searchValue(valueFilter)).length" class="expansion-control">' +
                 '<a ng-hide="expanded" href="#" ng-click="toggle($event)" translate>More</a>' +
                 '<a ng-show="expanded" href="#" ng-click="toggle($event)" translate>Less</a>' +
                 '</li>' +
@@ -8930,6 +10755,9 @@ mod.directive('infiniteScroll', [
                     scope.expanded = !scope.expanded;
                 };
                 scope.categoryIsHidden = function(category) {
+                    if (scope.suggestMode && scope.valueFilter === '') {
+                        return true;
+                    }
                     if (!scope.hideCategoryIf) {
                         return false;
                     }
@@ -8937,7 +10765,28 @@ mod.directive('infiniteScroll', [
                     testScope.category = category;
                     return testScope.$eval(scope.hideCategoryIf);
                 };
-            }
+            },
+            controller: ['$scope', '$filter', function($scope, $filter) {
+                $scope.valueFilter = '';
+                $scope.valueSearchEnabled = false;
+                $scope.suggestMode = false;
+                if (angular.isString($scope.valueSearch)) {
+                    if ($scope.valueSearch.toLowerCase() === 'true') {
+                        $scope.valueSearchEnabled = true;
+                    } else if ($scope.valueSearch.toLowerCase() === 'suggest') {
+                        $scope.valueSearchEnabled = true;
+                        $scope.suggestMode = true;
+                    }
+                }
+                $scope.searchValue = function(search) {
+                    if (!search) { return function() { return true; }; }
+                    search = $filter('normalize')(search).toLowerCase();
+                    return function(searchedCategory) {
+                        var categoryName = $filter('normalize')(searchedCategory.name).toLowerCase();
+                        return categoryName.indexOf(search) > -1;
+                    };
+                };
+            }]
         };
     });
 
@@ -8978,6 +10827,93 @@ mod.directive('infiniteScroll', [
 
 }());
 ;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('odsFilterSummary', function() {
+        return {
+            restrict: 'E',
+            replace: true,
+            template: '<ul class="odswidget odswidget-filter-summary filters">' +
+                '<li ng-show="isParameterActive(\'q\')">' +
+                '    <a ng-click="removeParameter(\'q\')"><span class="filter-label">Text</span> {{context.parameters.q}}</a>' +
+                '</li>' +
+                '<li ng-show="isParameterActive(\'geofilter.polygon\') || isParameterActive(\'geofilter.distance\')">' +
+                '    <a ng-click="removeParameter(\'geofilter.polygon\'); removeParameter(\'geofilter.distance\');" translate>Drawn area on the map</a>' +
+                '</li>' +
+                '<li ng-repeat="refinement in refinements">' +
+                '    <a ng-click="removeParameter(\'refine.\'+refinement.groupName, refinement.path)"><span class="filter-label">{{refinement.groupLabel}}</span> {{refinement.label}}</a>' +
+                '</li>',
+            scope: {
+                context: '='
+            },
+            controller: function($scope) {
+                $scope.isParameterActive = function(name) {
+                    return $scope.context.parameters && $scope.context.parameters[name] && $scope.context.parameters[name] !== undefined;
+                };
+                var getFacetGroupLabel = function(facetGroupName) {
+                    for (var i=0; i<$scope.context.dataset.fields.length; i++) {
+                        var field = $scope.context.dataset.fields[i];
+                        if (field.name == facetGroupName) {
+                            return field.label;
+                        }
+                    }
+                };
+
+                $scope.removeParameter = function(paramName, paramValue) {
+                    if (!paramValue) {
+                        delete $scope.context.parameters[paramName];
+                    } else {
+                        var valueList = $scope.context.parameters[paramName];
+                        if (!angular.isArray(valueList)) {
+                            valueList = [valueList];
+                        }
+                        for (var i=0; i<valueList.length; i++) {
+                            if (valueList[i] == paramValue) {
+                                valueList.splice(i, 1);
+                                if (valueList.length === 0) {
+                                    delete $scope.context.parameters[paramName];
+                                }
+                                return;
+                            }
+                        }
+                    }
+                };
+                var refreshRefinements = function() {
+                    var refinements = [];
+
+                    if ($scope.context.parameters && $scope.context.dataset)
+                        for (var paramName in $scope.context.parameters) {
+                            if (paramName.substring(0, 7) == 'refine.') {
+                                var refinementPaths = $scope.context.parameters[paramName];
+                                var facetGroupName = paramName.substring(7);
+                                if (!angular.isArray(refinementPaths)) {
+                                    refinementPaths = [refinementPaths];
+                                }
+                                // Find the right top-level facets to begin
+                                for (var r=0; r<refinementPaths.length; r++) {
+                                    // Iterate over each refinement path for this facet group
+                                    var refinementPath = refinementPaths[r];
+                                    refinements.push({
+                                        groupLabel: getFacetGroupLabel(facetGroupName),
+                                        groupName: facetGroupName,
+                                        path: refinementPath,
+                                        label: refinementPath.replace(/\//g, ' > ')
+                                    });
+                                }
+                            }
+                        }
+                    $scope.refinements = refinements;
+                };
+
+                $scope.$watch('context', function(newValue, oldValue) {
+                    refreshRefinements();
+                }, true);
+            }
+        };
+    });
+}());;(function() {
     'use strict';
 
     angular.module('ods-widgets')
@@ -9168,15 +11104,61 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-
     mod.factory("requestData", ['ODSAPI', '$q', 'ChartHelper', 'AggregationHelper', function(ODSAPI, $q, ChartHelper, AggregationHelper) {
+        var buildTimescaleX = function(x, timescale) {
+            var xs = [];
+            if (timescale == 'year') {
+                xs.push(x + '.year');
+            } else if (timescale == 'month') {
+                xs.push(x + '.year');
+                xs.push(x + '.month');
+            } else if (timescale == 'day') {
+                xs.push(x + '.year');
+                xs.push(x + '.month');
+                xs.push(x + '.day');
+            } else if (timescale == 'hour') {
+                xs.push(x + '.year');
+                xs.push(x + '.month');
+                xs.push(x + '.day');
+                xs.push(x + '.hour');
+            } else if (timescale == 'minute') {
+                xs.push(x + '.year');
+                xs.push(x + '.month');
+                xs.push(x + '.day');
+                xs.push(x + '.hour');
+                xs.push(x + '.minute');
+            } else if (timescale == 'month month') {
+                xs.push(x + '.month');
+            } else if (timescale == 'day day') {
+                xs.push(x + '.day');
+            } else if (timescale == 'day weekday') {
+                xs.push(x + '.weekday');
+            } else if (timescale == 'day month') {
+                xs.push(x + '.yearday');
+            } else if (timescale == 'hour hour') {
+                xs.push(x + '.hour');
+            } else {
+                xs.push(x);
+            }
+            return xs;
+        };
         var buildSearchOptions = function(query, timeSerieMode, precision, periodic) {
-            var search_options = {
+            var breakdown,
+                search_options = {
                 dataset: query.config.dataset,
-                x: query.xAxis,
+                x: [query.xAxis],
                 sort: query.sort || '',
                 maxpoints: query.maxpoints || ''
             };
+
+            if (query.seriesBreakdown) {
+                breakdown = query.seriesBreakdown;
+                var xs = buildTimescaleX(breakdown, query.seriesBreakdownTimescale);
+                for (var i = 0; i < xs.length; i++) {
+                    search_options.x.push(xs[i]);
+                }
+                search_options['sort'] = search_options.x.map(function(item) { return 'x.' + item }).join(",");
+            }
 
             if (timeSerieMode){
                 search_options.precision = precision;
@@ -9191,59 +11173,103 @@ mod.directive('infiniteScroll', [
             }
             return search_options;
         };
-        var addSeriesToSearchOptions = function(search_options, chart, index) {
-            if(!ChartHelper.isChartSortable(chart.type)) {
-                $.each(chart.charts[0], function(key, value){
-                    search_options['y.serie' + (index+1) + 'min.'+key] = value;
-                });
-                if(chart.charts[0].func === 'QUANTILES'){
-                    if (!chart.charts[0].subsets){
-                        chart.charts[0].subsets = 50;
-                    }
-                    search_options['y.serie' + (index+1) + 'min.subsets'] = chart.charts[0].subsets;
-                }
-                $.each(chart.charts[1], function(key, value){
-                    search_options['y.serie' + (index+1) + 'max.'+key] = value;
-                });
-                if(chart.charts[1].func === 'QUANTILES'){
-                    if (!chart.charts[1].subsets){
-                        chart.charts[1].subsets = 50;
-                    }
-                    search_options['y.serie' + (index+1) + 'max.subsets'] = chart.charts[1].subsets;
-                }
+        var parseCustomExpression = function(serie, serieprefix, parentserie_for_subseries) {
+            var regex = /([A-Z_-]*?)\((.*?)\)/g;
+            var params2regex = /([A-Z_-]*?)\(([a-zA-Z0-9\.]+),\s?([0-9\.]+)\)/g;
+            var aggregates_holder = parentserie_for_subseries || serie;
+            var match;
 
-                if(search_options.sort ===  'serie' + (index+1)) {
+            serie.compiled_expr = "" + serie.expr;
+            aggregates_holder.aggregates = [];
+
+            var options = {};
+            while (match = regex.exec(serie.expr)) {
+                var extended_match = params2regex.exec(match[0]);
+                if (extended_match && extended_match.length === 4) {
+                    match = extended_match;
+                }
+                if (match && (match.length === 3 || match.length === 4)) {
+                    if (match[2].indexOf('serie') === 0) {
+                        var compiled = "operators." + match[1].toLowerCase() + ".apply(null, accumulation['" + match[2] + "']";
+                        if (match.length === 4) {
+                            compiled += ", " + match[3];
+                        }
+                        compiled += ")";
+                        serie.compiled_expr = serie.compiled_expr.replace(match[0], compiled);
+                        aggregates_holder.aggregates.push(match[2]);
+                    } else { // we are really trying to get values from the index
+                        options[serieprefix + '.func'] = match[1];
+                        options[serieprefix + '.expr'] = match[2];
+                        serie.compiled_expr += serie.compiled_expr.replace(match[0], 'y');
+                    }
+                }
+            }
+
+            return options;
+        };
+        var generateSerieOptions = function(serie, serie_name, aggregations, parent_for_subseries) {
+            var options = {};
+            if (serie.func === "CUSTOM") {
+                return parseCustomExpression(serie, 'y.' + serie_name, parent_for_subseries);
+            }
+            options['y.' + serie_name + '.expr'] = serie.yAxis || serie.expr;
+            options['y.' + serie_name + '.func'] = serie.func;
+            options['y.' + serie_name + '.cumulative'] = serie.cumulative || false;
+            if(serie.func === 'QUANTILES'){
+                if (!serie.subsets){
+                    serie.subsets = 50;
+                }
+                options['y.' + serie_name + '.subsets'] = serie.subsets || 50;
+            }
+            if (serie.func === "CONSTANT") {
+                options['y.' + serie_name + '.expr'] = serie.yAxis || 0;
+                options['y.' + serie_name + '.func'] = "AVG";
+            }
+            // if (!serie.color || serie.color.startsWith('dynamic-') || serie.color.startsWith('static-')) {
+            //     options['agg.' + serie_name + '.func'] = ['MIN', 'MAX'].join(",");
+            //     options['agg.' + serie_name + '.expr'] = serie_name;
+            // }
+            return options;
+        }
+        var addSeriesToSearchOptions = function(search_options, serie, serie_name) {
+            if(serie.type && ChartHelper.isRangeChart(serie.type)) {
+                if(search_options.sort ===  'y.' + serie_name) {
                     // cannot sort on range
                     search_options.sort = '';
                 }
-            } else {
-                search_options['y.serie' + (index+1) + '.expr'] = chart.yAxis;
-                search_options['y.serie' + (index+1) + '.func'] = chart.func;
-                search_options['y.serie' + (index+1) + '.cumulative'] = chart.cumulative || false;
-                if(chart.func === 'QUANTILES'){
-                    if (!chart.subsets){
-                        chart.subsets = 50;
-                    }
-                    search_options['y.serie' + (index+1) + '.subsets'] = chart.subsets;
+                // when trying to compute 2 quantiles on the same serie, optimize the call
+                if (serie.charts[0].func === 'QUANTILES' && serie.charts[1].func === 'QUANTILES' && serie.charts[0].yAxis === serie.charts[1].yAxis) {
+                    var temp_serie = angular.copy(serie.charts[0]);
+                    temp_serie.subsets = serie.charts[0].subsets + "," + serie.charts[1].subsets;
+                    addSeriesToSearchOptions(search_options, temp_serie, serie_name);
+                } else {
+                    addSeriesToSearchOptions(search_options, serie.charts[0], serie_name + 'min');
+                    addSeriesToSearchOptions(search_options, serie.charts[1], serie_name + 'max');
                 }
+            } else {
+                angular.extend(search_options, generateSerieOptions(serie, serie_name));
             }
-            return search_options;
         };
 
-        return function(queries, timeSerieMode, precision, periodic, domain, apikey, callback) {
+        return function(queries, search_parameters, timeSerieMode, precision, periodic, domain, apikey, callback) {
             var search_promises = [];
-            angular.forEach(queries, function(query){
+            var charts_by_query = [];
+            var original_domain = domain;
+            angular.forEach(queries, function(query, query_index){
+                var charts = {};
                 var search_options = buildSearchOptions(query, timeSerieMode, precision, periodic);
 
                 angular.forEach(query.charts, function(chart, index){
-                    
-                    addSeriesToSearchOptions(search_options, chart, index);
-
+                    var serie_name = 'serie' + (query_index + 1) + '-' + (index + 1);
+                    addSeriesToSearchOptions(search_options, chart, serie_name);
+                    charts[serie_name] = chart;
                 });
 
                 // Analyse request
                 // We have to build virtual contexts from parameters because we can source charts from multiple
                 // datasets.
+                domain = query.config.domain || original_domain;
+                apikey = query.config.apikey || apikey;
                 var virtualContext = {
                     domain: domain,
                     domainUrl: ODSAPI.getDomainURL(domain),
@@ -9252,13 +11278,16 @@ mod.directive('infiniteScroll', [
                     parameters: {}
                 };
 
-                search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, query.config.options, search_options)));
+                search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, search_parameters, query.config.options, search_options)));
+                charts_by_query.push(charts);
             });
-            $q.all(search_promises).then(callback);
+            $q.all(search_promises).then(function(promise) {
+                callback(promise, charts_by_query);
+            });
         }
     }]);
 
-    mod.directive("odsChart", ['requestData', 'translate', 'ModuleLazyLoader', 'AggregationHelper', 'ChartHelper', '$rootScope', 'odsErrorService', function(requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsErrorService) {
+    mod.directive("odsHighchartsChart", ['colorScale', 'requestData', 'translate', 'ModuleLazyLoader', 'AggregationHelper', 'ChartHelper', '$rootScope', 'odsErrorService', function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsErrorService) {
         // parameters : {
         //     timescale: year, month, week, day, hour, month year, day year, day month, day week
         //     xLabel:
@@ -9294,24 +11323,451 @@ mod.directive('infiniteScroll', [
         //         ...
         //     ]
         // }
+        var getDatasetUniqueId = function(dataset_id, domain) {
+            var uniqueid;
+            if (domain) {
+                uniqueid = domain + "." + dataset_id;
+            } else {
+                uniqueid = ChartHelper.getDatasetUniqueId(dataset_id);
+            }
+            return uniqueid;
+        };
+
+        var getTimeSerieMode = function(parameters) {
+            var precision, periodic, timeSerieMode;
+
+            if(parameters.timescale && $.grep(parameters.queries, function(query){return query.sort;}).length === 0){
+                 timeSerieMode = parameters.timescale;
+                 var tokens = timeSerieMode.split(' ');
+                 precision = tokens[0];
+                 periodic = tokens.length == 2 ? tokens[1] : '';
+            } else {
+                timeSerieMode = false;
+                precision = false;
+                periodic = false;
+            }
+
+            return {
+                'precision': precision,
+                'periodic': periodic,
+                'timeSerieMode': timeSerieMode
+            };
+        }
+
+        var getGlobalOptions = function(parameters, precision, periodic, chartplaceholder, domain) {
+            var height = chartplaceholder.height();
+            var width = chartplaceholder.width();
+
+            if (parameters.queries.length === 0) {
+                parameters.xLabel = '';
+            } else {
+                if (!angular.isDefined(parameters.xLabel)) {
+                    var datasetid = getDatasetUniqueId(parameters.queries[0].config.dataset, domain);
+                    parameters.xLabel = ChartHelper.getXLabel(datasetid, parameters.queries[0].xAxis, parameters.timescale);
+                }
+            }
+
+            if (angular.isUndefined(parameters.displayLegend)) {
+                parameters.displayLegend = true;
+            }
+            var options = {
+                chart: {},
+                title: {text: ''},
+                credits: {enabled: false},
+                series: [],
+                xAxis: {
+                    title: {
+                        text: parameters.xLabel
+                    },
+                    labels: {
+                        step: 1,
+                        rotation: -45,
+                        align: 'right'
+                    },
+                    startOfWeek: 1,
+                    minPadding: 0,
+                    maxPadding: 0,
+                    dateTimeLabelFormats: {
+                        second: '%H:%M:%S',
+                        minute: '%H:%M',
+                        hour: '%H:%M',
+                        day: '%e %b %y',
+                        week: '%e. %b',
+                        month: '%b \'%y',
+                        year: '%Y'
+                    }
+                    // startOnTick: true,
+                    // endOnTick: true,
+                },
+                legend: {
+                    enabled: !!parameters.displayLegend
+                },
+                // legend: {
+                //     align: 'right',
+                //     verticalAlign: 'top',
+                //     layout: 'vertical',
+                //     x: -10,
+                //     y: 50,
+                //     floating: false,
+                //     borderWidth: 0,
+                //     width: width/5
+                // },
+                yAxis: [],
+                plotOptions: {
+                    series: {
+                        animation: false
+                    },
+                    columnrange: {
+                        pointPadding: 0,
+                        groupPadding: 0,
+                        borderWidth: 0,
+                        tooltip: {
+                            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
+                        }
+                    },
+                    arearange: {
+                        tooltip: {
+                            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
+                        }
+                    },
+                    areasplinerange: {
+                        tooltip: {
+                            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
+                        }
+                    },
+                    pie: {
+                        tooltip: {
+                            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y} ({point.percentage:.1f}%)</b>'
+                        }
+                    }
+                },
+                tooltip: {
+                    valueDecimals: 2,
+                    headerFormat: '{point.key}<br>',
+                    pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b>',
+                    formatter: function (tooltip) {
+                        var items = this.points || angular.isArray(this) ? this : [this],
+                            series = items[0].series,
+                            s;
+
+                        // build the header
+                        s = [tooltip.tooltipHeaderFormatter(items[0])];
+
+                        // build the values
+                        angular.forEach(items, function (item) {
+                            series = item.series;
+                            var value = (series.tooltipFormatter && series.tooltipFormatter(item)) || item.point.tooltipFormatter(series.tooltipOptions.pointFormat);
+                            value = value.replace(/(\.|,)00</, '<');
+                            s.push(value);
+                        });
+                        // footer
+                        s.push(tooltip.options.footerFormat || '');
+
+                        return s.join('');
+                    }
+                },
+                noData: {
+                    style: {
+                        fontFamily: 'Open Sans',
+                        fontWeight: 'normal',
+                        fontSize: '1.4em',
+                        color: '#333',
+                        opacity: '0.5'
+                    }
+                },
+                lang: {
+                    noData: translate("No data available yet")
+                }
+            };
+
+            if (precision) {
+                options.xAxis.type = 'datetime';
+                options.xAxis.maxZoom = 3600000; // fourteen days
+                options.chart.zoomType = 'xy';
+            } else {
+                options.xAxis.categories = [];
+            }
+
+            if (periodic === "month") {  // month of year
+                options.xAxis.labels.format = "{value: %B}";
+            } else if (periodic === "weekday") {  // day of week
+                options.xAxis.labels.format = "{value: %A}";
+            } else if (periodic === "day") {  // day of month
+                options.xAxis.labels.format = "{value: %d}";
+            } else if (periodic === "hour") {
+                options.xAxis.labels.format = "{value: %H}";
+            }
+
+            if(parameters.singleAxis) {
+                var yAxisParamaters = {
+                    color: "#000000",
+                    scale: parameters.singleAxisScale,
+                    yRangeMin: parameters.yRangeMin,
+                    yRangeMax: parameters.yRangeMax,
+                };
+
+                options.yAxis = [buildYAxis(parameters.singleAxisLabel, yAxisParamaters, false)];
+            }
+
+            return options;
+        };
+
+        var colors = {};
+        var colorsIndex = 0;
+        var getSerieOptions = function(parameters, yAxisesIndexes, query, serie, suppXValue, domain) {
+            var datasetid = ChartHelper.getDatasetId({dataset: {datasetid: query.config.dataset}, domain: domain});
+            var yLabel = ChartHelper.getYLabel(datasetid, serie);
+            var serieColor;
+            if (!suppXValue && serie.type !== 'pie') {
+                serieColor = colorScale.getUniqueColor(serie.color);
+            } else if ( serie.type === 'pie') {
+                if (!serie.extras) {
+                    serie.extras = {};
+                }
+                serie.extras.colors = colorScale.getColors(serie.color);
+            } else {
+                if (!colors[suppXValue + serie.color]) {
+                    colors[suppXValue + serie.color] = colorScale.getColorAtIndex(serie.color, colorsIndex);
+                    colorsIndex++;
+                }
+                serieColor = colors[suppXValue + serie.color];
+            }
+
+            var options = angular.extend({}, {
+                name: suppXValue ? suppXValue : yLabel,
+                color: serieColor,
+                type: serie.type,
+                yAxis: parameters.singleAxis ? 0 : yAxisesIndexes[datasetid][yLabel],
+                marker: {
+                    enabled: (serie.type === 'scatter'),
+                    radius: 3
+                },
+                shadow: false,
+                tooltip: {},
+                // zIndex: 
+                data: [],
+                stacking: query.stacked ? query.stacked : null
+            }, serie.extras);
+
+            options = angular.extend(options, ChartHelper.resolvePosition(serie.position));
+            delete options.position;
+            return options;
+        };
+
+        var buildDatePattern = function(object) {
+            var datePattern = '';
+            if (angular.isObject(object) && ('year' in object || 'month' in object || 'day' in object || 'hour' in object || 'minute' in object || 'weekday' in object)) {
+                if(! ('year' in object)){
+                    if('month' in object){
+                        datePattern = '%B';
+                    }
+                    if('day' in object){
+                        if('month' in object){
+                            datePattern = '%e %B';
+                        } else {
+                            datePattern = '%e';
+                        }
+                    }
+                    if('weekday' in object){
+                        datePattern = '%a';
+                    }
+                    if('hour' in object){
+                         datePattern = '%Hh';
+                    }
+                } else {
+                    if('day' in object){
+                        datePattern += ' %e';
+                    }
+                    if('month' in object){
+                        datePattern += ' %B';
+                    }
+                    datePattern += ' %Y';
+
+                    if('hour' in object){
+                        if('minute' in object){
+                             datePattern += ' %Hh%M';
+                        } else {
+                            datePattern +=' %Hh';
+                        }
+                    }
+                }
+            }
+            return datePattern;
+        }
+
+        var getContextualizedSeriesOptions = function(x, timeSerieMode) {
+            var options = {
+                'tooltip': {}
+            };
+
+            if (timeSerieMode) {
+                // options.pointPadding = 0;
+                // options.groupPadding = 0;
+                // options.borderWidth = 0;
+                options.tooltip.xDateFormat = buildDatePattern(x);
+            }
+
+            return options;
+        };
+        
+        var updateXAxisOptionsFromData = function(x, options, timeSerieMode) {
+            if (timeSerieMode && angular.isObject(x)) {
+                if ('second' in x){
+                    options.minTickInterval = Date.UTC(2010, 1, 1, 1, 1, 2) - Date.UTC(2010, 1, 1, 1, 1, 1);
+                } else if ('minute' in x){
+                    options.minTickInterval = Date.UTC(2010, 1, 1, 1, 2) - Date.UTC(2010, 1, 1, 1, 1);
+                } else if ('hour' in x){
+                    options.minTickInterval = Date.UTC(2010, 1, 1, 2) - Date.UTC(2010, 1, 1, 1);
+                } else if ('weekday' in x){
+                    options.minTickInterval = Date.UTC(2010, 1, 2) - Date.UTC(2010, 1, 1);
+                } else if ('day' in x) {
+                    options.minTickInterval = Date.UTC(2010, 1, 2) - Date.UTC(2010, 1, 1);
+                } else if ('month' in x){
+                    options.minTickInterval = Date.UTC(2010, 1, 1) - Date.UTC(2010, 0, 1);
+                } else if ('year' in x){
+                    options.minTickInterval = Date.UTC(2010, 0, 1) - Date.UTC(2009, 0, 1);
+                }
+            }
+        }
+
+        var buildYAxis = function(yLabel, chart, opposite, stacked) {
+            var hasMin = typeof chart.yRangeMin !== "undefined" && chart.yRangeMin !== '';
+            var hasMax = typeof chart.yRangeMax !== "undefined" && chart.yRangeMax !== '';
+            var yAxis = {
+                title: {
+                    text: yLabel || "",
+                    style: {
+                        color: chart.color
+                    }
+                },
+                labels: {
+                    style: {
+                        color: chart.color
+                    }
+                },
+                type: chart.scale || 'linear',
+                min: hasMin ? chart.yRangeMin : null,
+                max: hasMax ? chart.yRangeMax : null,
+                startOnTick: hasMin ? false : true,
+                endOnTick: hasMax ? false : true,
+                opposite: opposite
+            };
+
+            if (stacked) {
+                yAxis.stackLabels = {
+                    enabled: true
+                };
+            }
+
+            return yAxis;
+        };
+
+        var getDateFromXObject = function(x, minDate) {
+            var minYear = minDate ? minDate.getFullYear() : 2000;
+            var minMonth = minDate ? minDate.getMonth() : 0;
+            var minDay = minDate ? minDate.getDate() : 1;
+            var minHour = minDate ? minDate.getHours() : 0;
+            var minMinute = minDate ? minDate.getMinutes() : 0;
+            if (angular.isObject(x) && ('year' in x || 'month' in x || 'day' in x || 'hour' in x || 'minute' in x || 'weekday' in x)) {
+                // default to 2000 because it's a leap year
+                var date = new Date(x.year || minYear, x.month-1 || 0, x.day || 1, x.hour || 0, x.minute || 0);
+                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
+                date.setFullYear(x.year || minYear);
+                if (!'month' in x) date.setUTCMonth(minMonth);
+                if (!'day' in x) date.setUTCDate(minDay);
+                if (!'hour' in x) date.setUTCHours(minHour);
+                if (!'minute' in x) date.setUTCMinutes(minMinute);
+                if(! ('year' in x)){
+                    if('weekday' in x){
+                        date.setDate(date.getDate() + 7 - date.getDay() + x.weekday );
+                    }
+                }
+                if('day' in x){
+                    // handle bisextil years
+                    if(x.day == 29 && x.month == 2) {
+                        date.setDate(28);
+                        date.setMonth(1);
+                    }
+                } else {
+                    if('month' in x){
+                        date.setDate(16);
+                    }
+                }
+                return date;
+            }
+        };
+
+        function getXValue(dateFormatFunction, datePattern, x, minDate, precision) {
+            var date = getDateFromXObject(x, minDate);
+            if (date && precision) {
+                return date.getTime();
+            } else if (date) {
+                return dateFormatFunction(datePattern, date);
+            } else {
+                return "" + x;
+            }
+        }
+
+        function getValidYValue(value, chart){
+            if (chart.func === 'QUANTILES' && chart.subsets) {
+                // elastic search now returns a float value as key, for now we just hack the thing to get the correct key
+                if (typeof value[chart.subsets + ".0"] === "undefined") {
+                    return null;
+                } else {
+                    return value[chart.subsets + ".0"];
+                }
+            } else {
+                if (typeof value === "undefined") {
+                    return null;
+                } else {
+                    return value;
+                }
+            }
+        }
+
+        function compileAggrValue(scope, compiled_expr, accumulations, aggregates) {
+            var valueY;
+            try {
+                valueY = scope.$eval(compiled_expr, {
+                        operators: Math,
+                        accumulation: function(accumulations, needed_aggregates) {
+                            var res = {};
+                            angular.forEach(needed_aggregates, function(k) {
+                                res[k] = accumulations[k]
+                            });
+                            return res;
+                        }(accumulations, aggregates),
+                        console: console
+                    }
+                );
+            } catch (e) {
+                console.warn("Error while compiling aggregation value with expr", compiled_expr);
+            }
+
+            return valueY;
+        }
+
         return {
             restrict: 'A',
-            // scope: true,
             replace: true,
+            require: ["odsHighchartsChart"],
             scope: {
-                parameters: '=odsChart',
+                parameters: '=parameters',
                 domain: '=',
                 apikey: '=',
                 colors: '='
             },
             template: '<div class="ods-chart"><div class="chartplaceholder"></div><debug data="chartoptions"></debug></div>',
-            link: function(scope, element, attrs) {
-                var update = function() {};
-                var chartplaceholder = element.find('.chartplaceholder');
-                ModuleLazyLoader('highcharts').then(function() {
+            controller: ['$scope', '$element', '$attrs', function($scope) {
+                var timeSerieMode, precision, periodic, yAxisesIndexes, domain,
+                    that = this;
+                this.highchartsLoaded = function(Highcharts, element) {
+                    var chartplaceholder = element.find('.chartplaceholder');
+
                     Highcharts.setOptions({
                         global: {useUTC: false}
                     });
+
                     function formatRowX(value){
                         if (periodic) {
                             console.warn('formatRowX on periodic value should not be used anymore');
@@ -9354,332 +11810,18 @@ mod.directive('infiniteScroll', [
                         }
                     }
 
-                    var timeSerieMode, precision, periodic, yAxisesIndexes;
-                    var getDatasetUniqueId = function(dataset_id) {
-                        var datasetid;
-                        if (scope.domain) {
-                            datasetid = scope.domain + "." + dataset_id;
-                        } else {
-                            datasetid = ChartHelper.getDatasetUniqueId(dataset_id);
-                        }
-                        return datasetid;
-                    }
-
-                    var getGlobalOptions = function(parameters) {
-                        var height = chartplaceholder.height();
-                        var width = chartplaceholder.width();
-                        
-                        if (parameters.queries.length === 0) {
-                            parameters.xLabel = '';
-                        } else {
-
-                            var datasetid = getDatasetUniqueId(parameters.queries[0].config.dataset);
-                            parameters.xLabel = ChartHelper.getXLabel(datasetid, parameters.queries[0].xAxis, parameters.timescale);
-                        }
-
-                        var options = {
-                            chart: {
-                            },
-                            title: {text: ''},
-                            credits: {enabled: false},
-                            colors: [],
-                            series: [],
-                            xAxis: {
-                                title: {
-                                    text: (parameters.queries.length > 0) ? (parameters.xLabel || parameters.queries[0].xAxis) :  "" // all charts must use the same xAxis
-                                },
-                                labels: {
-                                    step: 1,
-                                    rotation: -45,
-                                    align: 'right'
-                                },
-                                minPadding: 0,
-                                maxPadding: 0,
-                                dateTimeLabelFormats: {
-                                    second: '%H:%M:%S',
-                                    minute: '%H:%M',
-                                    hour: '%H:%M',
-                                    day: '%e %b %y',
-                                    week: '%e. %b',
-                                    month: '%b \'%y',
-                                    year: '%Y'
-                                }
-                                // startOnTick: true,
-                                // endOnTick: true,
-                            },
-                            // legend: {
-                            //     // align: 'right',
-                            //     // verticalAlign: 'bottom',
-                            //     // layout: 'horizontal',
-                            //     // x: -10,
-                            //     y: 0,
-                            //     // floating: false,
-                            //     borderWidth: 0,
-                            //     // width: width/5
-                            // },
-                            yAxis: [],
-                            plotOptions: {
-                                columnrange: {
-                                    pointPadding: 0,
-                                    groupPadding: 0,
-                                    borderWidth: 0,
-                                    tooltip: {
-                                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
-                                    }
-                                },
-                                arearange: {
-                                    tooltip: {
-                                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
-                                    }
-                                },
-                                areasplinerange: {
-                                    tooltip: {
-                                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
-                                    }
-                                },
-                                pie: {
-                                    tooltip: {
-                                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y} ({point.percentage:.1f}%)</b>'
-                                    }
-                                }
-                            },
-                            tooltip: {
-                                valueDecimals: 2,
-                                headerFormat: '{point.key}<br>',
-                                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b>',
-                                formatter: function (tooltip) {
-                                    var items = this.points || angular.isArray(this) ? this : [this],
-                                        series = items[0].series,
-                                        s;
-
-                                    // build the header
-                                    s = [tooltip.tooltipHeaderFormatter(items[0])];
-
-                                    // build the values
-                                    angular.forEach(items, function (item) {
-                                        series = item.series;
-                                        var value = (series.tooltipFormatter && series.tooltipFormatter(item)) || item.point.tooltipFormatter(series.tooltipOptions.pointFormat);
-                                        value = value.replace(/(\.|,)00</, '<');
-                                        s.push(value);
-                                    });
-                                    // footer
-                                    s.push(tooltip.options.footerFormat || '');
-
-                                    return s.join('');
-                                }
-                            },
-                            noData: {
-                                style: {
-                                    fontFamily: 'Open Sans',
-                                    fontWeight: 'normal',
-                                    fontSize: '1.4em',
-                                    color: '#333',
-                                    opacity: '0.5'
-                                }
-                            },
-                            lang: {
-                                noData: translate("No data available yet")
-                            }
-                        };
-                        scope.chartoptions = options;
-
-                        // is it a timeSerie ? with default sort
-                        if(parameters.timescale && $.grep(parameters.queries, function(query){return query.sort;}).length === 0){
-                             timeSerieMode = parameters.timescale;
-                             var tokens = timeSerieMode.split(' ');
-                             precision = tokens[0];
-                             periodic = tokens.length == 2 ? tokens[1] : '';
-                        } else {
-                            timeSerieMode = false;
-                            precision = false;
-                            periodic = false;
-                        }
-
-                        if (precision) {
-                            options.xAxis.type = 'datetime';
-                            options.xAxis.maxZoom = 3600000; // fourteen days
-                            options.chart.zoomType = 'xy';
-                        } else {
-                            options.xAxis.categories = [];
-                        }
-
-                        if (periodic === "month") {  // month of year
-                            options.xAxis.labels.format = "{value: %B}";
-                        } else if (periodic === "weekday") {  // day of week
-                            options.xAxis.labels.format = "{value: %A}";
-                        } else if (periodic === "day") {  // day of month
-                            options.xAxis.labels.format = "{value: %d}";
-                        } else if (periodic === "hour") {
-                            options.xAxis.labels.format = "{value: %H}";
-                        }
-
-                        if(parameters.singleAxis) {
-                            var hasMin = typeof parameters.yRangeMin !== "undefined" && parameters.yRangeMin !== '',
-                                hasMax = typeof parameters.yRangeMax !== "undefined" && parameters.yRangeMax !== '';
-                            options.yAxis = [{
-                                title: {
-                                    text: parameters.singleAxisLabel || ""
-                                },
-                                type: parameters.singleAxisScale || "linear",
-                                min: hasMin ? parameters.yRangeMin : null,
-                                max: hasMax ? parameters.yRangeMax : null,
-                                startOnTick: hasMin ? false : true,
-                                endOnTick: hasMax ? false : true
-                            }];
-                        }
-                        
-                        return options;
-                    };
-                    var getSerieOptions = function(parameters, query, chart) {
-                        var datasetid = getDatasetUniqueId(query.config.dataset);
-                        var yLabel = ChartHelper.getYLabel(datasetid, chart);
-
-                        var options = angular.extend({}, {
-                            name: yLabel,
-                            color: chart.color,
-                            type: chart.type,
-                            yAxis: parameters.singleAxis ? 0 : yAxisesIndexes[datasetid][yLabel],
-                            marker: {
-                                enabled: (chart.type === 'scatter'),
-                                radius: 3
-                            },
-                            shadow: false,
-                            tooltip: {},
-                            data: []
-                        }, chart.extras);
-                        options = angular.extend(options, ChartHelper.resolvePosition(chart.position));
-                        delete options.position;
-                        return options;
-                    };
-
-                    var getContextualizedSeriesOptions = function(row, globalOptions) {
-                        var options = {
-                            'tooltip': {}
-                        };
-
-                        if (angular.isObject(row.x) && ('year' in row.x || 'month' in row.x || 'day' in row.x || 'hour' in row.x || 'minute' in row.x)) {
-                            // options.series[series_index + j].pointPlacement = 'between';
-                            options.pointPadding = 0;
-                            options.groupPadding = 0;
-                            options.borderWidth = 0;
-
-                            // TimeSerie structure is different
-                            // push row data into proper serie data array
-                            // var date;
-                            // // default to 2000 because it's a leap year
-                            // date = new Date(row.x.year || 2000, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
-                            // // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
-                            // date.setFullYear(row.x.year || 2000);
-                            var datePattern = '';
-                            if(! ('year' in row.x)){
-                                // if(minDate){
-                                //     date.setYear(minDate.getFullYear());
-                                // }
-                                if('month' in row.x){
-                                    datePattern = '%B';
-                                }
-                                if('day' in row.x){
-                                    if('month' in row.x){
-                                        datePattern = '%e %B';
-                                    } else {
-                                        datePattern = '%e';
-                                    }
-                                }
-                                if('weekday' in row.x){
-                                    // date.setDate(date.getDate() - (date.getDay() - 1) + row.x.weekday); // a bit ugly
-                                    // need to set a date that starts with a monday, then add the weekday offset ?
-                                    datePattern = '%a';
-                                }
-                                if('hour' in row.x){
-                                     datePattern = '%Hh';
-                                }
-                            } else {
-                                if('day' in row.x){
-                                    datePattern += ' %e';
-                                }
-                                if('month' in row.x){
-                                    datePattern += ' %B';
-                                }
-                                datePattern += ' %Y';
-
-                                if('hour' in row.x){
-                                    if('minute' in row.x){
-                                         datePattern += ' %Hh%M';
-                                    } else {
-                                        datePattern +=' %Hh';
-                                    }
-                                }
-                            }
-                            options.tooltip.xDateFormat = datePattern;
-
-                            if('month' in row.x){
-                                options.pointRange = 30.5*24*3600*1000;
-                            }
-                            if ('day' in row.x) {
-                                options.pointRange = 24*3600*1000;
-                            }
-                            if('weekday' in row.x){
-                                options.pointRange = 24*3600*1000;
-                            }
-                            if('hour' in row.x){
-                                 options.pointRange = 3600*1000;
-                            }
-                        } else {
-                            globalOptions.xAxis.categories.push(formatRowX(row.x));
-                        }
-                        return options;
-                    }
-
-                    var getDateFromRow = function(row, minDate) {
-                        var minYear = minDate ? minDate.getFullYear() : 2000;
-                        var minMonth = minDate ? minDate.getMonth() : 0;
-                        var minDay = minDate ? minDate.getDate() : 1;
-                        var minHour = minDate ? minDate.getHours() : 0;
-                        var minMinute = minDate ? minDate.getMinutes() : 0;
-                        if (angular.isObject(row.x) && ('year' in row.x || 'month' in row.x || 'day' in row.x || 'hour' in row.x || 'minute' in row.x)) {
-                            // default to 2000 because it's a leap year
-                            var date = new Date(row.x.year || minYear, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
-                            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
-                            if (!'month' in row.x) date.setMonth(minMonth);
-                            if (!'day' in row.x) date.setDate(minDay);
-                            if (!'hour' in row.x) date.setHours(minHour);
-                            if (!'minute' in row.x) date.setMinutes(minMinute);
-                            date.setFullYear(row.x.year || minYear);
-                            if(! ('year' in row.x)){
-                                if('weekday' in row.x){
-                                    date.setDate(date.getDate() - (date.getDay() - 1) + row.x.weekday); // a bit ugly
-                                }
-                            }
-                            if('day' in row.x){
-                                // handle bisextil years
-                                if(row.x.day == 29 && row.x.month == 2) {
-                                    date.setDate(28);
-                                    date.setMonth(1);
-                                }
-                            } else {
-                                if('month' in row.x){
-                                    date.setDate(16);
-                                }
-                            }
-                            return date;
-                        }
-                    };
-
                     var last_parameters_hash;
-                    update = function(parameters) {
+                    that.update = function(parameters) {
                         if (typeof parameters === "undefined") {
-                            parameters = scope.parameters;
+                            parameters = $scope.parameters;
                         }
+
                         // make a copy of the parameters to make sure that we will not trigger any external watches by modifying this object
                         parameters = angular.copy(parameters);
 
-                        if (last_parameters_hash === angular.toJson(parameters)) {
-                            return;
-                        }
-
                         if (!parameters || !parameters.queries || parameters.queries.length === 0) {
-                            if (scope.chart) {
-                                angular.element(scope.chart.container).empty();
+                            if ($scope.chart) {
+                                angular.element($scope.chart.container).empty();
                             }
                             return;
                         }
@@ -9689,80 +11831,149 @@ mod.directive('infiniteScroll', [
                         precision = undefined;
                         periodic = undefined;
                         yAxisesIndexes = {};
+
                         // make sure all required datasets metadata are loaded
                         for (var i = 0; i < parameters.queries.length; i++) {
                             try {
-                                getDatasetUniqueId(parameters.queries[i].config.dataset);
+                                getDatasetUniqueId(parameters.queries[i].config.dataset, domain);
                             } catch (e) {
-                                ChartHelper.onLoad(update);
+                                ChartHelper.onLoad(that.update);
                                 return;
                             }
                         }
+                        var timeserie = getTimeSerieMode(parameters);
+                        timeSerieMode = timeserie['timeSerieMode'];
+                        precision = timeserie['precision'];
+                        periodic = timeserie['periodic'];
 
-                        last_parameters_hash = angular.toJson(parameters);
-
-                        var options = getGlobalOptions(parameters);
+                        var options = getGlobalOptions(parameters, precision, periodic, chartplaceholder, domain);
+                        $scope.chartoptions = options;
                         angular.forEach(parameters.queries, function(query) {
-                            var datasetid = getDatasetUniqueId(query.config.dataset);
-                            yAxisesIndexes[datasetid] = {};
+                            var datasetid = ChartHelper.getDatasetId({dataset: {datasetid: query.config.dataset}, domain: query.config.domain});
+                            if (angular.isUndefined(yAxisesIndexes[datasetid])) {
+                                yAxisesIndexes[datasetid] = {};
+                            }
                             angular.forEach(query.charts, function(chart) {
                                 var yLabel = ChartHelper.getYLabel(datasetid, chart);
-                                if(!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])){
+                                if (!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])) {
                                     // we dont yet have an axis for this column :
                                     // Create axis and register it in yAxisesIndexes
-                                    var hasMin = typeof chart.yRangeMin !== "undefined" && chart.yRangeMin !== '';
-                                    var hasMax = typeof chart.yRangeMax !== "undefined" && chart.yRangeMax !== '';
-                                    yAxisesIndexes[datasetid][yLabel] = options.yAxis.push({
-                                        // labels:
-                                        title: {
-                                            text: yLabel,
-                                            style: {
-                                                color: chart.color
-                                            }
-                                        },
-                                        labels: {
-                                            style: {
-                                                color: chart.color
-                                            }
-                                        },
-                                        type: chart.scale || 'linear',
-                                        min: hasMin ? chart.yRangeMin : null,
-                                        max: hasMax ? chart.yRangeMax : null,
-                                        startOnTick: hasMin ? false : true,
-                                        endOnTick: hasMax ? false : true,
-                                        opposite: !!(options.yAxis.length % 2)  //boolean casting
-                                    }) - 1;
+                                    var yAxis = buildYAxis(yLabel, chart, !!(options.yAxis.length % 2), chart.stacked);
+                                    yAxisesIndexes[datasetid][yLabel] = options.yAxis.push(yAxis) - 1;
                                 }
 
-                                // instantiate series
-                                options.series.push(getSerieOptions(parameters, query, chart));
-                                
                                 if( chart.type == 'bar') {
                                     // bar chart invert axis, thus we have to cancel the label rotation
                                     options.xAxis.labels.rotation = 0;
                                 }
-                                options.colors.push(chart.color);
+                                chart.colorScale = colorScale.getScale(chart.color);
+
+                                if (!ChartHelper.allowThresholds(chart.type)) {
+                                    delete chart.thresholds;
+                                } else if (chart.thresholds) {
+                                    for (var i = 0; i < chart.thresholds.length; i++) {
+                                        if (!angular.isNumber(chart.thresholds[i].value)) {
+                                            chart.thresholds.splice(i, 1);
+                                        }
+                                    }
+                                    chart.thresholds = chart.thresholds.sort(function(a, b) {
+                                        return a.value > b.value;
+                                    });
+                                }
                             });
 
                         });
 
-                        function getValue(value, chart){
-                            if(chart.func === 'QUANTILES' && chart.subsets) {
-                                // elastic search now returns a float value as key, for now we just hack the thing to get the correct key
-                                return value[chart.subsets + ".0"];
-                            } else {
-                                if (typeof value === "undefined") {
-                                    return null;
+
+                        function pushValues(serie, categoryIndex, scale, valueX, valueY, color, thresholds) {
+                            if (options.xAxis.type === 'datetime') {
+                                if (typeof valueY === 'object') {
+                                    var min = valueY[0],
+                                        max = valueY[1];
+                                    if (scale === 'logarithmic' && (min <= 0 || max <= 0)) {
+                                        serie.data.push([
+                                            valueX,
+                                            null,
+                                            null
+                                        ]);
+                                    } else {
+                                        serie.data.push([
+                                            valueX,
+                                            min,
+                                            max
+                                        ]);
+                                    }
+                                } else if (serie.type == 'pie') {
+                                    serie.data.push({
+                                        name: Highcharts.dateFormat(serie.tooltip.xDateFormat, new Date(valueX)),
+                                        y: valueY
+                                    });
                                 } else {
-                                    return value;
+                                    if (scale === 'logarithmic' && valueY <= 0) {
+                                        serie.data.push([
+                                            valueX,
+                                            null
+                                        ]);
+                                    } else {
+                                        serie.data.push([
+                                            valueX,
+                                            valueY
+                                        ]);
+                                    }
+                                    if (thresholds.length > 0) {
+                                        for (var i = thresholds.length - 1; i >= 0; i--) {
+                                            if (valueY >= thresholds[i].value) {
+                                                serie.data[serie.data.length - 1] = {
+                                                    'x': serie.data[serie.data.length - 1][0],
+                                                    'y': serie.data[serie.data.length - 1][1],
+                                                    'color': thresholds[i].color
+                                                };
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            } else { // !precision
+                                // push row data into proper serie data array
+                                if(serie.type == 'pie') {
+                                    serie.data[categoryIndex] = {
+                                        name: formatRowX(valueX),
+                                        y: valueY
+                                    };
+                                } else {
+                                    if (typeof valueY === 'object') {
+                                        var min = valueY[0],
+                                            max = valueY[1];
+                                        if (scale === 'logarithmic' && (min <= 0 || max <= 0)) {
+                                            serie.data[categoryIndex] = [null, null];
+                                        } else {
+                                            serie.data[categoryIndex] = [min, max];
+                                        }
+                                    } else {
+                                        if (scale === 'logarithmic' && valueY <= 0) {
+                                            serie.data[categoryIndex] = null;
+                                        } else {
+                                            serie.data[categoryIndex] = valueY;
+                                        }
+                                    }
+    
+                                    if (thresholds.length > 0) {
+                                        for (var i = thresholds.length - 1; i >= 0; i--) {
+                                            if (valueY >= thresholds[i].value) {
+                                                serie.data[categoryIndex] = {
+                                                    'y': serie.data[categoryIndex],
+                                                    'color': thresholds[i].color
+                                                };
+                                                break;
+                                            }
+                                        }
+                                    }
                                 }
                             }
+
                         }
 
-                        requestData(parameters.queries, timeSerieMode, precision, periodic, scope.domain, scope.apikey, function(http_calls){
-                            // compute
-                            var series_index = 0;
-
+                        requestData(parameters.queries, $scope.searchoptions, timeSerieMode, precision, periodic, $scope.domain, $scope.apikey, function(http_calls, charts_by_calls){
                             // If there is both periodic & datetime timescale, we need to find the min date to properly offset the periodic data
                             var minDate;
                             if (precision) {
@@ -9781,103 +11992,223 @@ mod.directive('infiniteScroll', [
                                     }
                                 }
                             }
-                            angular.forEach(http_calls, function(http_call, index){
-                                // transform data format to a format understood by the chart plugin
-                                var nb_series = parameters.queries[index].charts.length;
-                                for (var i=0; i < http_call.data.length; i++) {
-                                    var row = http_call.data[i];
-                                    var serie_options = getContextualizedSeriesOptions(row, options);
-                                    var dateX = getDateFromRow(row, minDate);
-                                    var valueX;
 
-                                    if (dateX && precision) {
-                                        valueX = dateX.getTime();
-                                    } else if (dateX) {
-                                        valueX = Highcharts.dateFormat(serie_options.tooltip.xDateFormat, dateX);
-                                    } else {
-                                        valueX = "" + row.x;
+
+                            var registered_series = [];
+                            for (var i = 0; i < parameters.queries.length; i++) {
+                                if (!parameters.queries[i].seriesBreakdown) {
+                                    for (var j = 0; j < parameters.queries[i].charts.length; j++) {
+                                        registered_series.push('serie' + (i + 1) + '-' + (j + 1));
+                                        options.series.push(false);
                                     }
+                                }
+                            }
+                            var handleSerie = function(serieHash, parameters, options, serie_options, query, serie, valueX, valueY, rawValueX) {
+                                var serieIndex = registered_series.indexOf(serieHash);
+                                var color = serie.colorScale(valueY).hex();
+                                var categoryIndex;
 
-                                    for (var j=0; j < nb_series; j++) {
-                                        var current_serie = series_index + j;
-                                        var chart = parameters.queries[index].charts[j];
-                                        var serie = options.series[current_serie];
+                                if (serieIndex === -1) {
+                                    options.series.push(getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain));
+                                    serieIndex = registered_series.push(serieHash) - 1;
+                                } else if (!options.series[serieIndex]) {
+                                    options.series[serieIndex] = getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain);
+                                }
 
-                                        serie = angular.extend(serie, serie_options);
+                                if (!precision && (categoryIndex = options.xAxis.categories.indexOf(valueX)) === -1) {
+                                    categoryIndex = options.xAxis.categories.length;
+                                    options.xAxis.categories.push(valueX);
+                                }
 
-                                        if (options.xAxis.type === 'datetime') {
-                                            if(['arearange', 'areasplinerange', 'columnrange'].indexOf(serie.type) >= 0){
-                                                var min = getValue(row["serie"+(j+1)+"min"], chart.charts[0]);
-                                                var max = getValue(row["serie"+(j+1)+"max"], chart.charts[1]);
-                                                if (scope.parameters.singleAxisScale === 'logarithmic' && (min <= 0 || max <= 0)) {
-                                                    serie.data.push([
-                                                        valueX,
-                                                        null,
-                                                        null
-                                                    ]);
-                                                } else {
-                                                    serie.data.push([
-                                                        valueX,
-                                                        min,
-                                                        max
-                                                    ]);
-                                                }
-                                            } else if (serie.type == 'pie') {
-                                                serie.data.push([
-                                                    Highcharts.dateFormat(serie_options.tooltip.xDateFormat, new Date(dateX)),
-                                                    getValue(row["serie"+(j+1)], chart)
-                                                ]);
-                                            } else {
-                                                var value = getValue(row["serie"+(j+1)], chart);
-                                                if (scope.parameters.singleAxisScale === 'logarithmic' && value <= 0) {
-                                                    serie.data.push([valueX, null]);
-                                                } else {
-                                                    serie.data.push([valueX, value]);
-                                                }
+                                if (!rawValueX && serie.type !== 'pie') {
+                                    pushValues(angular.extend(options.series[serieIndex], serie_options), categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, serie.colorScale(valueY).hex(), serie.thresholds || []);
+                                } else {
+                                    pushValues(angular.extend(options.series[serieIndex], serie_options), categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, options.series[serieIndex].color, serie.thresholds || []);
+                                }
+                            }
+
+
+                            angular.forEach(http_calls, function(http_call, index) {
+                                var results, aggregations;
+                                if (!http_call.data || http_call.data.length === 0) {
+                                    return;
+                                }
+
+                                if (http_call.data.results) {
+                                    results = http_call.data.results;
+                                    aggregations = http_call.data.aggregations;
+                                } else {
+                                    results = http_call.data;
+                                }
+
+                                if (results.length === 0) return;
+
+                                // first thing, we should analyze the first record and get x values
+                                var query = parameters.queries[index];
+                                var charts = charts_by_calls[index];
+                                var xAxis = query.xAxis;
+                                var multipleXs = !!query.seriesBreakdown;
+                                var nbSupplementaryXs = 1;
+                                var serie_options = getContextualizedSeriesOptions(multipleXs ? results[0].x[xAxis]: results[0].x, options, timeSerieMode);
+
+                                // transform data format to a format understood by the chart plugin
+                                updateXAxisOptionsFromData(multipleXs ? results[0].x[xAxis]: results[0].x, options.xAxis, timeSerieMode);
+
+                                // generate a list of all series to make sure always have a value for all of them
+                                query.defaultValues = {};
+                                angular.forEach(charts, function(chart, name) {
+                                    query.defaultValues[name] = null;
+                                });
+
+                                // use server side aggregations
+                                if (aggregations) {
+                                    angular.forEach(aggregations, function(aggr, key) {
+                                        var min, max;
+                                        if (key.endsWith("min")) {
+                                            key = key.replace('min', '');
+                                            min = aggr.min;
+                                            max = aggregations[key + 'max'].max;
+                                        } else if (key.endsWith("max")) {
+                                            // ignore, handled in "min"
+                                            return;
+                                        } else if (charts[key].charts && charts[key].charts[0].func === "QUANTILES" && charts[key].charts[1].func === "QUANTILES") {
+                                            min = aggr.min[charts[key].charts[0].subset + ".0"];
+                                            min = aggr.max[charts[key].charts[1].subset + ".0"];
+                                        } else {
+                                            min = aggr.min;
+                                            max = aggr.max;
+                                        }
+
+                                        charts[key].colorScale = colorScale.getScale(charts[key].color, min, max);
+                                    });
+                                }
+
+                                var accumulate_x = false;
+                                var series_to_accumulate = [];
+                                var accumulations_x = [];
+                                var accumulations_y = {};
+                                var nb_series = parameters.queries[index].charts.length;
+                                for (var j = 0; j < nb_series; j++) {
+                                    var chart = parameters.queries[index].charts[j];
+                                    if (chart.aggregates) {
+                                        for (var a = 0; a < chart.aggregates.length; a++) {
+                                            var aggr = chart.aggregates[a];
+                                            if (aggr && series_to_accumulate.indexOf(aggr) === -1) {
+                                                series_to_accumulate.push(aggr);
+                                                accumulations_y[aggr] = [];
                                             }
-                                        } else { // !precision
-                                            // push row data into proper serie data array
-                                            if(serie.type == 'pie') {
-                                                serie.data.push([formatRowX(row.x), getValue(row["serie"+(j+1)], chart)]);
+                                        }
+                                    }
+                                    if (chart.compiled_expr) {
+                                        accumulate_x = true;
+                                    }
+                                }
+
+                                for (var i = 0; i < results.length; i++) {
+                                    var row = results[i];
+                                    angular.extend({}, query.defaultValues, row);
+                                    var valueX = getXValue(Highcharts.dateFormat, serie_options.tooltip.xDateFormat, multipleXs ? row.x[xAxis]: row.x, minDate, precision);
+
+                                    var j = 0;
+                                    // iterate on all entries in the row...
+                                    angular.forEach(row, function(rawValueY, keyY) {
+                                        var valueY;
+                                        var serie_name;
+                                        // ...and avoid the x entry
+                                        if (keyY !== "x") {
+                                            if (keyY.endsWith('min')) {
+                                                return;
+                                            } else if (keyY.endsWith('max')) {
+                                                serie_name = keyY.replace('max', '');
                                             } else {
-                                                if(['arearange', 'areasplinerange', 'columnrange'].indexOf(serie.type) >= 0){
-                                                    var min = getValue(row["serie"+(j+1)+"min"], chart.charts[0]);
-                                                    var max = getValue(row["serie"+(j+1)+"max"], chart.charts[1]);
-                                                    if (scope.parameters.singleAxisScale === 'logarithmic' && (min <= 0 || max <= 0)) {
-                                                        serie.data.push([null, null]);
-                                                    } else {
-                                                        serie.data.push([min, max]);
-                                                    }
-                                                } else {
-                                                    var value = getValue(row["serie"+(j+1)], chart);
-                                                    if (scope.parameters.singleAxisScale === 'logarithmic' && value <= 0) {
-                                                        serie.data.push(null);
-                                                    } else {
-                                                        serie.data.push(value);
-                                                    }
-                                                }
+                                                serie_name = keyY;
                                             }
+
+                                            var serie = charts[serie_name];
+                                            if (keyY.endsWith('max')) {
+                                                valueY = [getValidYValue(row[keyY.replace('max', 'min')], serie.charts[0]), getValidYValue(rawValueY, serie.charts[1])];
+                                            } else if (serie.charts) {
+                                                valueY = [getValidYValue(rawValueY, serie.charts[0]), getValidYValue(rawValueY, serie.charts[1])]
+                                            } else {
+                                                valueY = getValidYValue(rawValueY, serie);
+                                            }
+
+                                            if (!multipleXs) {
+                                                handleSerie("" + serie_name, parameters, options, serie_options, query, serie, valueX, valueY);
+                                                if (series_to_accumulate.indexOf(serie_name) >= 0) {
+                                                    accumulations_y[serie_name].push(valueY);
+                                                }
+                                            } else {
+                                                angular.forEach(row.x, function(rawValueX, keyX) {
+                                                    if (keyX !== xAxis) {
+                                                        rawValueX = getXValue(Highcharts.dateFormat, buildDatePattern(rawValueX), rawValueX, minDate, false);
+
+                                                        handleSerie("" + serie_name + keyX + rawValueX, parameters, options, serie_options, query, serie, valueX, valueY, rawValueX);
+                                                        if (series_to_accumulate.indexOf(serie_name) >= 0) {
+                                                            accumulations_y[serie_name].push(valueY);
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                            if (accumulate_x) {
+                                                accumulations_x.push(valueX);
+                                            }
+                                            j++;
+                                        }
+                                    })
+                                }
+
+                                if (accumulate_x) {
+                                    accumulations_x.sort(function(a, b) {
+                                        return a - b;
+                                    });
+                                    // remove duplicates in accumulations_x
+                                    for (var i = accumulations_x.length - 1; i > 0; i--) {
+                                        if (accumulations_x[i] == accumulations_x[i - 1]) {
+                                            accumulations_x.splice(i, 1);
                                         }
                                     }
                                 }
 
-                                series_index += nb_series;
+                                for (var i = 0; i < query.charts.length; i++) {
+                                    if (query.charts[i].aggregates) {
+                                        var serie = query.charts[i];
+                                        var valueY = compileAggrValue($scope, serie.compiled_expr, accumulations_y, serie.aggregates);
+                                        for (var j = 0; j < accumulations_x.length; j++) {
+                                            handleSerie("aggr" + index + "-" + i, parameters, options, serie_options, query, serie, accumulations_x[j], valueY);
+                                        }
+                                    }
+                                }
                             });
 
+                            var categories = options.xAxis.categories;
+                            if (categories) {
+                                for (var i = 0; i < options.series.length; i++) {
+                                    for (var k = 0; k < categories.length; k++) {
+                                        if (typeof options.series[i].data[k] === "undefined") {
+                                            options.series[i].data[k] = null;
+                                        }
+                                    }
+                                }
+                            }
+
                             // render the charts
-                            if (scope.chart && options.chart.renderTo) {
-                                scope.chart.destroy();
-                                chartplaceholder = element.find('.chartplaceholder');
+                            if ($scope.chart && options.chart.renderTo) {
+                                $scope.chart.destroy();
+                                chartplaceholder = $element.find('.chartplaceholder');
                             }
                             options.chart.renderTo = chartplaceholder[0];
-
                             try {
-                                scope.chart = new Highcharts.Chart(options, function() {});
+                                if (options.series.length > 500) {
+                                    odsErrorService.sendErrorNotification(translate("There is too many series to be displayed correctly, try to refine your query a bit."));
+                                    options.series = options.series.slice(0, 10);
+                                }
+                                $scope.chart = new Highcharts.Chart(options, function() {});
                             } catch (errorMsg) {
                                 if(errorMsg.indexOf && errorMsg.indexOf('Highcharts error #19') === 0){
                                     // too many ticks
                                     odsErrorService.sendErrorNotification(translate("There was too many points to display, the maximum number of points has been decreased."));
-                                    angular.forEach(scope.parameters.queries, function(query){
+                                    angular.forEach($scope.parameters.queries, function(query){
                                         query.maxpoints = 20;
                                     });
                                 } else {
@@ -9890,20 +12221,23 @@ mod.directive('infiniteScroll', [
                             }
                         });
                     }
-                    update();
+                };
+            }],
+            link: function(scope, element, attrs, ctrls) {
+                var chartController = ctrls[0];
+                ModuleLazyLoader('highcharts').then(function() {
+                    chartController.highchartsLoaded(Highcharts, element);
+                    scope.$watch('parameters', function(nv, ov) {
+                        chartController.update(nv);
+                    }, true);
                 });
-                
-                scope.$on('chartConfigReady', function(event, parameters) {
-                    update(parameters);
-                });
-
-                scope.updateChart = update;
             }
         };
     }]);
 
-    mod.directive('odsHighcharts', function() {
+    mod.directive('odsHighcharts', ['colorScale', function(colorScale) {
         /**
+         * @deprecated
          * @ngdoc directive
          * @name ods-widgets.directive:odsHighcharts
          * @restrict E
@@ -9934,18 +12268,7 @@ mod.directive('infiniteScroll', [
          *      </file>
          *  </example>
          */
-        var defaultColors = [
-            '#2f7ed8',
-            '#0d233a',
-            '#8bbc21',
-            '#910000',
-            '#1aadce',
-            '#492970',
-            '#f28f43',
-            '#77a1e5',
-            '#c42525',
-            '#a6c96a'
-        ];
+        var defaultColors = colorScale.getColors(colorScale.getDefaultColorSet());
 
         return {
             restrict: 'E',
@@ -9964,7 +12287,7 @@ mod.directive('infiniteScroll', [
                 maxpoints: '@'
             },
             replace: true,
-            template: '<div class="odswidget odswidget-highcharts"><div ods-chart="chart" domain="context.domain" apikey="context.apikey"></div></div>',
+            template: '<div class="odswidget odswidget-highcharts"><div ods-highcharts-chart parameters="chart" domain="context.domain" apikey="context.apikey"></div></div>',
             controller: ['$scope', 'ODSWidgetsConfig', 'ChartHelper', function($scope, ODSWidgetsConfig, ChartHelper) {
 
                 var colors = ODSWidgetsConfig.chartColors || defaultColors;
@@ -9978,8 +12301,7 @@ mod.directive('infiniteScroll', [
                             console.error('ods-highcharts requires a Dataset Context');
                         }
 
-                        $scope.context.dataset.metas.domain = $scope.context.domain;
-                        ChartHelper.init($scope.context.dataset);
+                        ChartHelper.init($scope.context);
                         if (angular.isUndefined($scope.chartConfig)) {
                             var extras = {};
                             if ($scope.chartType === 'pie') {
@@ -9988,9 +12310,9 @@ mod.directive('infiniteScroll', [
                             // Sort: x, -x, y, -y
                             var sort = '';
                             if ($scope.sort === 'y') {
-                                sort = 'serie1';
+                                sort = 'serie1-1';
                             } else if ($scope.sort === '-y') {
-                                sort = '-serie1';
+                                sort = '-serie1-1';
                             } else {
                                 sort = $scope.sort;
                             }
@@ -10003,7 +12325,8 @@ mod.directive('infiniteScroll', [
                                     {
                                         config: {
                                             dataset: $scope.context.dataset.datasetid,
-                                            options: $scope.context.parameters
+                                            options: $scope.context.parameters,
+                                            domain: $scope.context.domain
                                         },
                                         xAxis: $scope.fieldX,
                                         sort: sort,
@@ -10011,7 +12334,7 @@ mod.directive('infiniteScroll', [
                                         charts: [
                                             {
                                                 yAxis: $scope.expressionY,
-                                                yLabel: yLabel,
+                                                yLabelOverride: yLabel,
                                                 func: $scope.functionY,
                                                 color: colors[0],
                                                 type: $scope.chartType,
@@ -10028,7 +12351,7 @@ mod.directive('infiniteScroll', [
                                 $scope.chart = $scope.chartConfig;
                             }
                         }
-                        $scope.$broadcast('chartConfigReady', $scope.chart);
+                        $scope.$broadcast('chartConfigReady', $scope.chart); //FIXME: broadcasts still used?
 
                         $scope.$watch('chart', function(nv) {
                             if (nv || ov) {
@@ -10041,10 +12364,11 @@ mod.directive('infiniteScroll', [
                 });
             }]
         };
-    });
+    }]);
 
     mod.directive('odsMultiHighcharts', ["ODSAPI", 'ChartHelper', '$q', function(ODSAPI, ChartHelper, $q) {
         /**
+         * @deprecated
          * @ngdoc directive
          * @name ods-widgets.directive:odsMultiHighcharts
          * @restrict E
@@ -10062,7 +12386,7 @@ mod.directive('infiniteScroll', [
                 chartConfig: '='
             },
             replace: true,
-            template: '<div class="odswidget odswidget-multihighcharts"><div ods-chart="chart" domain="context.domain" apikey="context.apikey"></div></div>',
+            template: '<div class="odswidget odswidget-multihighcharts"><div ods-chart parameters="chart" domain="context.domain" apikey="context.apikey"></div></div>',
             controller: ['$scope', function($scope) {
                 var unwatch = $scope.$watch('context', function(nv) {
                     if (!nv) return;
@@ -10088,19 +12412,348 @@ mod.directive('infiniteScroll', [
                         requests.push(ODSAPI.datasets.get($scope.context, datasets[i], {extrametas: true}).
                             success(function(data) {
                                 var dataset = new ODS.Dataset(data);
-                                dataset.metas.domain = $scope.context.domain;
-                                ChartHelper.init(dataset);
+                                // dataset.metas.domain = $scope.context.domain;
+                                $scope.context.dataset = dataset;
+                                ChartHelper.init($scope.context);
                             }));
                     }
                     $q.all(requests).then(function(arg) {
                         $scope.chart = chartConfig;
-                        $scope.$broadcast('chartConfigReady', $scope.chart);
+                        // $scope.$broadcast('chartConfigReady', $scope.chart);
                     });
                     unwatch();
                 });
             }]
         };
     }]);
+
+
+
+
+    mod.directive('odsChart', ["ODSAPI", 'ChartHelper', 'ODSWidgetsConfig', function(ODSAPI, ChartHelper, ODSWidgetsConfig) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsChart
+         * @restrict E
+         * @scope
+         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
+         * @param {string|Object} [chartConfig=none] A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.
+         * @description
+         * This widget can display a multiple chart generated using the "Charts" interface of OpenDataSoft.
+         *
+         */
+        return {
+            restrict: 'EA',
+            scope: {
+                timescale: '@',
+                labelX: '@',
+                singleYAxis: '@',
+                singleYAxisLabel: '@',
+                singleYAxisScale: '@',
+                min: '@',
+                max: '@',
+                logarithmic: '@',
+                displayLegend: '@',
+
+                // old syntax can still be used for simple chart
+                context: '=?',
+                fieldX: '@',
+                expressionY: '@',
+                functionY: '@',
+                chartType: '@',
+                color: '@',
+                chartConfig: '=?',
+                labelY: '@',
+                sort: '@',
+                maxpoints: '@',
+
+                chart: '=?parameters'
+            },
+            replace: true,
+            transclude: true,
+            template: '<div class="odswidget odswidget-charts">' +
+                '<debug data="chart"></debug>' +
+                '<div ods-highcharts-chart parameters="chart" domain="context.domain" apikey="context.apikey"></div>' +
+                '<div ng-transclude></div>' +
+            '</div>',
+            controller: ['$scope', '$element', '$attrs', '$transclude', function($scope, $element, $attrs, $transclude) {
+                if (!$scope.chart) {
+                    $scope.chart = {
+                        queries: [],
+                        xLabel: angular.isDefined($scope.labelX) ? $scope.labelX : undefined,
+                        timescale: $scope.timescale || "",
+                        singleAxis: !!$scope.singleYAxis,
+                        singleAxisLabel: angular.isDefined($scope.singleYAxisLabel) ? $scope.singleYAxisLabel : undefined,
+                        singleAxisScale: $scope.logarithmic ? 'logarithmic' : '',
+                        yRangeMin: angular.isDefined($scope.min) ? parseInt($scope.min, 10) : undefined,
+                        yRangeMax: angular.isDefined($scope.max) ? parseInt($scope.max, 10) : undefined,
+                        displayLegend: angular.isDefined($scope.displayLegend) && $scope.displayLegend === "false" ? false : true
+                    };
+                }
+
+                angular.forEach($scope.chart, function(item, key) {
+                    if (typeof item === "undefined") {
+                        delete $scope.chart[key];
+                    }
+                });
+
+                if ($attrs['context']) {
+                    // backward compatibility
+                    (function() {
+                        var colors = ODSWidgetsConfig.chartColors || defaultColors;
+                        if ($scope.color) {
+                            colors = $scope.color.split(',').map(function(item) { return item.trim(); });
+                        }
+
+                        var unwatch = $scope.$watch('context.dataset', function(nv) {
+                            if (nv) {
+                                if ($scope.context.type !== 'dataset') {
+                                    console.error('ods-chart requires a Dataset Context');
+                                }
+
+                                ChartHelper.init($scope.context);
+                                if (angular.isUndefined($scope.chartConfig)) {
+                                    var extras = {};
+                                    if ($scope.chartType === 'pie') {
+                                        extras = {'colors': colors};
+                                    }
+                                    // Sort: x, -x, y, -y
+                                    var sort = '';
+                                    if ($scope.sort === 'y') {
+                                        sort = 'serie1-1';
+                                    } else if ($scope.sort === '-y') {
+                                        sort = '-serie1-1';
+                                    } else {
+                                        sort = $scope.sort;
+                                    }
+                                    // TODO: Retrieve the field label for default X and Y labels (using ODS.Dataset coming soon)
+                                    var yLabel = $scope.labelY || ($scope.functionY.toUpperCase() === 'COUNT' ? 'Count' : $scope.expressionY);
+                                    $scope.chart = {
+                                        timescale: $scope.timescale,
+                                        xLabel: $scope.labelX,
+                                        queries: [
+                                            {
+                                                config: {
+                                                    dataset: $scope.context.dataset.datasetid,
+                                                    options: $scope.context.parameters
+                                                },
+                                                xAxis: $scope.fieldX,
+                                                sort: sort,
+                                                maxpoints: $scope.maxpoints || 50,
+                                                charts: [
+                                                    {
+                                                        yAxis: $scope.expressionY,
+                                                        yLabelOverride: yLabel,
+                                                        func: $scope.functionY,
+                                                        color: colors[0],
+                                                        type: $scope.chartType,
+                                                        extras: extras
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    };
+                                } else {
+                                    if (angular.isString($scope.chartConfig)) {
+                                        $scope.chart = JSON.parse(b64_to_utf8($scope.chartConfig));
+                                    } else {
+                                        $scope.chart = $scope.chartConfig;
+                                    }
+                                }
+                                unwatch();
+                            }
+                        });
+                    })();
+                    this.setQuery = function(query, context) {
+                        console.error("cannot use ods-chart-query when context and chartConfig are declared on ods-chart");
+                    }
+                } else {
+                    this.setQuery = function(query, context) {
+                        var index = $scope.chart.queries.indexOf(query);
+                        var groups;
+                        if (index === -1) {
+                            index = $scope.chart.queries.length;
+                            $scope.chart.queries.push(query);
+                        } else {
+                            $scope.chart.queries[index] = query;
+                        }
+
+                        if (query.sort) {
+                            if (groups = query.sort.match(/^serie([0-9]+)$/)) {
+                                $scope.chart.queries[index].sort = 'serie' + (index + 1) + '-' + groups[1];
+                            }
+                        }
+                        // make sure everything is correctly set before displying it:
+                        var uniqueid = ChartHelper.getDatasetId(context);
+
+                        if (typeof query.xAxis === "undefined") {
+                            ChartHelper.setDefaultQueryValues(uniqueid, query, true);
+                        }
+
+                        for (var j = 0; j < query.charts.length; j++) {
+                            ChartHelper.setSerieDefaultValues(uniqueid, query.charts[j], query.xAxis);
+                        }
+
+                        ChartHelper.setDefaultQueryValues(uniqueid, query, true);
+
+                        if ($scope.chart.queries.length === 1) {
+                            ChartHelper.setChartDefaultValues(uniqueid, $scope.chart, true);
+                        }
+
+                        for (var j = 0; j < query.charts.length; j++) {
+                            ChartHelper.setSerieDefaultColors(query.charts[j], query.seriesBreakdown);
+                        }
+                    }
+
+                    $scope.$watch('labelX', function(nv, ov) {
+                        $scope.chart.xLabel = nv;
+                    })
+                }
+            }]
+        };
+    }]);
+
+
+    mod.directive('odsChartQuery', ["ODSAPI", 'ChartHelper',function(ODSAPI, ChartHelper) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsChartQuery
+         * @restrict E
+         * @scope
+         * @param {CatalogContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {string|Object} [chartConfig=none] A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.
+         * @description
+         * This widget can display a multiple chart generated using the "Charts" interface of OpenDataSoft.
+         *
+         */
+        return {
+            restrict: 'E',
+            require: ["odsChartQuery", "^odsChart"],
+            controller: ['$scope', function($scope) {
+            }],
+            compile: function() {
+                return {
+                    pre: function(scope, element, attrs, ctrls) {
+                        var thisController = ctrls[0],
+                            odsChartController = ctrls[1];
+                        var query = {
+                            config: {},
+                            charts: [],
+                            xAxis: attrs.fieldX,
+                            maxpoints: attrs.maxpoints ? parseInt(attrs.maxpoints, 10): undefined,
+                            timescale: attrs.timescale,
+                            stacked: attrs.stacked,
+                            seriesBreakdown: attrs.seriesBreakdown,
+                            seriesBreakdownTimescale: attrs.seriesBreakdownTimescale
+                        };
+
+                        query.sort = '';
+                        if (attrs.sort === 'y') {
+                            query.sort = 'serie1';
+                        } else if (attrs.sort === '-y') {
+                            query.sort = '-serie1';
+                        } else {
+                            query.sort = attrs.sort;
+                        }
+                        var forcedOptions = attrs.options || {};
+
+                        angular.forEach(query, function(item, key) {
+                            if (typeof item === "undefined") {
+                                delete query[key];
+                            }
+                        });
+
+                        thisController.setChart = function(chart) {
+                            if (query.charts.indexOf(chart) === -1) {
+                                query.charts.push(chart);
+                            }
+                        }
+                        var pushQuery = function(context) {
+                            if (context) {
+                                odsChartController.setQuery(query, context);
+                            }
+                        }
+
+                        var context = attrs.context;
+
+                        scope[context].wait().then(function(dataset) {
+                            ChartHelper.init(scope[context]);
+                            query.config.dataset = dataset.datasetid;
+                            query.config.domain = scope[context].domain;
+                            query.config.apikey = scope[context].apikey;
+                            query.config.options = angular.extend({}, scope[context].parameters, forcedOptions);
+
+                            thisController.setChart = function(chart) {
+                                if (query.charts.indexOf(chart) === -1) {
+                                    query.charts.push(chart);
+                                }
+                                pushQuery(scope[context]);
+                            }
+
+                            pushQuery(scope[context]);
+
+                            scope.$watch(context + ".parameters", function(nv, ov) {
+                                if (nv) {
+                                    query.config.options = angular.extend({}, nv, forcedOptions);
+                                    pushQuery(scope[context]);
+                                }
+                            }, true);
+                        });
+                    }
+                }
+            }
+        };
+    }]);
+
+    mod.directive('odsChartSerie', ["ODSAPI", 'ChartHelper', '$compile', '$parse', function(ODSAPI, ChartHelper, $compile, $parse) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsChartSerie
+         * @restrict E
+         * @scope
+         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
+         * @param {string|Object} [chartConfig=none] A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.
+         * @description
+         * This widget can display a multiple chart generated using the "Charts" interface of OpenDataSoft.
+         *
+         */
+        return {
+            restrict: 'E',
+            require: "^odsChartQuery",
+            controller: ['$scope', '$transclude', function($scope, $transclude) {
+            }],
+            link: function(scope, element, attrs, ctrl) {
+                var odsChartQueryController = ctrl;
+
+                var chart = {
+                    type: attrs.chartType || undefined,
+                    func: attrs.functionY || undefined,
+                    yAxis: attrs.expressionY || undefined,
+                    color: attrs.color || undefined,
+                    cumulative: !!attrs.cumulative || false,
+                    yLabelOverride: angular.isDefined(attrs.labelY) ? attrs.labelY : undefined,
+                    scale: attrs.logarithmic ? 'logarithmic' : '',
+                    yRangeMin: angular.isDefined(attrs.min) ? parseInt(attrs.min, 10) : undefined,
+                    yRangeMax: angular.isDefined(attrs.max) ? parseInt(attrs.max, 10) : undefined,
+                    thresholds: attrs.colorThresholds || [],
+                    subsets: attrs.subsets,
+                    charts: attrs.subseries ? JSON.parse(attrs.subseries) : undefined
+                };
+                angular.forEach(chart, function(item, key) {
+                    if (typeof item === "undefined") {
+                        delete chart[key];
+                    }
+                });
+                odsChartQueryController.setChart(chart);
+                attrs.$observe('labelY', function(value) {
+                    chart.yLabelOverride = value;
+                    odsChartQueryController.setChart(chart);
+                });
+            }
+        };
+    }]);
+
+
 }());
 ;(function() {
     'use strict';
@@ -10243,10 +12896,10 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsMap', ['ModuleLazyLoader', function(ModuleLazyLoader) {
+    mod.directive('odsMapLegacy', ['ModuleLazyLoader', function(ModuleLazyLoader) {
         /**
          * @ngdoc directive
-         * @name ods-widgets.directive:odsMap
+         * @name ods-widgets.directive:odsMapLegacy
          * @restrict E
          * @scope
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
@@ -10267,19 +12920,19 @@ mod.directive('infiniteScroll', [
          *
          * Note that you can specify more than one context by passing an array:
          * <pre>
-         *     <ods-map context="myctx"
+         *     <ods-map-legacy context="myctx"
          *              item-click-context="[context2, context3]">
-         *     </ods-map>
+         *     </ods-map-legacy>
          * </pre>
          * In that case, the `itemClickMapField` and `itemClickContextField` (as described below) need to contain the name of the context they apply to:
          * <pre>
-         *     <ods-map context="myctx"
+         *     <ods-map-legacy context="myctx"
          *              item-click-context="[trees, roads]"
          *              item-click-trees-map-field="field1"
          *              item-click-trees-context-field="field2"
          *              item-click-roads-map-field="field1"
          *              item-click-roads-context-field="field3">
-         *     </ods-map>
+         *     </ods-map-legacy>
          * </pre>
          * @param {string} [itemClickMapField=none] If you are using `itemClickContext` and want to filter on the value of a field instead of a spatial query, you can use this parameter to specify the name of the field to take
          * the value from. This must be a field from the dataset displayed on the map. It must be used together with `itemClickContextField`.
@@ -10290,7 +12943,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
-         *              <ods-map context="stations"></ods-map>
+         *              <ods-map-legacy context="stations"></ods-map-legacy>
          *          </ods-dataset-context>
          *      </file>
          *  </example>
@@ -10410,7 +13063,7 @@ mod.directive('infiniteScroll', [
 
                     });
 
-                    scope.initMap = function(dataset, embedMode, basemapsList, translate, geobox, basemap, staticMap, prependAttribution) {
+                    scope.initMap = function(dataset, embedMode, basemapsList, translate, geobox, basemap, staticMap, prependAttribution, language) {
 
                         var mapOptions = {
                             basemapsList: basemapsList,
@@ -10430,6 +13083,40 @@ mod.directive('infiniteScroll', [
 
     //                    map.setView(new L.LatLng(48.8567, 2.3508),13);
                         map.addControl(new L.Control.Scale());
+
+                        if (geobox && !staticMap) {
+                            var geocoder = L.Control.geocoder({
+                                placeholder: translate('Find a place...'),
+                                errorMessage: translate('Nothing found.'),
+                                geocoder: new L.Control.Geocoder.Nominatim({serviceUrl: "https://nominatim.openstreetmap.org/", geocodingQueryParams: {"accept-language": language || 'en', "polygon_geojson": true}})
+                            });
+                            geocoder.markGeocode = function(result) {
+                                map.fitBounds(result.bbox);
+
+                                if (result.properties.geojson) {
+                                    var highlight = L.geoJson(result.properties.geojson, {
+                                        style: function () {
+                                            return {
+                                                opacity: 0,
+                                                fillOpacity: 0.8,
+                                                fillColor: 'orange',
+                                                className: 'leaflet-geocoder-highlight'
+                                            };
+                                        }
+                                    });
+                                    map.addLayer(highlight);
+                                    $timeout(function () {
+                                        element.addClass('geocoder-highlight-on');
+                                    }, 0);
+                                    $timeout(function () {
+                                        element.removeClass('geocoder-highlight-on');
+                                        map.removeLayer(highlight);
+                                    }, 2500);
+                                }
+                            };
+                            map.addControl(geocoder);
+                        }
+
                         if (embedMode !== 'true') {
                             if (scope.showFilters === 'true') {
                                 map.addControl(new L.Control.FilterByView());
@@ -10437,11 +13124,6 @@ mod.directive('infiniteScroll', [
                             map.addControl(new L.Control.Fullscreen());
                         }
 
-                        // Because of the weird CSS method we use to stay within Leaflet's control system, we need to add it
-                        // last
-                        if (geobox && !staticMap) {
-                            map.addControl(new L.Control.GeoBox({placeholder: translate('Find a place...')}));
-                        }
                         if (!staticMap) {
                             map.addControl(new L.Control.Locate({maxZoom: 18}));
                         }
@@ -11043,7 +13725,7 @@ mod.directive('infiniteScroll', [
                     var unwatchInit = $scope.$watch('initMap', function() {
                         if ($scope.initMap) {
                             unwatchInit();
-                            $scope.initMap(newValue, $scope.embedMode, ODSWidgetsConfig.basemaps, translate, ODSWidgetsConfig.mapGeobox, $scope.mapContext.basemap, $scope.staticMap, ODSWidgetsConfig.mapPrependAttribution);
+                            $scope.initMap(newValue, $scope.embedMode, ODSWidgetsConfig.basemaps, translate, ODSWidgetsConfig.mapGeobox, $scope.mapContext.basemap, $scope.staticMap, ODSWidgetsConfig.mapPrependAttribution, ODSWidgetsConfig.language);
                         }
                     });
                     unwatchSchema();
@@ -11150,7 +13832,7 @@ mod.directive('infiniteScroll', [
                                 return deferred.promise;
                             };
 
-                            setMapView().then(function() {
+                            setMapView().then(function() {
                                 DebugLogger.log('First onViewportMove');
                                 onViewportMove($scope.map);
 
@@ -11186,6 +13868,946 @@ mod.directive('infiniteScroll', [
 
         };
     }]);
+}());;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    /*
+    NOTE: There has been a change in terminology between Cartograph v1 and Cartograph v2 (current version); due to
+    retrocompatibility reasons, the old terminology is still used in the map data structure, and therefore you will
+    encounter references to it in the code.
+    - A "layer" (a group of datasets that you can show/hide and document) is now a "layer group"
+    - An "active dataset" is now a "layer"
+     */
+
+    /* Migration note (for Cartograph)
+      "activeDatasets": [
+        {
+          "searchParameters": {},
+          "color": "#C32D1C",
+          "expr": "id_geofla",
+          "picto": "icon-circle",
+          "clusterMode": "polygon",
+          "func": "COUNT",
+          "marker": true,
+          "datasetid": "geoflar-communes-2"
+        },
+
+        BECOMES
+      "activeDatasets": [
+        {
+          "context": <context>
+          "color": "#C32D1C",
+          "expr": "id_geofla",
+          "picto": "icon-circle",
+          "clusterMode": "polygon",
+          "func": "COUNT",
+          "marker": true,
+        },
+
+     When persisting, the context can be serialized as a datasetid and searchparameters. We trust Cartograph to make the
+     transformation in both direction.
+     */
+    mod.directive('odsMap', ['MapHelper', 'ModuleLazyLoader', 'ODSWidgetsConfig', 'MapLayerRenderer', 'translate', '$q', '$timeout', function(MapHelper, ModuleLazyLoader, ODSWidgetsConfig, MapLayerRenderer, translate, $q, $timeout) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsMap
+         * @scope
+         * @restrict E
+         * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {Object} [mapContext] An object where the `location` and `basemap` selection is kept. You can use it from
+         * anither widget to read the location or basemap.
+         * @param {string} [location] The default location of the map upon initialization, under the following format: "zoom,latitude,longitude".
+         * For example, to have a map centered on Paris, France, you can use "12,48.85218,2.36996". By default, if a location is not specified,
+         * the map will try to fit all the displayed data when initializing.
+         * @param {string} [basemap] The identifier of the basemap to use by default, as defined in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.basemaps}. By default,
+         * the first available basemap will be used.
+         * @param {boolean} [staticMap] If "true", then users won't be able to move or zoom on the map. They will still be able to click on markers.
+         * @param {boolean} [noRefit] By default, the map refits its view whenever the displayed data changes.
+         * If "true", then the map will stay at the same location instead.
+         * @description
+         * This widget allows you to build a map visualization and show data using various modes of display using layers.
+         * Each layer is based on a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, a mode of display (clusters...), and various properties to define the
+         * display itself, such as colors.
+         *
+         * Layers can be combined, so that you map shows various data sources in various ways.
+         *
+         * Layers are dynamic, which means that if a context changes (e.g. a new refine is added), the layer will be refreshed and display the new relevant data.
+         *
+         * This widget can also be used to control other widgets: you can configure a layer to act as a refine control on another context, so that for example
+         * if you click on a road you get a {@link ods-widgets.directive:odsTable table view} of the traffic on that road. You can also draw zones on the map,
+         * which will accordingly refine the context.
+         *
+         * You can use the widget alone to propose a simple map using default settings, such as this:
+         * <pre>
+         *     <!-- Displays a map of Paris using the data from mycontext and an automatic visualization mode (clusters or shapes depending on the zoom level) -->
+         *     <ods-map context="mycontext" location="12,48.85218,2.36996"></ods-map>
+         * </pre>
+         *
+         * However, the ability to build a more advanced and configurable map comes with a second `odsMapLayer` tag, used to define a layer:
+         *
+         * <pre>
+         *     <!-- A map containing a single layer to display data from mycontext, in a specific color, and as clusters. -->
+         *     <ods-map>
+         *         <ods-map-layer context="mycontext" color="#FF0000" display="clusters"></ods-map-layer>
+         *     </ods-map>
+         * </pre>
+         *
+         * You can have several layers, each with their own configuration and context:
+         *
+         * <pre>
+         *     <ods-map>
+         *         <ods-map-layer context="mycontext" color="#FF0000" display="clusters"></ods-map-layer>
+         *         <ods-map-layer context="mycontext2" display="heatmap"></ods-map-layer>
+         *         <ods-map-layer context="mycontext3" display="raw" color="#0000FF"></ods-map-layer>
+         *     </ods-map>
+         * </pre>
+         *
+         * You can show or hide layers using the `showIf` property, similar to Angular's `ngIf`.
+         *
+         * <pre>
+         *     <ods-map>
+         *         <ods-map-layer context="mycontext" color="#FF0000" display="clusters"></ods-map-layer>
+         *         <ods-map-layer context="mycontext2" display="heatmap" show-if="showHeatmap"></ods-map-layer>
+         *     </ods-map>
+         * </pre>
+         *
+         * Several display modes are available, under two categories: visualization of the data itself (each point is a record),
+         * and visualization of an aggregation of data (each point is the result of an aggregation function).
+         *
+         * - `auto`: depending on the number of points and the type of geometry, the best display mode is automatically chosen. This is the default display
+         * mode, and makes sense mot of the time of you want to simply represent geo data.
+         * - `raw`: data is downloaded and displayed directly as is, with no clustering or simplification of any kind. Do not
+         * use on large (1000+) datasets, as it may freeze the user's browser.
+         * - `clusters`: data is aggregated spatially into clusters; each cluster represents two or more "close" points. When at maximum
+         * zoom, all points are shown.
+         * - `clustersforced`: data is aggregated spatially into clusters, but the number on the cluster is the result of an aggregation function.
+         * - `heatmap`: data is displayed as a heatmap; by default it represents the density of points, but it can be the result of an aggregation function.
+         * - `aggregation`: data is aggregated based on their geo shape (e.g. two records with the exact same associated shape); by default the color represents
+         * the number of aggregated records, but it can be the result of an aggregation function. This mode supports aggregating the context
+         * using a join with another context that contains geometrical shapes: use a `joinContext` property, and `localKey` and `remoteKey` to configure
+         * the field names of the local and joined datasets; you can also configure one of the fields from the "remote" dataset to be displayed when the mouse
+         * hovers the shapes, using `hoverField` and the name of a field.
+         *
+         * Apart from `heatmap`, all display modes support color configuration. Three types of configurations are available, depending on the display mode.
+         *
+         * - `color`: a simple color, as an hex code (#FF0F05) or a simple CSS color name like "red". Available for any mode except `heatmap`.
+         * - `colorScale`: the name of a ColorBrewer [http://colorbrewer2.org/] scheme, like "YlGnBu". Available for `shape`.
+         * - `colorRanges`: a serie of colors and ranges, to decide a color depending on a value. For example "red,20,orange,40,#00CE00" to color anything between
+         * 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a field name in `colorByField` to configure which field will be
+         * used to decide on the color. Available for `raw` and `shape`.
+         *
+         * If you are displaying data where multiple points or shapes are stacked, you can configure the order in which the items will be
+         * displayed in the tooltip, using `tooltipSort` and the name of a field, prefixed by `-` to have a reversed sort.
+         * Note: by default, numeric fields are sorted in decreasing order, date and datetime are sorted chronologically, and text fields are sorted
+         * alphanumerically.
+         *
+         * <pre>
+         *     <ods-map>
+         *         <!-- Reverse sort on 'field' -->
+         *         <ods-map-layer context="mycontext" tooltip-sort="-field"></ods-map-layer>
+         *     </ods-map>
+         * </pre>
+         *
+         * If your layer is displayed as `raw` or `shape`, you can configure a layer so that a click on an item triggers a refine on another context, using `refineOnClickContext`.
+         * One or more contexts can be defined:
+         * <pre>
+         *     <ods-map>
+         *         <ods-map-layer context="mycontext" refine-on-click-context="mycontext2"></ods-map-layer>
+         *         <ods-map-layer context="mycontext3" refine-on-click-context="[mycontext4, mycontext5]"></ods-map-layer>
+         *     </ods-map>
+         * </pre>
+         *
+         * By default, the filter occurs on geometry; for example, clicking on a shape filters the other context on the area.
+         * You can also trigger a refine on specific fields; using `refineOnClickMapField` to configure the name of the field to get the value from, and `refineOnClickContextField`
+         * to configure the name of the field of the other context to refine on. If you have two or more contexts, you can configure the fields by indicating the context in the
+         * name of the property, as `refineOnClick[context]MapField` and `refineOnClick[context]ContextField`.
+         *
+         * <pre>
+         *     <ods-map>
+         *         <ods-map-layer context="mycontext" refine-on-click-context="[mycontext, mycontext2]"
+         *                                            refine-on-click-mycontext-map-field="field1"
+         *                                            refine-on-click-mycontext-context-field="field2"
+         *                                            refine-on-click-mycontext2-map-field="field3"
+         *                                            refine-on-click-mycontext2-context-field="field4"></ods-map-layer>
+         *     </ods-map>
+         * </pre>
+         */
+        return {
+            restrict: 'EA',
+            scope: {
+                context: '=',
+                mapContext: '=?', // An object holding location and basemap and updating it in realtime
+                location: '@', // Hard-coded location (widget)
+                basemap: '@', // Hard-coded basemap (widget),
+                staticMap: '@', // Prevent the map to be moved,
+                noRefit: '@',
+                autoResize: '@'
+            },
+            transclude: true,
+            template: '<div class="odswidget odswidget-map">' +
+                        '<div class="map"></div>' +
+                        '<div class="overlay map opaque-overlay" ng-show="pendingRequests.length && initialLoading"><spinner class="spinner"></spinner></div>' +
+                        '<div class="loading-tiles" ng-show="loading"><i class="icon-spinner icon-spin"></i></div>' +
+                        '<div ng-transclude></div>' + // Can't find any better solution...
+                        '</div>',
+            link: function(scope, element, attrs) {
+                var isStatic = scope.staticMap && scope.staticMap.toLowerCase() === 'true';
+                var noRefit = scope.noRefit && scope.noRefit.toLowerCase() === 'true';
+
+                if (attrs.context) {
+                    // Handle the view defined on the map tag directly
+                    var group = MapHelper.MapConfiguration.createLayerGroupConfiguration();
+                    var layer = MapHelper.MapConfiguration.createLayerConfiguration();
+                    group.activeDatasets.push(layer);
+                    scope.mapConfig.layers.push(group);
+                    var unwatch = scope.$watch('context', function(nv, ov) {
+                        layer.context = nv;
+
+                        // FIXME: Factorize the same code with odsLayerGroup
+                        var unwatchSchema = scope.$watch('context.dataset', function(nv) {
+                            if (nv) {
+                                if (layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape') !== null) {
+                                    layer.marker = !layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape');
+                                } else {
+                                    layer.marker = true;
+                                }
+
+                                layer.color = layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || "#C32D1C";
+                                layer.picto = layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
+
+
+                                unwatchSchema();
+                            }
+                        });
+
+                        unwatch();
+                    });
+                }
+
+                function resizeMap() {
+                    if ($('.odswidget-map > .map').length > 0) {
+                        // Only do this if visible
+                        $('.odswidget-map > .map').height(Math.max(200, $(window).height() - $('.odswidget-map > .map').offset().top));
+                    }
+                }
+
+                if (scope.autoResize === 'true') {
+                    $(window).on('resize', resizeMap);
+                    resizeMap();
+                }
+
+                /* INITIALISATION AND DEFAULT VALUES */
+                scope.initialLoading = true;
+                if (angular.isUndefined(scope.mapContext)) {
+                    scope.mapContext = {};
+                    if (scope.location) {
+                        scope.mapContext.location = scope.location;
+                    }
+                    if (scope.basemap) {
+                        scope.mapContext.basemap = scope.basemap;
+                    }
+                }
+
+                /* END OF INITIALISATION */
+
+                ModuleLazyLoader('leaflet').then(function() {
+                    // Initializing the map
+                    var mapOptions = {
+                        basemapsList: ODSWidgetsConfig.basemaps,
+                        worldCopyJump: true,
+                        minZoom: 2,
+                        basemap: scope.mapContext.basemap,
+                        dragging: !isStatic,
+                        zoomControl: !isStatic,
+                        prependAttribution: ODSWidgetsConfig.mapPrependAttribution
+                    };
+
+                    if (isStatic) {
+                        mapOptions.doubleClickZoom = false;
+                        mapOptions.scrollWheelZoom = false;
+                    }
+                    var map = new L.ODSMap(element.children()[0].children[0], mapOptions);
+
+//                    map.setView(new L.LatLng(48.8567, 2.3508),13);
+                    map.addControl(new L.Control.Scale());
+
+                    // Only add the Fullscreen control if we are not in an iframe, as it is blocked by browsers
+                    try {
+                        if (window.self === window.top) {
+                            // We are NOT in an iframe
+                            map.addControl(new L.Control.Fullscreen());
+                        }
+                    } catch (e) {
+                        // We are in an iframe
+                        return true;
+                    }
+
+
+                    if (ODSWidgetsConfig.mapGeobox && !isStatic) {
+                        var geocoder = L.Control.geocoder({
+                            placeholder: translate('Find a place...'),
+                            errorMessage: translate('Nothing found.'),
+                            geocoder: new L.Control.Geocoder.Nominatim({serviceUrl: "https://nominatim.openstreetmap.org/", geocodingQueryParams: {"accept-language": ODSWidgetsConfig.language || 'en', "polygon_geojson": true}})
+                        });
+                        geocoder.markGeocode = function(result) {
+                            map.fitBounds(result.bbox);
+
+                            if (result.properties.geojson) {
+                                var highlight = L.geoJson(result.properties.geojson, {
+                                    style: function () {
+                                        return {
+                                            opacity: 0,
+                                            fillOpacity: 0.8,
+                                            fillColor: 'orange',
+                                            className: 'leaflet-geocoder-highlight'
+                                        };
+                                    }
+                                });
+                                map.addLayer(highlight);
+                                $timeout(function () {
+                                    element.addClass('geocoder-highlight-on');
+                                }, 0);
+                                $timeout(function () {
+                                    element.removeClass('geocoder-highlight-on');
+                                    map.removeLayer(highlight);
+                                }, 2500);
+                            }
+                        };
+                        map.addControl(geocoder);
+                    }
+
+                    if (!isStatic) {
+                        map.addControl(new L.Control.Locate({maxZoom: 18}));
+                    }
+
+                    // Drawing
+                    if (!isStatic) {
+                        scope.drawnItems = new L.FeatureGroup();
+                        map.addLayer(scope.drawnItems);
+
+                        // Localize all the messages
+                        L.drawLocal.draw.toolbar.buttons.circle = translate('Draw a circle to filter on');
+                        L.drawLocal.draw.toolbar.buttons.polygon = translate('Draw a polygon to filter on');
+                        L.drawLocal.draw.toolbar.buttons.rectangle = translate('Draw a rectangle to filter on');
+                        L.drawLocal.draw.toolbar.actions = {
+                            title: translate('Cancel area filter'),
+                            text: translate('Cancel')
+                        };
+                        L.drawLocal.draw.toolbar.undo = {
+                            title: translate('Delete last point'),
+                            text: translate('Delete last point')
+                        };
+                        L.drawLocal.edit.toolbar.buttons = {
+                            edit: translate('Edit area filter.'),
+                            editDisabled: translate('No area filter to edit.'),
+                            remove: translate('Delete area filter.'),
+                            removeDisabled: translate('No area filter to delete.')
+                        };
+                        L.drawLocal.edit.toolbar.actions = {
+                            save: {
+                                title: translate('Save changes.'),
+                                text: translate('Save')
+                            },
+                            cancel: {
+                                title: translate('Cancel editing, discards all changes.'),
+                                text: translate('Cancel')
+                            }
+                        };
+
+                        var drawControl = new L.Control.Draw({
+                            edit: {
+                                featureGroup: scope.drawnItems
+                            },
+                            draw: {
+                                polyline: false,
+                                marker: false
+                            }
+                        });
+                        map.addControl(drawControl);
+                    }
+
+                    scope.map = map;
+
+                    // Now that the map is ready, we need to know where to set the map first
+                    // - If there is an explicit location, use it. This includes older legacy parameters and formats
+                    // - Else, we deduce it from the displayed datasets
+                    var setInitialMapView = function(location) {
+                        var deferred = $q.defer();
+
+                        if (location) {
+                            var loc = MapHelper.getLocationStructure(location);
+                            scope.map.setView(loc.center, loc.zoom);
+                            waitForVisibleContexts().then(function() {
+                                refreshData(false);
+                            });
+
+                            deferred.resolve();
+                        } else {
+                            waitForVisibleContexts().then(function() {
+                                MapHelper.retrieveBounds(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true)).then(function (bounds) {
+                                    // Fit to dataset boundingbox if there is no viewport or geofilter
+                                    if (bounds) {
+                                        scope.map.fitBounds(bounds);
+                                    } else {
+                                        var loc = MapHelper.getLocationStructure(ODSWidgetsConfig.defaultMapLocation);
+                                        scope.map.setView(loc.center, loc.zoom);
+                                    }
+                                    refreshData(false);
+
+                                    deferred.resolve();
+                                });
+                            });
+                        }
+
+                        return deferred.promise;
+                    };
+
+                    setInitialMapView(scope.mapContext.location).then(function() {
+                        scope.initialLoading = false;
+                        onViewportMove(scope.map);
+
+                        scope.map.on('moveend', function(e) {
+                            // Whenever the map moves, we update the displayed data
+                            scope.$apply(function() {
+                                onViewportMove(e.target);
+                            });
+                        });
+
+                        // Refresh events
+                        scope.$watch('mapContext.location', function(nv, ov) {
+                            if (nv !== ov) {
+                                // When the location changes, triggers a data refresh.
+                                // We could do it in the moveend event instead of watching the location, but that way we ensure that
+                                // if something else from outside changes the location, we react as well.
+                                refreshData(false, true);
+                            }
+                        });
+
+                        if (!isStatic) {
+                            // Initialize all the drawing support events
+                            initDrawingTools();
+                        }
+
+                        // INitialize watcher
+                        scope.$watch(function() {
+                            var pending = 0;
+                            angular.forEach(scope.mapConfig.layers, function(groupConfig) {
+                                angular.forEach(groupConfig.activeDatasets, function(layerConfig) {
+                                    if (layerConfig.loading) {
+                                        pending++;
+                                    }
+                                });
+                            });
+                            return pending;
+                        }, function(nv) {
+                            if (nv) {
+                                scope.loading = true;
+                            } else {
+                                scope.loading = false;
+                            }
+                        });
+
+                        // Initialize data watchers
+                        // TODO: Make the contexts broadcast an event when the parameters change? Will spare
+                        // a potentially heavy watch.
+                        scope.$watch(function() {
+                            var params = [];
+                            angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig), function(ctx) {
+                                params.push(ctx.parameters);
+                            });
+                            return params;
+                        }, function(nv, ov) {
+                            if (nv !== ov) {
+                                // Refresh with a refit
+                                syncGeofilterToDrawing();
+                                refreshData(true);
+                            }
+                        }, true);
+                    });
+
+                    if (ODSWidgetsConfig.basemaps.length > 1) {
+                        scope.map.on('baselayerchange', function (e) {
+                            scope.$evalAsync('mapContext.basemap = "'+e.layer.basemapId+'"');
+
+
+                            // The bundle layer zooms have to be the same as the basemap, else it will drive the map
+                            // to be zoomable beyond the basemap levels
+                            angular.forEach(scope.mapConfig.layers, function(groupConfig) {
+                                if (groupConfig.displayed) {
+                                    angular.forEach(groupConfig.activeDatasets, function (layerConfig) {
+                                        if (layerConfig.clusterMode === 'tiles' && layerConfig.rendered) {
+                                            layerConfig.rendered.setMinZoom(e.layer.options.minZoom);
+                                            layerConfig.rendered.setMaxZoom(e.layer.options.maxZoom);
+                                        }
+                                    });
+                                }
+                            });
+                        });
+                    }
+
+                    var onViewportMove = function(map) {
+                        var size = map.getSize();
+                        if (size.x > 0 && size.y > 0) {
+                            // Don't attempt to do anything if the map is not displayed... we can't capture useful bounds
+                            scope.mapContext.location = MapHelper.getLocationParameter(map.getCenter(), map.getZoom());
+                        }
+                    };
+
+                    var refreshData = function(fitView, locationChangedOnly) {
+                        /* Used when one of the context changes, or the viewport changes: triggers a refresh of the displayed data
+                           If "fitView" is true, then the map moves to the new bounding box containing all the data, before
+                           beginning to render the result.
+
+                           dataUnchanged means only the location changed, and some layers don't need a refresh at all (tiles, or
+                           layers that load all at once)
+                         */
+                        fitView = !noRefit && fitView;
+                        var renderData = function(locationChangedOnly) {
+                            var promises = [];
+                            angular.forEach(scope.mapConfig.layers, function(layerGroup) {
+                                if (!layerGroup.displayed) {
+                                    angular.forEach(layerGroup.activeDatasets, function(layer) {
+                                        if (layer.rendered) {
+                                            scope.map.removeLayer(layer.rendered);
+                                            layer.rendered = null;
+                                        }
+                                    });
+                                    return;
+                                }
+                                angular.forEach(layerGroup.activeDatasets, function(layer) {
+                                    // Depending on the layer config, we can opt for various representations
+
+                                    // Tiles: call a method on the existing layer
+                                    // Client-side: build a new layer and remove the old one
+                                    if (!locationChangedOnly || MapLayerRenderer.doesLayerRefreshOnLocationChange(layer)) {
+                                        promises.push(MapLayerRenderer.updateDataLayer(layer, scope.map));
+                                    }
+                                });
+                            });
+                            $q.all(promises).then(function() {
+                                // We got them all
+                                // FIXME: Do we have something to do here?
+                            });
+                        };
+
+                        if (fitView) {
+                            // Move the viewport to the new location, and change the tile
+                            MapHelper.retrieveBounds(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true)).then(function(bounds) {
+                                if (bounds && bounds !== MapHelper.WORLD_BOUNDS) {
+                                    // Until $applyAsync... Make sure the fitting is done outside this digest cycle,
+                                    // so that the triggering of viewport move doesn't clash with it
+                                    $timeout(function() {
+                                        var before = scope.map.getBounds().toBBoxString();
+                                        scope.map.fitBounds(bounds);
+                                        var after = scope.map.getBounds().toBBoxString();
+
+                                        if (before === after) {
+                                            // The map didn't move, so we can't rely on the location change to trigger a refresh
+                                            refreshData(false, true);
+                                        }
+                                    }, 0);
+                                } else {
+                                    renderData(locationChangedOnly);
+                                }
+                            });
+                        } else {
+                            renderData();
+                        }
+                    };
+
+                    var initDrawingTools = function() {
+                        // Make sure we know when the user is drawing, so that we can ignore other interactions (click on
+                        // shapes...)
+                        scope.map.on('draw:drawstart draw:editstart', function() {
+                            scope.map.isDrawing = true;
+                        });
+                        scope.map.on('draw:drawstop draw:editstop', function() {
+                            scope.map.isDrawing = false;
+                        });
+
+                        // Set the drawn items as clickable when in deletion mode. We have to do it manually because
+                        // we are redrawing our own shapes (due to parameter sync on init) instead of using the leaflet-draw builtint.
+                        var setLayerInteractive = function(layer) {
+                            layer._path.setAttribute('style','cursor: pointer; pointer-events: auto;');
+                        };
+                        var setLayerNonInteractive = function(layer) {
+                            layer._path.setAttribute('style','cursor: auto; pointer-events: none;');
+                        };
+
+                        scope.map.on('draw:deletestart', function() {
+                            setLayerInteractive(scope.drawnItems.getLayers()[0]);
+                        });
+
+                        scope.map.on('draw:deleteend', function() {
+                            setLayerNonInteractive(scope.drawnItems.getLayers()[0]);
+                        });
+
+                        // Applying drawing effects on contexts
+                        scope.map.on('draw:created', function (e) {
+                            var layer = e.layer;
+                            if (scope.drawnItems.getLayers().length > 0) {
+                                scope.drawnItems.removeLayer(scope.drawnItems.getLayers()[0]);
+                            }
+                            scope.drawnItems.addLayer(layer);
+
+                            // Apply to parameters
+                            applyDrawnLayer(layer, e.layerType);
+
+                            scope.$apply();
+                        });
+
+                        scope.map.on('draw:edited', function(e) {
+                            var layer = e.layers.getLayers()[0];
+                            var type = getDrawnLayerType(layer);
+
+                            applyDrawnLayer(layer, type);
+                            scope.$apply();
+                        });
+
+                        scope.map.on('draw:deleted', function(e) {
+                            delete scope.mapConfig.drawnArea;
+                            scope.$apply();
+                        });
+
+                        var applyDrawnLayer = function(layer, type) {
+                            if (type === 'circle') {
+                                var distance = layer.getRadius();
+                                var center = layer.getLatLng();
+                                scope.mapConfig.drawnArea = {
+                                    'shape': 'circle',
+                                    'coordinates': center.lat + ',' + center.lng + ',' + distance
+                                };
+                            } else {
+                                // Compute the polygon
+                                var geoJson = layer.toGeoJSON();
+                                var path = ODS.GeoFilter.getGeoJSONPolygonAsPolygonParameter(geoJson.geometry);
+                                scope.mapConfig.drawnArea = {
+                                    'shape': 'polygon',
+                                    'coordinates': path
+                                };
+                            }
+                        };
+
+                        var getDrawnLayerType = function(layer) {
+                            if (angular.isDefined(layer.getRadius)) {
+                                return 'circle';
+                            } else {
+                                return 'polygon';
+                            }
+                        };
+
+                        var drawableStyle = {
+                            color: '#2ca25f',
+                            fillOpacity: 0.2,
+                            opacity: 0.8,
+                            clickable: true
+                        };
+
+                        scope.$watch('mapConfig.drawnArea', function(nv, ov) {
+                            // Wipe the current drawn polygon
+                            if (scope.drawnItems.getLayers().length > 0) {
+                                scope.drawnItems.removeLayer(scope.drawnItems.getLayers()[0]);
+                            }
+
+                            // Draw
+                            var drawn;
+                            if (nv) {
+                                if (nv.shape === 'polygon') {
+                                    // FIXME: maybe a cleaner way than using GeoJSON, but it felt weird adding a method
+                                    // just to output a Leaflet-compatible arbitrary format. Still, we should do it.
+                                    var geojson = ODS.GeoFilter.getPolygonParameterAsGeoJSON(nv.coordinates);
+                                    var coordinates = geojson.coordinates[0];
+                                    coordinates.splice(geojson.coordinates[0].length - 1, 1);
+                                    var i, coords, swap;
+                                    for (i = 0; i < coordinates.length; i++) {
+                                        coords = coordinates[i];
+                                        swap = coords[0];
+                                        coords[0] = coords[1];
+                                        coords[1] = swap;
+                                    }
+                                    if (coordinates.length === 4 &&
+                                        coordinates[0][0] === coordinates[3][0] &&
+                                        coordinates[1][0] === coordinates[2][0] &&
+                                        coordinates[0][1] === coordinates[1][1] &&
+                                        coordinates[2][1] === coordinates[3][1]) {
+                                        drawn = new L.Rectangle(coordinates, drawableStyle);
+                                    } else {
+                                        drawn = new L.Polygon(coordinates, drawableStyle);
+                                    }
+                                    //drawn = new L.GeoJSON(geojson);
+                                } else if (nv.shape === 'circle') {
+                                    var parts = nv.coordinates.split(',');
+                                    var lat = parts[0],
+                                        lng = parts[1],
+                                        radius = parts[2];
+                                    drawn = new L.Circle([lat, lng], radius, drawableStyle);
+                                }
+
+                                if (drawn) {
+                                    scope.drawnItems.addLayer(drawn);
+                                    setLayerNonInteractive(scope.drawnItems.getLayers()[0]);
+                                }
+                            }
+
+                            // Apply to every context available
+                            angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true), function(ctx) {
+                                if (nv) {
+                                    // There is something to apply
+                                    if (nv.shape === 'circle') {
+                                        ctx.parameters['geofilter.distance'] = nv.coordinates;
+                                        delete ctx.parameters['geofilter.polygon'];
+                                    } else if (nv.shape === 'polygon') {
+                                        ctx.parameters['geofilter.polygon'] = nv.coordinates;
+                                        delete ctx.parameters['geofilter.distance'];
+                                    }
+                                } else {
+                                    // Remove the filters
+                                    delete ctx.parameters['geofilter.polygon'];
+                                    delete ctx.parameters['geofilter.distance'];
+                                }
+                            });
+
+                        }, true);
+                    };
+                });
+
+                var waitForVisibleContexts = function() {
+                    var deferred = $q.defer();
+
+                    // Watches all the active contexts, and resolves once they are ready
+                    // FIXME: Include joinContexts and refineOnClickContexts
+                    var contexts = MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig);
+
+                    var promises = contexts.map(function(context) { return context.wait(); });
+                    $q.all(promises).then(function() {
+                        syncGeofilterToDrawing();
+                        deferred.resolve();
+                    })
+
+                    return deferred.promise;
+                };
+
+                var syncGeofilterToDrawing = function() {
+                    // Check if there are geofilters shared by everyone at init time, and if so, synchronize the
+                    // drawn shapes to match them.
+                    var polygon, distance;
+                    angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true), function(context) {
+                        if (angular.isUndefined(polygon) && angular.isUndefined(polygon)) {
+                            // First time
+                            polygon = context.parameters['geofilter.polygon'];
+                            distance = context.parameters['geofilter.distance'];
+                        } else {
+                            if (polygon !== context.parameters['geofilter.polygon']) {
+                                polygon = null;
+                            }
+                            if (distance !== context.parameters['geofilter.distance']) {
+                                distance = null;
+                            }
+                        }
+                    });
+                    if (polygon) {
+                        scope.mapConfig.drawnArea = {
+                            shape: 'polygon',
+                            coordinates: polygon
+                        };
+                    } else if (distance) {
+                        scope.mapConfig.drawnArea = {
+                            shape: 'circle',
+                            coordinates: distance
+                        };
+                    } else {
+                        scope.mapConfig.drawnArea = {};
+                    }
+                };
+
+                // TODO: Plug polygon drawing to the geofilter.polygon of every context. Possibly store it in a specific
+                // place in the map config, so we know which one to use when loading the map
+
+            },
+            controller: ['$scope', function($scope) {
+                $scope.mapConfig = {
+                    'layers': []
+                };
+                //
+                this.registerLayer = function(layer) {
+                    // Register with a dummy single-layer-group
+                    var group = MapHelper.MapConfiguration.createLayerGroupConfiguration();
+                    group.activeDatasets.push(layer);
+                    $scope.mapConfig.layers.push(group);
+                    return group;
+                };
+
+                this.registerLayerGroup = function(layer) {
+                    $scope.mapConfig.layers.push(layer);
+                };
+            }]
+        };
+    }]);
+
+    mod.directive('odsMapLayerGroup', function() {
+        // TODO: Plug for real
+        return {
+            restrict: 'EA',
+            scope: {},
+            require: '^odsMap',
+            link: function(scope, element, attrs, mapCtrl) {
+                mapCtrl.registerLayerGroup(scope.group);
+            },
+            controller: ['$scope', function($scope) {
+                $scope.group = {'activeDatasets': []};
+
+                this.registerLayer = function(obj) {
+                    // Register to the group
+                    $scope.group.activeDatasets.push(obj);
+                    return $scope.group;
+                };
+            }]
+        };
+    });
+
+    mod.directive('odsMapLayer', ['MapHelper', function(MapHelper) {
+        return {
+            restrict: 'EA',
+            scope: {
+                context: '=',
+                showIf: '=',
+                color: '@',
+                colorScale: '@',
+                colorRanges: '@',
+                colorByField: '@',
+                picto: '@',
+                showMarker: '@',
+                display: '@',
+                'function': '@', // A less risky name?
+                expression: '@',
+
+                tooltipSort: '@',
+                hoverField: '@',
+
+                refineOnClickContext: '=',
+
+                joinContext: '=',
+                localKey: '@',
+                remoteKey: '@'
+            },
+            template: function(tElement) {
+                var tpl = '';
+                tElement.contents().wrapAll('<div>');
+                if (tElement.contents().length > 0 && tElement.contents().html().trim().length > 0) {
+                    tElement.contents().wrapAll('<div>');
+                    tpl = tElement.children().html();
+                }
+                // Yes, it seems highly weird, but unfortunately it sems to be the only option as we want to get the
+                // original content BEFORE compile, and pass it to the link function.
+                return '<div tooltiptemplate="'+tpl.replace(/"/g, '&quot;')+'"></div>';
+            },
+            require: ['?^odsMapLayerGroup', '^odsMap'],
+            link: function(scope, element, attrs, controllers) {
+                var layerGroupCtrl  = controllers[0],
+                    mapCtrl         = controllers[1];
+                var tplHolder = angular.element(element.children()[0]);
+                var customTemplate = tplHolder.attr('tooltiptemplate');
+
+                var color;
+                if (scope.color) {
+                    color = scope.color;
+                } else if (scope.colorScale) {
+                    color = {
+                        type: 'scale',
+                        scale: scope.colorScale
+                    };
+                } else if (scope.colorRanges) {
+                    var tokens = scope.colorRanges.split(';');
+                    var ranges = tokens.filter(function(elt, idx) { return idx % 2 === 1; });
+                    var colors = tokens.filter(function(elt, idx) { return idx % 2 === 0; });
+                    color = {
+                        type: 'range',
+                        ranges: ranges,
+                        colors: colors,
+                        field: scope.colorByField
+                    };
+                }
+
+                var layer = MapHelper.MapConfiguration.createLayerConfiguration(customTemplate, color, scope.picto, scope.display, scope['function'], scope.expression, scope.localKey, scope.remoteKey, scope.tooltipSort, scope.hoverField);
+                var layerGroup;
+                if (layerGroupCtrl) {
+                    // Register to the group
+                    layerGroup = layerGroupCtrl.registerLayer(layer);
+                } else {
+                    // Register to the map
+                    layerGroup = mapCtrl.registerLayer(layer);
+                }
+
+                if (attrs.showIf) {
+                    scope.$watch('showIf', function(nv, ov) {
+                        layerGroup.displayed = nv;
+                    });
+                }
+
+                var unwatch = scope.$watch('context', function(nv, ov) {
+                    layer.context = nv;
+
+                    var unwatchSchema = scope.$watch('context.dataset', function(nv) {
+                        if (nv) {
+                            if (scope.showMarker) {
+                                layer.marker = (scope.showMarker.toLowerCase() === 'true');
+                            } else if (layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape') !== null) {
+                                layer.marker = !layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape');
+                            } else {
+                                layer.marker = true;
+                            }
+
+                            layer.color = layer.color || layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || "#C32D1C";
+                            layer.picto = layer.picto || layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
+
+
+                            unwatchSchema();
+                        }
+                    });
+
+                    unwatch();
+                });
+
+                var unwatchJoinContext = scope.$watch('joinContext', function(nv) {
+                    if (nv) {
+                        layer.joinContext = nv;
+                        unwatchJoinContext();
+                    }
+                });
+
+                var unwatchRefineOnClick = scope.$watch('refineOnClickContext', function(nv) {
+                    if (angular.isArray(nv)) {
+                        // Check that all contexts are defined
+                        var allDefined = true;
+                        angular.forEach(nv, function(ctx) {
+                            allDefined = allDefined && angular.isDefined(ctx);
+                        });
+                        if (!allDefined) {
+                            return;
+                        }
+
+                    } else if (!nv) {
+                        return;
+                    }
+
+                    layer.refineOnClick = [];
+                    var contexts = angular.isArray(nv) && nv || [nv];
+                    angular.forEach(contexts, function(ctx) {
+                        layer.refineOnClick.push({
+                            context: ctx,
+                            mapField: attrs['refineOnClick' + ODS.StringUtils.capitalize(ctx.name) + 'MapField'] || attrs.refineOnClickMapField,
+                            contextField: attrs['refineOnClick' + ODS.StringUtils.capitalize(ctx.name) + 'ContextField'] || attrs.refineOnClickContextField
+                        });
+                        unwatchRefineOnClick();
+                    });
+                });
+            },
+            controller: ['$scope', function($scope) {
+            }]
+        };
+    }]);
 
     mod.directive('geoScroller', ['$compile', '$templateCache', function($compile, $templateCache) {
         // FIXME: remove the ugly div from the DL tag, once we migrate to Angular 1.2+
@@ -11210,13 +14832,24 @@ mod.directive('infiniteScroll', [
                 context: '=',
                 recordid: '=',
                 map: '=',
-                template: '@'
+                template: '@',
+                gridData: '=',
+                geoDigest: '@',
+                tooltipSort: '@' // field or -field
             },
             replace: true,
             link: function(scope, element, attrs) {
-                element.bind('popupclose', function() {
-                    scope.$destroy();
-                });
+                var destroyPopup = function(e) {
+                    if (e.popup._content === element[0]) {
+                        if (scope.selectedShapeLayer) {
+                            // Remove the outline on the selected shape
+                            scope.map.removeLayer(scope.selectedShapeLayer);
+                        }
+                        scope.map.off('popupclose', destroyPopup);
+                        scope.$destroy();
+                    }
+                };
+                scope.map.on('popupclose', destroyPopup);
                 scope.unCloak = function() {
                     jQuery('.ng-leaflet-tooltip-cloak', element).removeClass('ng-leaflet-tooltip-cloak');
                 };
@@ -11230,6 +14863,12 @@ mod.directive('infiniteScroll', [
                 $scope.records = [];
                 $scope.selectedIndex = 0;
 
+
+                var tooltipSort = $scope.tooltipSort;
+                if (!tooltipSort && $scope.context.dataset.getExtraMeta('visualization', 'map_tooltip_sort_field')) {
+                    tooltipSort = ($scope.context.dataset.getExtraMeta('visualization', 'map_tooltip_sort_direction') || '') + $scope.context.dataset.getExtraMeta('visualization', 'map_tooltip_sort_field');
+                }
+
                 $scope.moveIndex = function(amount) {
                     var newIndex = ($scope.selectedIndex + amount) % $scope.records.length;
                     if (newIndex < 0) {
@@ -11242,29 +14881,83 @@ mod.directive('infiniteScroll', [
                     return $sce.trustAsResourceUrl(ODSWidgetsConfig.basePath + "templates/geoscroller_tooltip.html");
                 };
 
-                // Prepare the geofilter parameter
-                var options = {
-                    format: 'json',
-                    rows: $scope.RECORD_LIMIT
-                };
-                if ($scope.recordid) {
-                    options.q = "recordid:'"+$scope.recordid+"'";
-                } else {
-                    ODS.GeoFilter.addGeoFilterFromSpatialObject(options, $scope.shape);
-                }
                 var refresh = function() {
+                    var options = {
+                        format: 'json',
+                        rows: $scope.RECORD_LIMIT
+                    };
+                    var shapeType = null;
+                    if ($scope.shape) {
+                        shapeType = $scope.shape.type;
+                    }
+                    if ($scope.recordid && shapeType !== 'Point') {
+                        // When we click on a point, we rather want to match the location so that it fetches the other points
+                        // stacked on the same place
+                        options.q = "recordid:'"+$scope.recordid+"'";
+                    } else if ($scope.geoDigest) {
+                        options.geo_digest = $scope.geoDigest;
+                    } else if ($scope.gridData) {
+                        // From an UTFGrid tile
+                        if ($scope.gridData['ods:geo_type'] === 'GeoPointCluster' || $scope.gridData['ods:geo_type'] === 'GeoShapeCluster') {
+                            // Request geo_grid
+                            options.geo_grid = $scope.gridData['ods:geo_grid'];
+                        } else {
+                            // Request geo_hash
+                            options.geo_digest = $scope.gridData['ods:geo_digest'];
+                        }
+                    } else if ($scope.shape) {
+                        ODS.GeoFilter.addGeoFilterFromSpatialObject(options, $scope.shape);
+                    }
+
                     var queryOptions = {};
                     angular.extend(queryOptions, $scope.context.parameters, options);
-                    ODSAPI.records.download($scope.context, queryOptions).success(function(data, status, headers, config) {
+
+                    if (tooltipSort) {
+                        queryOptions.sort = tooltipSort;
+                        ODSAPI.records.search($scope.context, queryOptions).success(function(data) { handleResults(data.records); });
+                    } else {
+                        ODSAPI.records.download($scope.context, queryOptions).success(handleResults);
+                    }
+
+                    function handleResults(data) {
                         if (data.length > 0) {
                             $scope.selectedIndex = 0;
                             $scope.records = data;
                             $scope.unCloak();
+                            var shapeFields = $scope.context.dataset.getFieldsForType('geo_shape');
+                            var shapeField;
+                            if (shapeFields.length) {
+                                shapeField = shapeFields[0].name;
+                            }
+                            if (shapeField && $scope.gridData &&
+                                ($scope.gridData['ods:geo_type'] === 'Polygon' ||
+                                 $scope.gridData['ods:geo_type'] === 'LineString' ||
+                                 $scope.gridData['ods:geo_type'] === 'MultiPolygon' ||
+                                 $scope.gridData['ods:geo_type'] === 'MultiLineString'
+                                )) {
+                                // Highlight the selected polygon
+                                var record = data[0];
+                                if (record.fields[shapeField]) {
+                                    var geojson = record.fields[shapeField];
+                                    if (geojson.type !== 'Point') {
+                                        $scope.selectedShapeLayer = L.geoJson(geojson, {
+                                            fill: false,
+                                            color: '#CC0000',
+                                            opacity: 1,
+                                            dashArray: [5],
+                                            weight: 2
+
+                                        });
+                                        $scope.map.addLayer($scope.selectedShapeLayer);
+                                    }
+                                }
+                            }
                         } else {
                             $scope.map.closePopup();
                         }
-                    });
+                    }
                 };
+
                 $scope.$watch('searchOptions', function(nv, ov) {
                     refresh();
                 });
@@ -11417,7 +15110,7 @@ mod.directive('infiniteScroll', [
          * results by itself, and therefore should be paired with another widget. Note that by itself it also doesn't control the number of results fetched by the context,
          * and the `perPage` parameter should be the same as the `rows` parameter on the context.
          *
-         * If you just want to display results with a pagination system, you can have a look at {@link ods-widgets.directive:odsResultsEnumerator odsResultsEnumerator}
+         * If you just want to display results with a pagination system, you can have a look at {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}
          * which already include this directive (if the relevant parameter is active on the widget).
          */
 
@@ -11757,7 +15450,7 @@ mod.directive('infiniteScroll', [
             replace: true,
             template: '<div class="odswidget odswidget-searchbox">' +
                     '<form method="GET" action="{{ actionUrl }}" ng-if="actionUrl">' +
-                    '<input class="searchbox" name="q" type="text" placeholder="{{placeholder}}">' +
+                    '<input class="searchbox" name="q" type="text" placeholder="{{placeholder|translate}}">' +
                     '</form>' +
                 '</div>',
             scope: {
@@ -12585,7 +16278,52 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsThemePicto', ['ODSWidgetsConfig', '$http', function(ODSWidgetsConfig, $http) {
+    mod.directive('odsPicto', ['SVGInliner', '$http', '$document', function(SVGInliner, $http, $document) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsPicto
+         * @scope
+         * @restrict E
+         * @param {string} url The url of the svg or image to display
+         * @param {string} color The color to use to fill the svg
+         * @description
+         * This widget displays a "picto" specified by a url and force a fill color on it.
+         * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
+         * @todo implement IE8 and image fallback for svg
+         * @todo implement defs and use in svg
+         */
+        var inlineImages = {};
+            // parser = new DOMParser(),
+            // globalSvg;
+
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                url: '=',
+                color: '=',
+                classes: '='
+            },
+            template: '<div class="odswidget odswidget-picto {{ classes }}"></div>',
+            link: function(scope, element) {
+                var svgContainer;
+                scope.$watch('[url, color]', function(nv) {
+                    if (nv[0]) {
+                        if (svgContainer) {
+                            element.empty();
+                        }
+                        svgContainer = SVGInliner.getElement(scope.url, scope.color);
+                        if (!scope.color) {
+                            svgContainer.addClass('colorless');
+                        }
+                        element.append(svgContainer);
+                    }
+                }, true);
+            }
+        };
+    }]);
+
+    mod.directive('odsThemePicto', ['ODSWidgetsConfig', '$compile', function(ODSWidgetsConfig, $compile) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsThemePicto
@@ -12597,26 +16335,26 @@ mod.directive('infiniteScroll', [
          * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
          *
          */
-        var inlineImages = {};
         return {
             restrict: 'E',
             replace: true,
             scope: {
                 theme: '@'
             },
-            template: '<div class="odswidget odswidget-theme-picto theme-{{getTheme()|themeSlug}}"></div>',
+            template: '',
             link: function(scope, element) {
+                scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
+                var template = '<ods-picto url="themeConfig.img" color="themeConfig.color" classes="originalClasses + \' odswidget-theme-picto theme-\' + (getTheme()|themeSlug) "></ods-picto>';
                 // TODO: IE8 fallback
                 // TODO: png fallback
                 var themeConfig = null;
                 var defaultPicto = false;
                 if (ODSWidgetsConfig.themes[scope.theme]) {
-                    themeConfig = ODSWidgetsConfig.themes[scope.theme];
+                    scope.themeConfig = ODSWidgetsConfig.themes[scope.theme];
                 } else {
-                    themeConfig = ODSWidgetsConfig.themes['default'];
+                    scope.themeConfig = ODSWidgetsConfig.themes['default'];
                     defaultPicto = true;
                 }
-
                 scope.getTheme = function() {
                     if (defaultPicto) {
                         return 'default';
@@ -12624,47 +16362,516 @@ mod.directive('infiniteScroll', [
                         return scope.theme;
                     }
                 };
+                if (scope.themeConfig) {
+                    element.replaceWith(angular.element($compile(template)(scope)));
+                }
+            }
+        };
+    }]);
+}());;(function() {
+    'use strict';
 
-                var loadImageInline = function(code) {
-                    var svg = angular.element(code);
-                    if (themeConfig.color) {
-                        svg.css('fill', themeConfig.color);
-                    } else {
-                        element.addClass('colorless');
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('odsTileMap', ['ModuleLazyLoader', function (ModuleLazyLoader) {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                context: '=',
+                embedMode: '@', // FIXME: This concept is not useful, we could remove it and use the more explicit settings to achieve the same effects
+                autoResize: '@',
+                mapContext: '=?',
+                location: '@',
+                basemap: '@',
+                isStatic: '@'
+            },
+            template: function(tElement) {
+                tElement.contents().wrapAll('<div>');
+                if (tElement.contents().length > 0 && tElement.contents().html().trim().length > 0) {
+                    tElement.contents().wrapAll('<div>');
+                    tElement.data('tooltip-template', tElement.children().html());
+                }
+                return '<div class="odswidget odswidget-map">' +
+                '<div class="map"></div>' +
+                '<div class="overlay map opaque-overlay" ng-show="pendingRequests.length && initialLoading"><spinner class="spinner"></spinner></div>' +
+                '<div class="loading-tiles" ng-show="loadingTiles"><i class="icon-spinner icon-spin"></i></div>' +
+                '</div>';
+            },
+            link: function (scope, element, attrs) {
+                if (angular.isUndefined(scope.mapContext)) {
+                    scope.mapContext = {};
+                    if (scope.location) {
+                        scope.mapContext.location = scope.location;
                     }
-                    element.append(svg);
-                };
-                if (!themeConfig) {
-                    // No picto to display at all
-                } else {
-                    var url = themeConfig.img;
-
-                    if (url.indexOf('.svg') === -1) {
-                        // Normal image
-                        element.append(angular.element('<img src="'+url+'"/>'));
-                    } else {
-                        // SVG
-                        if (inlineImages[scope.theme]) {
-                            if (inlineImages[scope.theme].code) {
-                                loadImageInline(inlineImages[scope.theme].code);
-                            } else {
-                                inlineImages[scope.theme].promise.success(function(data) {
-                                    loadImageInline(data);
-                                });
-                            }
-
-                        } else {
-                            var promise = $http.get(url);
-                            inlineImages[scope.theme] = {promise: promise};
-                            promise.success(function(data) {
-                                inlineImages[scope.theme].code = data;
-                                loadImageInline(data);
-                            });
-                        }
+                    if (scope.basemap) {
+                        scope.mapContext.basemap = scope.basemap;
                     }
                 }
 
-            }
+                function resizeMap(){
+                    if ($('.odswidget-map > .map').length > 0) {
+                        // Only do this if visible
+                        $('.odswidget-map > .map').height(Math.max(200, $(window).height() - $('.odswidget-map > .map').offset().top));
+                    }
+                }
+                if (scope.autoResize === 'true') {
+                    $(window).on('resize', resizeMap);
+                    resizeMap();
+                }
+                ModuleLazyLoader('leaflet').then(function() {
+                    scope.initMap = function(dataset, embedMode, basemapsList, translate, geobox, basemap, staticMap, prependAttribution) {
+
+                        var mapOptions = {
+                            basemapsList: basemapsList,
+                            worldCopyJump: true,
+                            minZoom: 2,
+                            basemap: basemap,
+                            dragging: !staticMap,
+                            zoomControl: !staticMap,
+                            prependAttribution: prependAttribution
+                        };
+
+                        if (staticMap) {
+                            mapOptions.doubleClickZoom = false;
+                            mapOptions.scrollWheelZoom = false;
+                        }
+                        var map = new L.ODSMap(element.children()[0], mapOptions);
+
+    //                    map.setView(new L.LatLng(48.8567, 2.3508),13);
+                        map.addControl(new L.Control.Scale());
+                        if (embedMode !== 'true') {
+                            map.addControl(new L.Control.Fullscreen());
+                        }
+                        if (!staticMap) {
+                            map.addControl(new L.Control.Locate({maxZoom: 18}));
+                        }
+
+                        // Drawing
+                        scope.drawnItems = new L.FeatureGroup();
+                        map.addLayer(scope.drawnItems);
+                        var drawControl = new L.Control.Draw({
+                            edit: {
+                                featureGroup: scope.drawnItems
+                            },
+                            draw: {
+                                polyline: false,
+                                marker: false
+                            }
+                        });
+                        map.addControl(drawControl);
+                        scope.map = map;
+
+                        map.on('popupclose', function(e) {
+                            // Propagating the event to the geoScroller
+                            jQuery(e.popup.getContent()).trigger('popupclose');
+                        });
+                    };
+                });
+            },
+            controller: ['$scope', '$q', '$compile', '$element', 'ODSAPI', 'ODSWidgetsConfig', 'translate', 'DebugLogger', 'odsErrorService', function ($scope, $q, $compile, $element, ODSAPI, ODSWidgetsConfig, translate, DebugLogger, odsErrorService) {
+                $scope.initialLoading = true;
+                var locationParameterFunctions = {
+                    delimiter: ',',
+                    accuracy: 5,
+                    formatLatLng: function(latLng) {
+                        var lat = L.Util.formatNum(latLng.lat, this.accuracy);
+                        var lng = L.Util.formatNum(latLng.lng, this.accuracy);
+                        return new L.LatLng(lat, lng);
+                    },
+                    getLocationParameterAsArray: function(location) {
+                        return location.split(this.delimiter);
+                    },
+                    getLocationParameterFromMap: function(map) {
+                        var center = this.formatLatLng(map.getCenter());
+                        return map.getZoom() + this.delimiter + center.lat + this.delimiter + center.lng;
+                    },
+                    getCenterFromLocationParameter: function(location) {
+                        var a = this.getLocationParameterAsArray(location);
+                        return new L.LatLng(a[1], a[2]);
+                    },
+                    getZoomFromLocationParameter: function(location) {
+                        return this.getLocationParameterAsArray(location)[0];
+                    }
+                };
+
+                $scope.$watch('context.parameters', function(newValue, oldValue) {
+                    // Don't fire at initialization time
+                    if (newValue === oldValue) return;
+                    if ($scope.initialLoading) return;
+
+                    refreshRecords(true);
+
+                }, true);
+
+                var refreshRecords = function(fitView) {
+                    var refresh = function() {
+                        var tilesOptions = {
+                            color: $scope.context.dataset.getExtraMeta('visualization', 'map_marker_color'),
+                            icon: $scope.context.dataset.getExtraMeta('visualization', 'map_marker_picto'),
+                            showmarker: !$scope.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape')
+                        };
+                        angular.extend(tilesOptions, $scope.context.parameters);
+                        // Change tile URL
+                        var url = '/api/datasets/1.0/' + $scope.context.dataset.datasetid + '/tiles/simple/{z}/{x}/{y}.bundle';
+                        //var url = '/api/tiles/icons/{z}/{x}/{y}.bundle';
+                        var params = '';
+                        angular.forEach(tilesOptions, function(value, key) {
+                            if (value != null) {
+                                params += params ? '&' : '?';
+                                params += key + '=' + encodeURIComponent(value);
+                            }
+                        });
+                        url += params;
+                        if ($scope.bundleLayer._url !== url) {
+                            $scope.bundleLayer.setUrl(url);
+                        }
+                    };
+
+                    if (fitView) {
+                        // Move the viewport to the new location, and change the tile
+                        var options = {};
+                        jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters);
+                        ODSAPI.records.boundingbox($scope.context, options).success(function(data) {
+                            if (data.bbox.length > 0) {
+                                $scope.map.fitBounds([[data.bbox[1], data.bbox[0]], [data.bbox[3], data.bbox[2]]]);
+                            }
+                            refresh();
+                        });
+                    } else {
+                        refresh();
+                    }
+
+                };
+
+                var onViewportMove = function(map) {
+                    var size = map.getSize();
+                    if (size.x > 0 && size.y > 0) {
+                        // Don't attempt to do anything if the map is not displayed... we can't capture useful bounds
+                        $scope.mapContext.location = locationParameterFunctions.getLocationParameterFromMap(map);
+                    }
+                };
+
+                var unwatchSchema = $scope.$watch('context.dataset', function(newValue, oldValue) {
+                    if (!newValue || !newValue.datasetid) return;
+
+                    if ($scope.context.dataset.hasFieldType('geo_shape')) {
+                        // Get the first shape field of the dataset
+                        angular.forEach($scope.context.dataset.fields, function(field) {
+                            if (angular.isUndefined($scope.shapeField) && field.type === 'geo_shape') {
+                                $scope.shapeField = field.name;
+                            }
+                        });
+                    } else {
+                        $scope.shapeField = null;
+                    }
+
+                    $scope.staticMap = $scope.isStatic === 'true' || $scope.context.parameters.static === 'true';
+
+                    // Wait for initMap to be ready (lazy loading)
+                    var unwatchInit = $scope.$watch('initMap', function() {
+                        if ($scope.initMap) {
+                            unwatchInit();
+                            $scope.initMap(newValue, $scope.embedMode, ODSWidgetsConfig.basemaps, translate, ODSWidgetsConfig.mapGeobox, $scope.mapContext.basemap, $scope.staticMap, ODSWidgetsConfig.mapPrependAttribution);
+                        }
+                    });
+                    unwatchSchema();
+                    $scope.staticSearchOptions = {
+                        dataset: $scope.context.dataset.datasetid
+                    };
+
+                    var mapInitWatcher = $scope.$watch('map', function(nv, ov){
+                        if (nv) {
+                            $scope.bundleLayer = new L.BundleTileLayer('', {
+                                tileSize: 512,
+                                minZoom: nv.getMinZoom(),
+                                maxZoom: nv.getMaxZoom(),
+                                gridLayer: {
+                                    options: {
+                                        resolution: 4
+                                    },
+                                    events: {
+                                        click: function(e) {
+                                            if ($scope.drawing) {
+                                                // User is currently drawing a shape
+                                                return;
+                                            }
+                                            if (e.data) {
+                                                console.log(e.data);
+
+                                                var newScope = $scope.$new(false);
+
+                                                var popupOptions = {
+                                                    offset: [0, -10],
+                                                    maxWidth: 250,
+                                                    minWidth: 250
+                                                };
+
+                                                // If there is a template passed as HTML inside the directive HTML tag,
+                                                // then we use it. Else, if there is a template within the dataset's metadata,
+                                                // we use it. Else, we let geoscroller use its default one.
+                                                var html = $element.data('tooltip-template');
+                                                if (angular.isUndefined(html) || !angular.isString(html) || html.trim() === '') {
+                                                    if ($scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.map_tooltip_html) {
+                                                        html = $scope.context.dataset.extra_metas.visualization.map_tooltip_html;
+                                                    } else {
+                                                        html = '';
+                                                    }
+                                                }
+                                                newScope.template = html;
+                                                newScope.map = $scope.map;
+                                                newScope.gridData = e.data;
+
+                                                var popup = new L.Popup(popupOptions).setLatLng(e.latlng)
+                                                    .setContent($compile('<geo-scroller context="context" grid-data="gridData" template="{{template}}" map="map" shape-field="'+($scope.shapeField||'')+'"></geo-scroller>')(newScope)[0]);
+                                                popup.openOn($scope.map);
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                            $scope.bundleLayer.on('loading', function() {
+                                $scope.$evalAsync('loadingTiles = true');
+                            });
+                            $scope.bundleLayer.on('load', function() {
+                                $scope.$evalAsync('loadingTiles = false');
+                            });
+                            $scope.bundleLayer.on('tileerror', function() {
+                                odsErrorService.sendErrorNotification({'error': 'Error while loading the map view.'});
+                            })
+                            $scope.map.addLayer($scope.bundleLayer);
+                            var boundsRetrieval = function() {
+                                var deferred = $q.defer();
+
+                                if ($scope.context.parameters.mapviewport) {
+
+                                    if ($scope.context.parameters.mapviewport.substring(0, 1) === '(') {
+                                        // Legacy support
+                                        $scope.context.parameters.mapviewport = ODS.GeoFilter.getBoundsAsBboxParameter(ODS.GeoFilter.getPolygonParameterAsBounds($scope.context.parameters.mapviewport));
+                                    }
+                                    deferred.resolve(ODS.GeoFilter.getBboxParameterAsBounds($scope.context.parameters.mapviewport));
+                                } else if ($scope.context.parameters["geofilter.polygon"]) {
+                                    deferred.resolve(ODS.GeoFilter.getPolygonParameterAsBounds($scope.context.parameters["geofilter.polygon"]));
+                                } else {
+                                    // Get the boundingbox from the API
+                                    var options = {};
+                                    jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters);
+                                    ODSAPI.records.boundingbox($scope.context, options).success(function(data) {
+                                        if (data.count > 0) {
+                                            deferred.resolve([[data.bbox[1], data.bbox[0]], [data.bbox[3], data.bbox[2]]]);
+                                        } else {
+                                            // Fallback to... the world
+                                            deferred.resolve([[-60, -180], [80, 180]]);
+                                        }
+                                    });
+                                }
+
+                                return deferred.promise;
+                            };
+
+                            var setMapView = function() {
+                                var deferred = $q.defer();
+
+                                if ($scope.mapContext.location) {
+                                    DebugLogger.log('Location found');
+                                    var center = locationParameterFunctions.getCenterFromLocationParameter($scope.mapContext.location);
+                                    var zoom = locationParameterFunctions.getZoomFromLocationParameter($scope.mapContext.location);
+                                    DebugLogger.log(center, zoom);
+                                    nv.setView(center, zoom);
+
+                                    refreshRecords(false);
+
+                                    deferred.resolve();
+                                } else {
+                                    DebugLogger.log('Use boundsRetrieval');
+                                    boundsRetrieval().then(function(bounds) {
+                                        if ($scope.context.parameters.mapviewport) {
+                                            DebugLogger.log('Deleted mapviewport');
+                                            delete $scope.context.parameters.mapviewport;
+                                        }
+
+                                        // Fit to dataset boundingbox if there is no viewport or geofilter
+                                        DebugLogger.log(bounds);
+                                        nv.fitBounds(bounds);
+
+                                        refreshRecords(false);
+
+                                        deferred.resolve();
+                                    });
+                                }
+
+                                return deferred.promise;
+                            };
+
+                            setMapView().then(function() {
+                                $scope.initialLoading = false;
+                                DebugLogger.log('First onViewportMove');
+                                onViewportMove($scope.map);
+
+                                $scope.map.on('moveend', function(e) {
+                                    // Whenever the map moves, we update the displayed data
+                                    onViewportMove(e.target);
+                                    if(!$scope.$$phase && !$scope.$root.$$phase) {
+                                        // Don't trigger a digest if it is already running (for example if a fitBounds is
+                                        // triggered from within a apply)
+                                        $scope.$apply();
+                                    }
+                                });
+                            });
+
+                            if (ODSWidgetsConfig.basemaps.length > 1) {
+                                $scope.map.on('baselayerchange', function (e) {
+                                    $scope.mapContext.basemap = e.layer.basemapId;
+                                    // The bundle layer zooms have to be the same as the basemap, else it will drive the map
+                                    // to be zoomable beyond the basemap levels
+                                    $scope.bundleLayer.setMinZoom(e.layer.options.minZoom);
+                                    $scope.bundleLayer.setMaxZoom(e.layer.options.maxZoom);
+                                    if(!$scope.$$phase && !$scope.$root.$$phase) {
+                                        // Don't trigger a digest if it is already running (for example if a fitBounds is
+                                        // triggered from within a apply)
+                                        $scope.$apply();
+                                    }
+                                });
+                            }
+
+                            // Drawing
+
+                            var geofilterFromDrawnLayer = function(layer, type) {
+                                if (type === 'circle') {
+                                    var distance = layer.getRadius();
+                                    var center = layer.getLatLng();
+                                    $scope.context.parameters['geofilter.distance'] = center.lat+','+center.lng+','+distance;
+                                     delete $scope.context.parameters['geofilter.polygon'];
+                                } else {
+                                    // Compute the polygon
+                                    var geoJson = layer.toGeoJSON();
+                                    var path = ODS.GeoFilter.getGeoJSONPolygonAsPolygonParameter(geoJson.geometry);
+                                    $scope.context.parameters['geofilter.polygon'] = path;
+                                    delete $scope.context.parameters['geofilter.distance'];
+                                }
+                            };
+
+                            var getDrawnLayerType = function(layer) {
+                                if (angular.isDefined(layer.getRadius)) {
+                                    return 'circle';
+                                } else {
+                                    return 'polygon';
+                                }
+                            };
+
+                            var setLayerInteractive = function(layer) {
+                                layer._path.setAttribute('style','cursor: pointer; pointer-events: auto;');
+                            };
+                            var setLayerNonInteractive = function(layer) {
+                                layer._path.setAttribute('style','cursor: auto; pointer-events: none;');
+                            };
+
+                            $scope.map.on('draw:drawstart draw:editstart', function() {
+                                $scope.drawing = true;
+                                $scope.$apply();
+                            });
+                            $scope.map.on('draw:drawstop draw:editstop', function() {
+                                $scope.drawing = false;
+                                $scope.$apply();
+                            });
+
+                            $scope.map.on('draw:created', function (e) {
+                                var layer = e.layer;
+                                if ($scope.drawnItems.getLayers().length > 0) {
+                                    $scope.drawnItems.removeLayer($scope.drawnItems.getLayers()[0]);
+                                }
+                                $scope.drawnItems.addLayer(layer);
+
+                                // Apply to parameters
+                                geofilterFromDrawnLayer(layer, e.layerType);
+
+                                $scope.$apply();
+                            });
+
+                            $scope.map.on('draw:deleted', function(e) {
+                                delete $scope.context.parameters['geofilter.distance'];
+                                delete $scope.context.parameters['geofilter.polygon'];
+                                $scope.$apply();
+                            });
+
+                            $scope.map.on('draw:edited', function(e) {
+                                var layer = e.layers.getLayers()[0];
+                                var type = getDrawnLayerType(layer);
+
+                                geofilterFromDrawnLayer(layer, type);
+                                $scope.$apply();
+                            });
+
+                            $scope.map.on('draw:deletestart', function() {
+                                setLayerInteractive($scope.drawnItems.getLayers()[0]);
+                            });
+
+                            $scope.map.on('draw:deleteend', function() {
+                                setLayerNonInteractive($scope.drawnItems.getLayers()[0]);
+                            });
+
+                            var drawableStyle = {
+                                color: '#2ca25f',
+                                fillOpacity: 0.2,
+                                opacity: 0.8,
+                                clickable: true
+                            };
+
+                            $scope.$watch('[context.parameters["geofilter.polygon"], context.parameters["geofilter.distance"]]', function(nv, ov) {
+                                var polygon = nv[0],
+                                    distance = nv[1];
+
+                                // Wipe the current drawn polygon
+                                if ($scope.drawnItems.getLayers().length > 0) {
+                                    $scope.drawnItems.removeLayer($scope.drawnItems.getLayers()[0]);
+                                }
+
+                                // Draw
+                                var drawn;
+                                if (polygon) {
+                                    // FIXME: maybe a cleaner way than using GeoJSON, but it felt weird adding a method
+                                    // just to output a Leaflet-compatible arbitrary format. Still, we should do it.
+                                    var geojson = ODS.GeoFilter.getPolygonParameterAsGeoJSON(polygon);
+                                    var coordinates = geojson.coordinates[0];
+                                    coordinates.splice(geojson.coordinates[0].length-1, 1);
+                                    var i, coords, swap;
+                                    for (i=0; i<coordinates.length; i++) {
+                                        coords = coordinates[i];
+                                        swap = coords[0];
+                                        coords[0] = coords[1];
+                                        coords[1] = swap;
+                                    }
+                                    if (coordinates.length === 4 &&
+                                        coordinates[0][0] === coordinates[3][0] &&
+                                        coordinates[1][0] === coordinates[2][0] &&
+                                        coordinates[0][1] === coordinates[1][1] &&
+                                        coordinates[2][1] === coordinates[3][1]) {
+                                        drawn = new L.Rectangle(coordinates, drawableStyle);
+                                    } else {
+                                        drawn = new L.Polygon(coordinates, drawableStyle);
+                                    }
+                                    //drawn = new L.GeoJSON(geojson);
+                                } else if (distance) {
+                                    var parts = distance.split(',');
+                                    var lat = parts[0],
+                                        lng = parts[1],
+                                        radius = parts[2];
+                                    drawn = new L.Circle([lat, lng], radius, drawableStyle);
+                                }
+
+                                if (drawn) {
+                                    $scope.drawnItems.addLayer(drawn);
+                                    setLayerNonInteractive($scope.drawnItems.getLayers()[0]);
+                                }
+                            }, true);
+
+                            mapInitWatcher();
+                        }
+                    });
+
+                }, true);
+
+            }]
         };
     }]);
 }());;(function() {
@@ -12677,10 +16884,12 @@ mod.directive('infiniteScroll', [
          * @name ods-widgets.directive:odsTimerange
          * @restrict E
          * @scope
-         * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} or array of context to use
          * @param {string} [timeField=first date/datetime field available] Name of the field (date or datetime) to filter on
-         * @param {string} [defaultFrom=none] Default datetime for the "from" field: either "yesterday" or "now"
-         * @param {string} [defaultTo=none] Default datetime for the "to" field: either "yesterday" or "now"
+         * @param {string} [defaultFrom=none] Default datetime for the "from" field: either "yesterday", "now" or a string representing a date
+         * @param {string} [defaultTo=none] Default datetime for the "to" field: either "yesterday", "now" or a string representing a date
+         * @param {string} [displayTime=true] Define if the date selector displays the time selector as well
+         * @param {string} [dateFormat='YYYY-MM-DD HH:mm'] Define the format for the date displayed in the inputs
          * @description
          * This widget displays two fields to select the two bounds of a date and time range.
          *
@@ -12693,7 +16902,21 @@ mod.directive('infiniteScroll', [
          *          </ods-dataset-context>
          *     </file>
          * </example>
+         *
+         * Example with multiple contexts set by ods-timerange
+         *  @example
+         *  <ods-dataset-context
+         *          context="cibul,medecins"
+         *          cibul-domain="public.opendatasoft.com"
+         *          cibul-dataset="evenements-publics-cibul"
+         *          medecins-domain="public.opendatasoft.com"
+         *          medecins-dataset="donnees-sur-les-medecins-accredites">
+         *      <ods-timerange context="[cibul,medecins]" default-from="yesterday" default-to="now"></ods-timerange>
+         *      <ods-map context="cibul"></ods-map>
+         *      <ods-map context="medecins"></ods-map>
+         *  </ods-dataset-context>
          */
+         // TODO merge controller with timescale
         var romeOptions = {
             styles: {
                 container: "rd-container odswidgets-rd-container"
@@ -12702,16 +16925,18 @@ mod.directive('infiniteScroll', [
         };
         var computeDefaultTime = function(value) {
             if (value === 'yesterday') {
-                return moment().subtract('days', 1).format('YYYY-MM-DD HH:mm');
+                return moment().subtract('days', 1);
             } else if (value === 'now') {
-                return moment().format('YYYY-MM-DD HH:mm');
+                return moment();
+            } else if (angular.isString(value)) {
+                return moment(value);
             } else {
                 return null;
             }
         };
         var formatTimeToISO = function(time) {
             if (time) {
-                return moment(time).toISOString().replace('.000Z', 'Z');
+                return moment(time).milliseconds(0).toISOString().replace('.000Z', 'Z');
             } else {
                 return null;
             }
@@ -12724,7 +16949,11 @@ mod.directive('infiniteScroll', [
                 context: '=',
                 timeField: '@?',
                 defaultFrom: '@?',
-                defaultTo: '@?'
+                defaultTo: '@?',
+                displayTime: '@?',
+                dateFormat: '@?',
+                to: '=?',
+                from: '=?'
             },
             template: '<div class="odswidget odswidget-timerange">' +
                     '<span class="odswidget-timerange-from"><span translate>From</span> <input type="text"></span>' +
@@ -12732,68 +16961,120 @@ mod.directive('infiniteScroll', [
                 '</div>',
             link: function(scope, element, attrs) {
                 var inputs = element.find('input');
-
+                scope.dateFormat = scope.dateFormat || 'YYYY-MM-DD HH:mm';
                 // Handle default values
                 if (angular.isDefined(scope.defaultFrom)) {
-                    inputs[0].value = computeDefaultTime(scope.defaultFrom);
-                    scope.from = formatTimeToISO(inputs[0].value);
+                    inputs[0].value = computeDefaultTime(scope.defaultFrom).format(scope.dateFormat);
+                    scope.from = formatTimeToISO(computeDefaultTime(scope.defaultFrom));
                 }
+
                 if (angular.isDefined(scope.defaultTo)) {
-                    inputs[1].value = computeDefaultTime(scope.defaultTo);
-                    scope.to = formatTimeToISO(inputs[1].value);
+                    inputs[1].value = computeDefaultTime(scope.defaultTo).format(scope.dateFormat);
+                    scope.to = formatTimeToISO(computeDefaultTime(scope.defaultTo));
                 }
 
                 ModuleLazyLoader('rome').then(function() {
+                    if (typeof scope.displayTime === "undefined") {
+                        scope.displayTime = true;
+                    } else {
+                        scope.displayTime = (scope.displayTime === "true");
+                    }
+
                     rome(inputs[0], angular.extend({}, romeOptions, {
-                        dateValidator: rome.val.beforeEq(inputs[1])
+                        time: scope.displayTime,
+                        dateValidator: rome.val.beforeEq(inputs[1]),
+                        initialValue: scope.defaultFrom,
+                        inputFormat: scope.dateFormat
                     })).on('data', function(value) {
-                            // Format is YYYY-MM-DD HH:MM, local time
                         scope.$apply(function() {
-                            scope.from = formatTimeToISO(value);
+                            scope.from = formatTimeToISO(moment(value, scope.dateFormat));
                         });
                     });
                     rome(inputs[1], angular.extend({}, romeOptions, {
-                        dateValidator: rome.val.afterEq(inputs[0])
+                        time: scope.displayTime,
+                        dateValidator: rome.val.afterEq(inputs[0]),
+                        initialValue: scope.defaultTo,
+                        inputFormat: scope.dateFormat
                     })).on('data', function(value) {
                         scope.$apply(function() {
-                            scope.to = formatTimeToISO(value);
+                            scope.to = formatTimeToISO(moment(value, scope.dateFormat));
                         });
                     });
                 });
             },
-            controller: ['$scope', function($scope) {
-                var timeField = $scope.timeField;
+            controller: ['$scope', '$attrs', '$q', '$compile', '$rootScope', '$parse', function($scope, $attrs, $q, $compile, $rootScope, $parse) {
+                var contexts = [],
+                    conf = {};
 
-                var runWatcher = function() {
+                // We need to gather the time field before applying our filter
+                var getTimeField = function(dataset) {
+                    if (dataset) {
+                        var fields = dataset.fields.filter(function(item) { return item.type === 'date' || item.type === 'datetime'; });
+                        if (fields.length > 1) {
+                            console.log('Warning: the dataset "' + dataset.getUniqueId() + '" has more than one date or datetime field, the first date or datetime field will be used. You can specify the field to use using the "time-field" parameter.');
+                        }
+                        if (fields.length === 0) {
+                            console.log('Error: the dataset "' + dataset.getUniqueId() + '" doesn\'t have any date or datetime field, which is required for the Timerange widget.');
+                        }
+                        return fields[0].name;
+                    }
+                    return null;
+                };
+
+                if (!angular.isArray($scope.context)) {
+                    contexts.push($scope.context);
+                    conf[$scope.context.name] = {};
+                    if ($scope.timeField) {
+                        conf[$scope.context.name]['timeField'] = $scope.timeField;
+                    }
+                } else {
+                    contexts = $scope.context;
+                }
+
+                angular.forEach(contexts, function(context) {
+                    conf[context.name] = {
+                        timefield: conf[$scope.context.name] && conf[$scope.context.name]['timeField'] ? conf[$scope.context.name]['timeField'] : null,
+                        formatter: $parse("$field + ':[' + $from + ' TO ' + $to + ']'"),
+                        // formatter: $parse("$field"),
+                        parameter: "q",
+
+                    };
+
+                    if (angular.isDefined($attrs[context.name + "ParameterFormatter"])) {
+                        conf[context.name]['formatter'] = $parse($attrs[context.name + "ParameterFormatter"]);
+                    }
+                    if (angular.isDefined($attrs[context.name + "ParameterName"])) {
+                        conf[context.name]['parameter'] = $attrs[context.name + "ParameterName"];
+                    }
+                    if (angular.isDefined($attrs[context.name + "TimeField"])) {
+                        conf[context.name]['timefield'] = $attrs[context.name + "TimeField"];
+                    }
+                });
+
+                $q.all(contexts.map(function(context) {
+                    return context.wait().then(function(dataset) {
+                        if (conf[context.name]['timefield'] === null) {
+                            conf[context.name]['timefield'] = getTimeField(dataset);
+                        }
+                    });
+                })).then(function() {
+                    react(contexts, conf);
+                });
+
+                var react = function(contexts, configurations) {
                     $scope.$watch('[from, to]', function(nv) {
                         if (nv[0] && nv[1]) {
-                            $scope.context.parameters.q = timeField+':[' + $scope.from + ' TO ' + $scope.to + ']';
+                            angular.forEach(contexts, function(context) {
+                                var parameterName = configurations[context.name]['parameter'];
+                                var evaluationScope = {};
+                                evaluationScope.$to = $scope.to;
+                                evaluationScope.$from = $scope.from;
+                                evaluationScope.$field = configurations[context.name]['timefield'];
+                                context.parameters[parameterName] = configurations[context.name]['formatter'](evaluationScope);
+                            });
                         }
                     }, true);
                 };
-
-                if (angular.isUndefined(timeField)) {
-                    // FIXME: By setting our filters later, we take the risk of having a first query sent somewhere else (e.g. a table) both before and after the filter.
-
-                    // We need to gather the time field before applying our filter
-                    var init = $scope.$watch('context.dataset', function(nv) {
-                        if (nv) {
-                            var timeFields = nv.fields.filter(function(item) { return item.type === 'date' || item.type === 'datetime'; });
-                            if (timeFields.length > 1) {
-                                console.log('Warning: the dataset "'+nv.datasetid+'" has more than one date or datetime field, the first date or datetime field will be used. You can specify the field to use using the "time-field" parameter.');
-                            }
-                            if (timeFields.length === 0) {
-                                console.log('Error: the dataset "'+nv.datasetid+'" doesn\'t have any date or datetime field, which is required for the Timerange widget.');
-                            }
-                            timeField = timeFields[0].name;
-                            runWatcher();
-                            init();
-                        }
-                    });
-                } else {
-                    runWatcher();
-                }
-
             }]
         };
     }]);
@@ -12810,8 +17091,10 @@ mod.directive('infiniteScroll', [
          *  @name ods-widgets.directive:odsTimescale
          *  @restrict E
          *  @scope
-         *  @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         *  @param {string} [timeField=first date/datetime field available] Name of the field (date or datetime) to filter on
+         *  @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} or array of context to use
+         *  @param {string=} [timeField=first date/datetime field available] Name of the field (date or datetime) to filter on
+         *  @param {string=} [*TimeField=first date/datetime field available] For each context you can set the name of the field (date or datetime) to filter on
+         *  @param {string=} [defaultValue=everything] Define the default timescale
          *  @description
          * Displays a control to select either:
          *
@@ -12828,104 +17111,98 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
-         *              <ods-timescale context="cibul"></ods-timescale>
+         *              <ods-timescale context="cibul" default-value="day"></ods-timescale>
          *              <ods-map context="cibul"></ods-map>
          *          </ods-dataset-context>
          *     </file>
          * </example>
-        */
-        // TODO:  There is experimental support for holding multiple contexts at once, but it's not really clean...
+         */
+         // TODO merge controller with timerange
         return {
             restrict: 'E',
             replace: true,
             scope: {
                 context: '=',
-                timeField: '@'
+                timeField: '@',
+                defaultValue: '@'
             },
             template: '<div class="odswidget odswidget-timescale">' +
                 '<ul>' +
-                    '<li ng-class="{\'active\': scale == \'everything\' || !scale}"><a href="#" ng-click="selectScale(\'everything\'); $event.preventDefault();" translate>Everything</a></li>' +
-                    '<li ng-class="{\'active\': scale == \'year\'}"><a href="#" ng-click="selectScale(\'year\'); $event.preventDefault();" translate>Last 12 months</a></li>' +
-                    '<li ng-class="{\'active\': scale == \'month\'}"><a href="#" ng-click="selectScale(\'month\'); $event.preventDefault();" translate>Last 4 weeks</a></li>' +
-                    '<li ng-class="{\'active\': scale == \'week\'}"><a href="#" ng-click="selectScale(\'week\'); $event.preventDefault();" translate>Last 7 days</a></li>' +
-                    '<li ng-class="{\'active\': scale == \'day\'}"><a href="#" ng-click="selectScale(\'day\'); $event.preventDefault();" translate>Last 24 hours</a></li>' +
+                    '<li ng-class="{\'active\': scale == \'everything\' || !scale}"><a href="#" ng-click="scale = \'everything\'; $event.preventDefault();" translate>Everything</a></li>' +
+                    '<li ng-class="{\'active\': scale == \'year\'}"><a href="#" ng-click="scale = \'year\'; $event.preventDefault();" translate>Last 12 months</a></li>' +
+                    '<li ng-class="{\'active\': scale == \'month\'}"><a href="#" ng-click="scale = \'month\'; $event.preventDefault();" translate>Last 4 weeks</a></li>' +
+                    '<li ng-class="{\'active\': scale == \'week\'}"><a href="#" ng-click="scale = \'week\'; $event.preventDefault();" translate>Last 7 days</a></li>' +
+                    '<li ng-class="{\'active\': scale == \'day\'}"><a href="#" ng-click="scale = \'day\'; $event.preventDefault();" translate>Last 24 hours</a></li>' +
                 '</ul>' +
                 '</div>',
-            controller: ['$scope', function($scope) {
-                var contexts = {};
-                if (angular.isUndefined($scope.timeField)) {
-                    // Try to guess the time field
-                    var init = $scope.$watch('context', function(nv) {
-                        if (nv) {
-                            if (angular.isArray($scope.context)) {
-                                angular.forEach($scope.context, function(item) { contexts[item.name] = {'context': item}; });
-                            } else {
-                                contexts[$scope.context.name] = {'context': $scope.context};
-                            }
-                            angular.forEach(contexts, function(ctx) {
-                                var unwatch = $scope.$watch(function() { return ctx.context.dataset; }, function(nv) {
-                                    if (nv) {
-                                        var timeFields = nv.fields.filter(function(item) { return item.type === 'date' || item.type === 'datetime'; });
-                                        if (timeFields.length > 1) {
-                                            console.log('Warning: the dataset "'+nv.datasetid+'" has more than one date or datetime field, the first date or datetime field will be used. You can specify the field to use using the "time-field" parameter.');
-                                        }
-                                        if (timeFields.length === 0) {
-                                            console.log('Error: the dataset "'+nv.datasetid+'" doesn\'t have any date or datetime field, which is required for the Timescale widget.');
-                                        }
-                                        ctx.timeField = timeFields[0].name;
+            controller: ['$scope', '$attrs', '$q', function($scope, $attrs, $q) {
+                var contexts = [];
+                var timeFields = {};
 
-                                        unwatch();
-                                    }
-                                });
-                            });
-                            init();
+                // We need to gather the time field before applying our filter
+                var setTimeField = function(dataset) {
+                    if (dataset) {
+                        var fields = dataset.fields.filter(function(item) { return item.type === 'date' || item.type === 'datetime'; });
+                        if (fields.length > 1) {
+                            console.log('Warning: the dataset "' + dataset.getUniqueId() + '" has more than one date or datetime field, the first date or datetime field will be used. You can specify the field to use using the "time-field" parameter.');
                         }
-                    });
+                        if (fields.length === 0) {
+                            console.log('Error: the dataset "' + dataset.getUniqueId() + '" doesn\'t have any date or datetime field, which is required for the Timerange widget.');
+                        }
+                        timeFields[dataset.getUniqueId()] = fields[0].name;
+                    }
+                };
 
+                if (!angular.isArray($scope.context)) {
+                    contexts.push($scope.context);
+                    if ($scope.timeField) {
+                        timeFields[$scope.context.dataset.getUniqueId()] = $scope.timeField;
+                    }
                 } else {
-                    var initTimefield = $scope.$watch('context', function(nv) {
-                        if (nv) {
-                            if (angular.isArray($scope.context)) {
-                                angular.forEach($scope.context, function(item) { contexts[item.name] = {
-                                    'context': item,
-                                    timeField: $scope.timeField
-                                }; });
-                            } else {
-                                contexts[$scope.context.name] = {
-                                    'context': $scope.context,
-                                    timeField: $scope.timeField
-                                };
-                            }
-                            initTimefield();
+                    contexts = $scope.context;
+                    angular.forEach(contexts, function(context) {
+                        if (angular.isDefined($attrs[context.name + "TimeField"])) {
+                            timeFields[context.dataset.getUniqueId()] = $attrs[context.name + "TimeField"];
                         }
                     });
                 }
 
-                $scope.selectScale = function(scale) {
-                    $scope.scale = scale;
-                    if (scale === 'everything') {
-                        angular.forEach(contexts, function(ctx) {
-                            delete ctx.context.parameters.q;
-                        });
-                        return;
-                    }
-                    var q = null;
-                    var now = new Date();
-                    if (scale === 'day') {
-                        now.setDate(now.getDate()-1);
-                    } else if (scale === 'week') {
-                        now.setDate(now.getDate()-7);
-                    } else if (scale === 'month') {
-                        now.setMonth(now.getMonth()-1);
-                    } else if (scale === 'year') {
-                        now.setFullYear(now.getFullYear()-1);
-                    }
-                    q = now.toISOString();
-                    angular.forEach(contexts, function(ctx) {
-                        if (ctx.timeField) {
-                            ctx.context.parameters.q = ctx.timeField + '>="' + q + '"';
+                $q.all(contexts.map(function(context) {
+                    return context.wait().then(function(dataset) {
+                        if (!timeFields[dataset.getUniqueId()]) {
+                            setTimeField(dataset);
                         }
                     });
+                })).then(function() {
+                    react(contexts, timeFields);
+                });
+
+                var react = function(contexts, timeFields) {
+                    $scope.scale = $scope.defaultValue || 'everything';
+                    $scope.$watch('scale', function(scale) {
+                        if (scale === 'everything') {
+                            angular.forEach(contexts, function(context) {
+                                delete context.parameters.q;
+                            });
+                            return;
+                        }
+                        var q = null;
+                        var now = new Date();
+                        if (scale === 'day') {
+                            now.setDate(now.getDate()-1);
+                        } else if (scale === 'week') {
+                            now.setDate(now.getDate()-7);
+                        } else if (scale === 'month') {
+                            now.setMonth(now.getMonth()-1);
+                        } else if (scale === 'year') {
+                            now.setFullYear(now.getFullYear()-1);
+                        }
+                        q = now.toISOString();
+
+                        angular.forEach(contexts, function(context) {
+                            context.parameters.q = timeFields[context.dataset.getUniqueId()] + '>="' + q + '"';
+                        });
+                    }, true);
                 };
             }]
         };

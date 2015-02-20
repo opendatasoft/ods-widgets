@@ -1,0 +1,51 @@
+@ngdoc overview
+@name 3. Advanced dynamic map
+@description
+
+# Tutorial: An advanced dynamic map
+
+In this tutorial, we will build a map that shows various layers of data, and allows users to further interact with the
+displayed data.
+
+First, we define a dataset context that will use a dataset on incident in Chicago from 2001.
+
+Given the volume of information, we want to show the data as a heatmap, but also offer the ability to explore individual occurrences. We will offer that option
+using a checkbox that will toggle a heatmap layer and a clustered layer using the `show-if` attribute on the layers.
+
+We also want our users to be able to refine the data chronologically, and using categories such as the victim's age.
+
+<pre>
+<ods-dataset-context context="chicagoincidents" chicagoincidents-domain="public" chicagoincidents-dataset="killings-by-law-enforcement-officers-in-the-usa">
+    <ods-timerange context="chicagoincidents" default-from="2009-01-01" default-to="2014-12-09"></ods-timerange>
+    <label><input type="checkbox" ng-model="heatmapMode"> Show heatmap</label>
+    <div class="row-fluid">
+        <div class="span4">
+            <ods-facets context="chicagoincidents"></ods-facets>
+        </div>
+        <div class="span8">
+            <ods-map>
+                <ods-map-layer context="chicagoincidents"></ods-map-layer>
+                <ods-map-layer context="chicagoincidents" display="heatmap" show-if="heatmapMode"></ods-map-layer>
+            </ods-map>
+        </div>
+    </div>
+</ods-dataset-context>
+</pre>
+
+<div class="well" ng-embed-app="ods-widgets">
+<ods-dataset-context context="chicagoincidents" chicagoincidents-domain="public" chicagoincidents-dataset="killings-by-law-enforcement-officers-in-the-usa">
+    <ods-timerange context="chicagoincidents" default-from="2009-01-01" default-to="2014-12-09"></ods-timerange>
+    <label><input type="checkbox" ng-model="heatmapMode"> Show heatmap</label>
+    <div class="row-fluid">
+        <div class="span4">
+            <ods-facets context="chicagoincidents"></ods-facets>
+        </div>
+        <div class="span8">
+            <ods-map>
+                <ods-map-layer context="chicagoincidents"></ods-map-layer>
+                <ods-map-layer context="chicagoincidents" display="heatmap" show-if="heatmapMode"></ods-map-layer>
+            </ods-map>
+        </div>
+    </div>
+</ods-dataset-context>
+</div>

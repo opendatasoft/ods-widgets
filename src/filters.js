@@ -204,6 +204,14 @@
         };
     }]);
 
+    mod.filter('momentadd', [function() {
+        return function(isoDate, precision, number) {
+            if (isoDate) {
+                return moment(isoDate).add(precision, parseInt(number, 10)).toISOString().replace('.000Z', 'Z');
+            }
+        };
+    }]);
+
     mod.filter('timesince', [function() {
         return function(isoDate) {
             if (isoDate)
@@ -476,6 +484,18 @@
             } else {
                 return '';
             }
+        };
+    });
+
+    mod.filter('isBefore', function() {
+        return function(date1, date2) {
+            return moment(date1).isBefore(date2);
+        };
+    });
+
+    mod.filter('isAfter', function() {
+        return function(date1, date2) {
+            return moment(date1).isAfter(date2);
         };
     });
 

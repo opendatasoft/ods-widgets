@@ -61,8 +61,8 @@
                 var members = parameter.replace(/[()]/g, '').split(',');
                 var minlat, minlng, maxlat, maxlng;
                 for (var i=0; i<members.length; i+=2) {
-                    var lat = members[i];
-                    var lng = members[i+1];
+                    var lat = parseFloat(members[i]);
+                    var lng = parseFloat(members[i+1]);
 
                     if (!minlat || minlat > lat) { minlat = lat; }
                     if (!minlng || minlng > lng) { minlng = lng; }
@@ -73,6 +73,19 @@
                     [ minlat, minlng ],
                     [ maxlat, maxlng ]
                 ];
+            },
+            getPolygonParameterAsGeoJSON: function(parameter) {
+                var geojson = {
+                    'type': 'Polygon',
+                    'coordinates': [[]]
+                };
+                var members = parameter.replace(/[()]/g, '').split(',');
+                for (var i=0; i<members.length; i+=2) {
+                    var lat = parseFloat(members[i]);
+                    var lng = parseFloat(members[i + 1]);
+                    geojson.coordinates[0].push([lng, lat]);
+                }
+                return geojson;
             },
             getBboxParameterAsPolygonParameter: function(bbox) {
                 /*  Input: a Bbox
@@ -270,6 +283,16 @@
                     }
                     return field.label;
                 },
+                getFieldsForType: function(fieldType) {
+                    var fields = [];
+                    for (var i=0; i<this.fields.length; i++) {
+                        var field = this.fields[i];
+                        if (field.type === fieldType) {
+                            fields.push(field);
+                        }
+                    }
+                    return fields;
+                },
                 hasNumericField: function() {
                     for (var i=0; i < this.fields.length; i++) {
                         var field = this.fields[i];
@@ -278,6 +301,22 @@
                         }
                     }
                     return false;
+                },
+                hasGeoField: function() {
+                    for (var i=0; i < this.fields.length; i++) {
+                        var field = this.fields[i];
+                        if (field.type === 'geo_point_2d' || field.type === 'geo_shape') {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                getExtraMeta: function(template, name) {
+                    if (this.extra_metas && this.extra_metas[template] && this.extra_metas[template][name]) {
+                        return this.extra_metas[template][name];
+                    } else {
+                        return null;
+                    }
                 }
             };
         }

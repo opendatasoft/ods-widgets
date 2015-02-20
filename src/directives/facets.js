@@ -56,6 +56,14 @@
          * the category is displayed. You can use `category.name` (the value of the category), `category.path` (the complete path
          * to the category, including hierarchical levels) and `category.state` (refined, excluded, or displayed) in the expression.
          *
+         * - **`disjunctive`** {@type boolean} (optional) if 'true', then the facet is in "disjunctive" mode, which means that after a first value selected,
+         * you can select other possibles values that are all combined as "or". For example, if you click "red", then you can also click "green" and "blue",
+         * and the resulting values can be green, red, or blue.
+         *
+         * - **`valueSearch`** {@type string} (optional) if 'true', then a search box is displayed above the categories, so that you can search within them easily.
+         * If 'suggest', then the matching categories are not displayed until there is at least one character typed into the search box, effectively making it
+         * into a suggest-like search box.
+         *
          * <pre>
          *     <ods-facets context="mycontext">
          *         <ods-facet name="myfield" sort="-num" visible-items="10"></ods-facet>
@@ -272,6 +280,10 @@
                     return categories;
                 };
 
+                this.setDisjunctive = function(name) {
+                    $scope.context.parameters['disjunctive.'+name] = true;
+                };
+
                 this.toggleRefinement = function(facetName, path) {
                     var refineKey = 'refine.'+facetName;
                     if (angular.isDefined($scope.context.parameters[refineKey])) {
@@ -320,13 +332,15 @@
                 visibleItems: '@',
                 hideIfSingleCategory: '@',
                 hideCategoryIf: '@',
-                sort: '@'
+                sort: '@',
+                disjunctive: '@',
+                valueSearch: '@'
             },
             template: function(tElement) {
                 tElement.data('facet-template', tElement.html());
                 return '<div class="odswidget odswidget-facet">' +
                 '<h3 class="facet-title" ng-if="title && categories.length && visible()">{{title}}</h3>' +
-                '<ods-facet-category-list ng-if="visible()" facet-name="{{ name }}" hide-category-if="{{ hideCategoryIf }}" categories="categories" template="{{ customTemplate }}"></ods-facet-category-list>' +
+                '<ods-facet-category-list ng-if="visible()" facet-name="{{ name }}" value-search="{{ valueSearch }}" hide-category-if="{{ hideCategoryIf }}" categories="categories" template="{{ customTemplate }}"></ods-facet-category-list>' +
                 '</div>';
             },
             require: '^odsFacets',
@@ -336,10 +350,13 @@
                 }
                 scope.categories = facetsCtrl.registerFacet(scope.name, scope.sort);
                 scope.facetsCtrl = facetsCtrl;
-
+                if (angular.isString(scope.disjunctive) && scope.disjunctive.toLowerCase() === 'true') {
+                    facetsCtrl.setDisjunctive(scope.name);
+                }
             },
             controller: ['$scope', '$element', function($scope, $element) {
                 $scope.visibleItemsNumber = $scope.visibleItems || 6;
+
                 this.toggleRefinement = function(path) {
                     $scope.facetsCtrl.toggleRefinement($scope.name, path);
                 };
@@ -363,14 +380,19 @@
                 categories: '=',
                 template: '@',
                 facetName: '@',
-                hideCategoryIf: '@'
+                hideCategoryIf: '@',
+                valueSearch: '@'
             },
             require: '^odsFacet',
             template: '<ul class="category-list">' +
-                '<li ng-repeat="category in categories">' +
+                '<li class="value-search" ng-show="valueSearchEnabled">' +
+                    '<input ng-model="valueFilter">' +
+                    '<i ng-show="valueFilter" class="value-search-cancel icon-remove" ng-click="valueFilter=\'\'"></i>' +
+                '</li>' +
+                '<li ng-repeat="category in categories|filter:searchValue(valueFilter)">' +
                 '<ods-facet-category ng-if="!categoryIsHidden(category)" facet-name="{{ facetName }}" category="category" template="{{template}}" ng-show="visible($index)"></ods-facet-category>' +
                 '</li>' +
-                '<li ng-if="visibleItems < categories.length" class="expansion-control">' +
+                '<li ng-if="!suggestMode && visibleItems < (categories|filter:searchValue(valueFilter)).length" class="expansion-control">' +
                 '<a ng-hide="expanded" href="#" ng-click="toggle($event)" translate>More</a>' +
                 '<a ng-show="expanded" href="#" ng-click="toggle($event)" translate>Less</a>' +
                 '</li>' +
@@ -386,6 +408,9 @@
                     scope.expanded = !scope.expanded;
                 };
                 scope.categoryIsHidden = function(category) {
+                    if (scope.suggestMode && scope.valueFilter === '') {
+                        return true;
+                    }
                     if (!scope.hideCategoryIf) {
                         return false;
                     }
@@ -393,7 +418,28 @@
                     testScope.category = category;
                     return testScope.$eval(scope.hideCategoryIf);
                 };
-            }
+            },
+            controller: ['$scope', '$filter', function($scope, $filter) {
+                $scope.valueFilter = '';
+                $scope.valueSearchEnabled = false;
+                $scope.suggestMode = false;
+                if (angular.isString($scope.valueSearch)) {
+                    if ($scope.valueSearch.toLowerCase() === 'true') {
+                        $scope.valueSearchEnabled = true;
+                    } else if ($scope.valueSearch.toLowerCase() === 'suggest') {
+                        $scope.valueSearchEnabled = true;
+                        $scope.suggestMode = true;
+                    }
+                }
+                $scope.searchValue = function(search) {
+                    if (!search) { return function() { return true; }; }
+                    search = $filter('normalize')(search).toLowerCase();
+                    return function(searchedCategory) {
+                        var categoryName = $filter('normalize')(searchedCategory.name).toLowerCase();
+                        return categoryName.indexOf(search) > -1;
+                    };
+                };
+            }]
         };
     });
 

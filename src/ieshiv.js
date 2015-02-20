@@ -17,6 +17,8 @@
         'odsLastDatasetsFeed',
         'odsLastReusesFeed',
         'odsMap',
+        'odsLayer',
+        'odsLayerGroup',
         'odsMostPopularDatasets',
         'odsMostUsedThemes',
         'odsResultEnumerator',

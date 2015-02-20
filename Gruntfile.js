@@ -5,7 +5,7 @@ var JS_FILES = [
     'libs-included/*.js',
     'src/polyfills.js',
     'src/ods-widgets.js',
-    'src/services.js',
+    'src/services/*.js',
     'src/filters.js',
     'src/functions.js',
     'src/directives/*.js'
@@ -142,7 +142,8 @@ module.exports = function(grunt) {
 			},
 			all: {
 				src: [
-                    'src/directives/**/*.js',
+                    'src/directives/*.js',
+                    'src/services/*.js',
                     'src/filters.js',
                     'src/ods-widgets.js',
                     'src-docs/widgets/*.ngdoc'

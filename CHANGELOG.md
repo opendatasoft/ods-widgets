@@ -2,6 +2,25 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 0.1.5 - 2015-02-20
+### Added
+- The `odsMap` has been modified to be much more powerful and support multiple layers, visualization modes, and contexts.
+It can be used to build interactive maps from various dynamic data sources. More information is available in the documentation,
+and two new tutorial pages are dedicated to it. Note: if you have issue with your existing `<ods-map>` usage, especially
+if you are using advanced options like aggregation colors, you can use `<ods-map-legacy>` instead which is the former tag
+under another name.
+- The `odsTimerange` widget now supports specific dates to be passed as default values, instead of just "yesterday" and
+"now".
+- The `odsFacets` widget now supports parameters to enable disjunctive refinement, and a searchbox within the values. See the documentation
+for more information.
+- New `odsAggregation` widget to expose the result of an aggregation function on a dataset into a variable.
+- New `odsFilterSummary` to display a view of the filters that are currently active on a context.
+
+### Fixed
+- In `odsMap`, some pictos may have been aligned to the left instead of properly centered; this should no longer happen.
+- The `odsHighcharts` widget now properly uses API keys configured in its context.
+- The `odsSearchbox` widget's placeholder is now properly translated.
+
 ## 0.1.4 - 2015-01-28
 ### Added
 - New `odsPaginationBlock` widget, especially used in `odsResultEnumerator` where you can use a new `showPagination` attribute

@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsDatasetContext', ['ODSAPI', function(ODSAPI) {
+    mod.directive('odsDatasetContext', ['ODSAPI', '$q', function(ODSAPI, $q) {
         /**
          *
          *  @ngdoc directive
@@ -107,7 +107,12 @@
             } else {
                 contextParams = {};
             }
+            var deferred = $q.defer();
+
             scope[contextName] = {
+                'wait': function() {
+                    return deferred.promise;
+                },
                 'name': contextName,
                 'type': 'dataset',
                 'domain': domain,
@@ -116,9 +121,13 @@
                 'dataset': null,
                 'parameters': contextParams
             };
+
             ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true, interopmetas: true}).
                 success(function(data) {
                     scope[contextName].dataset = new ODS.Dataset(data);
+                    deferred.resolve(scope[contextName].dataset);
+                }).error(function(data) {
+                    deferred.reject("Failed to fetch " + contextName + " context.");
                 });
         };
 
@@ -126,33 +135,33 @@
             restrict: 'AE',
             scope: true,
             replace: true,
-            link: function(scope, element, attrs) {
-                var contextNames = attrs.context.split(',');
+            controller: ['$scope', '$attrs', function($scope, $attrs) {
+                var contextNames = $attrs.context.split(',');
                 for (var i=0; i<contextNames.length; i++) {
                     var contextName = contextNames[i].trim();
 
                     // We need a dataset ID
-                    var datasetID = attrs[contextName+'Dataset'];
+                    var datasetID = $attrs[contextName+'Dataset'];
 
                     // Do we have a domain ID?
-                    var domain = attrs[contextName+'Domain'];
+                    var domain = $attrs[contextName+'Domain'];
 
                     if (!datasetID) {
                         console.log('ERROR : Context ' + contextName + ' : Missing dataset parameter');
                     }
 
-                    var apikey = attrs[contextName+'Apikey'];
-                    var sort = attrs[contextName+'Sort'];
-                    var parameters = scope.$eval(attrs[contextName+'Parameters']) || {};
-                    var parametersFromContext = attrs[contextName+'ParametersFromContext'];
+                    var apikey = $attrs[contextName+'Apikey'];
+                    var sort = $attrs[contextName+'Sort'];
+                    var parameters = $scope.$eval($attrs[contextName+'Parameters']) || {};
+                    var parametersFromContext = $attrs[contextName+'ParametersFromContext'];
 
                     if (sort) {
                         parameters.sort = sort;
                     }
 
-                    exposeContext(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext);
+                    exposeContext(domain, datasetID, $scope, contextName, apikey, parameters, parametersFromContext);
                 }
-            }
+            }]
         };
     }]);
 

@@ -3,70 +3,122 @@
 </span>
 </div>
 </h1>
-<div><h2 id="usage">Usage</h2>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>This widget allows you to build a map visualization and show data using various modes of display using layers.
+Each layer is based on a <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>, a mode of display (clusters...), and various properties to define the
+display itself, such as colors.</p>
+<p>Layers can be combined, so that you map shows various data sources in various ways.</p>
+<p>Layers are dynamic, which means that if a context changes (e.g. a new refine is added), the layer will be refreshed and display the new relevant data.</p>
+<p>This widget can also be used to control other widgets: you can configure a layer to act as a refine control on another context, so that for example
+if you click on a road you get a <a href="#/api/ods-widgets.directive:odsTable">table view</a> of the traffic on that road. You can also draw zones on the map,
+which will accordingly refine the context.</p>
+<p>You can use the widget alone to propose a simple map using default settings, such as this:
+<pre class="prettyprint linenums">
+    &lt;!-- Displays a map of Paris using the data from mycontext and an automatic visualization mode (clusters or shapes depending on the zoom level) --&gt;
+    &lt;ods-map context="mycontext" location="12,48.85218,2.36996"&gt;&lt;/ods-map&gt;
+</pre>
+<p>However, the ability to build a more advanced and configurable map comes with a second <code>odsMapLayer</code> tag, used to define a layer:</p>
+<pre class="prettyprint linenums">
+    &lt;!-- A map containing a single layer to display data from mycontext, in a specific color, and as clusters. --&gt;
+    &lt;ods-map&gt;
+        &lt;ods-map-layer context="mycontext" color="#FF0000" display="clusters"&gt;&lt;/ods-map-layer&gt;
+    &lt;/ods-map&gt;
+</pre>
+<p>You can have several layers, each with their own configuration and context:</p>
+<pre class="prettyprint linenums">
+    &lt;ods-map&gt;
+        &lt;ods-map-layer context="mycontext" color="#FF0000" display="clusters"&gt;&lt;/ods-map-layer&gt;
+        &lt;ods-map-layer context="mycontext2" display="heatmap"&gt;&lt;/ods-map-layer&gt;
+        &lt;ods-map-layer context="mycontext3" display="raw" color="#0000FF"&gt;&lt;/ods-map-layer&gt;
+    &lt;/ods-map&gt;
+</pre>
+<p>You can show or hide layers using the <code>showIf</code> property, similar to Angular&#39;s <code>ngIf</code>.</p>
+<pre class="prettyprint linenums">
+    &lt;ods-map&gt;
+        &lt;ods-map-layer context="mycontext" color="#FF0000" display="clusters"&gt;&lt;/ods-map-layer&gt;
+        &lt;ods-map-layer context="mycontext2" display="heatmap" show-if="showHeatmap"&gt;&lt;/ods-map-layer&gt;
+    &lt;/ods-map&gt;
+</pre>
+<p>Several display modes are available, under two categories: visualization of the data itself (each point is a record),
+and visualization of an aggregation of data (each point is the result of an aggregation function).</p>
+<ul>
+<li><code>auto</code>: depending on the number of points and the type of geometry, the best display mode is automatically chosen. This is the default display
+mode, and makes sense mot of the time of you want to simply represent geo data.</li>
+<li><code>raw</code>: data is downloaded and displayed directly as is, with no clustering or simplification of any kind. Do not
+use on large (1000+) datasets, as it may freeze the user&#39;s browser.</li>
+<li><code>clusters</code>: data is aggregated spatially into clusters; each cluster represents two or more &quot;close&quot; points. When at maximum
+zoom, all points are shown.</li>
+<li><code>clustersforced</code>: data is aggregated spatially into clusters, but the number on the cluster is the result of an aggregation function.</li>
+<li><code>heatmap</code>: data is displayed as a heatmap; by default it represents the density of points, but it can be the result of an aggregation function.</li>
+<li><code>aggregation</code>: data is aggregated based on their geo shape (e.g. two records with the exact same associated shape); by default the color represents
+the number of aggregated records, but it can be the result of an aggregation function. This mode supports aggregating the context
+using a join with another context that contains geometrical shapes: use a <code>joinContext</code> property, and <code>localKey</code> and <code>remoteKey</code> to configure
+the field names of the local and joined datasets; you can also configure one of the fields from the &quot;remote&quot; dataset to be displayed when the mouse
+hovers the shapes, using <code>hoverField</code> and the name of a field.</li>
+</ul>
+<p>Apart from <code>heatmap</code>, all display modes support color configuration. Three types of configurations are available, depending on the display mode.</p>
+<ul>
+<li><code>color</code>: a simple color, as an hex code (#FF0F05) or a simple CSS color name like &quot;red&quot;. Available for any mode except <code>heatmap</code>.</li>
+<li><code>colorScale</code>: the name of a ColorBrewer [<a href="http://colorbrewer2.org/">http://colorbrewer2.org/</a>] scheme, like &quot;YlGnBu&quot;. Available for <code>shape</code>.</li>
+<li><code>colorRanges</code>: a serie of colors and ranges, to decide a color depending on a value. For example &quot;red,20,orange,40,#00CE00&quot; to color anything between
+20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a field name in <code>colorByField</code> to configure which field will be
+used to decide on the color. Available for <code>raw</code> and <code>shape</code>.</li>
+</ul>
+<p>If you are displaying data where multiple points or shapes are stacked, you can configure the order in which the items will be
+displayed in the tooltip, using <code>tooltipSort</code> and the name of a field, prefixed by <code>-</code> to have a reversed sort.
+Note: by default, numeric fields are sorted in decreasing order, date and datetime are sorted chronologically, and text fields are sorted
+alphanumerically.</p>
+<pre class="prettyprint linenums">
+    &lt;ods-map&gt;
+        &lt;!-- Reverse sort on 'field' --&gt;
+        &lt;ods-map-layer context="mycontext" tooltip-sort="-field"&gt;&lt;/ods-map-layer&gt;
+    &lt;/ods-map&gt;
+</pre>
+<p>If your layer is displayed as <code>raw</code> or <code>shape</code>, you can configure a layer so that a click on an item triggers a refine on another context, using <code>refineOnClickContext</code>.
+One or more contexts can be defined:
+<pre class="prettyprint linenums">
+    &lt;ods-map&gt;
+        &lt;ods-map-layer context="mycontext" refine-on-click-context="mycontext2"&gt;&lt;/ods-map-layer&gt;
+        &lt;ods-map-layer context="mycontext3" refine-on-click-context="[mycontext4, mycontext5]"&gt;&lt;/ods-map-layer&gt;
+    &lt;/ods-map&gt;
+</pre>
+<p>By default, the filter occurs on geometry; for example, clicking on a shape filters the other context on the area.
+You can also trigger a refine on specific fields; using <code>refineOnClickMapField</code> to configure the name of the field to get the value from, and <code>refineOnClickContextField</code>
+to configure the name of the field of the other context to refine on. If you have two or more contexts, you can configure the fields by indicating the context in the
+name of the property, as <code>refineOnClick[context]MapField</code> and <code>refineOnClick[context]ContextField</code>.</p>
+<pre class="prettyprint linenums">
+    &lt;ods-map&gt;
+        &lt;ods-map-layer context="mycontext" refine-on-click-context="[mycontext, mycontext2]"
+                                           refine-on-click-mycontext-map-field="field1"
+                                           refine-on-click-mycontext-context-field="field2"
+                                           refine-on-click-mycontext2-map-field="field3"
+                                           refine-on-click-mycontext2-context-field="field4"&gt;&lt;/ods-map-layer&gt;
+    &lt;/ods-map&gt;
+</pre>
+</div></div>
+<h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-map
        context="{DatasetContext}"
-       auto-resize="{boolean}"
-       location="{string}"
-       basemap="{string}"
-       is-static="{boolean}"
-       show-filters="{boolean}"
-       map-context="{Object}"
-       item-click-context="{DatasetContext}"
-       item-click-map-field="{string}"
-       item-click-context-field="{string}"&gt;
+       [map-context]="{Object}"
+       [location]="{string}"
+       [basemap]="{string}"
+       [static-map]="{boolean}"
+       [no-refit]="{boolean}"&gt;
 &lt;/ods-map&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
-</div></td></tr><tr><td>autoResize</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, the map will attempt to resize itself to always take up all the space to the bottom of the viewport.
-It is only useful in very specific cases, when the map is the main focus of the page and should take all the window real estate available.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>location</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Initial location of the map, under the format &quot;zoom,latitude,longitude&quot; (e.g. <em>12,48.85887,2.3292</em>)</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>basemap</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Identifier of the basemap to apply. Basemaps are configured using <a href="#/api/ods-widgets.ODSWidgetsConfigProvider">ODSWidgetsConfig.basemaps</a>.</p>
-</div> <p><em>(default: default basemap)</em></p></td></tr><tr><td>isStatic</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, the map can&#39;t be panned or zoomed; in other words the map is static and can only show the initial view. Interaction with the data is still active,
-for example you can still click on a marker to have a tooltip.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>showFilters</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, displays additional tools to use the map to filter the data in the context. For example if you use a table and a map on the same context,
-this makes you able to use the map to refine the data displayed in the table.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>mapContext</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>An object that you can use to share the map state (location and basemap) between two or more map widgets when they are not in the same context.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>itemClickContext</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Instead of popping a tooltip when you click on an item on the map, you can decide to add a filter to another context using this parameter.
-Clicks that would normally make a popup appear (markers, clusters that can&#39;t be expanded more, shapes) will instead filter the specified context.</p>
-<p>By default this is a spatial filter:
-if you clicked a point, then the filter is the exact location; if you clicked a shape, then the filter is the content of this shape.</p>
-<p>Note that you can specify more than one context by passing an array:
-<pre class="prettyprint linenums">
-    &lt;ods-map context="myctx"
-             item-click-context="[context2, context3]"&gt;
-    &lt;/ods-map&gt;
-</pre>
-In that case, the <code>itemClickMapField</code> and <code>itemClickContextField</code> (as described below) need to contain the name of the context they apply to:
-<pre class="prettyprint linenums">
-    &lt;ods-map context="myctx"
-             item-click-context="[trees, roads]"
-             item-click-trees-map-field="field1"
-             item-click-trees-context-field="field2"
-             item-click-roads-map-field="field1"
-             item-click-roads-context-field="field3"&gt;
-    &lt;/ods-map&gt;
-</pre>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>itemClickMapField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If you are using <code>itemClickContext</code> and want to filter on the value of a field instead of a spatial query, you can use this parameter to specify the name of the field to take
-the value from. This must be a field from the dataset displayed on the map. It must be used together with <code>itemClickContextField</code>.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>itemClickContextField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>This parameter specifies the field to filter on in the context configured in <code>itemClickContext</code>. It must be used together with <code>itemClickMapField</code>.
-The field must be a facet.</p>
-</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
-<h2 id="example">Example</h2>
-<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-7" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
-<div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-7" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-7">
-    <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
-        <ods-map context="stations"></ods-map>
-    </ods-dataset-context>
-</script>
-</div>
-</div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-7" ng-eval-javascript=""></div>
-</div></div>
+</div></td></tr><tr><td>[mapContext]</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>An object where the <code>location</code> and <code>basemap</code> selection is kept. You can use it from
+anither widget to read the location or basemap.</p>
+</div></td></tr><tr><td>[location]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>The default location of the map upon initialization, under the following format: &quot;zoom,latitude,longitude&quot;.
+For example, to have a map centered on Paris, France, you can use &quot;12,48.85218,2.36996&quot;. By default, if a location is not specified,
+the map will try to fit all the displayed data when initializing.</p>
+</div></td></tr><tr><td>[basemap]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>The identifier of the basemap to use by default, as defined in <a href="#/api/ods-widgets.ODSWidgetsConfigProvider">ODSWidgetsConfig.basemaps</a>. By default,
+the first available basemap will be used.</p>
+</div></td></tr><tr><td>[staticMap]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;true&quot;, then users won&#39;t be able to move or zoom on the map. They will still be able to click on markers.</p>
+</div></td></tr><tr><td>[noRefit]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>By default, the map refits its view whenever the displayed data changes.
+If &quot;true&quot;, then the map will stay at the same location instead.</p>
+</div></td></tr></tbody></table></div>
 </div>

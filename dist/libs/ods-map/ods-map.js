@@ -22,13 +22,23 @@ L.ODSMap = L.Map.extend({
         var layer;
         for (var i=0; i<basemapsList.length; i++) {
             var basemap = basemapsList[i];
-            layer = new L.ODSTileLayer({
-                basemap: basemap,
-                prependAttribution: prependAttribution,
-                appendAttribution: appendAttribution,
-                disableAttribution: disableAttribution,
-                attributionSeparator: attributionSeparator
-            });
+            if (basemap.provider === 'custom_wms') {
+                layer = new L.ODSWMSTileLayer({
+                    basemap: basemap,
+                    prependAttribution: prependAttribution,
+                    appendAttribution: appendAttribution,
+                    disableAttribution: disableAttribution,
+                    attributionSeparator: attributionSeparator
+                });
+            } else {
+                layer = new L.ODSTileLayer({
+                    basemap: basemap,
+                    prependAttribution: prependAttribution,
+                    appendAttribution: appendAttribution,
+                    disableAttribution: disableAttribution,
+                    attributionSeparator: attributionSeparator
+                });
+            }
             layer.basemapLabel = basemap.label;
             layer.basemapId = basemap.id;
             layers.push(layer);

@@ -249,6 +249,15 @@
         }
     };
 
+    window.isObjectEmpty = function(obj) {
+        for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     window.utf8_to_b64 = function(str) {
         // we escape the unicode string before encoding it in base64 becase btoa does not support unicode characters
         return window.btoa(jsesc(str, {

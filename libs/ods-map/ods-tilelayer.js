@@ -1,21 +1,10 @@
-L.ODSTileLayer = L.TileLayer.extend({
-    options: {
+var ODSTileLayerMixin = {
+    odsOptions: {
         basemap: null,
         appendAttribution: null,
         prependAttribution: null,
         disableAttribution: null,
         attributionSeparator: ' - '
-    },
-    initialize: function(options) {
-        this._initLayer(options.basemap, options.disableAttribution, options.prependAttribution, options.appendAttribution);
-    },
-    _mapboxUrl: function(mapId) {
-        var url = '//{s}.tiles.mapbox.com/v3/' + mapId + '/{z}/{x}/{y}';
-        if (L.Browser.retina) {
-            url += '@2x';
-        }
-        url += '.png';
-        return url;
     },
     _addAttributionPart: function(attribution, part) {
         if (part) {
@@ -25,6 +14,22 @@ L.ODSTileLayer = L.TileLayer.extend({
             attribution += part;
         }
         return attribution;
+    }
+};
+
+L.ODSTileLayer = L.TileLayer.extend({
+    includes: ODSTileLayerMixin,
+    initialize: function(options) {
+        L.Util.setOptions(this, this.odsOptions);
+        this._initLayer(options.basemap, options.disableAttribution, options.prependAttribution, options.appendAttribution);
+    },
+    _mapboxUrl: function(mapId) {
+        var url = '//{s}.tiles.mapbox.com/v3/' + mapId + '/{z}/{x}/{y}';
+        if (L.Browser.retina) {
+            url += '@2x';
+        }
+        url += '.png';
+        return url;
     },
     _initLayer: function(basemap, disableAttribution, prependAttribution, appendAttribution) {
         var layerOptions = {};
@@ -79,7 +84,7 @@ L.ODSTileLayer = L.TileLayer.extend({
                 layerOptions.maxZoom = basemap.maxZoom;
             }
             L.TileLayer.prototype.initialize.call(this, this._mapboxUrl(basemap.mapid), layerOptions);
-        } else {
+        } else if (basemap.provider === 'custom') {
             if (basemap.subdomains) {
                 layerOptions.subdomains = basemap.subdomains;
             }
@@ -96,5 +101,28 @@ L.ODSTileLayer = L.TileLayer.extend({
             layerOptions.attribution = !disableAttribution ? attrib : '';
             L.TileLayer.prototype.initialize.call(this, basemap.url, layerOptions);
         }
+    }
+});
+
+L.ODSWMSTileLayer = L.TileLayer.WMS.extend({
+    includes: ODSTileLayerMixin,
+    initialize: function(options) {
+        L.Util.setOptions(this, this.odsOptions);
+        this._initLayer(options.basemap, options.disableAttribution, options.prependAttribution, options.appendAttribution);
+    },
+    _initLayer: function(basemap, disableAttribution, prependAttribution, appendAttribution) {
+        var layerOptions = {};
+        var attrib = this._addAttributionPart('', prependAttribution);
+
+        layerOptions.layers = basemap.layers;
+        if (basemap.styles) {
+            layerOptions.styles = basemap.styles;
+        }
+
+        attrib = this._addAttributionPart(attrib, basemap.attribution);
+        attrib = this._addAttributionPart(attrib, appendAttribution);
+
+        layerOptions.attribution = !disableAttribution ? attrib : '';
+        L.TileLayer.WMS.prototype.initialize.call(this, basemap.url, layerOptions);
     }
 });

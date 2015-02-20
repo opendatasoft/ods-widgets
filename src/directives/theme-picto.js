@@ -3,7 +3,52 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsThemePicto', ['ODSWidgetsConfig', '$http', function(ODSWidgetsConfig, $http) {
+    mod.directive('odsPicto', ['SVGInliner', '$http', '$document', function(SVGInliner, $http, $document) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsPicto
+         * @scope
+         * @restrict E
+         * @param {string} url The url of the svg or image to display
+         * @param {string} color The color to use to fill the svg
+         * @description
+         * This widget displays a "picto" specified by a url and force a fill color on it.
+         * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
+         * @todo implement IE8 and image fallback for svg
+         * @todo implement defs and use in svg
+         */
+        var inlineImages = {};
+            // parser = new DOMParser(),
+            // globalSvg;
+
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                url: '=',
+                color: '=',
+                classes: '='
+            },
+            template: '<div class="odswidget odswidget-picto {{ classes }}"></div>',
+            link: function(scope, element) {
+                var svgContainer;
+                scope.$watch('[url, color]', function(nv) {
+                    if (nv[0]) {
+                        if (svgContainer) {
+                            element.empty();
+                        }
+                        svgContainer = SVGInliner.getElement(scope.url, scope.color);
+                        if (!scope.color) {
+                            svgContainer.addClass('colorless');
+                        }
+                        element.append(svgContainer);
+                    }
+                }, true);
+            }
+        };
+    }]);
+
+    mod.directive('odsThemePicto', ['ODSWidgetsConfig', '$compile', function(ODSWidgetsConfig, $compile) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsThemePicto
@@ -15,26 +60,26 @@
          * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
          *
          */
-        var inlineImages = {};
         return {
             restrict: 'E',
             replace: true,
             scope: {
                 theme: '@'
             },
-            template: '<div class="odswidget odswidget-theme-picto theme-{{getTheme()|themeSlug}}"></div>',
+            template: '',
             link: function(scope, element) {
+                scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
+                var template = '<ods-picto url="themeConfig.img" color="themeConfig.color" classes="originalClasses + \' odswidget-theme-picto theme-\' + (getTheme()|themeSlug) "></ods-picto>';
                 // TODO: IE8 fallback
                 // TODO: png fallback
                 var themeConfig = null;
                 var defaultPicto = false;
                 if (ODSWidgetsConfig.themes[scope.theme]) {
-                    themeConfig = ODSWidgetsConfig.themes[scope.theme];
+                    scope.themeConfig = ODSWidgetsConfig.themes[scope.theme];
                 } else {
-                    themeConfig = ODSWidgetsConfig.themes['default'];
+                    scope.themeConfig = ODSWidgetsConfig.themes['default'];
                     defaultPicto = true;
                 }
-
                 scope.getTheme = function() {
                     if (defaultPicto) {
                         return 'default';
@@ -42,46 +87,9 @@
                         return scope.theme;
                     }
                 };
-
-                var loadImageInline = function(code) {
-                    var svg = angular.element(code);
-                    if (themeConfig.color) {
-                        svg.css('fill', themeConfig.color);
-                    } else {
-                        element.addClass('colorless');
-                    }
-                    element.append(svg);
-                };
-                if (!themeConfig) {
-                    // No picto to display at all
-                } else {
-                    var url = themeConfig.img;
-
-                    if (url.indexOf('.svg') === -1) {
-                        // Normal image
-                        element.append(angular.element('<img src="'+url+'"/>'));
-                    } else {
-                        // SVG
-                        if (inlineImages[scope.theme]) {
-                            if (inlineImages[scope.theme].code) {
-                                loadImageInline(inlineImages[scope.theme].code);
-                            } else {
-                                inlineImages[scope.theme].promise.success(function(data) {
-                                    loadImageInline(data);
-                                });
-                            }
-
-                        } else {
-                            var promise = $http.get(url);
-                            inlineImages[scope.theme] = {promise: promise};
-                            promise.success(function(data) {
-                                inlineImages[scope.theme].code = data;
-                                loadImageInline(data);
-                            });
-                        }
-                    }
+                if (scope.themeConfig) {
+                    element.replaceWith(angular.element($compile(template)(scope)));
                 }
-
             }
         };
     }]);

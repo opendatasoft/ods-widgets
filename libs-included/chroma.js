@@ -1042,8 +1042,13 @@
           c = getClass(val);
           t = c / (_numClasses - 1);
         } else {
-          t = f0 = (val - _min) / (_max - _min);
-          t = Math.min(1, Math.max(0, t));
+          // fix https://github.com/gka/chroma.js/issues/37
+          if (_max !== _min) {
+            t = f0 = (val - _min) / (_max - _min);
+            t = Math.min(1, Math.max(0, t));
+          } else {
+            t = _min;
+          }
         }
       } else {
         t = val;
@@ -1507,6 +1512,8 @@
     Pastel2: ['#b3e2cd', '#fdcdac', '#cbd5e8', '#f4cae4', '#e6f5c9', '#fff2ae', '#f1e2cc', '#cccccc'],
     Pastel1: ['#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec', '#f2f2f2']
   };
+
+
 
   /**
     X11 color names
