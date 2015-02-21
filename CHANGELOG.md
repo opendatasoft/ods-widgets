@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 0.1.5-dev
+### Fixed
+- Fixed a problem where the `odsTimescale` widget may crash if initialized directly upon context initialization.
+
 ## 0.1.5 - 2015-02-20
 ### Added
 - The `odsMap` has been modified to be much more powerful and support multiple layers, visualization modes, and contexts.

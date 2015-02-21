@@ -6311,7 +6311,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '0.1.5';
+    var version = '0.1.5-dev';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate', 'translate.directives', 'translate.filters']);
@@ -17155,21 +17155,17 @@ mod.directive('infiniteScroll', [
 
                 if (!angular.isArray($scope.context)) {
                     contexts.push($scope.context);
-                    if ($scope.timeField) {
-                        timeFields[$scope.context.dataset.getUniqueId()] = $scope.timeField;
-                    }
                 } else {
                     contexts = $scope.context;
-                    angular.forEach(contexts, function(context) {
-                        if (angular.isDefined($attrs[context.name + "TimeField"])) {
-                            timeFields[context.dataset.getUniqueId()] = $attrs[context.name + "TimeField"];
-                        }
-                    });
                 }
 
                 $q.all(contexts.map(function(context) {
                     return context.wait().then(function(dataset) {
-                        if (!timeFields[dataset.getUniqueId()]) {
+                        if (angular.isDefined($attrs[context.name + "TimeField"])) {
+                            timeFields[context.dataset.getUniqueId()] = $attrs[context.name + "TimeField"];
+                        } else if ($scope.timeField) {
+                            timeFields[context.dataset.getUniqueId()] = $scope.timeField;
+                        } else {
                             setTimeField(dataset);
                         }
                     });

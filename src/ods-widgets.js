@@ -4,7 +4,7 @@
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '0.1.5';
+    var version = '0.1.5-dev';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate', 'translate.directives', 'translate.filters']);

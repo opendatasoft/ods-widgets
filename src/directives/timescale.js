@@ -73,21 +73,17 @@
 
                 if (!angular.isArray($scope.context)) {
                     contexts.push($scope.context);
-                    if ($scope.timeField) {
-                        timeFields[$scope.context.dataset.getUniqueId()] = $scope.timeField;
-                    }
                 } else {
                     contexts = $scope.context;
-                    angular.forEach(contexts, function(context) {
-                        if (angular.isDefined($attrs[context.name + "TimeField"])) {
-                            timeFields[context.dataset.getUniqueId()] = $attrs[context.name + "TimeField"];
-                        }
-                    });
                 }
 
                 $q.all(contexts.map(function(context) {
                     return context.wait().then(function(dataset) {
-                        if (!timeFields[dataset.getUniqueId()]) {
+                        if (angular.isDefined($attrs[context.name + "TimeField"])) {
+                            timeFields[context.dataset.getUniqueId()] = $attrs[context.name + "TimeField"];
+                        } else if ($scope.timeField) {
+                            timeFields[context.dataset.getUniqueId()] = $scope.timeField;
+                        } else {
                             setTimeField(dataset);
                         }
                     });
