@@ -8406,6 +8406,8 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
+    var loading = {};
+    var loaded = [];
     mod.provider('ModuleLazyLoader', function() {
         // We always load from https://, because if we don't put a scheme in the URL, local testing (from filesystem)
         // will look at file:// URLs and won't work.
@@ -8481,48 +8483,40 @@ mod.directive('infiniteScroll', [
         };
 
         this.$get = ['$q', 'ODSWidgetsConfig', function($q, ODSWidgetsConfig) {
-            var loading = {};
-            var loaded = [];
-
             var lazyload = function(type, url) {
-                if (angular.isDefined(loading[url])) {
-                    return loading[url];
-                } else {
+                if (angular.isUndefined(loading[url])) {
                     var deferred = $q.defer();
+                    loading[url] = deferred;
                     // If it is a relative URL, make it relative to ODSWidgetsConfig.basePath
                     var realURL =  url.substring(0, 1) === '/'
                                 || url.substring(0, 7) === 'http://'
                                 || url.substring(0, 8) === 'https://' ? url : ODSWidgetsConfig.basePath + url;
                     LazyLoad[type](realURL, function() {
-                        loaded.push(url);
                         deferred.resolve();
+                        loaded.push(url);
                     });
                     loading[url] = deferred;
-                    return deferred;
                 }
+                return loading[url];
             };
 
-            return function(name) {
-                var module = lazyloading[name];
-                var promises = [];
+            var loadSequence = function(type, module, deferred, i) {
+                var promises = [],
+                    step;
 
-                for (var i=0; i<module.css.length; i++) {
-                    if (loaded.indexOf(module.css[i]) === -1) {
-                        promises.push(lazyload('css', module.css[i]).promise);
-                    }
+                if (angular.isUndefined(i)) {
+                    i = 0;
                 }
 
-                var jsDeferred = $q.defer();
-                var deferredSteps = null;
-                for (var j=0; j<module.js.length; j++) {
-                    // Each item is a step in a sequence
-                    var step = module.js[j];
+                if (i >= module.length) {
+                    deferred.resolve();
+                } else {
+                    step = module[i];
                     if (!angular.isArray(step)) {
                         step = [step];
                     }
 
-                    var stepPromises = [];
-                    for (var k=0; k<step.length; k++) {
+                    for (var k = 0; k < step.length; k++) {
                         var parts = step[k].split('@');
                         var url;
                         if (parts.length > 1) {
@@ -8534,20 +8528,30 @@ mod.directive('infiniteScroll', [
                         } else {
                             url = parts[0];
                         }
+
                         if (loaded.indexOf(url) === -1) {
-                            stepPromises.push(lazyload('js', url).promise);
+                            promises.push(lazyload(type, url).promise);
+                        } else {
+                            promises.push(loading[url].promise);
                         }
                     }
-                    if (!deferredSteps) {
-                        deferredSteps = $q.all(stepPromises);
-                    } else {
-                        deferredSteps = deferredSteps.then(function() {
-                            return $q.all(stepPromises);
-                        });
-                    }
+                    $q.all(promises).then(function() {
+                        loadSequence(type, module, deferred, i + 1);
+                    });
                 }
-                deferredSteps.then(function() { jsDeferred.resolve(); });
-                promises.push(jsDeferred.promise);
+
+                return deferred.promise;
+            }
+            return function(name) {
+                var module = lazyloading[name];
+                var promises = [];
+                if (module.css) {
+                    promises.push(loadSequence('css', module.css, $q.defer()));
+                }
+                if (module.js) {
+                    promises.push(loadSequence('js', module.js, $q.defer()));
+                }
+
                 return $q.all(promises);
             };
         }];
@@ -8604,7 +8608,7 @@ mod.directive('infiniteScroll', [
             var svg = angular.element(code);
             if (color) {
                 svg.css('fill', color);
-                svg.find('path, polygon, circle, rect').css('fill', color); // Needed for our legacy SVGs of various quality...
+                svg.find('path, polygon, circle, rect, text').css('fill', color); // Needed for our legacy SVGs of various quality...
             }
             element.append(svg);
         };
@@ -10244,7 +10248,7 @@ mod.directive('infiniteScroll', [
         return {
             restrict: 'AE',
             scope: true,
-            controller: function($scope, $attrs) {
+            controller: ['$scope', '$attrs', function($scope, $attrs) {
                 var setStatParameter = function(context, facetName, value) {
                     if (value.name === facetName) {
                         context.stats[facetName] = value.facets.length;
@@ -10271,7 +10275,7 @@ mod.directive('infiniteScroll', [
                     });
                     init();
                 }, true);
-            }
+            }]
         };
     }]);
 
@@ -10350,7 +10354,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsFacets', function($compile, translate) {
+    mod.directive('odsFacets', ['$compile', 'translate', function($compile, translate) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsFacets
@@ -10667,7 +10671,7 @@ mod.directive('infiniteScroll', [
                 };
             }]
         };
-    });
+    }]);
 
     mod.directive('odsFacet', function() {
         return {
@@ -10790,7 +10794,7 @@ mod.directive('infiniteScroll', [
         };
     });
 
-    mod.directive('odsFacetCategory', function($compile) {
+    mod.directive('odsFacetCategory', ['$compile', function($compile) {
         return {
             restrict: 'E',
             replace: true,
@@ -10823,7 +10827,7 @@ mod.directive('infiniteScroll', [
 
             }]
         };
-    });
+    }]);
 
 }());
 ;(function() {
@@ -10848,7 +10852,7 @@ mod.directive('infiniteScroll', [
             scope: {
                 context: '='
             },
-            controller: function($scope) {
+            controller: ['$scope', function($scope) {
                 $scope.isParameterActive = function(name) {
                     return $scope.context.parameters && $scope.context.parameters[name] && $scope.context.parameters[name] !== undefined;
                 };
@@ -10910,7 +10914,7 @@ mod.directive('infiniteScroll', [
                 $scope.$watch('context', function(newValue, oldValue) {
                     refreshRefinements();
                 }, true);
-            }
+            }]
         };
     });
 }());;(function() {
@@ -11251,10 +11255,11 @@ mod.directive('infiniteScroll', [
             }
         };
 
-        return function(queries, search_parameters, timeSerieMode, precision, periodic, domain, apikey, callback) {
+        return function(queries, search_parameters, timeSerieMode, precision, periodic, domain, apikey, canceller) {
             var search_promises = [];
             var charts_by_query = [];
             var original_domain = domain;
+
             angular.forEach(queries, function(query, query_index){
                 var charts = {};
                 var search_options = buildSearchOptions(query, timeSerieMode, precision, periodic);
@@ -11278,16 +11283,26 @@ mod.directive('infiniteScroll', [
                     parameters: {}
                 };
 
-                search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, search_parameters, query.config.options, search_options)));
+                search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, search_parameters, query.config.options, search_options), canceller.promise));
                 charts_by_query.push(charts);
             });
-            $q.all(search_promises).then(function(promise) {
-                callback(promise, charts_by_query);
-            });
+            return {
+                promise: $q.all(search_promises),
+                charts: charts_by_query
+            }
         }
     }]);
 
-    mod.directive("odsHighchartsChart", ['colorScale', 'requestData', 'translate', 'ModuleLazyLoader', 'AggregationHelper', 'ChartHelper', '$rootScope', 'odsErrorService', function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsErrorService) {
+    mod.directive("odsHighchartsChart", ['colorScale',
+                                         'requestData',
+                                         'translate',
+                                         'ModuleLazyLoader',
+                                         'AggregationHelper',
+                                         'ChartHelper',
+                                         '$rootScope',
+                                         'odsErrorService',
+                                         '$q',
+        function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsErrorService, $q) {
         // parameters : {
         //     timescale: year, month, week, day, hour, month year, day year, day month, day week
         //     xLabel:
@@ -11811,6 +11826,7 @@ mod.directive('infiniteScroll', [
                     }
 
                     var last_parameters_hash;
+                    var request_canceller = $q.defer();
                     that.update = function(parameters) {
                         if (typeof parameters === "undefined") {
                             parameters = $scope.parameters;
@@ -11973,7 +11989,11 @@ mod.directive('infiniteScroll', [
 
                         }
 
-                        requestData(parameters.queries, $scope.searchoptions, timeSerieMode, precision, periodic, $scope.domain, $scope.apikey, function(http_calls, charts_by_calls){
+                        request_canceller.resolve("new request coming, cancelling current one");
+                        request_canceller = $q.defer();
+                        var requestPromise = requestData(parameters.queries, $scope.searchoptions, timeSerieMode, precision, periodic, $scope.domain, $scope.apikey, request_canceller);
+                        requestPromise.promise.then(function(http_calls) {
+                            var charts_by_calls = requestPromise.charts;
                             // If there is both periodic & datetime timescale, we need to find the min date to properly offset the periodic data
                             var minDate;
                             if (precision) {
@@ -11992,7 +12012,6 @@ mod.directive('infiniteScroll', [
                                     }
                                 }
                             }
-
 
                             var registered_series = [];
                             for (var i = 0; i < parameters.queries.length; i++) {
@@ -15211,6 +15230,121 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
+    mod.directive('odsPicto', ['SVGInliner', '$http', '$document', function(SVGInliner, $http, $document) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsPicto
+         * @scope
+         * @restrict E
+         * @param {string} url The url of the svg or image to display
+         * @param {string} color The color to use to fill the svg
+         * @description
+         * This widget displays a "picto" specified by a url and force a fill color on it.
+         * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
+         * @todo implement IE8 and image fallback for svg
+         * @todo implement defs and use in svg
+         */
+        var inlineImages = {};
+            // parser = new DOMParser(),
+            // globalSvg;
+
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                url: '=',
+                color: '=',
+                classes: '='
+            },
+            template: '<div class="odswidget odswidget-picto {{ classes }}"></div>',
+            link: function(scope, element) {
+                var svgContainer;
+                scope.$watch('[url, color]', function(nv) {
+                    if (nv[0]) {
+                        if (svgContainer) {
+                            element.empty();
+                        }
+                        svgContainer = SVGInliner.getElement(scope.url, scope.color);
+                        if (!scope.color) {
+                            svgContainer.addClass('colorless');
+                        }
+                        element.append(svgContainer);
+                    }
+                }, true);
+            }
+        };
+    }]);
+
+    mod.directive('odsThemePicto', ['ODSWidgetsConfig', '$compile', function(ODSWidgetsConfig, $compile) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsThemePicto
+         * @scope
+         * @restrict E
+         * @param {string} theme The label of the theme to display the picto of.
+         * @description
+         * This widget displays the "picto" of a theme, based on the `themes` setting in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig}.
+         * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
+         *
+         */
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                theme: '@'
+            },
+            template: '',
+            link: function(scope, element) {
+                scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
+                var template = '<ods-picto url="themeConfig.img" color="themeConfig.color" classes="originalClasses + \' odswidget-theme-picto theme-\' + (getTheme()|themeSlug) "></ods-picto>';
+                // TODO: IE8 fallback
+                // TODO: png fallback
+                var themeConfig = null;
+                var defaultPicto = false;
+                if (ODSWidgetsConfig.themes[scope.theme]) {
+                    scope.themeConfig = ODSWidgetsConfig.themes[scope.theme];
+                } else {
+                    scope.themeConfig = ODSWidgetsConfig.themes['default'];
+                    defaultPicto = true;
+                }
+                scope.getTheme = function() {
+                    if (defaultPicto) {
+                        return 'default';
+                    } else {
+                        return scope.theme;
+                    }
+                };
+                if (scope.themeConfig) {
+                    element.replaceWith(angular.element($compile(template)(scope)));
+                }
+            }
+        };
+    }]);
+
+    mod.directive('odsMapPicto', ['ODSWidgetsConfig', 'PictoHelper', '$compile', function(ODSWidgetsConfig, PictoHelper, $compile) {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                name: '@',
+                color: '@'
+            },
+            template: '',
+            link: function(scope, element) {
+                scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
+                var template = '<ods-picto url="pictoUrl" color="color" classes="originalClasses + \' odswidget-map-picto\'"></ods-picto>';
+                scope.pictoUrl = PictoHelper.mapPictoToURL(scope.name);
+                if (scope.pictoUrl) {
+                    element.replaceWith(angular.element($compile(template)(scope)));
+                }
+            }
+        };
+    }]);
+}());;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
     mod.directive('odsResultEnumerator', ['ODSAPI', function(ODSAPI) {
         /**
          * @ngdoc directive
@@ -16160,7 +16294,7 @@ mod.directive('infiniteScroll', [
                 facetName: '@',
                 max: '@?'
             },
-            controller: function($scope) {
+            controller: ['$scope', function($scope) {
                 var refresh = function() {
                     var query;
                     if ($scope.context.type === 'catalog') {
@@ -16188,7 +16322,7 @@ mod.directive('infiniteScroll', [
                         refresh();
                     }
                 }, true);
-            }
+            }]
         };
     }]);
 
@@ -16273,101 +16407,6 @@ mod.directive('infiniteScroll', [
         };
     });
 
-}());;(function() {
-    'use strict';
-
-    var mod = angular.module('ods-widgets');
-
-    mod.directive('odsPicto', ['SVGInliner', '$http', '$document', function(SVGInliner, $http, $document) {
-        /**
-         * @ngdoc directive
-         * @name ods-widgets.directive:odsPicto
-         * @scope
-         * @restrict E
-         * @param {string} url The url of the svg or image to display
-         * @param {string} color The color to use to fill the svg
-         * @description
-         * This widget displays a "picto" specified by a url and force a fill color on it.
-         * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
-         * @todo implement IE8 and image fallback for svg
-         * @todo implement defs and use in svg
-         */
-        var inlineImages = {};
-            // parser = new DOMParser(),
-            // globalSvg;
-
-        return {
-            restrict: 'E',
-            replace: true,
-            scope: {
-                url: '=',
-                color: '=',
-                classes: '='
-            },
-            template: '<div class="odswidget odswidget-picto {{ classes }}"></div>',
-            link: function(scope, element) {
-                var svgContainer;
-                scope.$watch('[url, color]', function(nv) {
-                    if (nv[0]) {
-                        if (svgContainer) {
-                            element.empty();
-                        }
-                        svgContainer = SVGInliner.getElement(scope.url, scope.color);
-                        if (!scope.color) {
-                            svgContainer.addClass('colorless');
-                        }
-                        element.append(svgContainer);
-                    }
-                }, true);
-            }
-        };
-    }]);
-
-    mod.directive('odsThemePicto', ['ODSWidgetsConfig', '$compile', function(ODSWidgetsConfig, $compile) {
-        /**
-         * @ngdoc directive
-         * @name ods-widgets.directive:odsThemePicto
-         * @scope
-         * @restrict E
-         * @param {string} theme The label of the theme to display the picto of.
-         * @description
-         * This widget displays the "picto" of a theme, based on the `themes` setting in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig}.
-         * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
-         *
-         */
-        return {
-            restrict: 'E',
-            replace: true,
-            scope: {
-                theme: '@'
-            },
-            template: '',
-            link: function(scope, element) {
-                scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
-                var template = '<ods-picto url="themeConfig.img" color="themeConfig.color" classes="originalClasses + \' odswidget-theme-picto theme-\' + (getTheme()|themeSlug) "></ods-picto>';
-                // TODO: IE8 fallback
-                // TODO: png fallback
-                var themeConfig = null;
-                var defaultPicto = false;
-                if (ODSWidgetsConfig.themes[scope.theme]) {
-                    scope.themeConfig = ODSWidgetsConfig.themes[scope.theme];
-                } else {
-                    scope.themeConfig = ODSWidgetsConfig.themes['default'];
-                    defaultPicto = true;
-                }
-                scope.getTheme = function() {
-                    if (defaultPicto) {
-                        return 'default';
-                    } else {
-                        return scope.theme;
-                    }
-                };
-                if (scope.themeConfig) {
-                    element.replaceWith(angular.element($compile(template)(scope)));
-                }
-            }
-        };
-    }]);
 }());;(function() {
     'use strict';
 

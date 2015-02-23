@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsFacets', function($compile, translate) {
+    mod.directive('odsFacets', ['$compile', 'translate', function($compile, translate) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsFacets
@@ -320,7 +320,7 @@
                 };
             }]
         };
-    });
+    }]);
 
     mod.directive('odsFacet', function() {
         return {
@@ -443,7 +443,7 @@
         };
     });
 
-    mod.directive('odsFacetCategory', function($compile) {
+    mod.directive('odsFacetCategory', ['$compile', function($compile) {
         return {
             restrict: 'E',
             replace: true,
@@ -476,6 +476,6 @@
 
             }]
         };
-    });
+    }]);
 
 }());

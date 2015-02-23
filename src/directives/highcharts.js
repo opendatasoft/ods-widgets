@@ -150,10 +150,11 @@
             }
         };
 
-        return function(queries, search_parameters, timeSerieMode, precision, periodic, domain, apikey, callback) {
+        return function(queries, search_parameters, timeSerieMode, precision, periodic, domain, apikey, canceller) {
             var search_promises = [];
             var charts_by_query = [];
             var original_domain = domain;
+
             angular.forEach(queries, function(query, query_index){
                 var charts = {};
                 var search_options = buildSearchOptions(query, timeSerieMode, precision, periodic);
@@ -177,16 +178,26 @@
                     parameters: {}
                 };
 
-                search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, search_parameters, query.config.options, search_options)));
+                search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, search_parameters, query.config.options, search_options), canceller.promise));
                 charts_by_query.push(charts);
             });
-            $q.all(search_promises).then(function(promise) {
-                callback(promise, charts_by_query);
-            });
+            return {
+                promise: $q.all(search_promises),
+                charts: charts_by_query
+            }
         }
     }]);
 
-    mod.directive("odsHighchartsChart", ['colorScale', 'requestData', 'translate', 'ModuleLazyLoader', 'AggregationHelper', 'ChartHelper', '$rootScope', 'odsErrorService', function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsErrorService) {
+    mod.directive("odsHighchartsChart", ['colorScale',
+                                         'requestData',
+                                         'translate',
+                                         'ModuleLazyLoader',
+                                         'AggregationHelper',
+                                         'ChartHelper',
+                                         '$rootScope',
+                                         'odsErrorService',
+                                         '$q',
+        function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsErrorService, $q) {
         // parameters : {
         //     timescale: year, month, week, day, hour, month year, day year, day month, day week
         //     xLabel:
@@ -710,6 +721,7 @@
                     }
 
                     var last_parameters_hash;
+                    var request_canceller = $q.defer();
                     that.update = function(parameters) {
                         if (typeof parameters === "undefined") {
                             parameters = $scope.parameters;
@@ -872,7 +884,11 @@
 
                         }
 
-                        requestData(parameters.queries, $scope.searchoptions, timeSerieMode, precision, periodic, $scope.domain, $scope.apikey, function(http_calls, charts_by_calls){
+                        request_canceller.resolve("new request coming, cancelling current one");
+                        request_canceller = $q.defer();
+                        var requestPromise = requestData(parameters.queries, $scope.searchoptions, timeSerieMode, precision, periodic, $scope.domain, $scope.apikey, request_canceller);
+                        requestPromise.promise.then(function(http_calls) {
+                            var charts_by_calls = requestPromise.charts;
                             // If there is both periodic & datetime timescale, we need to find the min date to properly offset the periodic data
                             var minDate;
                             if (precision) {
@@ -891,7 +907,6 @@
                                     }
                                 }
                             }
-
 
                             var registered_series = [];
                             for (var i = 0; i < parameters.queries.length; i++) {

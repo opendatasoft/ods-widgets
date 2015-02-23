@@ -5,6 +5,8 @@ This log tries to follow the good principles of [Keep a CHANGELOG](http://keepac
 ## 0.1.5-dev
 ### Fixed
 - Fixed a problem where the `odsTimescale` widget may crash if initialized directly upon context initialization.
+- Fixed a problem where `odsFacets`, `odsDomainStatistics`, `odsFilterSummary` and `odsTagCloud` wouldn't work
+with the minified version of ods-widgets.
 
 ## 0.1.5 - 2015-02-20
 ### Added

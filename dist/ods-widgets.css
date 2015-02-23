@@ -49,6 +49,10 @@
 .odswidget-theme-boxes .odswidget-theme-picto.theme-default {
   opacity: 0.1;
 }
+.odswidget-map-picto {
+  height: 18px;
+  width: 18px;
+}
 .odswidget-searchbox {
   margin-bottom: 20px;
   text-align: center;

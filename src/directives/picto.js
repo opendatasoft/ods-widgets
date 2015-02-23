@@ -93,4 +93,24 @@
             }
         };
     }]);
+
+    mod.directive('odsMapPicto', ['ODSWidgetsConfig', 'PictoHelper', '$compile', function(ODSWidgetsConfig, PictoHelper, $compile) {
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                name: '@',
+                color: '@'
+            },
+            template: '',
+            link: function(scope, element) {
+                scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
+                var template = '<ods-picto url="pictoUrl" color="color" classes="originalClasses + \' odswidget-map-picto\'"></ods-picto>';
+                scope.pictoUrl = PictoHelper.mapPictoToURL(scope.name);
+                if (scope.pictoUrl) {
+                    element.replaceWith(angular.element($compile(template)(scope)));
+                }
+            }
+        };
+    }]);
 }());

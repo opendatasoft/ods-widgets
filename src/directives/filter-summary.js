@@ -20,7 +20,7 @@
             scope: {
                 context: '='
             },
-            controller: function($scope) {
+            controller: ['$scope', function($scope) {
                 $scope.isParameterActive = function(name) {
                     return $scope.context.parameters && $scope.context.parameters[name] && $scope.context.parameters[name] !== undefined;
                 };
@@ -82,7 +82,7 @@
                 $scope.$watch('context', function(newValue, oldValue) {
                     refreshRefinements();
                 }, true);
-            }
+            }]
         };
     });
 }());

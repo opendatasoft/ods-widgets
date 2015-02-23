@@ -91,7 +91,7 @@
                 facetName: '@',
                 max: '@?'
             },
-            controller: function($scope) {
+            controller: ['$scope', function($scope) {
                 var refresh = function() {
                     var query;
                     if ($scope.context.type === 'catalog') {
@@ -119,7 +119,7 @@
                         refresh();
                     }
                 }, true);
-            }
+            }]
         };
     }]);
 

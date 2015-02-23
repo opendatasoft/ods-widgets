@@ -3,6 +3,8 @@
 
     var mod = angular.module('ods-widgets');
 
+    var loading = {};
+    var loaded = [];
     mod.provider('ModuleLazyLoader', function() {
         // We always load from https://, because if we don't put a scheme in the URL, local testing (from filesystem)
         // will look at file:// URLs and won't work.
@@ -78,48 +80,40 @@
         };
 
         this.$get = ['$q', 'ODSWidgetsConfig', function($q, ODSWidgetsConfig) {
-            var loading = {};
-            var loaded = [];
-
             var lazyload = function(type, url) {
-                if (angular.isDefined(loading[url])) {
-                    return loading[url];
-                } else {
+                if (angular.isUndefined(loading[url])) {
                     var deferred = $q.defer();
+                    loading[url] = deferred;
                     // If it is a relative URL, make it relative to ODSWidgetsConfig.basePath
                     var realURL =  url.substring(0, 1) === '/'
                                 || url.substring(0, 7) === 'http://'
                                 || url.substring(0, 8) === 'https://' ? url : ODSWidgetsConfig.basePath + url;
                     LazyLoad[type](realURL, function() {
-                        loaded.push(url);
                         deferred.resolve();
+                        loaded.push(url);
                     });
                     loading[url] = deferred;
-                    return deferred;
                 }
+                return loading[url];
             };
 
-            return function(name) {
-                var module = lazyloading[name];
-                var promises = [];
+            var loadSequence = function(type, module, deferred, i) {
+                var promises = [],
+                    step;
 
-                for (var i=0; i<module.css.length; i++) {
-                    if (loaded.indexOf(module.css[i]) === -1) {
-                        promises.push(lazyload('css', module.css[i]).promise);
-                    }
+                if (angular.isUndefined(i)) {
+                    i = 0;
                 }
 
-                var jsDeferred = $q.defer();
-                var deferredSteps = null;
-                for (var j=0; j<module.js.length; j++) {
-                    // Each item is a step in a sequence
-                    var step = module.js[j];
+                if (i >= module.length) {
+                    deferred.resolve();
+                } else {
+                    step = module[i];
                     if (!angular.isArray(step)) {
                         step = [step];
                     }
 
-                    var stepPromises = [];
-                    for (var k=0; k<step.length; k++) {
+                    for (var k = 0; k < step.length; k++) {
                         var parts = step[k].split('@');
                         var url;
                         if (parts.length > 1) {
@@ -131,20 +125,30 @@
                         } else {
                             url = parts[0];
                         }
+
                         if (loaded.indexOf(url) === -1) {
-                            stepPromises.push(lazyload('js', url).promise);
+                            promises.push(lazyload(type, url).promise);
+                        } else {
+                            promises.push(loading[url].promise);
                         }
                     }
-                    if (!deferredSteps) {
-                        deferredSteps = $q.all(stepPromises);
-                    } else {
-                        deferredSteps = deferredSteps.then(function() {
-                            return $q.all(stepPromises);
-                        });
-                    }
+                    $q.all(promises).then(function() {
+                        loadSequence(type, module, deferred, i + 1);
+                    });
                 }
-                deferredSteps.then(function() { jsDeferred.resolve(); });
-                promises.push(jsDeferred.promise);
+
+                return deferred.promise;
+            }
+            return function(name) {
+                var module = lazyloading[name];
+                var promises = [];
+                if (module.css) {
+                    promises.push(loadSequence('css', module.css, $q.defer()));
+                }
+                if (module.js) {
+                    promises.push(loadSequence('js', module.js, $q.defer()));
+                }
+
                 return $q.all(promises);
             };
         }];
@@ -201,7 +205,7 @@
             var svg = angular.element(code);
             if (color) {
                 svg.css('fill', color);
-                svg.find('path, polygon, circle, rect').css('fill', color); // Needed for our legacy SVGs of various quality...
+                svg.find('path, polygon, circle, rect, text').css('fill', color); // Needed for our legacy SVGs of various quality...
             }
             element.append(svg);
         };

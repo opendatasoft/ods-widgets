@@ -47,7 +47,7 @@
         return {
             restrict: 'AE',
             scope: true,
-            controller: function($scope, $attrs) {
+            controller: ['$scope', '$attrs', function($scope, $attrs) {
                 var setStatParameter = function(context, facetName, value) {
                     if (value.name === facetName) {
                         context.stats[facetName] = value.facets.length;
@@ -74,7 +74,7 @@
                     });
                     init();
                 }, true);
-            }
+            }]
         };
     }]);
 
