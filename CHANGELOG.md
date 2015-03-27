@@ -2,11 +2,31 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
-## 0.1.5-dev
+## 0.1.6 - 2015-03-27
+### Added
+- All templates are now inlined instead of external; this means that you won't have any more issue with CORS and widgets such as `odsTable` and `odsMap`. 
+Also, all examples in the documentation should now work, and testing in Plunkr should be easier!
+- When using `odsFacets` with the searchbox, the current search is now reset when you select a category.
+- You can now prevent specific parameters to be displayed within `odsFilterSummary`.
+- You can now use a function on `odsDatasetContext` objects to get a link that can be used to download the current data, based on active filters.
+
+
 ### Fixed
 - Fixed a problem where the `odsTimescale` widget may crash if initialized directly upon context initialization.
 - Fixed a problem where `odsFacets`, `odsDomainStatistics`, `odsFilterSummary` and `odsTagCloud` wouldn't work
 with the minified version of ods-widgets.
+- All the directives templates are now defined inside the directives code: this ensures that there is no request needed
+to fetch the templates, which caused CORS issues for developers with no ability to enable CORS on their server (e.g. no access
+to the configuration), and issues on the documentation.
+- Fixed potential race conditions in `odsChart` and `odsTable` when filters where changed too quickly.
+- Fixed layout issues when an `odsMap` was contained inside an `odsDatasetCard`.
+- You can now use `odsTimescale`, `odsTimerange`, and/or `odsTextSearch` without each one overriding the other.
+- Limiting the size of the real text content within `odsTable` cells, to prevent browsers crashes.
+- Fixed some map pictos from not being displayed under Firefox 36, due to a browser bug.
+- Fixed some cases where a reverse sort on Y axis in `odsChart` would be ignored. 
+- Various IE8 fixes.
+
+
 
 ## 0.1.5 - 2015-02-20
 ### Added

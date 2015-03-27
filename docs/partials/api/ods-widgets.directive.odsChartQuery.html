@@ -4,18 +4,27 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>This widget can display a multiple chart generated using the &quot;Charts&quot; interface of OpenDataSoft.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>odsChartQuery is the sub widget that defines the queries for the series defined inside.
+see <a href="#/api/ods-widgets.directive:odsChart">odsChart</a> for complete examples.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-chart-query
-       context="{CatalogContext}"
-       chart-config="{string|Object}"&gt;
+       field-x="{string}"
+       timescale="{string}"
+       maxpoints="{integer}"
+       stacked="{boolean}"
+       series-breakdown="{string}"
+       series-breakdown-timescale="{string}"&gt;
 &lt;/ods-chart-query&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
-</div></td></tr><tr><td>chartConfig</td><td><a href="" class="label type-hint type-hint-string">string</a><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.</p>
-</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>fieldX</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>Set the field that is used to compute the aggregations during the analysis query.</p>
+</div></td></tr><tr><td>timescale</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>Works only with timeseries (when fieldX is a date or datetime). Y values will be computed against this interval. For example, if you have daily values in a dataset and ask for a &quot;month&quot; timescale, the Y values for the <a href="#/api/ods-widgets.directive:odsChartSerie">series</a> inside this query will aggregated month by month and computed.</p>
+</div> <p><em>(default: "year")</em></p></td></tr><tr><td>maxpoints</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>Defines the maximum number of points fetched by the query.</p>
+</div> <p><em>(default: 0)</em></p></td></tr><tr><td>stacked</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>Stack the resulting charts. Only works with columns, line charts and area charts.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>seriesBreakdown</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>When declared, all series are break down by the defined facet</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>seriesBreakdownTimescale</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>if the break down facet is a time serie (date or datetime), it defines the aggregation level for this facet</p>
+</div> <p><em>(default: true)</em></p></td></tr></tbody></table></div>
 </div>

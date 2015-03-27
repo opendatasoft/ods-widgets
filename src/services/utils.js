@@ -138,7 +138,7 @@
                 }
 
                 return deferred.promise;
-            }
+            };
             return function(name) {
                 var module = lazyloading[name];
                 var promises = [];
@@ -217,9 +217,13 @@
                     deferred = $q.defer();
                 }
                 var element = angular.element('<div></div>');
-                if (url.indexOf('.svg') === -1) {
+                if (!url) {
+                    loadImageInline(element, FALLBACK, color);
+                    if (getPromise) { deferred.resolve(element); }
+                } else if (url.indexOf('.svg') === -1) {
                     // Normal image
                     element.append(angular.element('<img src="' + url + '"/>'));
+                    if (getPromise) { deferred.resolve(element); }
                 } else {
                     // SVG
                     if (inlineImages[url]) {

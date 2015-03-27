@@ -60,7 +60,7 @@ hovers the shapes, using <code>hoverField</code> and the name of a field.</li>
 <ul>
 <li><code>color</code>: a simple color, as an hex code (#FF0F05) or a simple CSS color name like &quot;red&quot;. Available for any mode except <code>heatmap</code>.</li>
 <li><code>colorScale</code>: the name of a ColorBrewer [<a href="http://colorbrewer2.org/">http://colorbrewer2.org/</a>] scheme, like &quot;YlGnBu&quot;. Available for <code>shape</code>.</li>
-<li><code>colorRanges</code>: a serie of colors and ranges, to decide a color depending on a value. For example &quot;red,20,orange,40,#00CE00&quot; to color anything between
+<li><code>colorRanges</code>: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example &quot;red;20;orange;40;#00CE00&quot; to color anything between
 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a field name in <code>colorByField</code> to configure which field will be
 used to decide on the color. Available for <code>raw</code> and <code>shape</code>.</li>
 </ul>
@@ -73,6 +73,16 @@ alphanumerically.</p>
         &lt;!-- Reverse sort on 'field' --&gt;
         &lt;ods-map-layer context="mycontext" tooltip-sort="-field"&gt;&lt;/ods-map-layer&gt;
     &lt;/ods-map&gt;
+</pre>
+<p>By default, tooltips show the values associated with a point or shape in a simple template. You can configure your own template by adding
+HTML inside the <code>&lt;ods-map-layer&gt;&lt;/ods-map-layer&gt;</code> tag. Your template is AngularJS-enabled and will be provided with a <code>record</code> object; this object contains
+a <code>fields</code> object with all the values associated with the clicked point or shape.</p>
+<pre class="prettyprint linenums">
+   &lt;ods-map location="12,48.86167,2.34146"&gt;
+       &lt;ods-map-layer context="mycontext"&gt;
+           &lt;div&gt;my value is: {{record.fields.myvalue}}&lt;/div&gt;
+       &lt;/ods-map-layer&gt;
+   &lt;/ods-map&gt;
 </pre>
 <p>If your layer is displayed as <code>raw</code> or <code>shape</code>, you can configure a layer so that a click on an item triggers a refine on another context, using <code>refineOnClickContext</code>.
 One or more contexts can be defined:
@@ -103,7 +113,10 @@ name of the property, as <code>refineOnClick[context]MapField</code> and <code>r
        [location]="{string}"
        [basemap]="{string}"
        [static-map]="{boolean}"
-       [no-refit]="{boolean}"&gt;
+       [no-refit]="{boolean}"
+       toolbar-geolocation="{boolean}"
+       toolbar-drawing="{boolean}"
+       toolbar-fullscreen="{boolean}"&gt;
 &lt;/ods-map&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -120,5 +133,8 @@ the first available basemap will be used.</p>
 </div></td></tr><tr><td>[staticMap]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;true&quot;, then users won&#39;t be able to move or zoom on the map. They will still be able to click on markers.</p>
 </div></td></tr><tr><td>[noRefit]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>By default, the map refits its view whenever the displayed data changes.
 If &quot;true&quot;, then the map will stay at the same location instead.</p>
-</div></td></tr></tbody></table></div>
+</div></td></tr><tr><td>toolbarGeolocation</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;false&quot;, then the &quot;geolocate&quot; button won&#39;t be displayed in the map&#39;s toolbar.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>toolbarDrawing</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;false&quot;, then the drawing tools (to draw filter areas) won&#39;t be displayed in the map&#39;s toolbar.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>toolbarFullscreen</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;false&quot;, then the &quot;go fullscreen&quot; button won&#39;t be displayed in the map&#39;s toolbar.</p>
+</div> <p><em>(default: true)</em></p></td></tr></tbody></table></div>
 </div>

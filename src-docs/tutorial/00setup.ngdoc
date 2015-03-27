@@ -36,9 +36,3 @@ If you want to experience the tutorials with a local editor, you can use the fol
     </body>
 </html>
 </pre>
-
-<div class="alert alert-warning alert-block">
-Currently, due to some technical limitations with cross-domain requests, some widgets (odsTable and odsMap) may not work if you load the ODS-Widgets
-files from opendatasoft.github.io, like in the proposed Plunkr or template above.<br><br>
-The problem will not occur if you download and use a local version of ODS-Widgets.
-</div>

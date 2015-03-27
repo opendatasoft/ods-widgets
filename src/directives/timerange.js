@@ -194,6 +194,10 @@
                                 evaluationScope.$to = $scope.to;
                                 evaluationScope.$from = $scope.from;
                                 evaluationScope.$field = configurations[context.name]['timefield'];
+                                if (['q', 'rq'].indexOf(parameterName) > -1) {
+                                    // Naming the parameter to prevent overwriting between widgets
+                                    parameterName = parameterName + '.timerange';
+                                }
                                 context.parameters[parameterName] = configurations[context.name]['formatter'](evaluationScope);
                             });
                         }

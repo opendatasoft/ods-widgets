@@ -4,18 +4,65 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>This widget can display a multiple chart generated using the &quot;Charts&quot; interface of OpenDataSoft.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>odsChartSerie is the sub widget that defines a serie in the chart with all its parameters.
+see <a href="#/api/ods-widgets.directive:odsChart">odsChart</a> for complete examples.</p>
+<h3 id="description_available-chart-types">Available chart types:</h3>
+<p>There are three available types of charts: simple series and areas that takes a minimal and a maximal value.</p>
+<h4 id="description_available-chart-types_simple-series">simple series</h4>
+<ul>
+<li>line</li>
+<li>spline</li>
+<li>area</li>
+<li>areaspline</li>
+<li>column</li>
+<li>bar</li>
+<li>pie</li>
+<li>scatter<h4 id="description_available-chart-types_areas">areas</h4>
+</li>
+<li>arearange</li>
+<li>areasplinerange</li>
+<li>columnrange<h3 id="description_available-functions">available functions</h3>
+</li>
+<li>COUNT</li>
+<li>AVG</li>
+<li>MIN</li>
+<li>MAX</li>
+<li>STDDEV</li>
+<li>SUM</li>
+<li>QUANTILES</li>
+<li>CONSTANT</li>
+</ul>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-chart-serie
-       context="{CatalogContext}"
-       chart-config="{string|Object}"&gt;
+       [chart-type]="{string}"
+       [function-y]="{string}"
+       [expression-y]="{string}"
+       [color]="{string}"
+       [label-y]="{string}"
+       [cumulative]="{boolean}"
+       [logarithmic]="{boolean}"
+       [min]="{integer}"
+       [max]="{integer}"
+       [color-thresholds]="{string}"
+       [subsets]="{string}"
+       [subseries]="{boolean}"&gt;
 &lt;/ods-chart-serie&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> to use</p>
-</div></td></tr><tr><td>chartConfig</td><td><a href="" class="label type-hint type-hint-string">string</a><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.</p>
-</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>[chartType]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>available types are: &#39;line&#39;, &#39;spline&#39;, &#39;arearange&#39;, &#39;areasplinerange&#39;, &#39;columnrange&#39;, &#39;area&#39;, &#39;areaspline&#39;, &#39;column&#39;, &#39;bar&#39;, &#39;pie&#39;, &#39;scatter&#39;</p>
+</div></td></tr><tr><td>[functionY]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>set up the function that will be used to calculate aggreation value. &#39;COUNT&#39; counts the number of documents for each category defined by expressionY.</p>
+</div></td></tr><tr><td>[expressionY]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>set up the facet used for aggregation</p>
+</div></td></tr><tr><td>[color]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>defines the color used for this serie. see colors below</p>
+</div></td></tr><tr><td>[labelY]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>specify a custom label for the serie</p>
+</div></td></tr><tr><td>[cumulative]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>Y values are accumulated</p>
+</div></td></tr><tr><td>[logarithmic]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>display the serie using a logarithmic scale</p>
+</div></td></tr><tr><td>[min]</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>minimum value to be displayed on the Y axis</p>
+</div></td></tr><tr><td>[max]</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>maximum value to be displayed on the Y axis</p>
+</div></td></tr><tr><td>[colorThresholds]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>an array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the definedf color is used.</p>
+</div></td></tr><tr><td>[subsets]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>used when functionY is set to &#39;QUANTILES&#39; to define the wanted quantile</p>
+</div></td></tr><tr><td>[subseries]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>an array containing 2 objects. TODO add explanation for this...</p>
+</div></td></tr></tbody></table></div>
 </div>

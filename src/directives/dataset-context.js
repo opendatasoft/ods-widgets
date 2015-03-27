@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsDatasetContext', ['ODSAPI', '$q', function(ODSAPI, $q) {
+    mod.directive('odsDatasetContext', ['ODSAPI', '$q', '$interpolate', function(ODSAPI, $q, $interpolate) {
         /**
          *
          *  @ngdoc directive
@@ -57,6 +57,9 @@
          *
          *  * dataset: the dataset object for this context
          *
+         *  * getDownloadURL(format): a method that returns an URL to download the data, including currently active filters (refinements, queries...). By default
+         *  the URL will allow to download a CSV export, but you can pass another format such as "geojson" or "json".
+         *
          *  **Note:** Due to naming conventions in various places (HTML attributes, AngularJS...), context names
          *  have to be lowercase, can only contain alphanumerical characters, and can't begin with "data" or "x".
          *
@@ -92,13 +95,16 @@
          *  </pre>
          */
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
-        var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext) {
+        var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext, source) {
             var contextParams;
             if (!angular.equals(parameters, {})) {
                 contextParams = parameters;
             } else if (parametersFromContext) {
                 var unwatch = scope.$watch(parametersFromContext, function(nv, ov) {
                     if (nv) {
+                        if (source) {
+                            nv.parameters.source = source;
+                        }
                         scope[contextName].parameters = nv.parameters;
                         unwatch();
                     }
@@ -107,11 +113,25 @@
             } else {
                 contextParams = {};
             }
+
+            if (source && contextParams) {
+                contextParams.source = source;
+            }
             var deferred = $q.defer();
 
             scope[contextName] = {
                 'wait': function() {
                     return deferred.promise;
+                },
+                'getDownloadURL': function(format, parameters) {
+                    parameters = parameters || {};
+                    format = format || 'csv';
+                    var url = this.domainUrl + '/explore/dataset/' + this.dataset.datasetid + '/download/?format=' + format;
+                    url += '&' + ODS.URLUtils.getAPIQueryString(angular.extend({}, this.parameters, parameters));
+                    return url;
+                },
+                'toggleRefine': function(facetName, path) {
+                    ODS.Context.toggleRefine(this, facetName, path);
                 },
                 'name': contextName,
                 'type': 'dataset',
@@ -122,7 +142,7 @@
                 'parameters': contextParams
             };
 
-            ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true, interopmetas: true}).
+            ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true, interopmetas: true, source: source}).
                 success(function(data) {
                     scope[contextName].dataset = new ODS.Dataset(data);
                     deferred.resolve(scope[contextName].dataset);
@@ -138,20 +158,33 @@
             controller: ['$scope', '$attrs', function($scope, $attrs) {
                 var contextNames = $attrs.context.split(',');
                 for (var i=0; i<contextNames.length; i++) {
+                    // Note: we interpolate ourselves because we need the attributes value at the time of the controller's
+                    // initialization, which is before the standard interpolation occurs.
                     var contextName = contextNames[i].trim();
 
                     // We need a dataset ID
-                    var datasetID = $attrs[contextName+'Dataset'];
-
-                    // Do we have a domain ID?
-                    var domain = $attrs[contextName+'Domain'];
-
-                    if (!datasetID) {
+                    if (!$attrs[contextName+'Dataset']) {
                         console.log('ERROR : Context ' + contextName + ' : Missing dataset parameter');
                     }
+                    var datasetID = $interpolate($attrs[contextName+'Dataset'])($scope);
 
-                    var apikey = $attrs[contextName+'Apikey'];
-                    var sort = $attrs[contextName+'Sort'];
+                    var domain, apikey, sort, source;
+
+                    // Do we have a domain ID?
+                    if ($attrs[contextName+'Domain']) {
+                        domain = $interpolate($attrs[contextName + 'Domain'])($scope);
+                    }
+
+                    if ($attrs[contextName + 'Apikey']) {
+                        apikey = $interpolate($attrs[contextName + 'Apikey'])($scope);
+                    }
+                    if ($attrs[contextName+'Sort']) {
+                        sort = $interpolate($attrs[contextName + 'Sort'])($scope);
+                    }
+                    if ($attrs[contextName+'Source']) {
+                        source = $interpolate($attrs[contextName + 'Source'])($scope);
+                    }
+
                     var parameters = $scope.$eval($attrs[contextName+'Parameters']) || {};
                     var parametersFromContext = $attrs[contextName+'ParametersFromContext'];
 
@@ -159,7 +192,7 @@
                         parameters.sort = sort;
                     }
 
-                    exposeContext(domain, datasetID, $scope, contextName, apikey, parameters, parametersFromContext);
+                    exposeContext(domain, datasetID, $scope, contextName, apikey, parameters, parametersFromContext, source);
                 }
             }]
         };

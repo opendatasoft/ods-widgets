@@ -158,18 +158,15 @@
                                     buildFacetTagsHTML(scope, element, facets);
                                     scope.init();
                                 } else {
-                                    var unwatch = scope.$watch('context.dataset', function(nv) {
-                                        if (nv) {
-                                            unwatch();
-                                            facets = angular.copy(scope.context.dataset.getFacets());
-                                            angular.forEach(facets, function(f) {
-                                                f.title = f.label;
-                                                delete f.label;
-                                            });
-                                            buildFacetTagsHTML(scope, element, facets);
-                                            scope.init();
-                                        }
-                                    }, true);
+                                    scope.context.wait().then(function(){
+                                        facets = angular.copy(scope.context.dataset.getFacets());
+                                        angular.forEach(facets, function(f) {
+                                            f.title = f.label;
+                                            delete f.label;
+                                        });
+                                        buildFacetTagsHTML(scope, element, facets);
+                                        scope.init();
+                                    });
                                 }
                             }
                         }, true);
@@ -285,38 +282,7 @@
                 };
 
                 this.toggleRefinement = function(facetName, path) {
-                    var refineKey = 'refine.'+facetName;
-                    if (angular.isDefined($scope.context.parameters[refineKey])) {
-                        // There is at least one refine already
-                        var refines = angular.copy($scope.context.parameters[refineKey]);
-                        if (!angular.isArray(refines)) {
-                            refines = [refines];
-                        }
-                        if (refines.indexOf(path) > -1) {
-                            // Remove the refinement
-                            refines.splice(refines.indexOf(path), 1);
-                        } else {
-                            // Activate
-                            angular.forEach(refines, function(refine, idx) {
-                                if (path.startsWith(refine+'/')) {
-                                    // This already active refine is less precise than the new one, we remove it
-                                    refines.splice(idx, 1);
-                                } else if (refine.startsWith(path+'/')) {
-                                    // This already active refine is more precise than the new one, we remove it
-                                    refines.splice(idx, 1);
-                                }
-                            });
-                            refines.push(path);
-                        }
-
-                        if (refines.length === 0) {
-                            delete $scope.context.parameters[refineKey];
-                        } else {
-                            $scope.context.parameters[refineKey] = refines;
-                        }
-                    } else {
-                        $scope.context.parameters[refineKey] = path;
-                    }
+                    $scope.context.toggleRefine(facetName, path);
                 };
             }]
         };
@@ -387,7 +353,7 @@
             template: '<ul class="category-list">' +
                 '<li class="value-search" ng-show="valueSearchEnabled">' +
                     '<input ng-model="valueFilter">' +
-                    '<i ng-show="valueFilter" class="value-search-cancel icon-remove" ng-click="valueFilter=\'\'"></i>' +
+                    '<i ng-show="!!valueFilter" class="value-search-cancel icon-remove" ng-click="valueFilter=\'\'"></i>' +
                 '</li>' +
                 '<li ng-repeat="category in categories|filter:searchValue(valueFilter)">' +
                 '<ods-facet-category ng-if="!categoryIsHidden(category)" facet-name="{{ facetName }}" category="category" template="{{template}}" ng-show="visible($index)"></ods-facet-category>' +
@@ -439,6 +405,9 @@
                         return categoryName.indexOf(search) > -1;
                     };
                 };
+                this.emptySearch = function() {
+                    $scope.valueFilter = '';
+                }
             }]
         };
     });
@@ -447,7 +416,7 @@
         return {
             restrict: 'E',
             replace: true,
-            require: '^odsFacet',
+            require: ['^odsFacet', '^?odsFacetCategoryList'],
             scope: {
                 category: '=',
                 facetName: '@',
@@ -457,10 +426,13 @@
                 '   <a href="#" ng-click="toggleRefinement($event, category.path)" ng-class="{\'refined\': category.state === \'refined\'}" title="{{ category.name }}">' +
                 '   </a>' +
                 '</div>',
-            link: function(scope, element, attrs, facetCtrl) {
+            link: function(scope, element, attrs, ctrls) {
+                var facetCtrl = ctrls[0];
+                var categoryList = ctrls[1];
                 scope.toggleRefinement = function($event, path) {
                     $event.preventDefault();
                     facetCtrl.toggleRefinement(path);
+                    categoryList.emptySearch();
                 };
                 var template = scope.template || '<span class="category-name">{{ category.name }}</span> <span class="category-count">{{ category.count|number }}</span>';
                 element.find('a').append($compile('<div>'+template+'</div>')(scope)[0]);

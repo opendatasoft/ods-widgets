@@ -1,5 +1,41 @@
 (function(target) {
     var ODS = {
+        Context: {
+            toggleRefine: function(context, facetName, path) {
+                var refineKey = 'refine.'+facetName;
+                if (angular.isDefined(context.parameters[refineKey])) {
+                    // There is at least one refine already
+                    var refines = angular.copy(context.parameters[refineKey]);
+                    if (!angular.isArray(refines)) {
+                        refines = [refines];
+                    }
+                    if (refines.indexOf(path) > -1) {
+                        // Remove the refinement
+                        refines.splice(refines.indexOf(path), 1);
+                    } else {
+                        // Activate
+                        angular.forEach(refines, function(refine, idx) {
+                            if (path.startsWith(refine+'/')) {
+                                // This already active refine is less precise than the new one, we remove it
+                                refines.splice(idx, 1);
+                            } else if (refine.startsWith(path+'/')) {
+                                // This already active refine is more precise than the new one, we remove it
+                                refines.splice(idx, 1);
+                            }
+                        });
+                        refines.push(path);
+                    }
+
+                    if (refines.length === 0) {
+                        delete context.parameters[refineKey];
+                    } else {
+                        context.parameters[refineKey] = refines;
+                    }
+                } else {
+                    context.parameters[refineKey] = path;
+                }
+            }
+        },
         GeoFilter: {
             /*
             Types of parameters:
@@ -160,6 +196,47 @@
             },
             startsWith: function(input, searchedString) {
                 return input && input.indexOf(searchedString) === 0;
+            }
+        },
+        URLUtils: {
+            cleanupAPIParams: function(params) {
+                var params = angular.copy(params);
+
+                function unnameParameter(prefix, parameterName, parameterValue) {
+                    // Transforms a "named" parameter (e.g. q.myname) to put its value into the unnamed base parameter (q)
+                    if (parameterName.startsWith(prefix+'.')) {
+                        if (!params[prefix]) {
+                            params[prefix] = parameterValue;
+                        } else if (angular.isArray(params[prefix])) {
+                            params[prefix].push(parameterValue);
+                        } else {
+                            params[prefix] = [params[prefix], parameterValue];
+                        }
+                        delete params[parameterName];
+                    }
+                }
+
+                // Transforming named parameters into regular parameters... until the API supports it itself
+                angular.forEach(params, function(paramValue, paramName) {
+                    angular.forEach(['q', 'rq'], function(prefix) {
+                        unnameParameter(prefix, paramName, paramValue);
+                    });
+                });
+                return params;
+            },
+            getAPIQueryString: function(options) {
+                var qs = [];
+                options = this.cleanupAPIParams(options);
+                angular.forEach(options, function(value, key) {
+                    if (angular.isString(value)) {
+                        qs.push(key+'='+encodeURIComponent(value));
+                    } else {
+                        angular.forEach(value, function(singleVal) {
+                            qs.push(key+'='+encodeURIComponent(singleVal));
+                        });
+                    }
+                });
+                return qs.join('&');
             }
         },
         DatasetUtils: {

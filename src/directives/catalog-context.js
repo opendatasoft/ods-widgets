@@ -55,7 +55,7 @@
          *      <ods-result-enumerator context="public">
          *          <p>{{item.datasetid}}</p>
          *      </ods-result-enumerator>
-         *  </ods-dataset-context>
+         *  </ods-catalog-context>
          *  </pre>
          */
 
@@ -72,13 +72,21 @@
                     // Do we have a domain ID?
                     var domain = attrs[contextName+'Domain'];
 
+                    var parameters = scope.$eval(attrs[contextName+'Parameters']) || {};
+                    if (attrs[contextName+'Source']) {
+                        parameters.source = attrs[contextName+'Source'];
+                    }
+
                     scope[contextName] = {
                         'name': contextName,
                         'type': 'catalog',
                         'domain': domain,
                         'domainUrl': ODSAPI.getDomainURL(domain),
                         'apikey': attrs[contextName+'Apikey'],
-                        'parameters': scope.$eval(attrs[contextName+'Parameters']) || {}
+                        'parameters': parameters,
+                        'toggleRefine': function(facetName, path) {
+                            ODS.Context.toggleRefine(this, facetName, path);
+                        }
                     };
                 }
             }

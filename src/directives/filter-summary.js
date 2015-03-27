@@ -4,6 +4,17 @@
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsFilterSummary', function() {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsFilterSummary
+         * @scope
+         * @restrict A
+         * @param {CatalogContext|DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to display the filters of
+         * @param {string} [exclude=none] Optional: Name of parameters to not display, separated by commas. For example `q,rows,start`
+         * @description
+         * This widget displays a summary if all the active filters on a context: text search, refinements...
+         *
+         */
         return {
             restrict: 'E',
             replace: true,
@@ -18,11 +29,13 @@
                 '    <a ng-click="removeParameter(\'refine.\'+refinement.groupName, refinement.path)"><span class="filter-label">{{refinement.groupLabel}}</span> {{refinement.label}}</a>' +
                 '</li>',
             scope: {
-                context: '='
+                context: '=',
+                exclude: '@'
             },
             controller: ['$scope', function($scope) {
+                var excludes = $scope.exclude ? $scope.exclude.split(',') : [];
                 $scope.isParameterActive = function(name) {
-                    return $scope.context.parameters && $scope.context.parameters[name] && $scope.context.parameters[name] !== undefined;
+                    return $scope.context.parameters && excludes.indexOf(name) === -1 && $scope.context.parameters[name] && $scope.context.parameters[name] !== undefined;
                 };
                 var getFacetGroupLabel = function(facetGroupName) {
                     for (var i=0; i<$scope.context.dataset.fields.length; i++) {
@@ -57,7 +70,7 @@
 
                     if ($scope.context.parameters && $scope.context.dataset)
                         for (var paramName in $scope.context.parameters) {
-                            if (paramName.substring(0, 7) == 'refine.') {
+                            if (paramName.substring(0, 7) == 'refine.' && excludes.indexOf(paramName) === -1) {
                                 var refinementPaths = $scope.context.parameters[paramName];
                                 var facetGroupName = paramName.substring(7);
                                 if (!angular.isArray(refinementPaths)) {

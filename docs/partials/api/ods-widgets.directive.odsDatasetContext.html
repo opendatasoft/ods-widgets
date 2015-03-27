@@ -49,6 +49,9 @@ in this context or the original context will be applied to both.</p>
 </li>
 <li><p>dataset: the dataset object for this context</p>
 </li>
+<li><p>getDownloadURL(format): a method that returns an URL to download the data, including currently active filters (refinements, queries...). By default
+the URL will allow to download a CSV export, but you can pass another format such as &quot;geojson&quot; or &quot;json&quot;.</p>
+</li>
 </ul>
 <p><strong>Note:</strong> Due to naming conventions in various places (HTML attributes, AngularJS...), context names
 have to be lowercase, can only contain alphanumerical characters, and can&#39;t begin with &quot;data&quot; or &quot;x&quot;.</p>

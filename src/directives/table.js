@@ -34,8 +34,53 @@
             },
             replace: true,
             transclude: true,
-            templateUrl: $sce.trustAsResourceUrl(ODSWidgetsConfig.basePath + 'templates/table.html'), // Required for some cases (such as "Open in Plunkr" from the doc)
-            controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', '$transclude', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile, $transclude) {
+            template: '<div class="records records-table odswidget odswidget-table">' +
+                       ' <div class="records-header" ng-show="records.length">' +
+                       '     <table>' +
+                       '         <thead>' +
+                       '         <tr>' +
+                       '             <th><div><i ng-show="fetching" class="icon-spinner icon-spin icon-large"></i></div></th>' +
+                       '             <th ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray"' +
+                       '                 title="{{ field.name }}"' +
+                       '                 ng-click="toggleSort(field)"' +
+                       '                 ng-class="{\'active\': field.name == context.parameters.sort || \'-\'+field.name == context.parameters.sort}">' +
+                       '                 <div>' +
+                       '                     <span ng-bind="field.label"></span>' +
+                       '                     <div class="sort-icons" ng-show="isFieldSortable(field)">' +
+                       '                         <i class="icon-caret-up" ng-hide="isAscendingSorted(field)"></i>' +
+                       '                         <i class="icon-caret-down" ng-hide="isDescendingSorted(field)"></i>' +
+                       '                     </div>' +
+                       '                 </div>' +
+                       '             </th>' +
+                       '         </tr>' +
+                       '         </thead>' +
+                       '     </table>' +
+                       ' </div>' +
+                       ' <div class="records-body">' +
+                       '     <table infinite-scroll="loadMore()" infinite-scroll-distance="1" infinite-scroll-disabled="fetching">' +
+                       '         <thead>' +
+                       '             <tr>' +
+                       '                 <th><div><i ng-show="fetching" class="icon-spinner icon-spin icon-large"></i></div></th>' +
+                       '                 <th ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray"' +
+                       '                     title="{{ field.name }}">' +
+                       '                     <div>' +
+                       '                         <span ng-bind="field.label"></span>' +
+                       '                         <div class="sort-icons" ng-show="isFieldSortable(field)">' +
+                       '                             <i class="icon-caret-up"></i>' +
+                       '                             <i class="icon-caret-down"></i>' +
+                       '                         </div>' +
+                       '                     </div>' +
+                       '                 </th>' +
+                       '             </tr>' +
+                       '         </thead>' +
+                       '         <tbody>' +
+                       '         </tbody>' +
+                       '     </table>' +
+                       ' </div>' +
+                       ' <div class="overlay" ng-hide="fetching || records"><span translate>No results</span></div>' +
+                       ' <div class="overlay" ng-hide="(!fetching || records) && !working"><spinner class="spinner"></spinner></div>' +
+                    '</div>',
+            controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', '$transclude', '$q', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile, $transclude, $q) {
                 $scope.displayedFieldsArray = null;
 
                 // Infinite scroll parameters
@@ -71,6 +116,8 @@
                 var tableId = 'table-' + id;
                 var styleSheetId = 'stylesheet-' + id;
 
+                var currentRequestsTimeouts = [];
+
                 var refreshRecords = function(init) {
                     $scope.fetching = true;
                     var options = {}, start;
@@ -80,6 +127,10 @@
                         $scope.page = 0;
                         $scope.records = [];
                         start = 0;
+                        if (currentRequestsTimeouts.length) {
+                            currentRequestsTimeouts.forEach(function(t) {t.resolve();});
+                            currentRequestsTimeouts.splice(0, currentRequestsTimeouts.length);
+                        }
                     } else {
                         $scope.page++;
                         start = $scope.page * $scope.resultsPerPage;
@@ -96,7 +147,10 @@
                         }
                     }
 
-                    ODSAPI.records.search($scope.context, options).
+                    var timeout = $q.defer();
+                    currentRequestsTimeouts.push(timeout);
+
+                    ODSAPI.records.search($scope.context, options, timeout.promise).
                         success(function(data, status, headers, config) {
                             if (!data.records.length) {
                                 $scope.working = false;
@@ -108,9 +162,15 @@
                             $scope.error = '';
                             $scope.fetching = false;
                             $scope.done = ($scope.page+1) * $scope.resultsPerPage >= data.nhits;
+
+                            currentRequestsTimeouts.splice(currentRequestsTimeouts.indexOf(timeout), 1);
                         }).
                         error(function(data, status, headers, config) {
-                            $scope.error = data.error;
+                            if (data) {
+                                // Errors without data are cancelled requests
+                                $scope.error = data.error;
+                            }
+                            currentRequestsTimeouts.splice(currentRequestsTimeouts.indexOf(timeout), 1);
                             $scope.fetching = false;
                         });
                 };
@@ -252,7 +312,12 @@
                                     node.title = fieldValue;
                                     node.innerHTML = fieldValue;
                                 }
-                            } else {
+                            } else if (field && field.type === 'file') {
+                                node = document.createElement('span');
+                                node.title = record.fields[field.name] ? record.fields[field.name].filename : '';
+                                node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
+                            }
+                            else {
                                 node = document.createElement('span');
                                 node.title = fieldValue;
                                 node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
@@ -390,14 +455,7 @@
                     }
                 });
 
-                var unwatchSchema = $scope.$watch('context.dataset', function(newValue, oldValue) {
-                    //if (newValue === oldValue) return;
-                    if (!newValue || !newValue.datasetid) return;
-                    unwatchSchema();
-
-                    // No default sorting
-                    // $scope.searchOptions.sort = $scope.dataset.fields[0].name
-
+                $scope.context.wait().then(function() {
                     if ($scope.displayedFields) {
                         $scope.displayedFieldsArray = $scope.displayedFields.split(',').map(function(item) {return item.trim();});
                     } else {
@@ -429,7 +487,7 @@
                     datasetFields = $filter('fieldsFilter')(fieldsForVisualization, $scope.displayedFieldsArray);
 
                     refreshRecords(true);
-                }, true);
+                });
 
                 $scope.$watch('context.parameters', function(newValue, oldValue) {
                     // Don't fire at initialization time

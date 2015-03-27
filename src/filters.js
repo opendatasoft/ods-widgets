@@ -85,7 +85,7 @@
             if (!value) {
                 return value;
             }
-            var url = '/explore/dataset/'+datasetid+'/images/'+value.id+'/300/';
+            var url = '/explore/dataset/'+datasetid+'/files/'+value.id+'/300/';
 
             return $sce.trustAsHtml('<img class="imagify" src="' + url + '" />');
         };
@@ -93,9 +93,9 @@
 
     mod.filter('fieldsForVisualization', function() {
         var blacklist = {
-            'table': ['image'],
+            'table': [],
             'map': ['geo_point_2d', 'geo_shape'],
-            'images': ['image']
+            'images': ['file']
         };
         return function(fields, viz) {
             if (angular.isUndefined(fields)) { return fields; }
@@ -106,7 +106,7 @@
         };
     });
 
-    mod.filter('formatFieldValue', ['$filter', function($filter) {
+    mod.filter('formatFieldValue', ['$filter', '$sce', function($filter, $sce) {
         var getPrecision = function(field) {
             if (field.annotations) {
                 var annos = field.annotations.filter(function(anno) { return anno.name === 'timeserie_precision'; });
@@ -136,7 +136,7 @@
             } else if (field.type === 'geo_point_2d') {
                 return value[0] + ', ' + value[1];
             } else if (field.type === 'geo_shape') {
-                return angular.toJson(value);
+                return $filter('limitTo')(angular.toJson(value), 200);
             } else if (field.type === 'date') {
                 var precision = getPrecision(field);
                 if (precision === 'year') {
@@ -153,8 +153,14 @@
                     value += 'Z';
                 }
                 return $filter('moment')(value, 'LLL');
+            } else if (field.type === 'file') { // it's 'file' type really
+                if (angular.isObject(value)) {
+                    return $sce.trustAsHtml('<a target="_self" href="' + 'files/'+value.id+'/download/' + '" />' + (value.filename || record.filename) + '</a>');
+                } else {
+                    return ''+value;
+                }
             } else {
-                return ''+value;
+                return $filter('limitTo')(''+value, 1000);
             }
         };
     }]);
@@ -405,10 +411,10 @@
                 return null;
             }
             if (!angular.isObject(fieldValue)) {
-                console.log('ERROR : This field is not an image field.');
+                console.log('ERROR : This field is not an file field.');
             }
             var url = context.domainUrl;
-            url += '/api/datasets/1.0/'+context.dataset.datasetid+'/images/'+fieldValue.id+'/';
+            url += '/api/datasets/1.0/'+context.dataset.datasetid+'/files/'+fieldValue.id+'/';
             return url;
         };
     });

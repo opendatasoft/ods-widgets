@@ -417,7 +417,7 @@
                     delete chart.xLabel;
                 }
             },
-            setDefaultQueryValues: function(datasetid, query, advancedFeatures, dontTouchMaxpoints, globalTimescale) {
+            setDefaultQueryValues: function(datasetid, query, advancedFeatures, dontTouchMaxpoints, globalTimescale, conservative) {
                 if (!query) {
                     query = {};
                 }
@@ -477,14 +477,14 @@
                     query.sort = '';
                 }
             },
-            setSerieDefaultValues: function(datasetid, chart, xAxis) {
+            setSerieDefaultValues: function(datasetid, chart, xAxis, conservative) {
                 // Compute default labels
                 // Enveloppe
                 if (typeof xAxis === "undefined") {
                     return;
                 }
 
-                var availableY = this.getAvailableY(datasetid)
+                var availableY = this.getAvailableY(datasetid);
                 if (!chart.type) {
                     chart.type = 'column';
                     if (xAxis && (this.getFieldType(datasetid, xAxis) == 'date' || this.getFieldType(datasetid, xAxis) == 'datetime')) {
@@ -506,7 +506,7 @@
                     if (availableY.length === 0 && ['COUNT', 'CONSTANT', 'CUSTOM'].indexOf(chart.func) === -1) {
                         chart.func = 'COUNT';
                     }
-                    if (['COUNT', 'CONSTANT', 'CUSTOM'].indexOf(chart.func) === -1) {
+                    if (!conservative && ['COUNT', 'CONSTANT', 'CUSTOM'].indexOf(chart.func) === -1) {
                         // the current function needs an yAxis
                         chart.yAxis = availableY[0].name;
                     // } else { // remove current yAxis, not needed by the current function
@@ -514,7 +514,7 @@
                     }
                 } else {
                     // there is an yAxis defined, we need to check if it still exists
-                    if (['COUNT', 'CONSTANT', 'CUSTOM'].indexOf(chart.func) === -1) {
+                    if (!conservative && ['COUNT', 'CONSTANT', 'CUSTOM'].indexOf(chart.func) === -1) {
                         if ($.grep(availableY, function(y) {return y.name === chart.yAxis}).length === 0) {
                             // the currently defined y does not seem to exists anymore, fallback on the first available one
                             chart.yAxis = availableY[0].name;

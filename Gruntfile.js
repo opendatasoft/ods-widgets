@@ -72,13 +72,6 @@ module.exports = function(grunt) {
                     spawn: false
                 }
             },
-            templates: {
-                files: ['src/templates/*'],
-                tasks: ['copy:templates'],
-                options: {
-                    spawn: false
-                }
-            },
             ieshiv: {
                 files: {
                     'dist/ieshiv.min.js': 'src/ieshiv.js'
@@ -104,12 +97,6 @@ module.exports = function(grunt) {
 				src: 'logo.png',
 				dest: 'assets/'
 			},
-            templates: {
-                expand: true,
-                flatten: true,
-                src: ['templates/*'],
-                dest: 'dist/templates/'
-            },
             libs: {
                 expand: true,
                 src: ['libs/**'],
@@ -192,6 +179,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['dist']);
-    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'copy:templates', 'copy:libs', 'copy:ieshiv', 'ngdocs']);
+    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'copy:libs', 'copy:ieshiv', 'ngdocs']);
     grunt.registerTask('server', ['default', 'connect', 'watch']);
 };

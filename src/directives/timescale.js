@@ -56,6 +56,7 @@
             controller: ['$scope', '$attrs', '$q', function($scope, $attrs, $q) {
                 var contexts = [];
                 var timeFields = {};
+                var parameterName = 'q.timescale';
 
                 // We need to gather the time field before applying our filter
                 var setTimeField = function(dataset) {
@@ -96,7 +97,7 @@
                     $scope.$watch('scale', function(scale) {
                         if (scale === 'everything') {
                             angular.forEach(contexts, function(context) {
-                                delete context.parameters.q;
+                                delete context.parameters[parameterName];
                             });
                             return;
                         }
@@ -114,7 +115,7 @@
                         q = now.toISOString();
 
                         angular.forEach(contexts, function(context) {
-                            context.parameters.q = timeFields[context.dataset.getUniqueId()] + '>="' + q + '"';
+                            context.parameters[parameterName] = timeFields[context.dataset.getUniqueId()] + '>="' + q + '"';
                         });
                     }, true);
                 };

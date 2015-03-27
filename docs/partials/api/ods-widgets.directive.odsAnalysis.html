@@ -1,0 +1,64 @@
+<h1><code ng:non-bindable="">odsAnalysis</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>This widget exposes the results of an analysis (as an object containing a results array and optionally an aggregations object) in a variable available in the scope.
+It can be used with AngularJS&#39;s ngRepeat to simply build a table of analysis results.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as attribute<pre class="prettyprint linenums">&lt;ANY ods-analysis="{string}"
+     ods-analysis-context="{DatasetContext}"
+     ods-analysis-max="{number}"
+     ods-analysis-sort="{string}"&gt;
+   ...
+&lt;/ANY&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive creates new scope.</li>
+</ul>
+</div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>odsAnalysis</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Variable name to use</p>
+</div> <p><em>(default: analysis)</em></p></td></tr><tr><td>odsAnalysisContext</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
+</div></td></tr><tr><td>odsAnalysisMax</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Maximum number of results to show</p>
+</div> <p><em>(default: all)</em></p></td></tr><tr><td>odsAnalysisSort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>name of serie to sort on (or -serieName to invert the sort)</p>
+</div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><h4 id="example_source">Source</h4>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-0" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html-0" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-0">
+    <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com">
+        <table class="table table-bordered table-condensed table-striped">
+            <thead>
+                <tr>
+                    <th>Tree name</th>
+                    <th>Height</th>
+                    <th>Circonference</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="result in analysis.results"
+                        ods-analysis="analysis"
+                        ods-analysis-context="tree"
+                        ods-analysis-max="10"
+                        ods-analysis-x="espece"
+                        ods-analysis-sort="circonference"
+                        ods-analysis-serie-hauteur="AVG(hauteur)"
+                        ods-analysis-serie-hauteur-cumulative="false"
+                        ods-analysis-serie-circonference="AVG(circonf)"
+                >
+                    <td>{{ result.x }}</td>
+                    <td>{{ result.hauteur|number:2 }}</td>
+                    <td>{{ result.circonference|number:2 }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </ods-catalog-context>
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-0" ng-eval-javascript=""></div>
+</div></div>
+</div>

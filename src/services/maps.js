@@ -344,7 +344,7 @@
 
                         if (geoJSON.type === 'Point') {
                             (function(geoJSON, record) {
-                                SVGInliner.getPromise(PictoHelper.mapPictoToURL(layerConfig.picto, layerConfig.context), layerConfig.marker ? 'white' : layerConfig.color).then(function(svg) {
+                                SVGInliner.getPromise(PictoHelper.mapPictoToURL(layerConfig.picto, layerConfig.context), layerConfig.marker ? 'white' : service.getRecordColor(record, layerConfig)).then(function(svg) {
                                     var singleMarker = new L.VectorMarker([geoJSON.coordinates[1], geoJSON.coordinates[0]], {
                                         color: service.getRecordColor(record, layerConfig),
                                         icon: svg,
@@ -777,12 +777,12 @@
                     if (layerConfig.color.field) {
                         var value = record.fields[layerConfig.color.field];
                         if (angular.isUndefined(value)) {
-                            return layerConfig.color.ranges[0];
+                            return layerConfig.color.colors[0];
                         }
                         return this.getColor(value, layerConfig);
                     } else {
                         console.error('Range coloring requires a field');
-                        return layerConfig.color.ranges[0];
+                        return layerConfig.color.colors[0];
                     }
                     // TODO
                 } else {
@@ -876,7 +876,7 @@
                             if (angular.isDefined(data[0].fields[mapField])) {
                                 // Until we can have named parameters, we need to avoid using the q= parameter as it will quickly
                                 // conflict with other widgets that need to interact with the query.
-                                context.parameters['refine.'+contextField] = data[0].fields[mapField];
+                                context.toggleRefine(contextField, data[0].fields[mapField]);
                                 //context.parameters.q = contextField + ':"' + record.fields[mapField] + '"';
                             }
                         });

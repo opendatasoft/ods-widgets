@@ -28,7 +28,7 @@
 
 .leaflet-vectormarker svg#svg-vectormarker-marker, .leaflet-vectormarker .leaflet-vectormarker-singleicon svg {
     -webkit-filter: drop-shadow( 0.1em 0.1em 0.1em rgba(0,0,0,0.5) );
-    filter: drop-shadow( 0.1em 0.1em 0.1em rgba(0,0,0,0.5) );
+    /*filter: drop-shadow( 0.1em 0.1em 0.1em rgba(0,0,0,0.5) );*/
 }
 
 .leaflet-vectormarker .leaflet-vectormarker-singleicon svg {

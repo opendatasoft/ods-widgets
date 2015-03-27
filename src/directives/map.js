@@ -56,6 +56,9 @@
          * @param {boolean} [staticMap] If "true", then users won't be able to move or zoom on the map. They will still be able to click on markers.
          * @param {boolean} [noRefit] By default, the map refits its view whenever the displayed data changes.
          * If "true", then the map will stay at the same location instead.
+         * @param {boolean} [toolbarGeolocation=true] If "false", then the "geolocate" button won't be displayed in the map's toolbar.
+         * @param {boolean} [toolbarDrawing=true] If "false", then the drawing tools (to draw filter areas) won't be displayed in the map's toolbar.
+         * @param {boolean} [toolbarFullscreen=true] If "false", then the "go fullscreen" button won't be displayed in the map's toolbar.
          * @description
          * This widget allows you to build a map visualization and show data using various modes of display using layers.
          * Each layer is based on a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, a mode of display (clusters...), and various properties to define the
@@ -124,7 +127,7 @@
          *
          * - `color`: a simple color, as an hex code (#FF0F05) or a simple CSS color name like "red". Available for any mode except `heatmap`.
          * - `colorScale`: the name of a ColorBrewer [http://colorbrewer2.org/] scheme, like "YlGnBu". Available for `shape`.
-         * - `colorRanges`: a serie of colors and ranges, to decide a color depending on a value. For example "red,20,orange,40,#00CE00" to color anything between
+         * - `colorRanges`: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example "red;20;orange;40;#00CE00" to color anything between
          * 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a field name in `colorByField` to configure which field will be
          * used to decide on the color. Available for `raw` and `shape`.
          *
@@ -138,6 +141,19 @@
          *         <!-- Reverse sort on 'field' -->
          *         <ods-map-layer context="mycontext" tooltip-sort="-field"></ods-map-layer>
          *     </ods-map>
+         * </pre>
+         *
+         *
+         * By default, tooltips show the values associated with a point or shape in a simple template. You can configure your own template by adding
+         * HTML inside the `<ods-map-layer></ods-map-layer>` tag. Your template is AngularJS-enabled and will be provided with a `record` object; this object contains
+         * a `fields` object with all the values associated with the clicked point or shape.
+         *
+         * <pre>
+         *    <ods-map location="12,48.86167,2.34146">
+         *        <ods-map-layer context="mycontext">
+         *            <div>my value is: {{record.fields.myvalue}}</div>
+         *        </ods-map-layer>
+         *    </ods-map>
          * </pre>
          *
          * If your layer is displayed as `raw` or `shape`, you can configure a layer so that a click on an item triggers a refine on another context, using `refineOnClickContext`.
@@ -173,7 +189,10 @@
                 basemap: '@', // Hard-coded basemap (widget),
                 staticMap: '@', // Prevent the map to be moved,
                 noRefit: '@',
-                autoResize: '@'
+                autoResize: '@',
+                toolbarDrawing: '@',
+                toolbarGeolocation: '@',
+                toolbarFullscreen: '@'
             },
             transclude: true,
             template: '<div class="odswidget odswidget-map">' +
@@ -183,8 +202,17 @@
                         '<div ng-transclude></div>' + // Can't find any better solution...
                         '</div>',
             link: function(scope, element, attrs) {
+                var mapElement = angular.element(element.children()[0]);
+                // "Porting" the attributes to the real map.
+                if (attrs.id) { mapElement.attr('id', attrs.id); }
+                if (attrs.style) { mapElement.attr('style', attrs.style); }
+                if (attrs['class']) { mapElement.addClass(attrs['class']); }
+
                 var isStatic = scope.staticMap && scope.staticMap.toLowerCase() === 'true';
                 var noRefit = scope.noRefit && scope.noRefit.toLowerCase() === 'true';
+                var toolbarDrawing = !(scope.toolbarDrawing && scope.toolbarDrawing.toLowerCase() === 'false');
+                var toolbarGeolocation = !(scope.toolbarGeolocation && scope.toolbarGeolocation.toLowerCase() === 'false');
+                var toolbarFullscreen = !(scope.toolbarFullscreen && scope.toolbarFullscreen.toLowerCase() === 'false');
 
                 if (attrs.context) {
                     // Handle the view defined on the map tag directly
@@ -217,9 +245,10 @@
                 }
 
                 function resizeMap() {
-                    if ($('.odswidget-map > .map').length > 0) {
+                    if (scope.autoResize === 'true' && $('.odswidget-map > .map').length > 0) {
                         // Only do this if visible
-                        $('.odswidget-map > .map').height(Math.max(200, $(window).height() - $('.odswidget-map > .map').offset().top));
+                        var height = Math.max(200, $(window).height() - $('.odswidget-map > .map').offset().top);
+                        $('.odswidget-map > .map').height(height);
                     }
                 }
 
@@ -258,20 +287,24 @@
                         mapOptions.doubleClickZoom = false;
                         mapOptions.scrollWheelZoom = false;
                     }
+
+                    resizeMap();
+
                     var map = new L.ODSMap(element.children()[0].children[0], mapOptions);
 
 //                    map.setView(new L.LatLng(48.8567, 2.3508),13);
                     map.addControl(new L.Control.Scale());
 
-                    // Only add the Fullscreen control if we are not in an iframe, as it is blocked by browsers
-                    try {
-                        if (window.self === window.top) {
-                            // We are NOT in an iframe
-                            map.addControl(new L.Control.Fullscreen());
+                    if (toolbarFullscreen) {
+                        // Only add the Fullscreen control if we are not in an iframe, as it is blocked by browsers
+                        try {
+                            if (window.self === window.top) {
+                                // We are NOT in an iframe
+                                map.addControl(new L.Control.Fullscreen());
+                            }
+                        } catch (e) {
+                            // We are in an iframe
                         }
-                    } catch (e) {
-                        // We are in an iframe
-                        return true;
                     }
 
 
@@ -308,15 +341,15 @@
                         map.addControl(geocoder);
                     }
 
-                    if (!isStatic) {
+                    if (toolbarGeolocation && !isStatic) {
                         map.addControl(new L.Control.Locate({maxZoom: 18}));
                     }
 
                     // Drawing
-                    if (!isStatic) {
-                        scope.drawnItems = new L.FeatureGroup();
-                        map.addLayer(scope.drawnItems);
+                    scope.drawnItems = new L.FeatureGroup(); // Necessary to show geofilters
+                    map.addLayer(scope.drawnItems);
 
+                    if (toolbarDrawing && !isStatic) {
                         // Localize all the messages
                         L.drawLocal.draw.toolbar.buttons.circle = translate('Draw a circle to filter on');
                         L.drawLocal.draw.toolbar.buttons.polygon = translate('Draw a polygon to filter on');
@@ -714,7 +747,7 @@
                     $q.all(promises).then(function() {
                         syncGeofilterToDrawing();
                         deferred.resolve();
-                    })
+                    });
 
                     return deferred.promise;
                 };
@@ -953,7 +986,7 @@
                     '</h2>' +
                     '<div class="ng-leaflet-tooltip-cloak limited-results" ng-show="records && records.length == RECORD_LIMIT" translate>(limited to the first {{RECORD_LIMIT}} records)</div>' +
                     '<div ng-repeat="record in records" ng-show="$index == selectedIndex" class="map-tooltip">' +
-                        '<div ng-if="!template" ng-include src="safeDefaultTemplateUrl()"></div>' +
+                        '<div ng-if="!template" ng-include src="\'default-tooltip\'"></div>' +
                         '<div ng-if="template" ng-include src="\'custom-tooltip-\'+context.dataset.datasetid"></div>' +
                     '</div>' +
                 '</div>',
@@ -985,6 +1018,28 @@
                 };
                 if (attrs.template && attrs.template !== '') {
                     $templateCache.put('custom-tooltip-' + scope.context.dataset.datasetid, attrs.template);
+                } else {
+                    $templateCache.put('default-tooltip', '<div class="infoPaneLayout">' +
+                        '<h2 ng-show="!!getTitle(record)" ng-bind="getTitle(record)"></h2>' +
+                        '<dl>' +
+                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields" ng-show="record.fields[field.name]|isDefined">' +
+                        '        {{ field.label }}' +
+                        '    </dt>' +
+                        '    <dd ng-repeat-end ng-switch="field.type" ng-show="record.fields[field.name]|isDefined">' +
+                        '        <debug data="record.fields[field.name]"></debug>' +
+                        '        <span ng-switch-when="geo_point_2d">' +
+                        '            <ods-geotooltip width="300" height="300" coords="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
+                        '        </span>' +
+                        '        <span ng-switch-when="geo_shape">' +
+                        '            <ods-geotooltip width="300" height="300" geojson="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
+                        '        </span>' +
+                        '        <span ng-switch-when="file">' +
+                        '            <div ng-bind-html="record.fields[field.name]|displayImageValue:context.dataset.datasetid" style="text-align: center;"></div>' +
+                        '        </span>' +
+                        '        <span ng-switch-default title="{{record.fields|formatFieldValue:field}}" ng-bind-html="record.fields|formatFieldValue:field|imagify|youtubify|prettyText|nofollow"></span>' +
+                        '    </dd>' +
+                        '</dl>' +
+                    '</div>');
                 }
 
             },
@@ -1005,10 +1060,6 @@
                         newIndex = $scope.records.length + newIndex;
                     }
                     $scope.selectedIndex = newIndex;
-                };
-
-                $scope.safeDefaultTemplateUrl = function() {
-                    return $sce.trustAsResourceUrl(ODSWidgetsConfig.basePath + "templates/geoscroller_tooltip.html");
                 };
 
                 var refresh = function() {

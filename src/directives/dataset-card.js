@@ -114,7 +114,36 @@
                 datasets: '=',
                 context: '='
             },
-            templateUrl: ODSWidgetsConfig.basePath + 'templates/multidatasets_card.html',
+            template: '<div class="odswidget-multidatasets-card">' +
+                      '  <div class="card-container multidatasets" ng-class="{bottom: (position == \'bottom\'), expanded: expanded, expandable: isExpandable()}">' +
+                      '      <h2 ng-show="!expanded" ng-click="tryToggleExpand()">{{ title }}</h2>' +
+                      '      <div ng-click="tryToggleExpand()" class="expand-control" ng-class="{expanded: expanded}"><span translate>Details</span> <i class="icon-chevron-down"></i></div>' +
+                      '      <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="!expanded">' +
+                      '          <span class="count-text" ng-hide="!datasetObjectKeys || datasetObjectKeys.length <= 1">' +
+                      '               <span ng-pluralize count="datasetObjectKeys.length" translate="when" when="{\'0\': \'no datasets to display\', \'1\': \'{} dataset\', \'other\': \'{} datasets\'}"></span>' +
+                      '          </span>' +
+                      '      </h3>' +
+                      '      <div class="datasets-expanded">' +
+                      '          <h2 ng-show="expanded" ng-click="tryToggleExpand()">{{ title }}</h2>' +
+                      '          <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="expanded">' +
+                      '              <span class="count-text">' +
+                      '                   <span ng-pluralize count="datasetObjectKeys.length" translate="when" when="{\'0\': \'no datasets to display\', \'1\': \'{} dataset\', \'other\': \'{} datasets\'}"></span>' +
+                      '              </span>' +
+                      '          </h3>' +
+                      '          <ul class="dataset-list"' +
+                      '              ng-show="(datasetObjectKeys && datasetObjectKeys.length === 1) || (isExpandable() && expanded)"' +
+                      '              ng-class="{\'single-dataset\': datasetObjectKeys.length === 1}">' +
+                      '              <li ng-repeat="(key, dataset) in datasets"> <a' +
+                      '                  ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/"' +
+                      '                  target="_blank">{{ dataset.metas.title }}</a>' +
+                      '                  <span ng-show="dataset.metas.license">- <span translate>License</span> {{ dataset.metas.license }}</span></li>' +
+                      '          </ul>' +
+                      '      </div>' +
+                      '      <div class="dataset-infos"><span class="dataset-infos-text"><a ng-href="/" target="_blank" ng-bind-html="websiteName"></a></span></div>' +
+                      '  </div>' +
+                      '  <!-- embedded content (chart, map etc.) -->' +
+                      '  <div class="dataset-item" ng-transclude></div>' +
+                    '</div>',
             replace: true,
             transclude: true,
             link: function(scope, elem, attrs) {

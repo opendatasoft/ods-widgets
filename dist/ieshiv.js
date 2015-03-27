@@ -1,43 +1,57 @@
-(function() {
+(function(exports) {
     'use strict';
 
     var customTags = [
-        "ngInclude",
-        "ngPluralize",
-        "ngView",
-        "ngSwitch",
+        'odsHighchartsChart',
+        'odsAggregation',
+        'odsAnalysis',
         'odsCatalogContext',
         'odsDatasetCard',
+        'odsMultidatasetsCard',
         'odsDatasetContext',
         'odsDisqus',
         'odsDomainStatistics',
         'odsFacetEnumerator',
+        'odsFacets',
+        'odsFacet',
+        'odsFacetCategoryList',
+        'odsFacetCategory',
+        'odsFilterSummary',
         'odsGeotooltip',
         'odsHighcharts',
+        'odsMultiHighcharts',
+        'odsChart',
+        'odsChartQuery',
+        'odsChartSerie',
         'odsLastDatasetsFeed',
         'odsLastReusesFeed',
+        'odsMapLegacy',
         'odsMap',
-        'odsLayer',
-        'odsLayerGroup',
+        'odsMapLayerGroup',
+        'odsMapLayer',
+        'geoScroller',
         'odsMostPopularDatasets',
         'odsMostUsedThemes',
+        'odsPaginationBlock',
+        'odsPicto',
+        'odsThemePicto',
+        'odsMapPicto',
         'odsResultEnumerator',
         'odsResults',
         'odsReuses',
-        'odsSearchBox',
+        'odsSearchbox',
         'odsTable',
         'odsTagCloud',
         'odsTextSearch',
         'odsThemeBoxes',
-        'odsThemePicto',
+        'odsTileMap',
         'odsTimerange',
         'odsTimescale',
+        'odsToggleModel',
         'odsTopPublishers',
         'odsTwitterTimeline',
-        'odsFacet',
-        'odsFacets',
-        'odsFacetCategoryList',
-        'odsFacetCategory'
+        'inject',
+        'fullClick'
     ];
     for (var i=0; i<customTags.length; i++) {
         var elementName = customTags[i];
@@ -46,4 +60,4 @@
         });
         document.createElement(elementTagName);
     }
-}());
+}(window));

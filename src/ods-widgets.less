@@ -59,6 +59,11 @@
 .odswidget-map-picto {
     height: 18px;
     width: 18px;
+
+    &.odswidget-picto svg {
+        width: 18px;
+        height: 18px;
+    }
 }
 
 .odswidget-searchbox {
@@ -148,10 +153,10 @@
 
 .odswidget-map {
     position: relative;
-    height: 400px;
+    min-height: 400px;
     >.map {
         height: 100%;
-        min-height: 200px;
+        min-height: 400px;
     }
     >.overlay-footer {
         vertical-align: bottom;
@@ -507,7 +512,8 @@
         position: absolute;
         width: 100%;
         height: auto;
-        & > .odswidget {
+        & > .odswidget,
+        & > ods-map .odswidget {
             position: relative;
             height: 100%;
         }

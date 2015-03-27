@@ -594,7 +594,7 @@
                 }
                 if('day' in x){
                     // handle bisextil years
-                    if(x.day == 29 && x.month == 2) {
+                    if(x.day == 29 && x.month == 2 && !x.year) {
                         date.setDate(28);
                         date.setMonth(1);
                     }
@@ -1350,11 +1350,58 @@
          * @name ods-widgets.directive:odsChart
          * @restrict E
          * @scope
-         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
-         * @param {string|Object} [chartConfig=none] A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.
-         * @description
-         * This widget can display a multiple chart generated using the "Charts" interface of OpenDataSoft.
+         * @param {string} [timescale=none] Works only with timeseries. If defines the default timescale to use to display the X Axis. It does not affect the way the different series are requested (they have there own timescale) but enforces X axis intervals.
+         * @param {string} [labelX=none] If set, it override the default X Axis label. The default label is generated from series.
+         * @param {boolean} [singleYAxis=false] Enforces the use of only one Y axis for all series. In this case, specific Y axis parameters defined for each series will be ignored.
+         * @param {string} singleYAxisLabel Set the label for the single Y axis.
+         * @param {integer} min Set the min displayed value for Y axis
+         * @param {integer} max Set the max displayed value for Y axis
+         * @param {boolean} logarithmic Use a logarithmic scale for Y axis
+         * @param {boolean} [displayLegend=true] enable or disable the display of series legend
          *
+         * @description
+         * This widget is the base widget allowing to display charts from OpenDataSoft datasets.
+         * A Chart is defined by one or more series that get there data from form one or more dataset represented by an {@link ods-widgets.directive:odsDatasetContext Dataset Context},
+         * a type of chart and multiple parameters to fine tune the appearance of chart.
+         *
+         * Basic example:
+         *    <pre>
+         *        <ods-dataset-context hurricanetracks185120071-parameters="{}" hurricanetracks185120071-dataset="hurricane-tracks-1851-20071" context="hurricanetracks185120071">
+         *            <ods-chart timescale="year">
+         *                <ods-chart-query context="hurricanetracks185120071" field-x="track_date" timescale="year">
+         *                    <ods-chart-serie expression-y="pressure" chart-type="line" function-y="AVG" color="#66c2a5"></ods-chart-serie>
+         *                </ods-chart-query>
+         *            </ods-chart>
+         *        </ods-dataset-context>
+         *    </pre>
+         *
+         * You can display multiple series from the same dataset on the same chart:
+         *    <pre>
+         *        <ods-dataset-context hurricanetracks185120071-parameters="{}" hurricanetracks185120071-dataset="hurricane-tracks-1851-20071" context="hurricanetracks185120071">
+         *          <ods-chart timescale="year">
+         *                <ods-chart-query context="hurricanetracks185120071" field-x="track_date" timescale="year">
+         *                    <ods-chart-serie expression-y="pressure" chart-type="line" function-y="AVG" color="#66c2a5"></ods-chart-serie>
+         *                    <ods-chart-serie expression-y="wind_kts" chart-type="line" function-y="AVG" color="#fc8d62"></ods-chart-serie>
+         *                </ods-chart-query>
+         *            </ods-chart>
+         *        </ods-dataset-context>
+         *    </pre>
+         *
+         * You can display multiple series from multiple datasets on the same chart:
+         *    <pre>
+         *        <ods-dataset-context hurricanetracks185120071-parameters="{}" hurricanetracks185120071-dataset="hurricane-tracks-1851-20071" thedeadliesthurricanesintheunitedstates19001996-parameters="{}" thedeadliesthurricanesintheunitedstates19001996-dataset="the-deadliest-hurricanes-in-the-united-states-1900-1996" context="hurricanetracks185120071,thedeadliesthurricanesintheunitedstates19001996">
+         *            <ods-chart timescale="year">
+         *                <ods-chart-query context="hurricanetracks185120071" field-x="track_date" timescale="year">
+         *                    <ods-chart-serie expression-y="wind_kts" chart-type="line" function-y="MAX" color="#66c2a5">
+         *                    </ods-chart-serie>
+         *                </ods-chart-query>
+         *                <ods-chart-query context="thedeadliesthurricanesintheunitedstates19001996" field-x="year" timescale="year">
+         *                    <ods-chart-serie expression-y="deaths" chart-type="column" function-y="AVG" color="#fc8d62">
+         *                    </ods-chart-serie>
+         *                </ods-chart-query>
+         *            </ods-chart>
+         *        </ods-dataset-context>
+         *    </pre>
          */
         return {
             restrict: 'EA',
@@ -1493,8 +1540,8 @@
                         }
 
                         if (query.sort) {
-                            if (groups = query.sort.match(/^serie([0-9]+)$/)) {
-                                $scope.chart.queries[index].sort = 'serie' + (index + 1) + '-' + groups[1];
+                            if (groups = query.sort.match(/^(-?)serie([0-9]+)$/)) {
+                                $scope.chart.queries[index].sort = groups[1] + 'serie' + (index + 1) + '-' + groups[2];
                             }
                         }
                         // make sure everything is correctly set before displying it:
@@ -1505,7 +1552,7 @@
                         }
 
                         for (var j = 0; j < query.charts.length; j++) {
-                            ChartHelper.setSerieDefaultValues(uniqueid, query.charts[j], query.xAxis);
+                            ChartHelper.setSerieDefaultValues(uniqueid, query.charts[j], query.xAxis, true);
                         }
 
                         ChartHelper.setDefaultQueryValues(uniqueid, query, true);
@@ -1534,11 +1581,16 @@
          * @name ods-widgets.directive:odsChartQuery
          * @restrict E
          * @scope
-         * @param {CatalogContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {string|Object} [chartConfig=none] A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.
-         * @description
-         * This widget can display a multiple chart generated using the "Charts" interface of OpenDataSoft.
+         * @param {string} fieldX Set the field that is used to compute the aggregations during the analysis query.
+         * @param {string} [timescale="year"] Works only with timeseries (when fieldX is a date or datetime). Y values will be computed against this interval. For example, if you have daily values in a dataset and ask for a "month" timescale, the Y values for the {@link ods-widgets.directive:odsChartSerie series} inside this query will aggregated month by month and computed.
+         * @param {integer} [maxpoints=0] Defines the maximum number of points fetched by the query.
+         * @param {boolean} [stacked=false] Stack the resulting charts. Only works with columns, line charts and area charts.
+         * @param {string} [seriesBreakdown=none] When declared, all series are break down by the defined facet
+         * @param {string} [seriesBreakdownTimescale=true] if the break down facet is a time serie (date or datetime), it defines the aggregation level for this facet
          *
+         * @description
+         * odsChartQuery is the sub widget that defines the queries for the series defined inside.
+         * see {@link ods-widgets.directive:odsChart odsChart} for complete examples.
          */
         return {
             restrict: 'E',
@@ -1625,11 +1677,46 @@
          * @name ods-widgets.directive:odsChartSerie
          * @restrict E
          * @scope
-         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
-         * @param {string|Object} [chartConfig=none] A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.
-         * @description
-         * This widget can display a multiple chart generated using the "Charts" interface of OpenDataSoft.
+         * @param {string} [chartType] available types are: 'line', 'spline', 'arearange', 'areasplinerange', 'columnrange', 'area', 'areaspline', 'column', 'bar', 'pie', 'scatter'
+         * @param {string} [functionY] set up the function that will be used to calculate aggreation value. 'COUNT' counts the number of documents for each category defined by expressionY.
+         * @param {string} [expressionY] set up the facet used for aggregation
+         * @param {string} [color] defines the color used for this serie. see colors below
+         * @param {string} [labelY] specify a custom label for the serie
+         * @param {boolean} [cumulative] Y values are accumulated
+         * @param {boolean} [logarithmic] display the serie using a logarithmic scale
+         * @param {integer} [min] minimum value to be displayed on the Y axis
+         * @param {integer} [max] maximum value to be displayed on the Y axis
+         * @param {string} [colorThresholds] an array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the definedf color is used.
+         * @param {string} [subsets] used when functionY is set to 'QUANTILES' to define the wanted quantile
+         * @param {boolean} [subseries] an array containing 2 objects. TODO add explanation for this...
          *
+         * @description
+         * odsChartSerie is the sub widget that defines a serie in the chart with all its parameters.
+         * see {@link ods-widgets.directive:odsChart odsChart} for complete examples.
+         * # Available chart types:
+         * There are three available types of charts: simple series and areas that takes a minimal and a maximal value.
+         * ## simple series
+         * - line
+         * - spline
+         * - area
+         * - areaspline
+         * - column
+         * - bar
+         * - pie
+         * - scatter
+         * ## areas
+         * - arearange
+         * - areasplinerange
+         * - columnrange
+         * # available functions
+         * - COUNT
+         * - AVG
+         * - MIN
+         * - MAX
+         * - STDDEV
+         * - SUM
+         * - QUANTILES
+         * - CONSTANT
          */
         return {
             restrict: 'E',

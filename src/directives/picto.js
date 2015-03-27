@@ -18,9 +18,6 @@
          * @todo implement defs and use in svg
          */
         var inlineImages = {};
-            // parser = new DOMParser(),
-            // globalSvg;
-
         return {
             restrict: 'E',
             replace: true,
@@ -34,6 +31,9 @@
                 var svgContainer;
                 scope.$watch('[url, color]', function(nv) {
                     if (nv[0]) {
+                        if (Modernizr && !Modernizr.svg) {
+                            return;
+                        }
                         if (svgContainer) {
                             element.empty();
                         }
@@ -106,10 +106,13 @@
             link: function(scope, element) {
                 scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
                 var template = '<ods-picto url="pictoUrl" color="color" classes="originalClasses + \' odswidget-map-picto\'"></ods-picto>';
-                scope.pictoUrl = PictoHelper.mapPictoToURL(scope.name);
-                if (scope.pictoUrl) {
-                    element.replaceWith(angular.element($compile(template)(scope)));
-                }
+
+                scope.$watch('[name, color]', function() {
+                    scope.pictoUrl = PictoHelper.mapPictoToURL(scope.name);
+                    if (scope.pictoUrl) {
+                        element.replaceWith(angular.element($compile(template)(scope)));
+                    }
+                }, true);
             }
         };
     }]);

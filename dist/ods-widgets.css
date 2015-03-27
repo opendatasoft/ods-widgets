@@ -53,6 +53,10 @@
   height: 18px;
   width: 18px;
 }
+.odswidget-map-picto.odswidget-picto svg {
+  width: 18px;
+  height: 18px;
+}
 .odswidget-searchbox {
   margin-bottom: 20px;
   text-align: center;
@@ -195,11 +199,11 @@
 }
 .odswidget-map {
   position: relative;
-  height: 400px;
+  min-height: 400px;
 }
 .odswidget-map > .map {
   height: 100%;
-  min-height: 200px;
+  min-height: 400px;
 }
 .odswidget-map > .overlay-footer {
   vertical-align: bottom;
@@ -533,7 +537,9 @@
   height: auto;
 }
 .odswidget-dataset-card div.dataset-item > .odswidget,
-.odswidget-multidatasets-card div.dataset-item > .odswidget {
+.odswidget-multidatasets-card div.dataset-item > .odswidget,
+.odswidget-dataset-card div.dataset-item > ods-map .odswidget,
+.odswidget-multidatasets-card div.dataset-item > ods-map .odswidget {
   position: relative;
   height: 100%;
 }

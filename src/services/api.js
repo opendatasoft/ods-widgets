@@ -13,7 +13,8 @@
         var request = function(context, path, params, timeout) {
             var url = context ? context.domainUrl : '';
             url += path;
-            params = params || {};
+            params = ODS.URLUtils.cleanupAPIParams(params) || {};
+
             params.timezone = jstz.determine().name();
             if (context && context.apikey) {
                 params.apikey = context.apikey;
@@ -24,12 +25,15 @@
             if (timeout) {
                 options.timeout = timeout;
             }
-            if (ODSWidgetsConfig.customAPIHeaders) {
-                options.headers = ODSWidgetsConfig.customAPIHeaders;
-            } else {
-                options.headers = {};
+
+            if (!url.startsWith('http://')) {
+                if (ODSWidgetsConfig.customAPIHeaders) {
+                    options.headers = ODSWidgetsConfig.customAPIHeaders;
+                } else {
+                    options.headers = {};
+                }
+                options.headers['ODS-Widgets-Version'] = ODSWidgetsConfig.ODSWidgetsVersion;
             }
-            options.headers['ODS-Widgets-Version'] = ODSWidgetsConfig.ODSWidgetsVersion;
             if (!context.domainUrl || Modernizr.cors) {
                 return $http.
                     get(url, options).
@@ -109,7 +113,7 @@
                 }
             },
             'reuses': function(context, parameters) {
-                return request(context, '/explore/reuses/', parameters);
+                return request(context, '/api/reuses/', parameters);
             }
         };
     }]);
