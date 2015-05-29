@@ -112,6 +112,7 @@
                 return parseCustomExpression(serie, 'y.' + serie_name, parent_for_subseries);
             }
             options['y.' + serie_name + '.expr'] = serie.yAxis || serie.expr;
+
             options['y.' + serie_name + '.func'] = serie.func;
             options['y.' + serie_name + '.cumulative'] = serie.cumulative || false;
             if(serie.func === 'QUANTILES'){
@@ -123,6 +124,10 @@
             if (serie.func === "CONSTANT") {
                 options['y.' + serie_name + '.expr'] = serie.yAxis || 0;
                 options['y.' + serie_name + '.func'] = "AVG";
+            }
+
+            if (angular.isDefined(serie.multiplier) && serie.multiplier !== "" && serie.multiplier !== null) {
+                options['y.' + serie_name + '.expr'] += " * " + serie.multiplier;
             }
             // if (!serie.color || serie.color.startsWith('dynamic-') || serie.color.startsWith('static-')) {
             //     options['agg.' + serie_name + '.func'] = ['MIN', 'MAX'].join(",");
@@ -142,6 +147,10 @@
                     temp_serie.subsets = serie.charts[0].subsets + "," + serie.charts[1].subsets;
                     addSeriesToSearchOptions(search_options, temp_serie, serie_name);
                 } else {
+                    if (angular.isDefined(serie.multiplier)) {
+                        serie.charts[0].multiplier = serie.multiplier;
+                        serie.charts[1].multiplier = serie.multiplier;
+                    }
                     addSeriesToSearchOptions(search_options, serie.charts[0], serie_name + 'min');
                     addSeriesToSearchOptions(search_options, serie.charts[1], serie_name + 'max');
                 }
@@ -349,6 +358,13 @@
                         tooltip: {
                             pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y} ({point.percentage:.1f}%)</b>'
                         }
+                    },
+                    treemap: {
+                        tooltip: {
+                            headerFormat: '',
+                            pointFormat: '<span style="color:{series.color}">{point.name}</span>: {point.value}</b>'
+                        },
+                        layoutAlgorithm: 'squarified'
                     }
                 },
                 tooltip: {
@@ -368,6 +384,7 @@
                             series = item.series;
                             var value = (series.tooltipFormatter && series.tooltipFormatter(item)) || item.point.tooltipFormatter(series.tooltipOptions.pointFormat);
                             value = value.replace(/(\.|,)00</, '<');
+                            value = value.replace(/(\.|,)00 /, ' ');
                             s.push(value);
                         });
                         // footer
@@ -408,6 +425,16 @@
                 options.xAxis.labels.format = "{value: %H}";
             }
 
+            if (!precision) {
+                options.xAxis.labels.formatter = function() {
+                    if (this.value.length > 11) {
+                        return this.value.substring(0, 8) + '...';
+                    } else {
+                        return this.value;
+                    }
+                }
+            }
+
             if(parameters.singleAxis) {
                 var yAxisParamaters = {
                     color: "#000000",
@@ -424,7 +451,7 @@
 
         var colors = {};
         var colorsIndex = 0;
-        var getSerieOptions = function(parameters, yAxisesIndexes, query, serie, suppXValue, domain) {
+        var getSerieOptions = function(parameters, yAxisesIndexes, query, serie, suppXValue, domain, scope) {
             var datasetid = ChartHelper.getDatasetId({dataset: {datasetid: query.config.dataset}, domain: domain});
             var yLabel = ChartHelper.getYLabel(datasetid, serie);
             var serieColor;
@@ -434,6 +461,13 @@
                 if (!serie.extras) {
                     serie.extras = {};
                 }
+                if (serie.innersize) {
+                    serie.extras.innerSize = serie.innersize;
+                }
+                if (serie.labelsposition === 'inside') {
+                    serie.extras.dataLabels = {distance:  -50};
+                }
+
                 serie.extras.colors = colorScale.getColors(serie.color);
             } else {
                 if (!colors[suppXValue + serie.color]) {
@@ -458,6 +492,48 @@
                 data: [],
                 stacking: query.stacked ? query.stacked : null
             }, serie.extras);
+
+            if (!options.dataLabels) {
+                options.dataLabels = {};
+            }
+
+            if (serie.displayValues) {
+                options.dataLabels.enabled = true;
+                options.dataLabels.color = 'black';
+                if (serie.type !== 'treemap') {
+                    options.dataLabels.formatter = function() {
+                        var label = Highcharts.numberFormat(this.point.y, 2);
+                        return label.replace(/[,\.]00$/, '');
+                    }
+                }
+            }
+            if (serie.displayUnits && serie.func !== 'COUNT') {
+                var unit = ChartHelper.getFieldUnit(datasetid, serie.yAxis);
+                if (unit) {
+                    options.tooltip.valueSuffix = ' ' + unit;
+                    if (serie.displayValues && serie.type !== 'treemap') {
+                        var _formatter = options.dataLabels.formatter;
+                        options.dataLabels.formatter = function() {
+                            return _formatter.bind(this)(this.point.y) + ' ' + unit;
+                        };
+                    }
+                }
+            }
+
+            if (serie.refineOnClick) {
+                options.point = {
+                    events: {
+                        'click': function(event) {
+                            var value = this.category || this.name;
+                            angular.forEach(serie.refineOnClick, function(refine) {
+                                scope[refine['context-name']].toggleRefine(refine.field, value);
+                                scope.$apply();
+                            });
+                        }
+                    }
+                };
+                options.cursor = 'pointer';
+            }
 
             options = angular.extend(options, ChartHelper.resolvePosition(serie.position));
             delete options.position;
@@ -506,18 +582,16 @@
         }
 
         var getContextualizedSeriesOptions = function(x, timeSerieMode) {
-            var options = {
-                'tooltip': {}
-            };
+            var tooltip = {};
 
             if (timeSerieMode) {
                 // options.pointPadding = 0;
                 // options.groupPadding = 0;
                 // options.borderWidth = 0;
-                options.tooltip.xDateFormat = buildDatePattern(x);
+                tooltip.xDateFormat = buildDatePattern(x);
             }
 
-            return options;
+            return tooltip;
         };
         
         var updateXAxisOptionsFromData = function(x, options, timeSerieMode) {
@@ -613,6 +687,12 @@
                 return date.getTime();
             } else if (date) {
                 return dateFormatFunction(datePattern, date);
+            } else if (typeof x === "undefined") {
+                return undefined;
+            } else if (angular.isObject(x)) {
+                if (x.week) {
+                    return translate("Week") + " " + x.week;
+                }
             } else {
                 return "" + x;
             }
@@ -665,12 +745,22 @@
                 parameters: '=parameters',
                 domain: '=',
                 apikey: '=',
-                colors: '='
+                colors: '=',
+                contexts: '=?'
             },
-            template: '<div class="ods-chart"><div class="chartplaceholder"></div><debug data="chartoptions"></debug></div>',
+
+            template: '<div class="ods-chart"><div class="loading-tiles" ng-show="loading"><i class="icon-spinner icon-spin"></i></div><div class="chartplaceholder"></div><debug data="chartoptions"></debug></div>',
             controller: ['$scope', '$element', '$attrs', function($scope) {
                 var timeSerieMode, precision, periodic, yAxisesIndexes, domain,
                     that = this;
+
+                $scope.$watch('contexts', function(nv,ov) {
+                    if ($scope.contexts && $scope.contexts.length > 0) {
+                        var i = $scope.contexts.length - 1;
+                        $scope[$scope.contexts[i].name] = $scope.contexts[i];
+                    }
+                }, true);
+
                 this.highchartsLoaded = function(Highcharts, element) {
                     var chartplaceholder = element.find('.chartplaceholder');
 
@@ -764,6 +854,7 @@
                             if (angular.isUndefined(yAxisesIndexes[datasetid])) {
                                 yAxisesIndexes[datasetid] = {};
                             }
+
                             angular.forEach(query.charts, function(chart) {
                                 var yLabel = ChartHelper.getYLabel(datasetid, chart);
                                 if (!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])) {
@@ -819,6 +910,11 @@
                                         name: Highcharts.dateFormat(serie.tooltip.xDateFormat, new Date(valueX)),
                                         y: valueY
                                     });
+                                } else if (serie.type == 'treemap') {
+                                    serie.data.push({
+                                        name: Highcharts.dateFormat(serie.tooltip.xDateFormat, new Date(valueX)),
+                                        value: valueY
+                                    });
                                 } else {
                                     if (scale === 'logarithmic' && valueY <= 0) {
                                         serie.data.push([
@@ -850,6 +946,11 @@
                                     serie.data[categoryIndex] = {
                                         name: formatRowX(valueX),
                                         y: valueY
+                                    };
+                                } else if (serie.type == 'treemap') {
+                                    serie.data[categoryIndex] = {
+                                        name: formatRowX(valueX),
+                                        value: valueY
                                     };
                                 } else {
                                     if (typeof valueY === 'object') {
@@ -886,8 +987,10 @@
 
                         request_canceller.resolve("new request coming, cancelling current one");
                         request_canceller = $q.defer();
+                        $scope.loading = true;
                         var requestPromise = requestData(parameters.queries, $scope.searchoptions, timeSerieMode, precision, periodic, $scope.domain, $scope.apikey, request_canceller);
                         requestPromise.promise.then(function(http_calls) {
+                            $scope.loading = false;
                             var charts_by_calls = requestPromise.charts;
                             // If there is both periodic & datetime timescale, we need to find the min date to properly offset the periodic data
                             var minDate;
@@ -923,10 +1026,10 @@
                                 var categoryIndex;
 
                                 if (serieIndex === -1) {
-                                    options.series.push(getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain));
+                                    options.series.push(getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope));
                                     serieIndex = registered_series.push(serieHash) - 1;
                                 } else if (!options.series[serieIndex]) {
-                                    options.series[serieIndex] = getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain);
+                                    options.series[serieIndex] = getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope);
                                 }
 
                                 if (!precision && (categoryIndex = options.xAxis.categories.indexOf(valueX)) === -1) {
@@ -934,10 +1037,11 @@
                                     options.xAxis.categories.push(valueX);
                                 }
 
+                                angular.extend(options.series[serieIndex].tooltip, serie_options);
                                 if (!rawValueX && serie.type !== 'pie') {
-                                    pushValues(angular.extend(options.series[serieIndex], serie_options), categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, serie.colorScale(valueY).hex(), serie.thresholds || []);
+                                    pushValues(options.series[serieIndex], categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, serie.colorScale(valueY).hex(), serie.thresholds || []);
                                 } else {
-                                    pushValues(angular.extend(options.series[serieIndex], serie_options), categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, options.series[serieIndex].color, serie.thresholds || []);
+                                    pushValues(options.series[serieIndex], categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, options.series[serieIndex].color, serie.thresholds || []);
                                 }
                             }
 
@@ -1021,7 +1125,7 @@
                                 for (var i = 0; i < results.length; i++) {
                                     var row = results[i];
                                     angular.extend({}, query.defaultValues, row);
-                                    var valueX = getXValue(Highcharts.dateFormat, serie_options.tooltip.xDateFormat, multipleXs ? row.x[xAxis]: row.x, minDate, precision);
+                                    var valueX = getXValue(Highcharts.dateFormat, serie_options.xDateFormat, multipleXs ? row.x[xAxis]: row.x, minDate, precision);
 
                                     var j = 0;
                                     // iterate on all entries in the row...
@@ -1096,6 +1200,7 @@
                             });
 
                             var categories = options.xAxis.categories;
+                            
                             if (categories) {
                                 for (var i = 0; i < options.series.length; i++) {
                                     for (var k = 0; k < categories.length; k++) {
@@ -1114,7 +1219,7 @@
                             options.chart.renderTo = chartplaceholder[0];
                             try {
                                 if (options.series.length > 500) {
-                                    odsErrorService.sendErrorNotification(translate("There is too many series to be displayed correctly, try to refine your query a bit."));
+                                    odsErrorService.sendErrorNotification(translate("There are too many series to be displayed correctly, try to refine your query a bit."));
                                     options.series = options.series.slice(0, 10);
                                 }
                                 $scope.chart = new Highcharts.Chart(options, function() {});
@@ -1133,6 +1238,8 @@
                                     }
                                 }
                             }
+                        }, function(reason) {
+                            $scope.loading = false;
                         });
                     }
                 };
@@ -1434,10 +1541,11 @@
             transclude: true,
             template: '<div class="odswidget odswidget-charts">' +
                 '<debug data="chart"></debug>' +
-                '<div ods-highcharts-chart parameters="chart" domain="context.domain" apikey="context.apikey"></div>' +
+                '<div ods-highcharts-chart parameters="chart" domain="context.domain" apikey="context.apikey" contexts="contexts"></div>' +
                 '<div ng-transclude></div>' +
             '</div>',
             controller: ['$scope', '$element', '$attrs', '$transclude', function($scope, $element, $attrs, $transclude) {
+                $scope.contexts = [];
                 if (!$scope.chart) {
                     $scope.chart = {
                         queries: [],
@@ -1544,6 +1652,8 @@
                                 $scope.chart.queries[index].sort = groups[1] + 'serie' + (index + 1) + '-' + groups[2];
                             }
                         }
+                        // copy the used context to the current $scope
+                        $scope.contexts.push(context);
                         // make sure everything is correctly set before displying it:
                         var uniqueid = ChartHelper.getDatasetId(context);
 
@@ -1641,7 +1751,6 @@
                         }
 
                         var context = attrs.context;
-
                         scope[context].wait().then(function(dataset) {
                             ChartHelper.init(scope[context]);
                             query.config.dataset = dataset.datasetid;
@@ -1686,9 +1795,13 @@
          * @param {boolean} [logarithmic] display the serie using a logarithmic scale
          * @param {integer} [min] minimum value to be displayed on the Y axis
          * @param {integer} [max] maximum value to be displayed on the Y axis
+         * @param {boolean} [displayUnits] enable the display of the units defined for the field in the tooltip
+         * @param {number} [multiplier] multiply all values for this serie by the defined number
          * @param {string} [colorThresholds] an array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the definedf color is used.
          * @param {string} [subsets] used when functionY is set to 'QUANTILES' to define the wanted quantile
          * @param {boolean} [subseries] an array containing 2 objects. TODO add explanation for this...
+         * @param {string} [refineOnClickContext] context name or array of of contexts name on which to refine when the serie is clicked on.
+         * @param {string} [refineOnClick[context]ContextField] name of the field that will be refined for each context.
          *
          * @description
          * odsChartSerie is the sub widget that defines a serie in the chart with all its parameters.
@@ -1724,10 +1837,13 @@
             controller: ['$scope', '$transclude', function($scope, $transclude) {
             }],
             link: function(scope, element, attrs, ctrl) {
-                var odsChartQueryController = ctrl;
+                var odsChartQueryController = ctrl,
+                    contexts;
 
                 var chart = {
                     type: attrs.chartType || undefined,
+                    innersize: attrs.innersize || undefined,
+                    labelsposition: attrs.labelsposition || undefined,
                     func: attrs.functionY || undefined,
                     yAxis: attrs.expressionY || undefined,
                     color: attrs.color || undefined,
@@ -1736,10 +1852,37 @@
                     scale: attrs.logarithmic ? 'logarithmic' : '',
                     yRangeMin: angular.isDefined(attrs.min) ? parseInt(attrs.min, 10) : undefined,
                     yRangeMax: angular.isDefined(attrs.max) ? parseInt(attrs.max, 10) : undefined,
-                    thresholds: attrs.colorThresholds || [],
+                    displayUnits: attrs.displayUnits === "true",
+                    displayValues: attrs.displayValues === "true",
+                    multiplier: angular.isDefined(attrs.multiplier) ? parseInt(attrs.multiplier, 10) : undefined,
+                    thresholds: attrs.colorThresholds ? scope.$eval(attrs.colorThresholds) : [],
                     subsets: attrs.subsets,
                     charts: attrs.subseries ? JSON.parse(attrs.subseries) : undefined
                 };
+
+                if (attrs.refineOnClickContext) {
+                    if (!angular.isArray(attrs.refineOnClickContext)) {
+                        contexts = [attrs.refineOnClickContext];
+                    } else {
+                        contexts = attrs.refineOnClickContext;
+                    }
+                    for (var i = 0; i < contexts.length; i++) {
+                        if (attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i]) + 'ContextField']) {
+                            if (!chart.refineOnClick) {
+                                chart.refineOnClick = [];
+                            }
+                            chart.refineOnClick.push({
+                                'context': scope[contexts[i]],
+                                'context-name': contexts[i],
+                                'field': attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i]) + 'ContextField'],
+                                'scopeApply': scope.$apply
+                            });
+                            
+                        } else {
+                            console.warn('Field for context ' + ODS.StringUtils.capitalize(contexts[i]) + ' is not set in chart.');
+                        }
+                    }
+                }
                 angular.forEach(chart, function(item, key) {
                     if (typeof item === "undefined") {
                         delete chart[key];

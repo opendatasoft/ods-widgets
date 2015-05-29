@@ -103,8 +103,11 @@ L.BundleTileLayer = L.LayerGroup.extend({
                         // Image tile
                         if (!bundle.img) {
                             tile.src = '';
+                            // We need to hide the tile, because an empty <img> tag shows a border
+                            tile.style.visibility = 'hidden';
                         } else {
                             tile.src = 'data:image/png;base64,' + bundle.img;
+                            tile.style.visibility = 'visible';
                         }
                         L.DomUtil.addClass(tile, 'leaflet-tile-loaded');
                         tile._layer._tileLoaded();

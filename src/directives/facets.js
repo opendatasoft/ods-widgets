@@ -119,6 +119,7 @@
                     'name="'+facet.name+'" ' +
                     'title="'+(facet.title || facet.name)+'" ' +
                     'sort="'+(facet.sort || '')+'" ' +
+                    'disjunctive="'+(facet.disjunctive || '')+'" ' +
                     'hide-if-single-category="'+(facet.hideIfSingleCategory ? 'true' : 'false')+'" ' +
                     'hide-category-if="'+(facet.hideCategoryIf || '')+'"' +
                     '>'+(facet.template || '')+'</ods-facet>';
@@ -163,6 +164,14 @@
                                         angular.forEach(facets, function(f) {
                                             f.title = f.label;
                                             delete f.label;
+                                            angular.forEach(f.annotations, function(annotation) {
+                                                if (annotation.name === 'facetsort' && annotation.args.length > 0) {
+                                                    f.sort = annotation.args[0];
+                                                }
+                                                if (annotation.name === 'disjunctive') {
+                                                    f.disjunctive = true;
+                                                }
+                                            });
                                         });
                                         buildFacetTagsHTML(scope, element, facets);
                                         scope.init();

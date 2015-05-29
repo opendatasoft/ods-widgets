@@ -84,8 +84,8 @@
                         'domainUrl': ODSAPI.getDomainURL(domain),
                         'apikey': attrs[contextName+'Apikey'],
                         'parameters': parameters,
-                        'toggleRefine': function(facetName, path) {
-                            ODS.Context.toggleRefine(this, facetName, path);
+                        'toggleRefine': function(facetName, path, replace) {
+                            ODS.Context.toggleRefine(this, facetName, path, replace);
                         }
                     };
                 }

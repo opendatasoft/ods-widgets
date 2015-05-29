@@ -8,6 +8,10 @@
         return {
             link: function($scope, $element, $attrs, controller, $transclude) {
                 var innerScope = $scope.$new();
+                if (!$transclude) {
+                    console.warn("inject directive used on an element with no transcluded directives", $element);
+                    return;
+                }
                 $transclude(innerScope, function(clone) {
                     var testClone = clone.clone();
                     testClone.contents().wrapAll('<div>');

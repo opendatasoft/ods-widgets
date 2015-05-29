@@ -5842,84 +5842,87 @@ mod.directive('infiniteScroll', [
   '$rootScope', '$window', '$timeout', function($rootScope, $window, $timeout) {
     return {
       link: function(scope, elem, attrs) {
-        var $scrollParent, checkWhenEnabled, elementTop, handler, scrollDistance, scrollEnabled, parentTop;
-        $window = angular.element($window);
-        $scrollParent = elem.parents().filter(function() {
-          return /(auto|scroll)/.test(($.css(this, 'overflow')) + ($.css(this, 'overflow-y')));
-        }).eq(0);
-        if ($scrollParent.length === 0) {
-          $scrollParent = $window;
-        }
+        $timeout(function() {
+          $window = angular.element($window);
+          var $scrollParent, checkWhenEnabled, elementTop, handler, scrollDistance, scrollEnabled, parentTop;
 
-        if (attrs.infiniteScrollSelf != null) {
-            $scrollParent = elem;
-        }
+          $scrollParent = elem.parents().filter(function() {
+            return /(auto|scroll)/.test($.css(this, 'overflow') + $.css(this, 'overflow-y'));
+          }).eq(0);
 
-        scrollDistance = 0;
-        if (attrs.infiniteScrollDistance != null) {
-          scope.$watch(attrs.infiniteScrollDistance, function(value) {
-            return scrollDistance = parseFloat(value, 10);
-          });
-        }
-        scrollEnabled = true;
-        checkWhenEnabled = false;
-        if (attrs.infiniteScrollDisabled != null) {
-          scope.$watch(attrs.infiniteScrollDisabled, function(value) {
-            scrollEnabled = !value;
-            if (scrollEnabled && checkWhenEnabled) {
-              checkWhenEnabled = false;
-              return handler();
-            }
-          });
-        }
-        parentTop = $scrollParent !== $window ? $scrollParent.position().top : 0;
-        elementTop = elem.position().top - parentTop;
-        handler = function() {
-          var elementBottom, remaining, scrollBottom, shouldScroll;
-
-          if(elem == $scrollParent) {
-              remaining = elem[0].scrollHeight - elem.scrollTop() - elem.height();
-              shouldScroll = remaining <= (elem[0].scrollHeight * scrollDistance);
-          } else {
-              elementBottom = elementTop + elem.height();
-              scrollBottom = $scrollParent.height() + $scrollParent.scrollTop();
-              remaining = elementBottom - scrollBottom;
-              shouldScroll = remaining <= ($scrollParent.height() * scrollDistance);
+          if ($scrollParent.length === 0) {
+            $scrollParent = $window;
           }
-          if (shouldScroll && scrollEnabled) {
-            if ($rootScope.$$phase) {
-              return scope.$eval(attrs.infiniteScroll);
+
+          if (attrs.infiniteScrollSelf != null) {
+              $scrollParent = elem;
+          }
+
+          scrollDistance = 0;
+          if (attrs.infiniteScrollDistance != null) {
+            scope.$watch(attrs.infiniteScrollDistance, function(value) {
+              return scrollDistance = parseFloat(value, 10);
+            });
+          }
+          scrollEnabled = true;
+          checkWhenEnabled = false;
+          if (attrs.infiniteScrollDisabled != null) {
+            scope.$watch(attrs.infiniteScrollDisabled, function(value) {
+              scrollEnabled = !value;
+              if (scrollEnabled && checkWhenEnabled) {
+                checkWhenEnabled = false;
+                return handler();
+              }
+            });
+          }
+          parentTop = $scrollParent !== $window ? $scrollParent.position().top : 0;
+          elementTop = elem.position().top - parentTop;
+          handler = function() {
+            var elementBottom, remaining, scrollBottom, shouldScroll;
+
+            if(elem == $scrollParent) {
+                remaining = elem[0].scrollHeight - elem.scrollTop() - elem.height();
+                shouldScroll = remaining <= (elem[0].scrollHeight * scrollDistance);
             } else {
-              return scope.$apply(attrs.infiniteScroll);
+                elementBottom = elementTop + elem.height();
+                scrollBottom = $scrollParent.height() + $scrollParent.scrollTop();
+                remaining = elementBottom - scrollBottom;
+                shouldScroll = remaining <= ($scrollParent.height() * scrollDistance);
             }
-          } else if (shouldScroll) {
-            return checkWhenEnabled = true;
-          }
-        };
+            if (shouldScroll && scrollEnabled) {
+              if ($rootScope.$$phase) {
+                return scope.$eval(attrs.infiniteScroll);
+              } else {
+                return scope.$apply(attrs.infiniteScroll);
+              }
+            } else if (shouldScroll) {
+              return checkWhenEnabled = true;
+            }
+          };
 
-        // if there isn't enough content to show a scrollbar
-        // var interval = setInterval(function(){
-        //     if($scrollParent[0].offsetHeight === $scrollParent[0].scrollHeight) {
-        //         // load more
-        //         scope.$apply(attrs.infiniteScroll)
-        //     }
-        // }, 1000)
+          // if there isn't enough content to show a scrollbar
+          // var interval = setInterval(function(){
+          //     if($scrollParent[0].offsetHeight === $scrollParent[0].scrollHeight) {
+          //         // load more
+          //         scope.$apply(attrs.infiniteScroll)
+          //     }
+          // }, 1000)
+          $scrollParent.on('scroll', handler);
 
-        $scrollParent.on('scroll', handler);
-        handler();
-        scope.$on('$destroy', function() {
-            // clearInterval(interval);
-            return $scrollParent.off('scroll', handler);
-        });
-        return $timeout((function() {
-          if (attrs.infiniteScrollImmediateCheck) {
-            if (scope.$eval(attrs.infiniteScrollImmediateCheck)) {
+          scope.$on('$destroy', function() {
+              // clearInterval(interval);
+              return $scrollParent.off('scroll', handler);
+          });
+          return $timeout((function() {
+            if (attrs.infiniteScrollImmediateCheck) {
+              if (scope.$eval(attrs.infiniteScrollImmediateCheck)) {
+                return handler();
+              }
+            } else {
               return handler();
             }
-          } else {
-            return handler();
-          }
-        }), 0);
+          }), 0);
+        }, 0);
       }
     };
   }
@@ -6311,7 +6314,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '0.1.6';
+    var version = '0.1.7-dev';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate', 'translate.directives', 'translate.filters']);
@@ -6638,6 +6641,7 @@ mod.directive('infiniteScroll', [
                     group: translate('Area charts'),
                     filter: 'hasNumericField'
                 },
+                {label: translate('Treemap'), type: 'treemap', group: translate('Special')},
                 {label: translate('Area'), type: 'area', group: translate('Area charts')},
                 {label: translate('Area spline'), type: 'areaspline', group: translate('Area charts')},
                 {label: translate('Column chart'), type: 'column', group: translate('Bar charts')},
@@ -7015,6 +7019,18 @@ mod.directive('infiniteScroll', [
                     query.seriesBreakdownTimescale = '';
                 }
 
+                var forceBreakdownRemoval = false;
+                for (var i = 0; i < query.charts.length; i++) {
+                    if (['treemap', 'pie'].indexOf(query.charts[i].type) !== -1) {
+                        forceBreakdownRemoval = true;
+                    }
+                }
+
+                if (forceBreakdownRemoval) {
+                    query.seriesBreakdown = '';
+                    query.seriesBreakdownTimescale = '';
+                }
+
                 if (!query.seriesBreakdown && query.charts.length < 2) {
                     delete query.stacked;
                 }
@@ -7181,6 +7197,18 @@ mod.directive('infiniteScroll', [
                 }
                 return field.type;
             },
+            getFieldUnit: function(datasetid, fieldName) {
+                var field = this.getField(datasetid, fieldName);
+                if (field.annotations) {
+                    for (var i = 0; i < field.annotations.length; i++) {
+                        if (field.annotations[i].name === "unit") {
+                            return field.annotations[i].args[0];
+                        }
+                    }
+                    return field.annotations.unit;
+                }
+                return false;
+            },
             getAvailableFunctions: function(datasetid) {
                 return AggregationHelper.getAvailableFunctions(this.getAvailableY(datasetid).length);
             },
@@ -7190,7 +7218,8 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -7490,24 +7519,29 @@ mod.directive('infiniteScroll', [
                         "activeDatasets": []
                     };
                 },
-                createLayerConfiguration: function(template, color, picto, display, func, expr, localKey, remoteKey, tooltipSort, hoverField) {
-                    display = display || 'auto';
+                createLayerConfiguration: function(template, config) {
+                    if (angular.isUndefined(config)) {
+                        config = {};
+                    }
+                    var display = config.display || 'auto';
                     if (display === 'clusters') { display = 'polygon'; }
                     if (display === 'clustersforced') { display = 'polygonforced'; }
                     if (display === 'raw') { display = 'none'; }
                     return {
                         "context": null,
-                        "color": color,
-                        "picto": picto,
+                        "color": config.color,
+                        "picto": config.picto,
                         "clusterMode": display,
-                        "func": func || (expr ? "AVG" : "COUNT"), // If there is a field, default to the average
-                        "expr": expr || null,
+                        "func": config['function'] || (config.expression ? "AVG" : "COUNT"), // If there is a field, default to the average
+                        "expr": config.expression || null,
                         "marker": null,
                         "tooltipTemplate": template,
-                        "localKey": localKey || null,
-                        "remoteKey": remoteKey || null,
-                        "tooltipSort": tooltipSort,
-                        "hoverField": hoverField || null
+                        "localKey": config.localKey || null,
+                        "remoteKey": config.remoteKey || null,
+                        "tooltipSort": config.tooltipSort,
+                        "hoverField": config.hoverField || null,
+                        "opacity": config.opacity,
+                        "borderColor": config.borderColor
                     };
                 }
             }
@@ -7568,9 +7602,9 @@ mod.directive('infiniteScroll', [
                         service.bindTooltip(map, layerConfig.rendered, layerConfig);
                     }
                     var tilesOptions = {
-                        color: layerConfig.color
-                        //icon: $scope.context.dataset.getExtraMeta('visualization', 'map_marker_picto'),
-                        //showmarker: !$scope.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape')
+                        color: layerConfig.color,
+                        icon: layerConfig.picto,
+                        showmarker: layerConfig.marker
                     };
                     angular.extend(tilesOptions, layerConfig.context.parameters);
                     // Change tile URL
@@ -8076,34 +8110,47 @@ mod.directive('infiniteScroll', [
                                     style: function (feature) {
                                         var opts = angular.copy(geojsonOptions);
                                         opts.fillColor = colorScale(value);
+                                        if (angular.isDefined(layerConfig.opacity)) {
+                                            opts.fillOpacity = layerConfig.opacity;
+                                        }
                                         if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
                                             opts.weight = 5;
                                             opts.color = colorScale(value);
                                         } else {
-                                            opts.color = "#fff";
+                                            if (angular.isDefined(layerConfig.borderColor)) {
+                                                opts.color = layerConfig.borderColor;
+                                            }
                                         }
                                         return opts;
                                     }
                                 });
 
-                                if (layerConfig.refineOnClick) {
-                                    // We're not sure yet what we want to show when we click on an aggregated shape, so we just handled
-                                    // refine on click for now.
-                                    service.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest);
-                                }
 
                                 if (shape.type !== 'LineString' && shape.type !== 'MultiLineString') {
                                     bindMarkerOver(layerConfig, shapeLayer, record, null);
                                 }
+
                                 if (layerConfig.joinContext && layerConfig.hoverField) {
                                     // Always show the value if it exists
                                     if (record.x[0].fields[layerConfig.hoverField]) {
                                         // TODO: We may want to make the value prettier (e.g. format number if it is one)
                                         shapeLayer.bindLabel(record.x[0].fields[layerConfig.hoverField]);
+                                        if (layerConfig.refineOnClick) {
+                                            service.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest, record.x[0].fields[layerConfig.hoverField]);
+                                        }
+                                    } else {
+                                        if (layerConfig.refineOnClick) {
+                                            service.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest);
+                                        }
                                     }
                                 } else {
                                     if ((layerConfig.func !== 'COUNT' && service.isAnalyzeEnabledClustering(layerConfig)) || min !== max) {
                                         shapeLayer.bindLabel(service.formatNumber(value));
+                                    }
+                                    if (layerConfig.refineOnClick) {
+                                        // We're not sure yet what we want to show when we click on an aggregated shape, so we just handled
+                                        // refine on click for now.
+                                        service.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest);
                                     }
                                 }
                                 shapeLayerGroup.addLayer(shapeLayer);
@@ -8153,7 +8200,7 @@ mod.directive('infiniteScroll', [
                         });
 
                         layerGroup.addLayer(shapeLayer);
-                        service.bindTooltip(map, shapeLayer, layerConfig, shape.geometry, shape.id);
+                        service.bindTooltip(map, shapeLayer, layerConfig, shape.geometry, null, shape.geo_digest);
                     }
                     deferred.resolve(layerGroup);
                 });
@@ -8208,7 +8255,7 @@ mod.directive('infiniteScroll', [
             /*                                  */
             /*          INTERACTIONS            */
             /*                                  */
-            bindTooltip: function(map, feature, layerConfig, clusterShape, recordid, geoDigest) {
+            bindTooltip: function(map, feature, layerConfig, clusterShape, recordid, geoDigest, fieldValue) {
                 var service = this;
                 if (layerConfig.refineOnClick) {
                     feature.on('click', function(e) {
@@ -8216,7 +8263,7 @@ mod.directive('infiniteScroll', [
                             return;
                         }
                         // TODO: Support tiles and refineOnClick
-                        service.refineContextOnClick(layerConfig, clusterShape);
+                        service.refineContextOnClick(layerConfig, clusterShape, geoDigest, fieldValue);
                     });
                 } else {
                     // Binds on a feature (marker, shape) so that it shows a popup on click
@@ -8240,11 +8287,12 @@ mod.directive('infiniteScroll', [
                     });
                 }
             },
-            refineContextOnClick: function(layerConfig, shape, digest) {
+            refineContextOnClick: function(layerConfig, shape, digest, fieldValue) {
                 var refineContext = function(refineConfig) {
                     var contextField = refineConfig.contextField;
                     var mapField = refineConfig.mapField;
                     var context = refineConfig.context;
+                    var replaceRefine = refineConfig.replaceRefine;
 
                     if (!mapField && !contextField) {
                         $rootScope.$apply(function() {
@@ -8252,25 +8300,28 @@ mod.directive('infiniteScroll', [
                             ODS.GeoFilter.addGeoFilterFromSpatialObject(context.parameters, shape);
                         });
                     } else {
-                        // We need to retrieve a record for this to work
-                        // FIXME: Factorize with the same code just above
-                        var options = {
-                            format: 'json'
-                        };
-                        if (digest) {
-                            options.geo_digest = digest;
+                        if (angular.isDefined(fieldValue) && mapField == layerConfig.hoverField) {
+                            $rootScope.$apply(function() {
+                                context.toggleRefine(contextField, fieldValue, replaceRefine);
+                            });
                         } else {
-                            ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
-                        }
-                        angular.extend(options, context.parameters, {rows: 1});
-                        ODSAPI.records.download(layerConfig.context, options).success(function(data) {
-                            if (angular.isDefined(data[0].fields[mapField])) {
-                                // Until we can have named parameters, we need to avoid using the q= parameter as it will quickly
-                                // conflict with other widgets that need to interact with the query.
-                                context.toggleRefine(contextField, data[0].fields[mapField]);
-                                //context.parameters.q = contextField + ':"' + record.fields[mapField] + '"';
+                            // We need to retrieve a record for this to work
+                            // FIXME: Factorize with the same code just above
+                            var options = {
+                                format: 'json'
+                            };
+                            if (digest) {
+                                options.geo_digest = digest;
+                            } else {
+                                ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
                             }
-                        });
+                            angular.extend(options, layerConfig.context.parameters, {rows: 1});
+                            ODSAPI.records.download(layerConfig.context, options).success(function(data) {
+                                if (angular.isDefined(data[0].fields[mapField])) {
+                                    context.toggleRefine(contextField, data[0].fields[mapField], replaceRefine);
+                                }
+                            });
+                        }
                     }
                 };
                 // This layer is configured to refine another context on click
@@ -8421,7 +8472,8 @@ mod.directive('infiniteScroll', [
                 'js': [
                     ["https://code.highcharts.com/3.0.10/highcharts.js"],
                     ["https://code.highcharts.com/3.0.10/modules/no-data-to-display.js"],
-                    ["https://code.highcharts.com/3.0.10/highcharts-more.js"]
+                    ["https://code.highcharts.com/3.0.10/highcharts-more.js"],
+                    ["https://code.highcharts.com/modules/treemap.js"]
                 ]
             },
             'leaflet': {
@@ -8914,17 +8966,37 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-    mod.filter('youtubify', ['$sce', function($sce) {
-        // Formats:
+    mod.filter('videoify', ['$sce', function($sce) {
+        // Youtube:
         // http(s)://youtu.be/Hh-0y8Qe0Sw
         // http(s)://(www.)youtube.com/watch?v=Hh-0y8Qe0Sw
-        var re = /^https?:\/\/(?:(?:youtu.be\/)|(?:(?:www.)?youtube.com\/watch\?v=))([0-9a-zA-Z-]*)$/i;
+        var re_youtube = /^https?:\/\/(?:(?:youtu.be\/)|(?:(?:www.)?youtube.com\/watch\?v=))([0-9a-z_-]+)$/i;
+
+        // Dailymotion
+        // http://www.dailymotion.com/video/x2pyhdb_roland-garros-2015-quand-le-stade-de-roland-garros-se-prepare-et-s-affaire_sport
+        // http://dai.ly/x2pyhdb
+        var re_dailymotion = /^https?:\/\/(?:(?:dai.ly)|(?:www.dailymotion.com))\/(?:video\/)?([0-9a-z]+)(?:[0-9a-z_-]*)$/i;
+
+        // Vimeo
+        // https://vimeo.com/127051771
+        var re_vimeo = /^https?:\/\/vimeo.com\/([0-9]+)$/i;
+
         return function(url) {
             if (angular.isString(url)) {
-                var match = re.exec(url.trim());
+                var match = re_youtube.exec(url.trim());
                 if (match !== null) {
                     // The first match is the Youtube ID
                     return $sce.trustAsHtml('<iframe width="200" height="113" src="//www.youtube.com/embed/'+match[1]+'" frameborder="0" allowfullscreen></iframe>');
+                }
+                match = re_dailymotion.exec(url.trim());
+                if (match !== null) {
+                    // The first match is the Youtube ID
+                    return $sce.trustAsHtml('<iframe frameborder="0" width="200" height="113" src="//www.dailymotion.com/embed/video/'+match[1]+'" allowfullscreen></iframe>');
+                }
+                match = re_vimeo.exec(url.trim());
+                if (match !== null) {
+                    // The first match is the Youtube ID
+                    return $sce.trustAsHtml('<iframe src="https://player.vimeo.com/video/'+match[1]+'" width="200" height="113" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>');
                 }
             }
             return url;
@@ -9012,7 +9084,7 @@ mod.directive('infiniteScroll', [
                 return $filter('moment')(value, 'LLL');
             } else if (field.type === 'file') { // it's 'file' type really
                 if (angular.isObject(value)) {
-                    return $sce.trustAsHtml('<a target="_self" href="' + 'files/'+value.id+'/download/' + '" />' + (value.filename || record.filename) + '</a>');
+                    return $sce.trustAsHtml('<a target="_self" href="' + 'files/'+value.id+'/download/' + '">' + (value.filename || record.filename) + '</a>');
                 } else {
                     return ''+value;
                 }
@@ -9365,7 +9437,7 @@ mod.directive('infiniteScroll', [
 }());;(function(target) {
     var ODS = {
         Context: {
-            toggleRefine: function(context, facetName, path) {
+            toggleRefine: function(context, facetName, path, replace) {
                 var refineKey = 'refine.'+facetName;
                 if (angular.isDefined(context.parameters[refineKey])) {
                     // There is at least one refine already
@@ -9373,6 +9445,7 @@ mod.directive('infiniteScroll', [
                     if (!angular.isArray(refines)) {
                         refines = [refines];
                     }
+
                     if (refines.indexOf(path) > -1) {
                         // Remove the refinement
                         refines.splice(refines.indexOf(path), 1);
@@ -9387,7 +9460,11 @@ mod.directive('infiniteScroll', [
                                 refines.splice(idx, 1);
                             }
                         });
-                        refines.push(path);
+                        if (angular.isUndefined(replace) || replace === false) {
+                            refines.push(path);
+                        } else {
+                            refines = [path];
+                        }
                     }
 
                     if (refines.length === 0) {
@@ -9536,11 +9613,7 @@ mod.directive('infiniteScroll', [
                 } else if (spatial.type === 'Point') {
                     parameters["geofilter.distance"] = spatial.coordinates[1]+','+spatial.coordinates[0];
                 } else {
-                    // Right now we can't trust the API (yet) to properly handle geofilter.polygon queries for complex
-                    // shapes
-                    var bounds = L.geoJson(spatial).getBounds();
-                    parameters["geofilter.polygon"] = this.getBoundsAsPolygonParameter(bounds);
-//                    parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
+                   parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
                 }
             }
         },
@@ -9636,12 +9709,12 @@ mod.directive('infiniteScroll', [
                 return false;
             };
 
-            var iterateFields = function() {
+            var iterateFields = function(fields) {
                 filtersDescription = {'facets': []};
                 types = [];
                 facetsCount = 0;
-                for (var j=0; j< dataset.fields.length; j++) {
-                    var field = dataset.fields[j];
+                for (var j=0; j< fields.length; j++) {
+                    var field = fields[j];
                     if (isFieldAnnotated(field, 'facet')) {
                         facetsCount++;
                         filtersDescription.facets.push(field);
@@ -9665,14 +9738,14 @@ mod.directive('infiniteScroll', [
                 interop_metas: dataset.interop_metas,
                 setFields: function(fields) {
                     this.fields = fields;
-                    iterateFields();
+                    iterateFields(this.fields);
                 },
                 getUniqueId: function() {
                     return this.metas.domain + '.' + this.datasetid;
                 },
                 getTypes: function() {
                     if (typeof types === "undefined") {
-                        iterateFields();
+                        iterateFields(this.fields);
                     }
                     return types;
                 },
@@ -9686,19 +9759,19 @@ mod.directive('infiniteScroll', [
                 },
                 getFacetsCount: function() {
                     if (typeof facetsCount === "undefined") {
-                        iterateFields();
+                        iterateFields(this.fields);
                     }
                     return facetsCount;
                 },
                 hasFacet: function() {
                     if (typeof facetsCount === "undefined") {
-                        iterateFields();
+                        iterateFields(this.fields);
                     }
                     return facetsCount > 0;
                 },
                 getFilterDescription: function() {
                     if (typeof filtersDescription === "undefined") {
-                        iterateFields();
+                        iterateFields(this.fields);
                     }
                     return filtersDescription;
                 },
@@ -9758,6 +9831,9 @@ mod.directive('infiniteScroll', [
                     } else {
                         return null;
                     }
+                },
+                isFieldAnnotated: function(field, annotationName) {
+                    return isFieldAnnotated(field, annotationName);
                 }
             };
         }
@@ -9881,7 +9957,7 @@ mod.directive('infiniteScroll', [
 
         var parseCustomExpression = function(serie, parentserie_for_subseries) {
             var regex = /([A-Z_-]*?)\((.*?)\)/g;
-            var params2regex = /([A-Z_-]*?)\(([a-zA-Z0-9\.]+),\s?([0-9\.]+)\)/g;
+            var params2regex = /([A-Z_-]*?)\(([a-zA-Z0-9\._]+),\s?([0-9\.]+)\)/g;
             var aggregates_holder = parentserie_for_subseries || serie;
             var match;
 
@@ -9906,11 +9982,13 @@ mod.directive('infiniteScroll', [
                     } else { // we are really trying to get values from the index
                         options['func'] = match[1];
                         options['expr'] = match[2];
+                        if (match[3]) {
+                            options['subsets'] = match[3];
+                        }
                         serie.compiled_expr += serie.compiled_expr.replace(match[0], 'y');
                     }
                 }
             }
-
             return options;
         };
 
@@ -9974,7 +10052,7 @@ mod.directive('infiniteScroll', [
                             options["y." + name + ".func"] = serie.func;
                             options["y." + name + ".cumulative"] = serie.cumulative || "false";
                             if (serie.func === 'QUANTILES') {
-                                options["y." + name + ".subset"] = serie.subset || "50";
+                                options["y." + name + ".subsets"] = serie.subsets || "50";
                             }
 
                             if (aggregations[name]) {
@@ -10086,8 +10164,8 @@ mod.directive('infiniteScroll', [
                         'domainUrl': ODSAPI.getDomainURL(domain),
                         'apikey': attrs[contextName+'Apikey'],
                         'parameters': parameters,
-                        'toggleRefine': function(facetName, path) {
-                            ODS.Context.toggleRefine(this, facetName, path);
+                        'toggleRefine': function(facetName, path, replace) {
+                            ODS.Context.toggleRefine(this, facetName, path, replace);
                         }
                     };
                 }
@@ -10399,7 +10477,14 @@ mod.directive('infiniteScroll', [
                 });
                 contextParams = null;
             } else {
-                contextParams = {};
+                if (angular.equals(parameters, {})) {
+                    // Typically someone passing a handmade object from an outerscope, to change it or watch it.
+                    // Note that this is different from the first clause above, because it needs to pass AFTER
+                    // parameters-from-context.
+                    contextParams = parameters;
+                } else {
+                    contextParams = {};
+                }
             }
 
             if (source && contextParams) {
@@ -10418,8 +10503,8 @@ mod.directive('infiniteScroll', [
                     url += '&' + ODS.URLUtils.getAPIQueryString(angular.extend({}, this.parameters, parameters));
                     return url;
                 },
-                'toggleRefine': function(facetName, path) {
-                    ODS.Context.toggleRefine(this, facetName, path);
+                'toggleRefine': function(facetName, path, replace) {
+                    ODS.Context.toggleRefine(this, facetName, path, replace);
                 },
                 'name': contextName,
                 'type': 'dataset',
@@ -10430,7 +10515,7 @@ mod.directive('infiniteScroll', [
                 'parameters': contextParams
             };
 
-            ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true, interopmetas: true, source: source}).
+            ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true, interopmetas: true, source: contextParams.source}).
                 success(function(data) {
                     scope[contextName].dataset = new ODS.Dataset(data);
                     deferred.resolve(scope[contextName].dataset);
@@ -10620,64 +10705,71 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsFacetEnumerator', ['ODSAPI', function(ODSAPI) {
+    mod.directive('odsFacetResults', ['ODSAPI', function(ODSAPI) {
         /**
          * @ngdoc directive
-         * @name ods-widgets.directive:odsFacetEnumerator
+         * @name ods-widgets.directive:odsFacetResults
          * @scope
-         * @restrict E
-         * @param {CatalogContext|DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {string} facetName Name of the facet to enumerate
+         * @restrict A
+         * @param {string} [odsFacetResults=results] Variable name to use
+         * @param {CatalogContext|DatasetContext} odsFacetResultsContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {string} odsFacetResultsFacetName Name of the facet to enumerate
          * @description
-         * This widget enumerates the values ("categories") of a facet and repeats the template (the content of the directive element) for each of them. For each facet category, the following AngularJS variables are available:
+         * This widget fetches the results of enumerating the values ("categories") of a facet, and exposes it in a variable available in the scope. It can be used with AngularJS's ngRepeat to simply build a list
+         * of results.
          *
-         *  * item.name : the label of the category
-         *  * item.path : the path to use to refine on this category
-         *  * item.state : "displayed" or "refined"
-         *  * item.count : the number of records in this category
+         * The variable is an array of objects, each containing the following properties:
+         *
+         *  * `name` : the label of the category
+         *  * `path` : the path to use to refine on this category
+         *  * `state` : "displayed" or "refined"
+         *  * `count` : the number of records in this category
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com">
-         *              <ods-facet-enumerator context="catalog" facet-name="theme">
-         *                  {{ item.name }} ({{ item.count }})
-         *              </ods-facet-enumerator>
+         *              <label>Select a facet:</label>
+         *              <select ng-model="userchoice">
+         *                  <option ng-repeat="item in items" ods-facet-results="items" ods-facet-results-context="catalog" ods-facet-results-facet-name="publisher" value="{{item.name}}">{{item.name}}</option>
+         *              </select>
          *          </ods-catalog-context>
          *      </file>
          *  </example>
          */
 
         return {
-            restrict: 'E',
-            replace: true,
-            transclude: true,
-            scope: {
-                context: '=',
-                facetName: '@'
-            },
-            template: '<div class="odswidget odswidget-facet-enumerator">' +
-                '<div class="no-data" ng-hide="items" translate>No data available yet</div>' +
-                '<div ng-repeat="item in items" inject class="item"></div>' +
-                '</div>',
-            controller: ['$scope', function($scope) {
-                var init = $scope.$watch('context', function(nv) {
+            restrict: 'A',
+            scope: true,
+            priority: 1001, // ng-repeat need to be executed when the results is in the scope.
+            controller: ['$scope', '$attrs', function($scope, $attrs) {
+                $scope.$watch($attrs.odsFacetResultsContext, function(nv) {
                     var query;
-                    if (nv.type === 'catalog') {
-                        query = ODSAPI.datasets.facets(nv, $scope.facetName);
-                    } else if (nv.type === 'dataset' && nv.dataset) {
-                        query = ODSAPI.records.search($scope.context, {'rows': 0, 'facet': $scope.facetName});
+                    var facetName = $attrs.odsFacetResultsFacetName;
+                    var options = angular.extend({}, nv.parameters, {'rows': 0, 'facet': facetName});
+                    var variable = $attrs.odsFacetResults || 'results';
+                    if (nv.type === 'dataset' && nv.dataset) {
+                        query = ODSAPI.records.search(nv, options);
+                    } else if (nv.type === 'catalog') {
+                        query = ODSAPI.datasets.search(nv, options);
                     } else {
                         return;
                     }
-                    query.success(function(data) {
+                    query.success(function(data){
                         if (data.facet_groups) {
-                            $scope.items = data.facet_groups[0].facets;
+                            var facetGroup = data.facet_groups.filter(function(g) {return g.name === facetName; });
+                            if (facetGroup.length === 0) {
+                                // Only a refine but no real value for the facet we want
+                                $scope[variable] = [];
+
+                            }
+                             $scope[variable] = facetGroup[0].facets;
+
                         } else {
-                            $scope.items = [];
+                            $scope[variable] = [];
                         }
                     });
-                    init();
+
                 }, true);
             }]
         };
@@ -10805,6 +10897,7 @@ mod.directive('infiniteScroll', [
                     'name="'+facet.name+'" ' +
                     'title="'+(facet.title || facet.name)+'" ' +
                     'sort="'+(facet.sort || '')+'" ' +
+                    'disjunctive="'+(facet.disjunctive || '')+'" ' +
                     'hide-if-single-category="'+(facet.hideIfSingleCategory ? 'true' : 'false')+'" ' +
                     'hide-category-if="'+(facet.hideCategoryIf || '')+'"' +
                     '>'+(facet.template || '')+'</ods-facet>';
@@ -10849,6 +10942,14 @@ mod.directive('infiniteScroll', [
                                         angular.forEach(facets, function(f) {
                                             f.title = f.label;
                                             delete f.label;
+                                            angular.forEach(f.annotations, function(annotation) {
+                                                if (annotation.name === 'facetsort' && annotation.args.length > 0) {
+                                                    f.sort = annotation.args[0];
+                                                }
+                                                if (annotation.name === 'disjunctive') {
+                                                    f.disjunctive = true;
+                                                }
+                                            });
                                         });
                                         buildFacetTagsHTML(scope, element, facets);
                                         scope.init();
@@ -11537,6 +11638,7 @@ mod.directive('infiniteScroll', [
                 return parseCustomExpression(serie, 'y.' + serie_name, parent_for_subseries);
             }
             options['y.' + serie_name + '.expr'] = serie.yAxis || serie.expr;
+
             options['y.' + serie_name + '.func'] = serie.func;
             options['y.' + serie_name + '.cumulative'] = serie.cumulative || false;
             if(serie.func === 'QUANTILES'){
@@ -11548,6 +11650,10 @@ mod.directive('infiniteScroll', [
             if (serie.func === "CONSTANT") {
                 options['y.' + serie_name + '.expr'] = serie.yAxis || 0;
                 options['y.' + serie_name + '.func'] = "AVG";
+            }
+
+            if (angular.isDefined(serie.multiplier) && serie.multiplier !== "" && serie.multiplier !== null) {
+                options['y.' + serie_name + '.expr'] += " * " + serie.multiplier;
             }
             // if (!serie.color || serie.color.startsWith('dynamic-') || serie.color.startsWith('static-')) {
             //     options['agg.' + serie_name + '.func'] = ['MIN', 'MAX'].join(",");
@@ -11567,6 +11673,10 @@ mod.directive('infiniteScroll', [
                     temp_serie.subsets = serie.charts[0].subsets + "," + serie.charts[1].subsets;
                     addSeriesToSearchOptions(search_options, temp_serie, serie_name);
                 } else {
+                    if (angular.isDefined(serie.multiplier)) {
+                        serie.charts[0].multiplier = serie.multiplier;
+                        serie.charts[1].multiplier = serie.multiplier;
+                    }
                     addSeriesToSearchOptions(search_options, serie.charts[0], serie_name + 'min');
                     addSeriesToSearchOptions(search_options, serie.charts[1], serie_name + 'max');
                 }
@@ -11774,6 +11884,13 @@ mod.directive('infiniteScroll', [
                         tooltip: {
                             pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y} ({point.percentage:.1f}%)</b>'
                         }
+                    },
+                    treemap: {
+                        tooltip: {
+                            headerFormat: '',
+                            pointFormat: '<span style="color:{series.color}">{point.name}</span>: {point.value}</b>'
+                        },
+                        layoutAlgorithm: 'squarified'
                     }
                 },
                 tooltip: {
@@ -11793,6 +11910,7 @@ mod.directive('infiniteScroll', [
                             series = item.series;
                             var value = (series.tooltipFormatter && series.tooltipFormatter(item)) || item.point.tooltipFormatter(series.tooltipOptions.pointFormat);
                             value = value.replace(/(\.|,)00</, '<');
+                            value = value.replace(/(\.|,)00 /, ' ');
                             s.push(value);
                         });
                         // footer
@@ -11833,6 +11951,16 @@ mod.directive('infiniteScroll', [
                 options.xAxis.labels.format = "{value: %H}";
             }
 
+            if (!precision) {
+                options.xAxis.labels.formatter = function() {
+                    if (this.value.length > 11) {
+                        return this.value.substring(0, 8) + '...';
+                    } else {
+                        return this.value;
+                    }
+                }
+            }
+
             if(parameters.singleAxis) {
                 var yAxisParamaters = {
                     color: "#000000",
@@ -11849,7 +11977,7 @@ mod.directive('infiniteScroll', [
 
         var colors = {};
         var colorsIndex = 0;
-        var getSerieOptions = function(parameters, yAxisesIndexes, query, serie, suppXValue, domain) {
+        var getSerieOptions = function(parameters, yAxisesIndexes, query, serie, suppXValue, domain, scope) {
             var datasetid = ChartHelper.getDatasetId({dataset: {datasetid: query.config.dataset}, domain: domain});
             var yLabel = ChartHelper.getYLabel(datasetid, serie);
             var serieColor;
@@ -11859,6 +11987,13 @@ mod.directive('infiniteScroll', [
                 if (!serie.extras) {
                     serie.extras = {};
                 }
+                if (serie.innersize) {
+                    serie.extras.innerSize = serie.innersize;
+                }
+                if (serie.labelsposition === 'inside') {
+                    serie.extras.dataLabels = {distance:  -50};
+                }
+
                 serie.extras.colors = colorScale.getColors(serie.color);
             } else {
                 if (!colors[suppXValue + serie.color]) {
@@ -11883,6 +12018,48 @@ mod.directive('infiniteScroll', [
                 data: [],
                 stacking: query.stacked ? query.stacked : null
             }, serie.extras);
+
+            if (!options.dataLabels) {
+                options.dataLabels = {};
+            }
+
+            if (serie.displayValues) {
+                options.dataLabels.enabled = true;
+                options.dataLabels.color = 'black';
+                if (serie.type !== 'treemap') {
+                    options.dataLabels.formatter = function() {
+                        var label = Highcharts.numberFormat(this.point.y, 2);
+                        return label.replace(/[,\.]00$/, '');
+                    }
+                }
+            }
+            if (serie.displayUnits && serie.func !== 'COUNT') {
+                var unit = ChartHelper.getFieldUnit(datasetid, serie.yAxis);
+                if (unit) {
+                    options.tooltip.valueSuffix = ' ' + unit;
+                    if (serie.displayValues && serie.type !== 'treemap') {
+                        var _formatter = options.dataLabels.formatter;
+                        options.dataLabels.formatter = function() {
+                            return _formatter.bind(this)(this.point.y) + ' ' + unit;
+                        };
+                    }
+                }
+            }
+
+            if (serie.refineOnClick) {
+                options.point = {
+                    events: {
+                        'click': function(event) {
+                            var value = this.category || this.name;
+                            angular.forEach(serie.refineOnClick, function(refine) {
+                                scope[refine['context-name']].toggleRefine(refine.field, value);
+                                scope.$apply();
+                            });
+                        }
+                    }
+                };
+                options.cursor = 'pointer';
+            }
 
             options = angular.extend(options, ChartHelper.resolvePosition(serie.position));
             delete options.position;
@@ -11931,18 +12108,16 @@ mod.directive('infiniteScroll', [
         }
 
         var getContextualizedSeriesOptions = function(x, timeSerieMode) {
-            var options = {
-                'tooltip': {}
-            };
+            var tooltip = {};
 
             if (timeSerieMode) {
                 // options.pointPadding = 0;
                 // options.groupPadding = 0;
                 // options.borderWidth = 0;
-                options.tooltip.xDateFormat = buildDatePattern(x);
+                tooltip.xDateFormat = buildDatePattern(x);
             }
 
-            return options;
+            return tooltip;
         };
         
         var updateXAxisOptionsFromData = function(x, options, timeSerieMode) {
@@ -12038,6 +12213,12 @@ mod.directive('infiniteScroll', [
                 return date.getTime();
             } else if (date) {
                 return dateFormatFunction(datePattern, date);
+            } else if (typeof x === "undefined") {
+                return undefined;
+            } else if (angular.isObject(x)) {
+                if (x.week) {
+                    return translate("Week") + " " + x.week;
+                }
             } else {
                 return "" + x;
             }
@@ -12090,12 +12271,22 @@ mod.directive('infiniteScroll', [
                 parameters: '=parameters',
                 domain: '=',
                 apikey: '=',
-                colors: '='
+                colors: '=',
+                contexts: '=?'
             },
-            template: '<div class="ods-chart"><div class="chartplaceholder"></div><debug data="chartoptions"></debug></div>',
+
+            template: '<div class="ods-chart"><div class="loading-tiles" ng-show="loading"><i class="icon-spinner icon-spin"></i></div><div class="chartplaceholder"></div><debug data="chartoptions"></debug></div>',
             controller: ['$scope', '$element', '$attrs', function($scope) {
                 var timeSerieMode, precision, periodic, yAxisesIndexes, domain,
                     that = this;
+
+                $scope.$watch('contexts', function(nv,ov) {
+                    if ($scope.contexts && $scope.contexts.length > 0) {
+                        var i = $scope.contexts.length - 1;
+                        $scope[$scope.contexts[i].name] = $scope.contexts[i];
+                    }
+                }, true);
+
                 this.highchartsLoaded = function(Highcharts, element) {
                     var chartplaceholder = element.find('.chartplaceholder');
 
@@ -12189,6 +12380,7 @@ mod.directive('infiniteScroll', [
                             if (angular.isUndefined(yAxisesIndexes[datasetid])) {
                                 yAxisesIndexes[datasetid] = {};
                             }
+
                             angular.forEach(query.charts, function(chart) {
                                 var yLabel = ChartHelper.getYLabel(datasetid, chart);
                                 if (!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])) {
@@ -12244,6 +12436,11 @@ mod.directive('infiniteScroll', [
                                         name: Highcharts.dateFormat(serie.tooltip.xDateFormat, new Date(valueX)),
                                         y: valueY
                                     });
+                                } else if (serie.type == 'treemap') {
+                                    serie.data.push({
+                                        name: Highcharts.dateFormat(serie.tooltip.xDateFormat, new Date(valueX)),
+                                        value: valueY
+                                    });
                                 } else {
                                     if (scale === 'logarithmic' && valueY <= 0) {
                                         serie.data.push([
@@ -12275,6 +12472,11 @@ mod.directive('infiniteScroll', [
                                     serie.data[categoryIndex] = {
                                         name: formatRowX(valueX),
                                         y: valueY
+                                    };
+                                } else if (serie.type == 'treemap') {
+                                    serie.data[categoryIndex] = {
+                                        name: formatRowX(valueX),
+                                        value: valueY
                                     };
                                 } else {
                                     if (typeof valueY === 'object') {
@@ -12311,8 +12513,10 @@ mod.directive('infiniteScroll', [
 
                         request_canceller.resolve("new request coming, cancelling current one");
                         request_canceller = $q.defer();
+                        $scope.loading = true;
                         var requestPromise = requestData(parameters.queries, $scope.searchoptions, timeSerieMode, precision, periodic, $scope.domain, $scope.apikey, request_canceller);
                         requestPromise.promise.then(function(http_calls) {
+                            $scope.loading = false;
                             var charts_by_calls = requestPromise.charts;
                             // If there is both periodic & datetime timescale, we need to find the min date to properly offset the periodic data
                             var minDate;
@@ -12348,10 +12552,10 @@ mod.directive('infiniteScroll', [
                                 var categoryIndex;
 
                                 if (serieIndex === -1) {
-                                    options.series.push(getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain));
+                                    options.series.push(getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope));
                                     serieIndex = registered_series.push(serieHash) - 1;
                                 } else if (!options.series[serieIndex]) {
-                                    options.series[serieIndex] = getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain);
+                                    options.series[serieIndex] = getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope);
                                 }
 
                                 if (!precision && (categoryIndex = options.xAxis.categories.indexOf(valueX)) === -1) {
@@ -12359,10 +12563,11 @@ mod.directive('infiniteScroll', [
                                     options.xAxis.categories.push(valueX);
                                 }
 
+                                angular.extend(options.series[serieIndex].tooltip, serie_options);
                                 if (!rawValueX && serie.type !== 'pie') {
-                                    pushValues(angular.extend(options.series[serieIndex], serie_options), categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, serie.colorScale(valueY).hex(), serie.thresholds || []);
+                                    pushValues(options.series[serieIndex], categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, serie.colorScale(valueY).hex(), serie.thresholds || []);
                                 } else {
-                                    pushValues(angular.extend(options.series[serieIndex], serie_options), categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, options.series[serieIndex].color, serie.thresholds || []);
+                                    pushValues(options.series[serieIndex], categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, options.series[serieIndex].color, serie.thresholds || []);
                                 }
                             }
 
@@ -12446,7 +12651,7 @@ mod.directive('infiniteScroll', [
                                 for (var i = 0; i < results.length; i++) {
                                     var row = results[i];
                                     angular.extend({}, query.defaultValues, row);
-                                    var valueX = getXValue(Highcharts.dateFormat, serie_options.tooltip.xDateFormat, multipleXs ? row.x[xAxis]: row.x, minDate, precision);
+                                    var valueX = getXValue(Highcharts.dateFormat, serie_options.xDateFormat, multipleXs ? row.x[xAxis]: row.x, minDate, precision);
 
                                     var j = 0;
                                     // iterate on all entries in the row...
@@ -12521,6 +12726,7 @@ mod.directive('infiniteScroll', [
                             });
 
                             var categories = options.xAxis.categories;
+                            
                             if (categories) {
                                 for (var i = 0; i < options.series.length; i++) {
                                     for (var k = 0; k < categories.length; k++) {
@@ -12539,7 +12745,7 @@ mod.directive('infiniteScroll', [
                             options.chart.renderTo = chartplaceholder[0];
                             try {
                                 if (options.series.length > 500) {
-                                    odsErrorService.sendErrorNotification(translate("There is too many series to be displayed correctly, try to refine your query a bit."));
+                                    odsErrorService.sendErrorNotification(translate("There are too many series to be displayed correctly, try to refine your query a bit."));
                                     options.series = options.series.slice(0, 10);
                                 }
                                 $scope.chart = new Highcharts.Chart(options, function() {});
@@ -12558,6 +12764,8 @@ mod.directive('infiniteScroll', [
                                     }
                                 }
                             }
+                        }, function(reason) {
+                            $scope.loading = false;
                         });
                     }
                 };
@@ -12859,10 +13067,11 @@ mod.directive('infiniteScroll', [
             transclude: true,
             template: '<div class="odswidget odswidget-charts">' +
                 '<debug data="chart"></debug>' +
-                '<div ods-highcharts-chart parameters="chart" domain="context.domain" apikey="context.apikey"></div>' +
+                '<div ods-highcharts-chart parameters="chart" domain="context.domain" apikey="context.apikey" contexts="contexts"></div>' +
                 '<div ng-transclude></div>' +
             '</div>',
             controller: ['$scope', '$element', '$attrs', '$transclude', function($scope, $element, $attrs, $transclude) {
+                $scope.contexts = [];
                 if (!$scope.chart) {
                     $scope.chart = {
                         queries: [],
@@ -12969,6 +13178,8 @@ mod.directive('infiniteScroll', [
                                 $scope.chart.queries[index].sort = groups[1] + 'serie' + (index + 1) + '-' + groups[2];
                             }
                         }
+                        // copy the used context to the current $scope
+                        $scope.contexts.push(context);
                         // make sure everything is correctly set before displying it:
                         var uniqueid = ChartHelper.getDatasetId(context);
 
@@ -13066,7 +13277,6 @@ mod.directive('infiniteScroll', [
                         }
 
                         var context = attrs.context;
-
                         scope[context].wait().then(function(dataset) {
                             ChartHelper.init(scope[context]);
                             query.config.dataset = dataset.datasetid;
@@ -13111,9 +13321,13 @@ mod.directive('infiniteScroll', [
          * @param {boolean} [logarithmic] display the serie using a logarithmic scale
          * @param {integer} [min] minimum value to be displayed on the Y axis
          * @param {integer} [max] maximum value to be displayed on the Y axis
+         * @param {boolean} [displayUnits] enable the display of the units defined for the field in the tooltip
+         * @param {number} [multiplier] multiply all values for this serie by the defined number
          * @param {string} [colorThresholds] an array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the definedf color is used.
          * @param {string} [subsets] used when functionY is set to 'QUANTILES' to define the wanted quantile
          * @param {boolean} [subseries] an array containing 2 objects. TODO add explanation for this...
+         * @param {string} [refineOnClickContext] context name or array of of contexts name on which to refine when the serie is clicked on.
+         * @param {string} [refineOnClick[context]ContextField] name of the field that will be refined for each context.
          *
          * @description
          * odsChartSerie is the sub widget that defines a serie in the chart with all its parameters.
@@ -13149,10 +13363,13 @@ mod.directive('infiniteScroll', [
             controller: ['$scope', '$transclude', function($scope, $transclude) {
             }],
             link: function(scope, element, attrs, ctrl) {
-                var odsChartQueryController = ctrl;
+                var odsChartQueryController = ctrl,
+                    contexts;
 
                 var chart = {
                     type: attrs.chartType || undefined,
+                    innersize: attrs.innersize || undefined,
+                    labelsposition: attrs.labelsposition || undefined,
                     func: attrs.functionY || undefined,
                     yAxis: attrs.expressionY || undefined,
                     color: attrs.color || undefined,
@@ -13161,10 +13378,37 @@ mod.directive('infiniteScroll', [
                     scale: attrs.logarithmic ? 'logarithmic' : '',
                     yRangeMin: angular.isDefined(attrs.min) ? parseInt(attrs.min, 10) : undefined,
                     yRangeMax: angular.isDefined(attrs.max) ? parseInt(attrs.max, 10) : undefined,
-                    thresholds: attrs.colorThresholds || [],
+                    displayUnits: attrs.displayUnits === "true",
+                    displayValues: attrs.displayValues === "true",
+                    multiplier: angular.isDefined(attrs.multiplier) ? parseInt(attrs.multiplier, 10) : undefined,
+                    thresholds: attrs.colorThresholds ? scope.$eval(attrs.colorThresholds) : [],
                     subsets: attrs.subsets,
                     charts: attrs.subseries ? JSON.parse(attrs.subseries) : undefined
                 };
+
+                if (attrs.refineOnClickContext) {
+                    if (!angular.isArray(attrs.refineOnClickContext)) {
+                        contexts = [attrs.refineOnClickContext];
+                    } else {
+                        contexts = attrs.refineOnClickContext;
+                    }
+                    for (var i = 0; i < contexts.length; i++) {
+                        if (attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i]) + 'ContextField']) {
+                            if (!chart.refineOnClick) {
+                                chart.refineOnClick = [];
+                            }
+                            chart.refineOnClick.push({
+                                'context': scope[contexts[i]],
+                                'context-name': contexts[i],
+                                'field': attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i]) + 'ContextField'],
+                                'scopeApply': scope.$apply
+                            });
+                            
+                        } else {
+                            console.warn('Field for context ' + ODS.StringUtils.capitalize(contexts[i]) + ' is not set in chart.');
+                        }
+                    }
+                }
                 angular.forEach(chart, function(item, key) {
                     if (typeof item === "undefined") {
                         delete chart[key];
@@ -14427,6 +14671,8 @@ mod.directive('infiniteScroll', [
          * 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a field name in `colorByField` to configure which field will be
          * used to decide on the color. Available for `raw` and `shape`.
          *
+         * When displaying shapes, you can also use `borderColor` and `opacity` to configure the color of the shape border and the opacity of the shape's fill.
+         *
          * If you are displaying data where multiple points or shapes are stacked, you can configure the order in which the items will be
          * displayed in the tooltip, using `tooltipSort` and the name of a field, prefixed by `-` to have a reversed sort.
          * Note: by default, numeric fields are sorted in decreasing order, date and datetime are sorted chronologically, and text fields are sorted
@@ -14575,8 +14821,10 @@ mod.directive('infiniteScroll', [
                         minZoom: 2,
                         basemap: scope.mapContext.basemap,
                         dragging: !isStatic,
+                        keyboard: !isStatic,
                         zoomControl: !isStatic,
-                        prependAttribution: ODSWidgetsConfig.mapPrependAttribution
+                        prependAttribution: ODSWidgetsConfig.mapPrependAttribution,
+                        maxBounds: [[-90, -180], [90, 180]]
                     };
 
                     if (isStatic) {
@@ -15008,25 +15256,27 @@ mod.directive('infiniteScroll', [
                                     scope.drawnItems.addLayer(drawn);
                                     setLayerNonInteractive(scope.drawnItems.getLayers()[0]);
                                 }
-                            }
 
-                            // Apply to every context available
-                            angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true), function(ctx) {
-                                if (nv) {
-                                    // There is something to apply
-                                    if (nv.shape === 'circle') {
-                                        ctx.parameters['geofilter.distance'] = nv.coordinates;
-                                        delete ctx.parameters['geofilter.polygon'];
-                                    } else if (nv.shape === 'polygon') {
-                                        ctx.parameters['geofilter.polygon'] = nv.coordinates;
-                                        delete ctx.parameters['geofilter.distance'];
-                                    }
-                                } else {
-                                    // Remove the filters
-                                    delete ctx.parameters['geofilter.polygon'];
-                                    delete ctx.parameters['geofilter.distance'];
-                                }
-                            });
+                                // Apply to every context available
+                                waitForVisibleContexts().then(function() {
+                                    angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true), function(ctx) {
+                                        if (nv) {
+                                            // There is something to apply
+                                            if (nv.shape === 'circle') {
+                                                ctx.parameters['geofilter.distance'] = nv.coordinates;
+                                                delete ctx.parameters['geofilter.polygon'];
+                                            } else if (nv.shape === 'polygon') {
+                                                ctx.parameters['geofilter.polygon'] = nv.coordinates;
+                                                delete ctx.parameters['geofilter.distance'];
+                                            }
+                                        } else {
+                                            // Remove the filters
+                                            delete ctx.parameters['geofilter.polygon'];
+                                            delete ctx.parameters['geofilter.distance'];
+                                        }
+                                    });
+                                });
+                            }
 
                         }, true);
                     };
@@ -15038,7 +15288,6 @@ mod.directive('infiniteScroll', [
                     // Watches all the active contexts, and resolves once they are ready
                     // FIXME: Include joinContexts and refineOnClickContexts
                     var contexts = MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig);
-
                     var promises = contexts.map(function(context) { return context.wait(); });
                     $q.all(promises).then(function() {
                         syncGeofilterToDrawing();
@@ -15133,6 +15382,8 @@ mod.directive('infiniteScroll', [
                 context: '=',
                 showIf: '=',
                 color: '@',
+                borderColor: '@',
+                opacity: '@',
                 colorScale: '@',
                 colorRanges: '@',
                 colorByField: '@',
@@ -15189,7 +15440,20 @@ mod.directive('infiniteScroll', [
                     };
                 }
 
-                var layer = MapHelper.MapConfiguration.createLayerConfiguration(customTemplate, color, scope.picto, scope.display, scope['function'], scope.expression, scope.localKey, scope.remoteKey, scope.tooltipSort, scope.hoverField);
+                var config = {
+                    'color': color,
+                    'borderColor': scope.borderColor,
+                    'opacity': scope.opacity,
+                    'picto': scope.picto,
+                    'display': scope.display,
+                    'function': scope['function'],
+                    'expression': scope.expression,
+                    'localKey': scope.localKey,
+                    'remoteKey': scope.remoteKey,
+                    'tooltipSort': scope.tooltipSort,
+                    'hoverField': scope.hoverField
+                };
+                var layer = MapHelper.MapConfiguration.createLayerConfiguration(customTemplate, config);
                 var layerGroup;
                 if (layerGroupCtrl) {
                     // Register to the group
@@ -15206,10 +15470,9 @@ mod.directive('infiniteScroll', [
                 }
 
                 var unwatch = scope.$watch('context', function(nv, ov) {
-                    layer.context = nv;
-
-                    var unwatchSchema = scope.$watch('context.dataset', function(nv) {
-                        if (nv) {
+                    if (nv) {
+                        layer.context = nv;
+                        nv.wait().then(function() {
                             if (scope.showMarker) {
                                 layer.marker = (scope.showMarker.toLowerCase() === 'true');
                             } else if (layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape') !== null) {
@@ -15220,13 +15483,9 @@ mod.directive('infiniteScroll', [
 
                             layer.color = layer.color || layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || "#C32D1C";
                             layer.picto = layer.picto || layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
-
-
-                            unwatchSchema();
-                        }
-                    });
-
-                    unwatch();
+                        });
+                        unwatch();
+                    }
                 });
 
                 var unwatchJoinContext = scope.$watch('joinContext', function(nv) {
@@ -15254,10 +15513,22 @@ mod.directive('infiniteScroll', [
                     layer.refineOnClick = [];
                     var contexts = angular.isArray(nv) && nv || [nv];
                     angular.forEach(contexts, function(ctx) {
+                        var replaceRefine = false;
+                        var attrname = 'refineOnClick' + ODS.StringUtils.capitalize(ctx.name);
+                        if (angular.isDefined(attrs[attrname + 'ReplaceRefine'])) {
+                            if (attrs[attrname + 'ReplaceRefine'] !== 'false') {
+                                replaceRefine = true;
+                            }
+                        } else if (angular.isDefined(attrs.refineOnClickReplaceRefine)) {
+                            if (attrs.refineOnClickReplaceRefine !== 'false') {
+                                replaceRefine = true;
+                            }
+                        }
                         layer.refineOnClick.push({
                             context: ctx,
-                            mapField: attrs['refineOnClick' + ODS.StringUtils.capitalize(ctx.name) + 'MapField'] || attrs.refineOnClickMapField,
-                            contextField: attrs['refineOnClick' + ODS.StringUtils.capitalize(ctx.name) + 'ContextField'] || attrs.refineOnClickContextField
+                            mapField: attrs[attrname + 'MapField'] || attrs.refineOnClickMapField,
+                            contextField: attrs[attrname + 'ContextField'] || attrs.refineOnClickContextField,
+                            replaceRefine: replaceRefine
                         });
                         unwatchRefineOnClick();
                     });
@@ -15330,9 +15601,10 @@ mod.directive('infiniteScroll', [
                         '            <ods-geotooltip width="300" height="300" geojson="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
                         '        </span>' +
                         '        <span ng-switch-when="file">' +
-                        '            <div ng-bind-html="record.fields[field.name]|displayImageValue:context.dataset.datasetid" style="text-align: center;"></div>' +
+                        '            <div ng-if="!context.dataset.isFieldAnnotated(field, \'has_thumbnails\')" ng-bind-html="record.fields|formatFieldValue:field"></div>' +
+                        '            <div ng-if="context.dataset.isFieldAnnotated(field, \'has_thumbnails\')" ng-bind-html="record.fields[field.name]|displayImageValue:context.dataset.datasetid" style="text-align: center;"></div>' +
                         '        </span>' +
-                        '        <span ng-switch-default title="{{record.fields|formatFieldValue:field}}" ng-bind-html="record.fields|formatFieldValue:field|imagify|youtubify|prettyText|nofollow"></span>' +
+                        '        <span ng-switch-default title="{{record.fields|formatFieldValue:field}}" ng-bind-html="record.fields|formatFieldValue:field|imagify|videoify|prettyText|nofollow"></span>' +
                         '    </dd>' +
                         '</dl>' +
                     '</div>');
@@ -15375,7 +15647,7 @@ mod.directive('infiniteScroll', [
                         options.geo_digest = $scope.geoDigest;
                     } else if ($scope.gridData) {
                         // From an UTFGrid tile
-                        if ($scope.gridData['ods:geo_type'] === 'GeoPointCluster' || $scope.gridData['ods:geo_type'] === 'GeoShapeCluster') {
+                        if ($scope.gridData['ods:geo_grid'] != null) {
                             // Request geo_grid
                             options.geo_grid = $scope.gridData['ods:geo_grid'];
                         } else {
@@ -15859,8 +16131,9 @@ mod.directive('infiniteScroll', [
             },
             template: '<div class="odswidget odswidget-result-enumerator">' +
                 '<div ods-results="items" ods-results-context="context" ods-results-max="{{maxHits}}">' +
-                    '<div ng-if="!items.length" class="no-results" translate>No results</div>' +
-                    '<div ng-if="items.length && hitsCounter" class="results-count">{{context.nhits}} <span translate>results</span></div>' +
+                    '<div ng-if="loading" class="loading"><i class="icon-spinner icon-spin icon-large"></i></div>' +
+                    '<div ng-if="!loading && !items.length" class="no-results" translate>No results</div>' +
+                    '<div ng-if="!loading && items.length && hitsCounter" class="results-count">{{context.nhits}} <span translate>results</span></div>' +
                     '<div ng-repeat="item in items" inject class="item"></div>' +
                 '</div>' +
                 '<ods-pagination-block ng-if="pagination" context="context" per-page="{{maxHits}}"></ods-pagination-block>' +
@@ -15923,6 +16196,7 @@ mod.directive('infiniteScroll', [
                 $scope.$watch($attrs.odsResultsContext, function(nv) {
                     var options = angular.extend({}, nv.parameters, {'rows': $attrs.odsResultsMax});
                     var variable = $attrs.odsResults || 'results';
+                    $scope.loading = true;
                     if (nv.type === 'catalog') {
                         angular.extend(options, {
                             extrametas: 'true',
@@ -15931,11 +16205,17 @@ mod.directive('infiniteScroll', [
                         ODSAPI.datasets.search(nv, options).success(function(data) {
                             $scope[variable] = data.datasets;
                             nv.nhits = data.nhits;
+                            $scope.loading = false;
+                        }).error(function() {
+                            $scope.loading = false;
                         });
                     } else if (nv.type === 'dataset' && nv.dataset) {
                         ODSAPI.records.search(nv, options).success(function(data) {
                             $scope[variable] = data.records;
                             nv.nhits = data.nhits;
+                            $scope.loading = false;
+                        }).error(function() {
+                            $scope.loading = false;
                         });
                     }
                 }, true);
@@ -16115,7 +16395,8 @@ mod.directive('infiniteScroll', [
             scope: {
                 context: '=',
                 displayedFields: '@',
-                sort: '@'
+                sort: '@',
+                datasetFeedback: '@' // FIXME: This is entirely tied to ODS, which is bad
             },
             replace: true,
             transclude: true,
@@ -16352,6 +16633,16 @@ mod.directive('infiniteScroll', [
                     // Insert the record number
                     td = document.createElement('td');
                     var div = document.createElement('div');
+
+                    if ($scope.datasetFeedback === 'true' && $scope.context.dataset.getExtraMeta('explore', 'feedback_enabled')) {
+                        // FIXME: This is entirely tied to ODS platform, it should not be within a widget
+                        var feedbackButton = '<i class="icon-comment table-feedback-icon" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="Suggest changes for this record" translate="ods-tooltip"></i>';
+                        var localScope = $scope.$new(true);
+                        localScope.record = record;
+                        localScope.dataset = $scope.context.dataset;
+                        div.appendChild($compile(feedbackButton)(localScope)[0]);
+                    }
+
                     div.appendChild(document.createTextNode(index+1));
                     td.appendChild(div);
                     tr.appendChild(td);
@@ -16931,12 +17222,15 @@ mod.directive('infiniteScroll', [
             restrict: 'E',
             replace: false,
             template: '<div class="odswidget odswidget-theme-boxes">' +
-                '<ods-facet-enumerator context="context" facet-name="theme">' +
+                '<div class="odswidget odswidget-facet-enumerator">' +
+
+                    '<div ng-repeat="item in items" class="item" ods-facet-enumerator="items" ods-facet-enumerator-context="context" facet-name="theme">' +
+
                     '<a ng-href="{{context.domainUrl}}/explore/?refine.theme={{item.path}}" target="_self" ods-tooltip="{{item.name}} ({{item.count}} jeux de données)" ods-tooltip-direction="bottom" style="display: block;">' +
                         '<ods-theme-picto theme="{{item.name}}"></ods-theme-picto>' +
                     '</a>' +
                 '</div>' +
-                '</ods-facet-enumerator>' +
+                '</div>' +
                 '</div>',
             scope: {
                 context: '='
@@ -17998,6 +18292,10 @@ mod.directive('infiniteScroll', [
         return {
             link: function($scope, $element, $attrs, controller, $transclude) {
                 var innerScope = $scope.$new();
+                if (!$transclude) {
+                    console.warn("inject directive used on an element with no transcluded directives", $element);
+                    return;
+                }
                 $transclude(innerScope, function(clone) {
                     var testClone = clone.clone();
                     testClone.contents().wrapAll('<div>');

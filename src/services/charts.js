@@ -92,6 +92,7 @@
                     group: translate('Area charts'),
                     filter: 'hasNumericField'
                 },
+                {label: translate('Treemap'), type: 'treemap', group: translate('Special')},
                 {label: translate('Area'), type: 'area', group: translate('Area charts')},
                 {label: translate('Area spline'), type: 'areaspline', group: translate('Area charts')},
                 {label: translate('Column chart'), type: 'column', group: translate('Bar charts')},
@@ -469,6 +470,18 @@
                     query.seriesBreakdownTimescale = '';
                 }
 
+                var forceBreakdownRemoval = false;
+                for (var i = 0; i < query.charts.length; i++) {
+                    if (['treemap', 'pie'].indexOf(query.charts[i].type) !== -1) {
+                        forceBreakdownRemoval = true;
+                    }
+                }
+
+                if (forceBreakdownRemoval) {
+                    query.seriesBreakdown = '';
+                    query.seriesBreakdownTimescale = '';
+                }
+
                 if (!query.seriesBreakdown && query.charts.length < 2) {
                     delete query.stacked;
                 }
@@ -634,6 +647,18 @@
                     return field;
                 }
                 return field.type;
+            },
+            getFieldUnit: function(datasetid, fieldName) {
+                var field = this.getField(datasetid, fieldName);
+                if (field.annotations) {
+                    for (var i = 0; i < field.annotations.length; i++) {
+                        if (field.annotations[i].name === "unit") {
+                            return field.annotations[i].args[0];
+                        }
+                    }
+                    return field.annotations.unit;
+                }
+                return false;
             },
             getAvailableFunctions: function(datasetid) {
                 return AggregationHelper.getAvailableFunctions(this.getAvailableY(datasetid).length);

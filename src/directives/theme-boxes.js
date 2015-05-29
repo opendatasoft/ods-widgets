@@ -18,12 +18,15 @@
             restrict: 'E',
             replace: false,
             template: '<div class="odswidget odswidget-theme-boxes">' +
-                '<ods-facet-enumerator context="context" facet-name="theme">' +
+                '<div class="odswidget odswidget-facet-enumerator">' +
+
+                    '<div ng-repeat="item in items" class="item" ods-facet-enumerator="items" ods-facet-enumerator-context="context" facet-name="theme">' +
+
                     '<a ng-href="{{context.domainUrl}}/explore/?refine.theme={{item.path}}" target="_self" ods-tooltip="{{item.name}} ({{item.count}} jeux de données)" ods-tooltip-direction="bottom" style="display: block;">' +
                         '<ods-theme-picto theme="{{item.name}}"></ods-theme-picto>' +
                     '</a>' +
                 '</div>' +
-                '</ods-facet-enumerator>' +
+                '</div>' +
                 '</div>',
             scope: {
                 context: '='

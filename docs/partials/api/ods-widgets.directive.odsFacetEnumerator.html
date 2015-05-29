@@ -31,9 +31,10 @@
 <pre class="prettyprint linenums" ng-set-text="index.html-3" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
 <script type="text/ng-template" id="index.html-3">
     <ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com">
-        <ods-facet-enumerator context="catalog" facet-name="theme">
-            {{ item.name }} ({{ item.count }})
-        </ods-facet-enumerator>
+        <label>Select a facet:</label>
+        <select ng-model="userchoice">
+            <option ng-repeat="item in items" ods-facet-enumerator="items" ods-facet-enumerator-context="catalog" facet-name="publisher" value="{{item.name}}">{{item.name}}</option>
+        </select>
     </ods-catalog-context>
 </script>
 </div>

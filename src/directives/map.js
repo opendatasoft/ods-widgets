@@ -131,6 +131,8 @@
          * 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a field name in `colorByField` to configure which field will be
          * used to decide on the color. Available for `raw` and `shape`.
          *
+         * When displaying shapes, you can also use `borderColor` and `opacity` to configure the color of the shape border and the opacity of the shape's fill.
+         *
          * If you are displaying data where multiple points or shapes are stacked, you can configure the order in which the items will be
          * displayed in the tooltip, using `tooltipSort` and the name of a field, prefixed by `-` to have a reversed sort.
          * Note: by default, numeric fields are sorted in decreasing order, date and datetime are sorted chronologically, and text fields are sorted
@@ -279,8 +281,10 @@
                         minZoom: 2,
                         basemap: scope.mapContext.basemap,
                         dragging: !isStatic,
+                        keyboard: !isStatic,
                         zoomControl: !isStatic,
-                        prependAttribution: ODSWidgetsConfig.mapPrependAttribution
+                        prependAttribution: ODSWidgetsConfig.mapPrependAttribution,
+                        maxBounds: [[-90, -180], [90, 180]]
                     };
 
                     if (isStatic) {
@@ -712,25 +716,27 @@
                                     scope.drawnItems.addLayer(drawn);
                                     setLayerNonInteractive(scope.drawnItems.getLayers()[0]);
                                 }
-                            }
 
-                            // Apply to every context available
-                            angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true), function(ctx) {
-                                if (nv) {
-                                    // There is something to apply
-                                    if (nv.shape === 'circle') {
-                                        ctx.parameters['geofilter.distance'] = nv.coordinates;
-                                        delete ctx.parameters['geofilter.polygon'];
-                                    } else if (nv.shape === 'polygon') {
-                                        ctx.parameters['geofilter.polygon'] = nv.coordinates;
-                                        delete ctx.parameters['geofilter.distance'];
-                                    }
-                                } else {
-                                    // Remove the filters
-                                    delete ctx.parameters['geofilter.polygon'];
-                                    delete ctx.parameters['geofilter.distance'];
-                                }
-                            });
+                                // Apply to every context available
+                                waitForVisibleContexts().then(function() {
+                                    angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true), function(ctx) {
+                                        if (nv) {
+                                            // There is something to apply
+                                            if (nv.shape === 'circle') {
+                                                ctx.parameters['geofilter.distance'] = nv.coordinates;
+                                                delete ctx.parameters['geofilter.polygon'];
+                                            } else if (nv.shape === 'polygon') {
+                                                ctx.parameters['geofilter.polygon'] = nv.coordinates;
+                                                delete ctx.parameters['geofilter.distance'];
+                                            }
+                                        } else {
+                                            // Remove the filters
+                                            delete ctx.parameters['geofilter.polygon'];
+                                            delete ctx.parameters['geofilter.distance'];
+                                        }
+                                    });
+                                });
+                            }
 
                         }, true);
                     };
@@ -742,7 +748,6 @@
                     // Watches all the active contexts, and resolves once they are ready
                     // FIXME: Include joinContexts and refineOnClickContexts
                     var contexts = MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig);
-
                     var promises = contexts.map(function(context) { return context.wait(); });
                     $q.all(promises).then(function() {
                         syncGeofilterToDrawing();
@@ -837,6 +842,8 @@
                 context: '=',
                 showIf: '=',
                 color: '@',
+                borderColor: '@',
+                opacity: '@',
                 colorScale: '@',
                 colorRanges: '@',
                 colorByField: '@',
@@ -893,7 +900,20 @@
                     };
                 }
 
-                var layer = MapHelper.MapConfiguration.createLayerConfiguration(customTemplate, color, scope.picto, scope.display, scope['function'], scope.expression, scope.localKey, scope.remoteKey, scope.tooltipSort, scope.hoverField);
+                var config = {
+                    'color': color,
+                    'borderColor': scope.borderColor,
+                    'opacity': scope.opacity,
+                    'picto': scope.picto,
+                    'display': scope.display,
+                    'function': scope['function'],
+                    'expression': scope.expression,
+                    'localKey': scope.localKey,
+                    'remoteKey': scope.remoteKey,
+                    'tooltipSort': scope.tooltipSort,
+                    'hoverField': scope.hoverField
+                };
+                var layer = MapHelper.MapConfiguration.createLayerConfiguration(customTemplate, config);
                 var layerGroup;
                 if (layerGroupCtrl) {
                     // Register to the group
@@ -910,10 +930,9 @@
                 }
 
                 var unwatch = scope.$watch('context', function(nv, ov) {
-                    layer.context = nv;
-
-                    var unwatchSchema = scope.$watch('context.dataset', function(nv) {
-                        if (nv) {
+                    if (nv) {
+                        layer.context = nv;
+                        nv.wait().then(function() {
                             if (scope.showMarker) {
                                 layer.marker = (scope.showMarker.toLowerCase() === 'true');
                             } else if (layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape') !== null) {
@@ -924,13 +943,9 @@
 
                             layer.color = layer.color || layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || "#C32D1C";
                             layer.picto = layer.picto || layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
-
-
-                            unwatchSchema();
-                        }
-                    });
-
-                    unwatch();
+                        });
+                        unwatch();
+                    }
                 });
 
                 var unwatchJoinContext = scope.$watch('joinContext', function(nv) {
@@ -958,10 +973,22 @@
                     layer.refineOnClick = [];
                     var contexts = angular.isArray(nv) && nv || [nv];
                     angular.forEach(contexts, function(ctx) {
+                        var replaceRefine = false;
+                        var attrname = 'refineOnClick' + ODS.StringUtils.capitalize(ctx.name);
+                        if (angular.isDefined(attrs[attrname + 'ReplaceRefine'])) {
+                            if (attrs[attrname + 'ReplaceRefine'] !== 'false') {
+                                replaceRefine = true;
+                            }
+                        } else if (angular.isDefined(attrs.refineOnClickReplaceRefine)) {
+                            if (attrs.refineOnClickReplaceRefine !== 'false') {
+                                replaceRefine = true;
+                            }
+                        }
                         layer.refineOnClick.push({
                             context: ctx,
-                            mapField: attrs['refineOnClick' + ODS.StringUtils.capitalize(ctx.name) + 'MapField'] || attrs.refineOnClickMapField,
-                            contextField: attrs['refineOnClick' + ODS.StringUtils.capitalize(ctx.name) + 'ContextField'] || attrs.refineOnClickContextField
+                            mapField: attrs[attrname + 'MapField'] || attrs.refineOnClickMapField,
+                            contextField: attrs[attrname + 'ContextField'] || attrs.refineOnClickContextField,
+                            replaceRefine: replaceRefine
                         });
                         unwatchRefineOnClick();
                     });
@@ -1034,9 +1061,10 @@
                         '            <ods-geotooltip width="300" height="300" geojson="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
                         '        </span>' +
                         '        <span ng-switch-when="file">' +
-                        '            <div ng-bind-html="record.fields[field.name]|displayImageValue:context.dataset.datasetid" style="text-align: center;"></div>' +
+                        '            <div ng-if="!context.dataset.isFieldAnnotated(field, \'has_thumbnails\')" ng-bind-html="record.fields|formatFieldValue:field"></div>' +
+                        '            <div ng-if="context.dataset.isFieldAnnotated(field, \'has_thumbnails\')" ng-bind-html="record.fields[field.name]|displayImageValue:context.dataset.datasetid" style="text-align: center;"></div>' +
                         '        </span>' +
-                        '        <span ng-switch-default title="{{record.fields|formatFieldValue:field}}" ng-bind-html="record.fields|formatFieldValue:field|imagify|youtubify|prettyText|nofollow"></span>' +
+                        '        <span ng-switch-default title="{{record.fields|formatFieldValue:field}}" ng-bind-html="record.fields|formatFieldValue:field|imagify|videoify|prettyText|nofollow"></span>' +
                         '    </dd>' +
                         '</dl>' +
                     '</div>');
@@ -1079,7 +1107,7 @@
                         options.geo_digest = $scope.geoDigest;
                     } else if ($scope.gridData) {
                         // From an UTFGrid tile
-                        if ($scope.gridData['ods:geo_type'] === 'GeoPointCluster' || $scope.gridData['ods:geo_type'] === 'GeoShapeCluster') {
+                        if ($scope.gridData['ods:geo_grid'] != null) {
                             // Request geo_grid
                             options.geo_grid = $scope.gridData['ods:geo_grid'];
                         } else {

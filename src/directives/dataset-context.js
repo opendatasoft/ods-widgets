@@ -111,7 +111,14 @@
                 });
                 contextParams = null;
             } else {
-                contextParams = {};
+                if (angular.equals(parameters, {})) {
+                    // Typically someone passing a handmade object from an outerscope, to change it or watch it.
+                    // Note that this is different from the first clause above, because it needs to pass AFTER
+                    // parameters-from-context.
+                    contextParams = parameters;
+                } else {
+                    contextParams = {};
+                }
             }
 
             if (source && contextParams) {
@@ -130,8 +137,8 @@
                     url += '&' + ODS.URLUtils.getAPIQueryString(angular.extend({}, this.parameters, parameters));
                     return url;
                 },
-                'toggleRefine': function(facetName, path) {
-                    ODS.Context.toggleRefine(this, facetName, path);
+                'toggleRefine': function(facetName, path, replace) {
+                    ODS.Context.toggleRefine(this, facetName, path, replace);
                 },
                 'name': contextName,
                 'type': 'dataset',
@@ -142,7 +149,7 @@
                 'parameters': contextParams
             };
 
-            ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true, interopmetas: true, source: source}).
+            ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true, interopmetas: true, source: contextParams.source}).
                 success(function(data) {
                     scope[contextName].dataset = new ODS.Dataset(data);
                     deferred.resolve(scope[contextName].dataset);

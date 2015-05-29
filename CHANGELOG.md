@@ -2,6 +2,23 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+
+## 0.1.7 - 2015-05-29
+### Added
+- New `odsFacetResults` widget, which can be used to iterate the values of a facet and build HTML from it (simple list, select, radio buttons...).
+- In `odsChart`, you can now trigger a refine on a context from a click on a bar chart or pie chart using a new `refineOnClickContext` parameter.
+- In `odsChart` you can configure the unit (°C, ...) of displayed values using a new `displayUnits`
+- In `odsMap` you can configure the border color and opacity of shapes using new `borderColor` and `opacity` parameters on the `odsMapLayer` tag.
+- In `odsMap`, if a field contains only a link to a Youtube, Vimeo or Dailymotion video, the video player is directly embedded in the tooltip.
+
+### Removed
+- The `odsFacetEnumerator` is gone (for now), replaced by the slightly lower-level `odsFacetResults` which can be used in more cases.
+
+### Fixed
+- Various fixes for glitches in label display in `odsChart`
+- When an `odsMap` is configured as "static", the user is no longer able to navigate using the keyboard.
+
+
 ## 0.1.6 - 2015-03-27
 ### Added
 - All templates are now inlined instead of external; this means that you won't have any more issue with CORS and widgets such as `odsTable` and `odsMap`. 
@@ -9,7 +26,6 @@ Also, all examples in the documentation should now work, and testing in Plunkr s
 - When using `odsFacets` with the searchbox, the current search is now reset when you select a category.
 - You can now prevent specific parameters to be displayed within `odsFilterSummary`.
 - You can now use a function on `odsDatasetContext` objects to get a link that can be used to download the current data, based on active filters.
-
 
 ### Fixed
 - Fixed a problem where the `odsTimescale` widget may crash if initialized directly upon context initialization.
@@ -25,7 +41,6 @@ to the configuration), and issues on the documentation.
 - Fixed some map pictos from not being displayed under Firefox 36, due to a browser bug.
 - Fixed some cases where a reverse sort on Y axis in `odsChart` would be ignored. 
 - Various IE8 fixes.
-
 
 
 ## 0.1.5 - 2015-02-20
@@ -47,6 +62,7 @@ for more information.
 - The `odsHighcharts` widget now properly uses API keys configured in its context.
 - The `odsSearchbox` widget's placeholder is now properly translated.
 
+
 ## 0.1.4 - 2015-01-28
 ### Added
 - New `odsPaginationBlock` widget, especially used in `odsResultEnumerator` where you can use a new `showPagination` attribute
@@ -66,6 +82,7 @@ in `odsMap` tooltips for example.
 the reuses are listed, instead of a default visualization.
 - `odsSearchBox` now works in every case; previously, depending on how it was initialized, it may have been not working when submitting a search.
 
+
 ## 0.1.3 - 2014-12-04
 ### Added
 - New widget: `odsToggleModel`. It can be used on a checkbox, to add/remove a parameter depending on the state of the checkbox.
@@ -80,6 +97,7 @@ the reuses are listed, instead of a default visualization.
 in the right direction the first time.
 - `odsMap` now handles massive amounts of data much faster than before.
 
+
 ## 0.1.2 - 2014-10-15
 ### Added
 - New widget: `odsFacets`. This widget allows you to insert and finely configure filters for your data, including customizing the way each available
@@ -90,6 +108,7 @@ value is displayed. You can find more information in the documentation.
 ### Fixed
 - Internet Explorer 8 and 9 can now interact with non-local APIs: the widgets now use JSONP to circumvent these browsers'
 limitations with cross-domain requests.
+
 
 ## 0.1.1 - 2014-09-17
 ### Added

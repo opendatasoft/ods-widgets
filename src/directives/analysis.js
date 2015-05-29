@@ -53,7 +53,7 @@
 
         var parseCustomExpression = function(serie, parentserie_for_subseries) {
             var regex = /([A-Z_-]*?)\((.*?)\)/g;
-            var params2regex = /([A-Z_-]*?)\(([a-zA-Z0-9\.]+),\s?([0-9\.]+)\)/g;
+            var params2regex = /([A-Z_-]*?)\(([a-zA-Z0-9\._]+),\s?([0-9\.]+)\)/g;
             var aggregates_holder = parentserie_for_subseries || serie;
             var match;
 
@@ -78,11 +78,13 @@
                     } else { // we are really trying to get values from the index
                         options['func'] = match[1];
                         options['expr'] = match[2];
+                        if (match[3]) {
+                            options['subsets'] = match[3];
+                        }
                         serie.compiled_expr += serie.compiled_expr.replace(match[0], 'y');
                     }
                 }
             }
-
             return options;
         };
 
@@ -146,7 +148,7 @@
                             options["y." + name + ".func"] = serie.func;
                             options["y." + name + ".cumulative"] = serie.cumulative || "false";
                             if (serie.func === 'QUANTILES') {
-                                options["y." + name + ".subset"] = serie.subset || "50";
+                                options["y." + name + ".subsets"] = serie.subsets || "50";
                             }
 
                             if (aggregations[name]) {

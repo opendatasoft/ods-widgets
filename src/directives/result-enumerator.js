@@ -56,8 +56,9 @@
             },
             template: '<div class="odswidget odswidget-result-enumerator">' +
                 '<div ods-results="items" ods-results-context="context" ods-results-max="{{maxHits}}">' +
-                    '<div ng-if="!items.length" class="no-results" translate>No results</div>' +
-                    '<div ng-if="items.length && hitsCounter" class="results-count">{{context.nhits}} <span translate>results</span></div>' +
+                    '<div ng-if="loading" class="loading"><i class="icon-spinner icon-spin icon-large"></i></div>' +
+                    '<div ng-if="!loading && !items.length" class="no-results" translate>No results</div>' +
+                    '<div ng-if="!loading && items.length && hitsCounter" class="results-count">{{context.nhits}} <span translate>results</span></div>' +
                     '<div ng-repeat="item in items" inject class="item"></div>' +
                 '</div>' +
                 '<ods-pagination-block ng-if="pagination" context="context" per-page="{{maxHits}}"></ods-pagination-block>' +

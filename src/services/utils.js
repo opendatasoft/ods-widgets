@@ -14,7 +14,8 @@
                 'js': [
                     ["https://code.highcharts.com/3.0.10/highcharts.js"],
                     ["https://code.highcharts.com/3.0.10/modules/no-data-to-display.js"],
-                    ["https://code.highcharts.com/3.0.10/highcharts-more.js"]
+                    ["https://code.highcharts.com/3.0.10/highcharts-more.js"],
+                    ["https://code.highcharts.com/modules/treemap.js"]
                 ]
             },
             'leaflet': {

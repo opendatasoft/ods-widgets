@@ -30,7 +30,8 @@
             scope: {
                 context: '=',
                 displayedFields: '@',
-                sort: '@'
+                sort: '@',
+                datasetFeedback: '@' // FIXME: This is entirely tied to ODS, which is bad
             },
             replace: true,
             transclude: true,
@@ -267,6 +268,16 @@
                     // Insert the record number
                     td = document.createElement('td');
                     var div = document.createElement('div');
+
+                    if ($scope.datasetFeedback === 'true' && $scope.context.dataset.getExtraMeta('explore', 'feedback_enabled')) {
+                        // FIXME: This is entirely tied to ODS platform, it should not be within a widget
+                        var feedbackButton = '<i class="icon-comment table-feedback-icon" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="Suggest changes for this record" translate="ods-tooltip"></i>';
+                        var localScope = $scope.$new(true);
+                        localScope.record = record;
+                        localScope.dataset = $scope.context.dataset;
+                        div.appendChild($compile(feedbackButton)(localScope)[0]);
+                    }
+
                     div.appendChild(document.createTextNode(index+1));
                     td.appendChild(div);
                     tr.appendChild(td);

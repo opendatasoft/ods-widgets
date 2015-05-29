@@ -57,17 +57,37 @@
         };
     }]);
 
-    mod.filter('youtubify', ['$sce', function($sce) {
-        // Formats:
+    mod.filter('videoify', ['$sce', function($sce) {
+        // Youtube:
         // http(s)://youtu.be/Hh-0y8Qe0Sw
         // http(s)://(www.)youtube.com/watch?v=Hh-0y8Qe0Sw
-        var re = /^https?:\/\/(?:(?:youtu.be\/)|(?:(?:www.)?youtube.com\/watch\?v=))([0-9a-zA-Z-]*)$/i;
+        var re_youtube = /^https?:\/\/(?:(?:youtu.be\/)|(?:(?:www.)?youtube.com\/watch\?v=))([0-9a-z_-]+)$/i;
+
+        // Dailymotion
+        // http://www.dailymotion.com/video/x2pyhdb_roland-garros-2015-quand-le-stade-de-roland-garros-se-prepare-et-s-affaire_sport
+        // http://dai.ly/x2pyhdb
+        var re_dailymotion = /^https?:\/\/(?:(?:dai.ly)|(?:www.dailymotion.com))\/(?:video\/)?([0-9a-z]+)(?:[0-9a-z_-]*)$/i;
+
+        // Vimeo
+        // https://vimeo.com/127051771
+        var re_vimeo = /^https?:\/\/vimeo.com\/([0-9]+)$/i;
+
         return function(url) {
             if (angular.isString(url)) {
-                var match = re.exec(url.trim());
+                var match = re_youtube.exec(url.trim());
                 if (match !== null) {
                     // The first match is the Youtube ID
                     return $sce.trustAsHtml('<iframe width="200" height="113" src="//www.youtube.com/embed/'+match[1]+'" frameborder="0" allowfullscreen></iframe>');
+                }
+                match = re_dailymotion.exec(url.trim());
+                if (match !== null) {
+                    // The first match is the Youtube ID
+                    return $sce.trustAsHtml('<iframe frameborder="0" width="200" height="113" src="//www.dailymotion.com/embed/video/'+match[1]+'" allowfullscreen></iframe>');
+                }
+                match = re_vimeo.exec(url.trim());
+                if (match !== null) {
+                    // The first match is the Youtube ID
+                    return $sce.trustAsHtml('<iframe src="https://player.vimeo.com/video/'+match[1]+'" width="200" height="113" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>');
                 }
             }
             return url;
@@ -155,7 +175,7 @@
                 return $filter('moment')(value, 'LLL');
             } else if (field.type === 'file') { // it's 'file' type really
                 if (angular.isObject(value)) {
-                    return $sce.trustAsHtml('<a target="_self" href="' + 'files/'+value.id+'/download/' + '" />' + (value.filename || record.filename) + '</a>');
+                    return $sce.trustAsHtml('<a target="_self" href="' + 'files/'+value.id+'/download/' + '">' + (value.filename || record.filename) + '</a>');
                 } else {
                     return ''+value;
                 }

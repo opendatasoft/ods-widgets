@@ -44,9 +44,13 @@ see <a href="#/api/ods-widgets.directive:odsChart">odsChart</a> for complete exa
        [logarithmic]="{boolean}"
        [min]="{integer}"
        [max]="{integer}"
+       [display-units]="{boolean}"
+       [multiplier]="{number}"
        [color-thresholds]="{string}"
        [subsets]="{string}"
-       [subseries]="{boolean}"&gt;
+       [subseries]="{boolean}"
+       [refine-on-click-context]="{string}"
+       [refine-on-click[context]-context-field]="{string}"&gt;
 &lt;/ods-chart-serie&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -61,8 +65,12 @@ see <a href="#/api/ods-widgets.directive:odsChart">odsChart</a> for complete exa
 </div></td></tr><tr><td>[logarithmic]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>display the serie using a logarithmic scale</p>
 </div></td></tr><tr><td>[min]</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>minimum value to be displayed on the Y axis</p>
 </div></td></tr><tr><td>[max]</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>maximum value to be displayed on the Y axis</p>
+</div></td></tr><tr><td>[displayUnits]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>enable the display of the units defined for the field in the tooltip</p>
+</div></td></tr><tr><td>[multiplier]</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>multiply all values for this serie by the defined number</p>
 </div></td></tr><tr><td>[colorThresholds]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>an array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the definedf color is used.</p>
 </div></td></tr><tr><td>[subsets]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>used when functionY is set to &#39;QUANTILES&#39; to define the wanted quantile</p>
 </div></td></tr><tr><td>[subseries]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>an array containing 2 objects. TODO add explanation for this...</p>
+</div></td></tr><tr><td>[refineOnClickContext]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>context name or array of of contexts name on which to refine when the serie is clicked on.</p>
+</div></td></tr><tr><td>[refineOnClick[context]ContextField]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>name of the field that will be refined for each context.</p>
 </div></td></tr></tbody></table></div>
 </div>

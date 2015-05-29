@@ -1,7 +1,7 @@
 (function(target) {
     var ODS = {
         Context: {
-            toggleRefine: function(context, facetName, path) {
+            toggleRefine: function(context, facetName, path, replace) {
                 var refineKey = 'refine.'+facetName;
                 if (angular.isDefined(context.parameters[refineKey])) {
                     // There is at least one refine already
@@ -9,6 +9,7 @@
                     if (!angular.isArray(refines)) {
                         refines = [refines];
                     }
+
                     if (refines.indexOf(path) > -1) {
                         // Remove the refinement
                         refines.splice(refines.indexOf(path), 1);
@@ -23,7 +24,11 @@
                                 refines.splice(idx, 1);
                             }
                         });
-                        refines.push(path);
+                        if (angular.isUndefined(replace) || replace === false) {
+                            refines.push(path);
+                        } else {
+                            refines = [path];
+                        }
                     }
 
                     if (refines.length === 0) {
@@ -172,11 +177,7 @@
                 } else if (spatial.type === 'Point') {
                     parameters["geofilter.distance"] = spatial.coordinates[1]+','+spatial.coordinates[0];
                 } else {
-                    // Right now we can't trust the API (yet) to properly handle geofilter.polygon queries for complex
-                    // shapes
-                    var bounds = L.geoJson(spatial).getBounds();
-                    parameters["geofilter.polygon"] = this.getBoundsAsPolygonParameter(bounds);
-//                    parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
+                   parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
                 }
             }
         },
@@ -272,12 +273,12 @@
                 return false;
             };
 
-            var iterateFields = function() {
+            var iterateFields = function(fields) {
                 filtersDescription = {'facets': []};
                 types = [];
                 facetsCount = 0;
-                for (var j=0; j< dataset.fields.length; j++) {
-                    var field = dataset.fields[j];
+                for (var j=0; j< fields.length; j++) {
+                    var field = fields[j];
                     if (isFieldAnnotated(field, 'facet')) {
                         facetsCount++;
                         filtersDescription.facets.push(field);
@@ -301,14 +302,14 @@
                 interop_metas: dataset.interop_metas,
                 setFields: function(fields) {
                     this.fields = fields;
-                    iterateFields();
+                    iterateFields(this.fields);
                 },
                 getUniqueId: function() {
                     return this.metas.domain + '.' + this.datasetid;
                 },
                 getTypes: function() {
                     if (typeof types === "undefined") {
-                        iterateFields();
+                        iterateFields(this.fields);
                     }
                     return types;
                 },
@@ -322,19 +323,19 @@
                 },
                 getFacetsCount: function() {
                     if (typeof facetsCount === "undefined") {
-                        iterateFields();
+                        iterateFields(this.fields);
                     }
                     return facetsCount;
                 },
                 hasFacet: function() {
                     if (typeof facetsCount === "undefined") {
-                        iterateFields();
+                        iterateFields(this.fields);
                     }
                     return facetsCount > 0;
                 },
                 getFilterDescription: function() {
                     if (typeof filtersDescription === "undefined") {
-                        iterateFields();
+                        iterateFields(this.fields);
                     }
                     return filtersDescription;
                 },
@@ -394,6 +395,9 @@
                     } else {
                         return null;
                     }
+                },
+                isFieldAnnotated: function(field, annotationName) {
+                    return isFieldAnnotated(field, annotationName);
                 }
             };
         }

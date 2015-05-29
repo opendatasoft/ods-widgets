@@ -47,6 +47,7 @@
                 $scope.$watch($attrs.odsResultsContext, function(nv) {
                     var options = angular.extend({}, nv.parameters, {'rows': $attrs.odsResultsMax});
                     var variable = $attrs.odsResults || 'results';
+                    $scope.loading = true;
                     if (nv.type === 'catalog') {
                         angular.extend(options, {
                             extrametas: 'true',
@@ -55,11 +56,17 @@
                         ODSAPI.datasets.search(nv, options).success(function(data) {
                             $scope[variable] = data.datasets;
                             nv.nhits = data.nhits;
+                            $scope.loading = false;
+                        }).error(function() {
+                            $scope.loading = false;
                         });
                     } else if (nv.type === 'dataset' && nv.dataset) {
                         ODSAPI.records.search(nv, options).success(function(data) {
                             $scope[variable] = data.records;
                             nv.nhits = data.nhits;
+                            $scope.loading = false;
+                        }).error(function() {
+                            $scope.loading = false;
                         });
                     }
                 }, true);

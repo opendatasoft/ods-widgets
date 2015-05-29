@@ -334,7 +334,18 @@
   text-align: right;
 }
 .ods-chart {
+  position: relative;
   height: 100%;
+  min-height: 200px;
+}
+.ods-chart .loading-tiles {
+  width: 100%;
+  position: absolute;
+  z-index: 100;
+  text-align: center;
+  font-size: 50px;
+  top: 45%;
+  margin-top: -25px;
 }
 .ods-chart .chartplaceholder {
   width: 100%;

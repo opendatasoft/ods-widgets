@@ -99,24 +99,29 @@
                         "activeDatasets": []
                     };
                 },
-                createLayerConfiguration: function(template, color, picto, display, func, expr, localKey, remoteKey, tooltipSort, hoverField) {
-                    display = display || 'auto';
+                createLayerConfiguration: function(template, config) {
+                    if (angular.isUndefined(config)) {
+                        config = {};
+                    }
+                    var display = config.display || 'auto';
                     if (display === 'clusters') { display = 'polygon'; }
                     if (display === 'clustersforced') { display = 'polygonforced'; }
                     if (display === 'raw') { display = 'none'; }
                     return {
                         "context": null,
-                        "color": color,
-                        "picto": picto,
+                        "color": config.color,
+                        "picto": config.picto,
                         "clusterMode": display,
-                        "func": func || (expr ? "AVG" : "COUNT"), // If there is a field, default to the average
-                        "expr": expr || null,
+                        "func": config['function'] || (config.expression ? "AVG" : "COUNT"), // If there is a field, default to the average
+                        "expr": config.expression || null,
                         "marker": null,
                         "tooltipTemplate": template,
-                        "localKey": localKey || null,
-                        "remoteKey": remoteKey || null,
-                        "tooltipSort": tooltipSort,
-                        "hoverField": hoverField || null
+                        "localKey": config.localKey || null,
+                        "remoteKey": config.remoteKey || null,
+                        "tooltipSort": config.tooltipSort,
+                        "hoverField": config.hoverField || null,
+                        "opacity": config.opacity,
+                        "borderColor": config.borderColor
                     };
                 }
             }
@@ -177,9 +182,9 @@
                         service.bindTooltip(map, layerConfig.rendered, layerConfig);
                     }
                     var tilesOptions = {
-                        color: layerConfig.color
-                        //icon: $scope.context.dataset.getExtraMeta('visualization', 'map_marker_picto'),
-                        //showmarker: !$scope.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape')
+                        color: layerConfig.color,
+                        icon: layerConfig.picto,
+                        showmarker: layerConfig.marker
                     };
                     angular.extend(tilesOptions, layerConfig.context.parameters);
                     // Change tile URL
@@ -685,34 +690,47 @@
                                     style: function (feature) {
                                         var opts = angular.copy(geojsonOptions);
                                         opts.fillColor = colorScale(value);
+                                        if (angular.isDefined(layerConfig.opacity)) {
+                                            opts.fillOpacity = layerConfig.opacity;
+                                        }
                                         if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
                                             opts.weight = 5;
                                             opts.color = colorScale(value);
                                         } else {
-                                            opts.color = "#fff";
+                                            if (angular.isDefined(layerConfig.borderColor)) {
+                                                opts.color = layerConfig.borderColor;
+                                            }
                                         }
                                         return opts;
                                     }
                                 });
 
-                                if (layerConfig.refineOnClick) {
-                                    // We're not sure yet what we want to show when we click on an aggregated shape, so we just handled
-                                    // refine on click for now.
-                                    service.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest);
-                                }
 
                                 if (shape.type !== 'LineString' && shape.type !== 'MultiLineString') {
                                     bindMarkerOver(layerConfig, shapeLayer, record, null);
                                 }
+
                                 if (layerConfig.joinContext && layerConfig.hoverField) {
                                     // Always show the value if it exists
                                     if (record.x[0].fields[layerConfig.hoverField]) {
                                         // TODO: We may want to make the value prettier (e.g. format number if it is one)
                                         shapeLayer.bindLabel(record.x[0].fields[layerConfig.hoverField]);
+                                        if (layerConfig.refineOnClick) {
+                                            service.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest, record.x[0].fields[layerConfig.hoverField]);
+                                        }
+                                    } else {
+                                        if (layerConfig.refineOnClick) {
+                                            service.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest);
+                                        }
                                     }
                                 } else {
                                     if ((layerConfig.func !== 'COUNT' && service.isAnalyzeEnabledClustering(layerConfig)) || min !== max) {
                                         shapeLayer.bindLabel(service.formatNumber(value));
+                                    }
+                                    if (layerConfig.refineOnClick) {
+                                        // We're not sure yet what we want to show when we click on an aggregated shape, so we just handled
+                                        // refine on click for now.
+                                        service.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest);
                                     }
                                 }
                                 shapeLayerGroup.addLayer(shapeLayer);
@@ -762,7 +780,7 @@
                         });
 
                         layerGroup.addLayer(shapeLayer);
-                        service.bindTooltip(map, shapeLayer, layerConfig, shape.geometry, shape.id);
+                        service.bindTooltip(map, shapeLayer, layerConfig, shape.geometry, null, shape.geo_digest);
                     }
                     deferred.resolve(layerGroup);
                 });
@@ -817,7 +835,7 @@
             /*                                  */
             /*          INTERACTIONS            */
             /*                                  */
-            bindTooltip: function(map, feature, layerConfig, clusterShape, recordid, geoDigest) {
+            bindTooltip: function(map, feature, layerConfig, clusterShape, recordid, geoDigest, fieldValue) {
                 var service = this;
                 if (layerConfig.refineOnClick) {
                     feature.on('click', function(e) {
@@ -825,7 +843,7 @@
                             return;
                         }
                         // TODO: Support tiles and refineOnClick
-                        service.refineContextOnClick(layerConfig, clusterShape);
+                        service.refineContextOnClick(layerConfig, clusterShape, geoDigest, fieldValue);
                     });
                 } else {
                     // Binds on a feature (marker, shape) so that it shows a popup on click
@@ -849,11 +867,12 @@
                     });
                 }
             },
-            refineContextOnClick: function(layerConfig, shape, digest) {
+            refineContextOnClick: function(layerConfig, shape, digest, fieldValue) {
                 var refineContext = function(refineConfig) {
                     var contextField = refineConfig.contextField;
                     var mapField = refineConfig.mapField;
                     var context = refineConfig.context;
+                    var replaceRefine = refineConfig.replaceRefine;
 
                     if (!mapField && !contextField) {
                         $rootScope.$apply(function() {
@@ -861,25 +880,28 @@
                             ODS.GeoFilter.addGeoFilterFromSpatialObject(context.parameters, shape);
                         });
                     } else {
-                        // We need to retrieve a record for this to work
-                        // FIXME: Factorize with the same code just above
-                        var options = {
-                            format: 'json'
-                        };
-                        if (digest) {
-                            options.geo_digest = digest;
+                        if (angular.isDefined(fieldValue) && mapField == layerConfig.hoverField) {
+                            $rootScope.$apply(function() {
+                                context.toggleRefine(contextField, fieldValue, replaceRefine);
+                            });
                         } else {
-                            ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
-                        }
-                        angular.extend(options, context.parameters, {rows: 1});
-                        ODSAPI.records.download(layerConfig.context, options).success(function(data) {
-                            if (angular.isDefined(data[0].fields[mapField])) {
-                                // Until we can have named parameters, we need to avoid using the q= parameter as it will quickly
-                                // conflict with other widgets that need to interact with the query.
-                                context.toggleRefine(contextField, data[0].fields[mapField]);
-                                //context.parameters.q = contextField + ':"' + record.fields[mapField] + '"';
+                            // We need to retrieve a record for this to work
+                            // FIXME: Factorize with the same code just above
+                            var options = {
+                                format: 'json'
+                            };
+                            if (digest) {
+                                options.geo_digest = digest;
+                            } else {
+                                ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
                             }
-                        });
+                            angular.extend(options, layerConfig.context.parameters, {rows: 1});
+                            ODSAPI.records.download(layerConfig.context, options).success(function(data) {
+                                if (angular.isDefined(data[0].fields[mapField])) {
+                                    context.toggleRefine(contextField, data[0].fields[mapField], replaceRefine);
+                                }
+                            });
+                        }
                     }
                 };
                 // This layer is configured to refine another context on click
