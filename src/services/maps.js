@@ -370,11 +370,18 @@
                                         color: service.getRecordColor(record, layerConfig)
                                     };
                                     opts.fillColor = service.getRecordColor(record, layerConfig);
+                                    if (angular.isDefined(layerConfig.opacity)) {
+                                        opts.fillOpacity = layerConfig.opacity;
+                                    }
                                     if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
                                         opts.weight = 5;
                                         opts.color = service.getRecordColor(record, layerConfig);
                                     } else {
-                                        opts.color = "#fff";
+                                        if (angular.isDefined(layerConfig.borderColor)) {
+                                            opts.color = layerConfig.borderColor;
+                                        } else {
+                                            opts.color = "#fff";
+                                        }
                                     }
                                     return opts;
                                 }
@@ -771,9 +778,16 @@
                             },
                             style: function(feature) {
                                 var opts = angular.copy(geojsonOptions);
+                                if (angular.isDefined(layerConfig.opacity)) {
+                                    opts.fillOpacity = layerConfig.opacity;
+                                }
                                 if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
                                     opts.weight = 5;
                                     opts.color = layerConfig.color;
+                                } else {
+                                    if (angular.isDefined(layerConfig.borderColor)) {
+                                        opts.color = layerConfig.borderColor;
+                                    }
                                 }
                                 return opts;
                             }

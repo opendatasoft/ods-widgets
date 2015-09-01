@@ -32,6 +32,9 @@
                 xs.push(x + '.day');
             } else if (timescale == 'day weekday') {
                 xs.push(x + '.weekday');
+            } else if (timescale == 'hour weekday') {
+                xs.push(x + '.weekday');
+                xs.push(x + '.hour');
             } else if (timescale == 'day month') {
                 xs.push(x + '.yearday');
             } else if (timescale == 'hour hour') {
@@ -43,33 +46,41 @@
         };
         var buildSearchOptions = function(query, timeSerieMode, precision, periodic) {
             var breakdown,
+                xs,
                 search_options = {
-                dataset: query.config.dataset,
-                x: [query.xAxis],
-                sort: query.sort || '',
-                maxpoints: query.maxpoints || ''
-            };
+                    dataset: query.config.dataset,
+                    x: [],
+                    sort: query.sort || '',
+                    maxpoints: query.maxpoints || ''
+                };
+
+            xs = buildTimescaleX(query.xAxis, query.timescale);
+            for (var i = 0; i < xs.length; i++) {
+                search_options.x.push(xs[i]);
+            }
 
             if (query.seriesBreakdown) {
                 breakdown = query.seriesBreakdown;
-                var xs = buildTimescaleX(breakdown, query.seriesBreakdownTimescale);
+                xs = buildTimescaleX(breakdown, query.seriesBreakdownTimescale);
                 for (var i = 0; i < xs.length; i++) {
                     search_options.x.push(xs[i]);
                 }
+            }
+            if (timeSerieMode || query.seriesBreakdown) {
                 search_options['sort'] = search_options.x.map(function(item) { return 'x.' + item }).join(",");
             }
 
-            if (timeSerieMode){
-                search_options.precision = precision;
-                search_options.periodic = periodic;
-            }
+            // if (timeSerieMode){
+            //     search_options.precision = precision;
+            //     search_options.periodic = periodic;
+            // }
 
-            // is there a timescale override ?
-            if(query.timescale){
-                 var tokens = query.timescale.split(' ');
-                 search_options.precision = tokens[0];
-                 search_options.periodic = tokens.length == 2 ? tokens[1] : '';
-            }
+            // // is there a timescale override ?
+            // if(query.timescale){
+            //      var tokens = query.timescale.split(' ');
+            //      search_options.precision = tokens[0];
+            //      search_options.periodic = tokens.length == 2 ? tokens[1] : '';
+            // }
             return search_options;
         };
         var parseCustomExpression = function(serie, serieprefix, parentserie_for_subseries) {
@@ -419,6 +430,9 @@
                 options.xAxis.labels.format = "{value: %B}";
             } else if (periodic === "weekday") {  // day of week
                 options.xAxis.labels.format = "{value: %A}";
+                if (precision === "hour") {
+                    options.xAxis.labels.format = "{value: %A %Hh}";
+                }
             } else if (periodic === "day") {  // day of month
                 options.xAxis.labels.format = "{value: %d}";
             } else if (periodic === "hour") {
@@ -554,10 +568,12 @@
                             datePattern = '%e';
                         }
                     }
-                    if('weekday' in object){
+                    if('weekday' in object) {
                         datePattern = '%a';
-                    }
-                    if('hour' in object){
+                        if('hour' in object){
+                            datePattern += ' %Hh';
+                        }
+                    } else if ('hour' in object){
                          datePattern = '%Hh';
                     }
                 } else {
@@ -604,7 +620,7 @@
                     options.minTickInterval = Date.UTC(2010, 1, 1, 2) - Date.UTC(2010, 1, 1, 1);
                 } else if ('weekday' in x){
                     options.minTickInterval = Date.UTC(2010, 1, 2) - Date.UTC(2010, 1, 1);
-                } else if ('day' in x) {
+                } else if ('day' in x || 'yearday' in x) {
                     options.minTickInterval = Date.UTC(2010, 1, 2) - Date.UTC(2010, 1, 1);
                 } else if ('month' in x){
                     options.minTickInterval = Date.UTC(2010, 1, 1) - Date.UTC(2010, 0, 1);
@@ -652,7 +668,7 @@
             var minDay = minDate ? minDate.getDate() : 1;
             var minHour = minDate ? minDate.getHours() : 0;
             var minMinute = minDate ? minDate.getMinutes() : 0;
-            if (angular.isObject(x) && ('year' in x || 'month' in x || 'day' in x || 'hour' in x || 'minute' in x || 'weekday' in x)) {
+            if (angular.isObject(x) && ('year' in x || 'month' in x || 'day' in x || 'hour' in x || 'minute' in x || 'weekday' in x || 'yearday' in x)) {
                 // default to 2000 because it's a leap year
                 var date = new Date(x.year || minYear, x.month-1 || 0, x.day || 1, x.hour || 0, x.minute || 0);
                 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
@@ -664,6 +680,9 @@
                 if(! ('year' in x)){
                     if('weekday' in x){
                         date.setDate(date.getDate() + 7 - date.getDay() + x.weekday );
+                    }
+                    if('yearday' in x){
+                        date.setDate(0 + x.yearday );
                     }
                 }
                 if('day' in x){
@@ -1369,13 +1388,37 @@
                             if (angular.isString($scope.chartConfig)) {
                                 $scope.chart = JSON.parse(b64_to_utf8($scope.chartConfig));
                             } else {
-                                $scope.chart = $scope.chartConfig;
+                                $scope.chart = angular.copy($scope.chartConfig);
                             }
                         }
                         $scope.$broadcast('chartConfigReady', $scope.chart); //FIXME: broadcasts still used?
 
                         $scope.$watch('chart', function(nv) {
-                            if (nv || ov) {
+                            if (nv) {
+
+                                var uniqueid = ChartHelper.getDatasetId($scope.context);
+
+                                for (var i = 0; i < nv.queries.length; i++) {
+                                    var query = nv.queries[i];
+                                    if (typeof query.xAxis === "undefined") {
+                                        ChartHelper.setDefaultQueryValues(uniqueid, query, true);
+                                    }
+
+                                    for (var j = 0; j < query.charts.length; j++) {
+                                        ChartHelper.setSerieDefaultValues(uniqueid, query.charts[j], query.xAxis, true);
+                                    }
+
+                                    ChartHelper.setDefaultQueryValues(uniqueid, query, true);
+
+                                    if ($scope.chart.queries.length === 1) {
+                                        ChartHelper.setChartDefaultValues(uniqueid, nv, true);
+                                    }
+
+                                    for (var j = 0; j < query.charts.length; j++) {
+                                        ChartHelper.setSerieDefaultColors(query.charts[j], query.seriesBreakdown);
+                                    }
+                                }
+
                                 $scope.$broadcast('chartConfigReady', $scope.chart);
                             }
                         }, true);
@@ -1797,7 +1840,7 @@
          * @param {integer} [max] maximum value to be displayed on the Y axis
          * @param {boolean} [displayUnits] enable the display of the units defined for the field in the tooltip
          * @param {number} [multiplier] multiply all values for this serie by the defined number
-         * @param {string} [colorThresholds] an array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the definedf color is used.
+         * @param {string} [colorThresholds] an array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the defined color is used. The format for this parameter is color-thresholds="[{'value': 5, 'color': '#00ff00'},{'value': 10, 'color': '#ffff00'}]"
          * @param {string} [subsets] used when functionY is set to 'QUANTILES' to define the wanted quantile
          * @param {boolean} [subseries] an array containing 2 objects. TODO add explanation for this...
          * @param {string} [refineOnClickContext] context name or array of of contexts name on which to refine when the serie is clicked on.

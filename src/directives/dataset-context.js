@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsDatasetContext', ['ODSAPI', '$q', '$interpolate', function(ODSAPI, $q, $interpolate) {
+    mod.directive('odsDatasetContext', ['ODSAPI', '$q', '$interpolate', 'URLSynchronizer', function(ODSAPI, $q, $interpolate, URLSynchronizer) {
         /**
          *
          *  @ngdoc directive
@@ -48,6 +48,10 @@
          *
          *  * **`parametersFromContext`** {@type string} (optional) The name of a context to replicate the parameters from. Any change of the parameters
          *  in this context or the original context will be applied to both.
+         *
+         *  * **`urlsync`** {@type Boolean} Enable synchronization of the parameters to the page's parameters (query string). If you share the page with parameters in the URL, the context will
+         *  use them; and if the context parameters change, the URL parameters will change as well. If enabled, **`parameters`** and **`parametersFromContext`** won't have any effect.
+         *  Note that there can only be a single context with URL synchronization enabled, else the behavior will be unpredictable.
          *
          *  Once created, the context is exposed and accessible as a variable named after it. The context contains properties that you can access directly:
          *
@@ -95,10 +99,13 @@
          *  </pre>
          */
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
-        var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext, source) {
+        var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext, source, urlSync) {
             var contextParams;
             if (!angular.equals(parameters, {})) {
                 contextParams = parameters;
+                if (urlSync) {
+                    console.log('WARNING : Context ' + contextName + ' : There are specific parameters defined, but URL sync is enabled, so the parameters will be ignored.');
+                }
             } else if (parametersFromContext) {
                 var unwatch = scope.$watch(parametersFromContext, function(nv, ov) {
                     if (nv) {
@@ -148,6 +155,11 @@
                 'dataset': null,
                 'parameters': contextParams
             };
+
+            if (urlSync) {
+                // Param
+                URLSynchronizer.addSynchronizedObject(scope, contextName + '.parameters');
+            }
 
             ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true, interopmetas: true, source: contextParams.source}).
                 success(function(data) {
@@ -199,7 +211,9 @@
                         parameters.sort = sort;
                     }
 
-                    exposeContext(domain, datasetID, $scope, contextName, apikey, parameters, parametersFromContext, source);
+                    var urlSync = $scope.$eval($attrs[contextName+'Urlsync']);
+
+                    exposeContext(domain, datasetID, $scope, contextName, apikey, parameters, parametersFromContext, source, urlSync);
                 }
             }]
         };

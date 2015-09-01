@@ -21,14 +21,20 @@ L.ODSTileLayer = L.TileLayer.extend({
     includes: ODSTileLayerMixin,
     initialize: function(options) {
         L.Util.setOptions(this, this.odsOptions);
-        this._initLayer(options.basemap, options.disableAttribution, options.prependAttribution, options.appendAttribution);
+        L.Util.setOptions(this, options);
+        this._initLayer(
+            this.options.basemap,
+            this.options.disableAttribution,
+            this.options.prependAttribution,
+            this.options.appendAttribution);
     },
-    _mapboxUrl: function(mapId) {
-        var url = '//{s}.tiles.mapbox.com/v3/' + mapId + '/{z}/{x}/{y}';
+    _mapboxUrl: function(mapId, accessToken) {
+        var url = '//{s}.tiles.mapbox.com/v4/' + mapId + '/{z}/{x}/{y}';
         if (L.Browser.retina) {
             url += '@2x';
         }
         url += '.png';
+        url += '?access_token=' + accessToken;
         return url;
     },
     _initLayer: function(basemap, disableAttribution, prependAttribution, appendAttribution) {
@@ -68,6 +74,16 @@ L.ODSTileLayer = L.TileLayer.extend({
                     attribution: !disableAttribution ? attrib : '',
                     subdomains: "abc"
                 });
+        } else if (basemap.provider.indexOf('mapbox.') === 0) {
+            attrib = this._addAttributionPart(attrib, 'Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
+            attrib = this._addAttributionPart(attrib, appendAttribution);
+            layerOptions = {
+                minZoom: 1,
+                maxZoom: 21,
+                attribution: !disableAttribution ? attrib : '',
+                subdomains: "abcd"
+            };
+            L.TileLayer.prototype.initialize.call(this, this._mapboxUrl(basemap.provider, basemap.mapbox_access_token), layerOptions);
         } else if (basemap.provider === 'mapbox') {
             attrib = this._addAttributionPart(attrib, 'Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
@@ -83,7 +99,25 @@ L.ODSTileLayer = L.TileLayer.extend({
             if (basemap.maxZoom) {
                 layerOptions.maxZoom = basemap.maxZoom;
             }
-            L.TileLayer.prototype.initialize.call(this, this._mapboxUrl(basemap.mapid), layerOptions);
+            L.TileLayer.prototype.initialize.call(this, this._mapboxUrl(basemap.mapid, basemap.mapbox_access_token), layerOptions);
+        } else if (basemap.provider.indexOf('stamen.') === 0) {
+            var stamenMap = basemap.provider.substring(7);
+            var stamenUrl = '//stamen-tiles-{s}.a.ssl.fastly.net/' + stamenMap + '/{z}/{x}/{y}.png';
+
+            if (stamenMap === 'toner') {
+                attrib = this._addAttributionPart(attrib, 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.');
+            } else {
+                attrib = this._addAttributionPart(attrib, 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.');
+            }
+            attrib = this._addAttributionPart(attrib, appendAttribution);
+            layerOptions = {
+                minZoom: 1,
+                maxNativeZoom: 18,
+                maxZoom: 19,
+                attribution: !disableAttribution ? attrib : '',
+                subdomains: "abcd"
+            };
+            L.TileLayer.prototype.initialize.call(this, stamenUrl, layerOptions);
         } else if (basemap.provider === 'custom') {
             if (basemap.subdomains) {
                 layerOptions.subdomains = basemap.subdomains;
@@ -108,7 +142,12 @@ L.ODSWMSTileLayer = L.TileLayer.WMS.extend({
     includes: ODSTileLayerMixin,
     initialize: function(options) {
         L.Util.setOptions(this, this.odsOptions);
-        this._initLayer(options.basemap, options.disableAttribution, options.prependAttribution, options.appendAttribution);
+        L.Util.setOptions(this, options);
+        this._initLayer(
+            this.options.basemap,
+            this.options.disableAttribution,
+            this.options.prependAttribution,
+            this.options.appendAttribution);
     },
     _initLayer: function(basemap, disableAttribution, prependAttribution, appendAttribution) {
         var layerOptions = {};

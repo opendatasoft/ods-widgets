@@ -2,6 +2,27 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 0.1.8 - 2015-09-01
+### Added
+- New `odsCalendar` widget! Displays a calendar view of your data. Live example: http://data.issy.com/explore/dataset/agendav2/?tab=calendar
+- In `odsDatasetContext`, you can now set `mycontextname-urlsync="true"` to synchronize this context's parameter with
+the page's URL, so that the URL changes when the parameters change. Also, if you arrive on the page with parameters in
+the URL, the context will directly initialize with these parameters. You can use this to make dynamic pages with URL 
+parameters (for examples mypage?refine.city=Paris).
+- In `odsReuses`, you can now pass a template to configure how to display each reuse. More information is available
+in the widget's documentation.
+- In `odsfilterSummary`, there is now an option to not display the "clear all" button below the active filters.
+- In `odsTagCloud`, you can now use the widget as a way to refine your context. See the widget's documentation for more
+information.
+
+### Fixed
+- In `odsThemeBoxes`, fixed a bug where the boxes would not appear at all. Also fixed an alignment bug with Internet
+Explorer.
+- In `odsLastDatasetsFeed` and `odsMostPopularDatasets`, fixed a bug where the theme picto would not be displayed if
+the dataset had more than one theme.
+- In `odsMap`, the border color and opacity options now apply to every visualization mode that displays shapes (previously
+only appeared on the "aggregation" visualization mode).
+
 
 ## 0.1.7 - 2015-05-29
 ### Added

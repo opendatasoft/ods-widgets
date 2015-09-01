@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsReuses', ['ODSAPI', 'ODSWidgetsConfig', '$sce', function(ODSAPI, ODSWidgetsConfig, $sce) {
+    mod.directive('odsReuses', ['ODSAPI', function(ODSAPI) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsReuses
@@ -13,6 +13,17 @@
          * @description
          * This widget displays all reuses published on a domain, in a infinite list of large boxes that presents them
          * in a clear display. The lists show the more recent reuses first.
+         *
+         * You can optionally insert HTML code inside the `<ods-reuses></ods-reuses>` element, in which case it will be used
+         * as a template for each displayed reuse. The following variables are available in the template:
+         * * `reuse.url: URL to the reuse's dataset page
+         * * `reuse.title`: Title of the reuse
+         * * `reuse.thumbnail`: URL to the thumbnail of the reuse
+         * * `reuse.description`: Description of the reuse
+         * * `reuse.created_at`: ISO datetime of reuse's original submission (can be used as `reuse.created_at|moment:'LLL'` to format it)
+         * * `reuse.dataset.title`: Title of the reuse's dataset
+         * * `reuse.user.last_name`: Last name of the reuse's submitter
+         * * `reuse.user.first_name`: First name of the reuse's submitter
          *
          * @example
          *  <example module="ods-widgets">
@@ -26,21 +37,24 @@
         return {
             restrict: 'E',
             replace: true,
+            transclude: true,
             template: '<div class="odswidget odswidget-reuses">' +
                       '  <div infinite-scroll="loadMore()" infinite-scroll-distance="1">' +
-                      '      <div class="reuse-card" ng-repeat="r in reuses" full-click>' +
-                      '          <h2>{{ r.title }} &mdash; <a href="/explore/dataset/{{ r.dataset.id }}/?tab=metas">{{ r.dataset.title }}</a></h2>' +
+                      '      <div class="reuse-card" ng-repeat="reuse in reuses" full-click inject>' +
+                      '          <h2>{{ reuse.title }}' +
+                      '             <a href="/explore/dataset/{{ reuse.dataset.id }}/?tab=metas" class="reuse-dataset-link" target="_self"><span translate>From dataset:</span> {{ reuse.dataset.title }}</a>' +
+                      '          </h2>' +
                       '          <div class="infos">' +
-                      '              <div class="thumbnail" ng-class="{\'no-preview\': !r.thumbnail}">' +
-                      '                  <a ng-show="r.thumbnail" href="{{ r.url }}" main-click title="{{ r.title }}" target="_blank"><img ng-src="{{ r.thumbnail }}" /></a>' +
-                      '                  <i ng-hide="r.thumbnail" class="icon icon-ban-circle"></i>' +
+                      '              <div class="thumbnail" ng-class="{\'no-preview\': !reuse.thumbnail}">' +
+                      '                  <a ng-show="reuse.thumbnail" href="{{ reuse.url }}" main-click title="{{ reuse.title }}" target="_blank"><img ng-src="{{ reuse.thumbnail }}" /></a>' +
+                      '                  <i ng-hide="reuse.thumbnail" class="icon icon-ban-circle"></i>' +
                       '              </div>' +
-                      '              <div class="description">{{ r.description }}</div>' +
+                      '              <div class="description" ng-bind-html="reuse.description|prettyText|safenewlines"></div>' +
                       '          </div>' +
                       '          <div class="author-date">' +
-                      '              <strong ng-if="r.user.first_name || r.user.last_name">{{ r.user.first_name }} {{ r.user.last_name }}</strong>' +
-                      '              <strong ng-if="!r.user.first_name && !r.user.last_name">{{ r.user.username }}</strong>' +
-                      '              <i class="icon-calendar"></i> {{ r.created_at|moment:\'LLL\' }}' +
+                      '              <strong ng-if="reuse.user.first_name || reuse.user.last_name">{{ reuse.user.first_name }} {{ reuse.user.last_name }}</strong>' +
+                      '              <strong ng-if="!reuse.user.first_name && !reuse.user.last_name">{{ reuse.user.username }}</strong>' +
+                      '              <i class="icon-calendar"></i> {{ reuse.created_at|moment:\'LLL\' }}' +
                       '          </div>' +
                       '      </div>' +
                       ' </div>' +

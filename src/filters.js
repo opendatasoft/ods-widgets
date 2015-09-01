@@ -42,6 +42,16 @@
         };
     }]);
 
+    mod.filter('safenewlines', function () {
+        // Used to convert "safe" newlines (from ngSanitize) to <br /> tags
+        return function(text) {
+            if (!text) {
+                return text;
+            }
+            return text.replace(/\n/g, '<br/>').replace(/&#10;/g, '<br/>');
+        };
+    });
+
     mod.filter('imagify', ['$sce', function($sce) {
         var re = /^(http(?:s?):\/\/[^;,]*(?:jpg|jpeg|png|gif)(?:\?[^,;]*)?)(?:$|;|,|&)/i;
         return function(value) {
@@ -115,7 +125,8 @@
         var blacklist = {
             'table': [],
             'map': ['geo_point_2d', 'geo_shape'],
-            'images': ['file']
+            'images': ['file'],
+            'calendar': []
         };
         return function(fields, viz) {
             if (angular.isUndefined(fields)) { return fields; }
@@ -148,11 +159,19 @@
                 if (field.annotations) {
                     for (var a=0; a<field.annotations.length; a++) {
                         if (field.annotations[a].name === 'unit') {
-                            unit = ' ' + field.annotations[a].args[0];
+                            unit = field.annotations[a].args[0];
                         }
                     }
                 }
-                return $filter('number')(value) + unit;
+                var formattedValue = $filter('number')(value);
+                if (unit) {
+                    if (unit === '$') {
+                        formattedValue = unit + formattedValue;
+                    } else {
+                        formattedValue = formattedValue + ' ' + unit;
+                    }
+                }
+                return  formattedValue;
             } else if (field.type === 'geo_point_2d') {
                 return value[0] + ', ' + value[1];
             } else if (field.type === 'geo_shape') {

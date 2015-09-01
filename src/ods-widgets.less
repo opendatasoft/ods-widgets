@@ -9,6 +9,13 @@
             margin: 0 10px 0 0;
         }
     }
+    .tag {
+        font-weight: inherit;
+
+        &.tag-selected {
+            font-weight: bold;
+        }
+    }
 }
 
 .odswidget-timescale {
@@ -31,6 +38,10 @@
             }
         }
     }
+}
+
+.odswidget-theme-picto {
+    > div { height: 100%; }
 }
 
 .odswidget-theme-boxes {
@@ -670,6 +681,10 @@
         h2 {
             border-bottom: 1px solid #dadada;
             margin-bottom: 0.5em;
+            .reuse-dataset-link {
+                display: block;
+                font-size: 0.7em;
+            }
         }
         .infos {
             .thumbnail {
@@ -877,5 +892,77 @@
                 background: rgba(0, 0, 0, 0.2)
             }
         }
+    }
+}
+
+.odswidget-calendar {
+    position: relative;
+    display: block;
+
+    .calendar-loading {
+        position: absolute;
+        font-size: 46px;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.7);
+        z-index: 10;
+        text-align: center;
+
+        .icon-spinner {
+            position: absolute;
+            top: 50%;
+            margin-top: -23px;
+        }
+    }
+
+    .fc-event {
+        cursor: pointer;
+    }
+}
+#qtip-ods {
+    background-color: white;
+    border-radius: 0.4em;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    margin-top: -10px;
+    line-height: normal;
+
+    a.qtip-close {
+        right: 5px;
+        top: 5px;
+        font-size: 2em;
+        text-decoration: none;
+        color: #c3c3c3;
+        border: 0;
+        background: none;
+        &:hover {
+            color: #999;
+            text-decoration: none;
+        }
+    }
+    h2 {
+        text-align: center;
+        padding-right: 1em;
+    }
+    dl {
+        max-height: 200px;
+        font-size: 12px;
+        overflow-y: scroll;
+    }
+    &:after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 50%;
+        bottom: -10px;
+        margin-left: -10px;
+        width: 17px;
+        height: 17px;
+        padding: 1px;
+        transform: rotate(45deg);
+        background-color: white;
+        box-shadow: 1px 1px rgba(0,0,0,0.1);
     }
 }

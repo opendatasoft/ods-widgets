@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsCatalogContext', ['ODSAPI', function(ODSAPI) {
+    mod.directive('odsCatalogContext', ['ODSAPI', 'URLSynchronizer', function(ODSAPI, URLSynchronizer) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsCatalogContext
@@ -39,6 +39,10 @@
          *  * **`apikey`** {@type string} (optional) API Key to use in every API call for this context
          *
          *  * **`parameters`** {@type Object} (optional) An object holding parameters to apply to the context when it is created.
+         *
+         *  * **`urlsync`** {@type Boolean} Enable synchronization of the parameters to the page's parameters (query string). If you share the page with parameters in the URL, the context will
+         *  use them; and if the context parameters change, the URL parameters will change as well. If enabled, **`parameters`** won't have any effect. Note that there can only be a single context
+         *  with URL synchronization enabled, else the behavior will be unpredictable.
          *
          *  Once created, the context is exposed and accessible as a variable named after it. The context contains properties that you can access directly:
          *
@@ -88,6 +92,13 @@
                             ODS.Context.toggleRefine(this, facetName, path, replace);
                         }
                     };
+
+                    if (scope.$eval(attrs[contextName+'Urlsync'])) {
+                        if (!angular.equals(parameters, {})) {
+                            console.log('WARNING : Context ' + contextName + ' : There are specific parameters defined, but URL sync is enabled, so the parameters will be ignored.');
+                        }
+                        URLSynchronizer.addSynchronizedObject(scope, contextName + '.parameters');
+                    }
                 }
             }
         };

@@ -10,6 +10,8 @@
          * @restrict E
          * @param {string} placeholder the text to display as a placeholder when the searchbox is empty
          * @param {string} button the text to display in the "search" button
+         * @param {string} [field=none] The name of a field you want to restrict the search on (i.e. only search on the textual content of a specific field).
+         * The search will be a simple text search and won't support any query language or operators.
          * @param {CatalogContext|DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @description
          * This widget displays a search box that can be used to do a full-text search on a context.
@@ -27,7 +29,8 @@
             scope: {
                 placeholder: '@?',
                 button: '@?',
-                context: '='
+                context: '=',
+                field: '@'
             },
             controller: ['$scope', 'translate', function($scope, translate) {
                 $scope.buttonText = $scope.button || translate("Search");
@@ -40,7 +43,11 @@
                 });
 
                 $scope.applySearch = function() {
-                    $scope.context.parameters.q = $scope.searchExpression;
+                    if ($scope.field && $scope.searchExpression) {
+                        $scope.context.parameters.q = $scope.field + ':"' + $scope.searchExpression + '"';
+                    } else {
+                        $scope.context.parameters.q = $scope.searchExpression;
+                    }
                 };
             }]
         };

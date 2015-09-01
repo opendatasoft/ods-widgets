@@ -117,7 +117,8 @@
             angular.forEach(facets, function(facet) {
                 html += '<ods-facet ' +
                     'name="'+facet.name+'" ' +
-                    'title="'+(facet.title || facet.name)+'" ' +
+                    // We need to escape double quotes when building an attribute value (issue platform#3789)
+                    'title="'+(facet.title && facet.title.replace(/"/g, '&quot;') || facet.name)+'" ' +
                     'sort="'+(facet.sort || '')+'" ' +
                     'disjunctive="'+(facet.disjunctive || '')+'" ' +
                     'hide-if-single-category="'+(facet.hideIfSingleCategory ? 'true' : 'false')+'" ' +

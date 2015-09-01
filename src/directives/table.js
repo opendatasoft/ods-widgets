@@ -42,7 +42,7 @@
                        '         <tr>' +
                        '             <th><div><i ng-show="fetching" class="icon-spinner icon-spin icon-large"></i></div></th>' +
                        '             <th ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray"' +
-                       '                 title="{{ field.name }}"' +
+                       '                 title="{{ field.description }}"' +
                        '                 ng-click="toggleSort(field)"' +
                        '                 ng-class="{\'active\': field.name == context.parameters.sort || \'-\'+field.name == context.parameters.sort}">' +
                        '                 <div>' +
@@ -78,12 +78,14 @@
                        '         </tbody>' +
                        '     </table>' +
                        ' </div>' +
+                       ' <div ng-if="displayDatasetFeedback" class="table-feedback-new"><a ods-dataset-feedback ods-dataset-feedback-dataset="context.dataset"><i class="icon-comment"></i> <span translate>Suggest a new record</span></a></div>' +
                        ' <div class="overlay" ng-hide="fetching || records"><span translate>No results</span></div>' +
                        ' <div class="overlay" ng-hide="(!fetching || records) && !working"><spinner class="spinner"></spinner></div>' +
                     '</div>',
             controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', '$transclude', '$q', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile, $transclude, $q) {
                 $scope.displayedFieldsArray = null;
 
+                $scope.displayDatasetFeedback = false;
                 // Infinite scroll parameters
                 $scope.page = 0;
                 $scope.resultsPerPage = 40;
@@ -119,6 +121,8 @@
 
                 var currentRequestsTimeouts = [];
 
+                var $infiniteScrollElement;
+
                 var refreshRecords = function(init) {
                     $scope.fetching = true;
                     var options = {}, start;
@@ -136,7 +140,13 @@
                         $scope.page++;
                         start = $scope.page * $scope.resultsPerPage;
                     }
-                    jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {start: start});
+                    jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {start: start});
+
+                    // Retrieve only the displayed fields
+                    if ($scope.displayedFieldsArray &&
+                        $scope.context.dataset.fields.length > $scope.displayedFieldsArray.length) {
+                        jQuery.extend(options, {fields: $scope.displayedFieldsArray.join(',')})
+                    }
 
                     if (options.sort) {
                         // If there is a sort parameter on a field that doesn't exist, we remove it. The idea is to ensure that
@@ -269,7 +279,7 @@
                     td = document.createElement('td');
                     var div = document.createElement('div');
 
-                    if ($scope.datasetFeedback === 'true' && $scope.context.dataset.getExtraMeta('explore', 'feedback_enabled')) {
+                    if ($scope.displayDatasetFeedback) {
                         // FIXME: This is entirely tied to ODS platform, it should not be within a widget
                         var feedbackButton = '<i class="icon-comment table-feedback-icon" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="Suggest changes for this record" translate="ods-tooltip"></i>';
                         var localScope = $scope.$new(true);
@@ -463,6 +473,13 @@
                     if (newValue !== oldValue) {
                         displayRecords();
                         $scope.computeLayout();
+                        // make sure the view is always filled with records
+                        if (!$infiniteScrollElement) {
+                            $infiniteScrollElement = $element.find('[infinite-scroll]');
+                        }
+                        if ($element.height() > $infiniteScrollElement.height()) {
+                            $scope.loadMore();
+                        }
                     }
                 });
 
@@ -487,6 +504,8 @@
                         }
                         $scope.context.parameters.sort = sortField;
                     }
+
+                    $scope.displayDatasetFeedback = $scope.datasetFeedback === 'true' && $scope.context.dataset.getExtraMeta('explore', 'feedback_enabled');
 
                     $scope.staticSearchOptions = {
                         rows: $scope.resultsPerPage
@@ -580,7 +599,11 @@
                         } else {
                             var elementHeight = $element.height();
                         }
-                        $element.find('.records-body').height(elementHeight - 25); // Horizontal scrollbar height
+                        var bodyOffset = 0;
+                        if ($scope.displayDatasetFeedback) {
+                            bodyOffset = $element.find('.table-feedback-new').height() + 5;
+                        }
+                        $element.find('.records-body').height(elementHeight - 25 - bodyOffset); // Horizontal scrollbar height
 
                         var recordHeight = recordsBody.find('tr').eq(1).height();
                         var bodyHeight = (rows.length-2)*recordHeight; // Don't take in account placeholders

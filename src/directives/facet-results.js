@@ -12,6 +12,8 @@
          * @param {string} [odsFacetResults=results] Variable name to use
          * @param {CatalogContext|DatasetContext} odsFacetResultsContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {string} odsFacetResultsFacetName Name of the facet to enumerate
+         * @param {string} [odsFacetResultsSort=count] How to sort the categories: either `count`, `-count` (sort by number of items in each category),
+         * `num`, `-num` (sort by the name of category if it is a number), `alphanum`, `-alphanum` (sort by the name of the category).
          * @description
          * This widget fetches the results of enumerating the values ("categories") of a facet, and exposes it in a variable available in the scope. It can be used with AngularJS's ngRepeat to simply build a list
          * of results.
@@ -44,7 +46,13 @@
                 $scope.$watch($attrs.odsFacetResultsContext, function(nv) {
                     var query;
                     var facetName = $attrs.odsFacetResultsFacetName;
-                    var options = angular.extend({}, nv.parameters, {'rows': 0, 'facet': facetName});
+
+                    var sort = {};
+                    if ($attrs.odsFacetResultsSort) {
+                        sort['facetsort.'+facetName] = $attrs.odsFacetResultsSort;
+                    }
+
+                    var options = angular.extend({}, nv.parameters, {'rows': 0, 'facet': facetName}, sort);
                     var variable = $attrs.odsFacetResults || 'results';
                     if (nv.type === 'dataset' && nv.dataset) {
                         query = ODSAPI.records.search(nv, options);

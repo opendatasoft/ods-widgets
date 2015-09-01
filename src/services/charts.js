@@ -50,6 +50,7 @@
                 'month month': translate('Month of year'),
                 'day day': translate('Day of month'),
                 'day weekday': translate('Day of week'),
+                'hour weekday': translate('Hour per weekday'),
                 'day month': translate('Day of year'),
                 'hour hour': translate('Hour of day')
             },
@@ -111,6 +112,7 @@
                 'month month',
                 'day day',
                 'day weekday',
+                'hour weekday',
                 'day month',
                 'hour hour'
             ],
@@ -355,7 +357,7 @@
                 var availableChartTypes = [];
                 if (datasets[datasetid]) {
                     for (var i = 0; i < availableCharts.length; i++) {
-                        if ((stacked && ['column', 'area', 'areaspline', 'line', 'spline'].indexOf(availableCharts[i].type) !== -1) || !stacked) {
+                        if ((stacked && ['column', 'area', 'areaspline', 'line', 'spline', 'bar'].indexOf(availableCharts[i].type) !== -1) || !stacked) {
                             if (typeof availableCharts[i].filter === 'undefined') {
                                 availableChartTypes.push(availableCharts[i]);
                             } else if (datasets[datasetid][availableCharts[i].filter]()) {

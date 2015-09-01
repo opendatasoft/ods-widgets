@@ -144,10 +144,27 @@
                     // Currently our API doesn't have a geofilter system that supports querying as a line, so we
                     // query its bounding box instead
                     coordinates = geoJsonPolygon.coordinates;
-                    polygonBounds.push(coordinates[0][1] + ',' + coordinates[0][0]); // Point 1
-                    polygonBounds.push(coordinates[0][1] + ',' + coordinates[1][0]);
-                    polygonBounds.push(coordinates[1][1] + ',' + coordinates[1][0]); // Point 2
-                    polygonBounds.push(coordinates[1][1] + ',' + coordinates[0][0]);
+
+                    // Let's compute the boundingbox
+                    var minLng = null,
+                        minLat = null,
+                        maxLng = null,
+                        maxLat = null;
+                    angular.forEach(coordinates, function(pos) {
+                        // GeoJSON is lng,lat
+                        var lng = pos[0],
+                            lat = pos[1];
+
+                        minLng = minLng === null ? lng : Math.min(minLng, lng);
+                        minLat = minLat === null ? lat : Math.min(minLat, lat);
+                        maxLng = maxLng === null ? lng : Math.max(maxLng, lng);
+                        maxLat = maxLat === null ? lat : Math.max(maxLat, lat);
+                    });
+
+                    polygonBounds.push(minLat + ',' + minLng);
+                    polygonBounds.push(minLat + ',' + maxLng);
+                    polygonBounds.push(maxLat + ',' + maxLng);
+                    polygonBounds.push(maxLat + ',' + minLng);
                 } else {
                     // We are only working on the first set of coordinates
                     coordinates = geoJsonPolygon.coordinates[0];
@@ -320,6 +337,22 @@
                         }
                     }
                     return false;
+                },
+                countFieldType: function (fieldType) {
+                    var count = 0;
+                    for (var i = 0; i < this.fields.length; i++) {
+                        if (this.fields[i].type == fieldType) {
+                            count++;
+                        }
+                    }
+                    return count;
+                },
+                countFieldTypes: function (fieldTypes) {
+                    var count = 0;
+                    for (var i = 0; i < fieldTypes.length; i++) {
+                        count += this.countFieldType(fieldTypes[i]);
+                    }
+                    return count;
                 },
                 getFacetsCount: function() {
                     if (typeof facetsCount === "undefined") {

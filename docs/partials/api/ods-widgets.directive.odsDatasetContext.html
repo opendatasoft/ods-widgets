@@ -40,6 +40,10 @@ Domain value can be:</p>
 <li><p><strong><code>parametersFromContext</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional) The name of a context to replicate the parameters from. Any change of the parameters
 in this context or the original context will be applied to both.</p>
 </li>
+<li><p><strong><code>urlsync</code></strong> <a href="#" class="label type-hint type-hint-boolean">Boolean</a> Enable synchronization of the parameters to the page&#39;s parameters (query string). If you share the page with parameters in the URL, the context will
+use them; and if the context parameters change, the URL parameters will change as well. If enabled, <strong><code>parameters</code></strong> and <strong><code>parametersFromContext</code></strong> won&#39;t have any effect.
+Note that there can only be a single context with URL synchronization enabled, else the behavior will be unpredictable.</p>
+</li>
 </ul>
 <p>Once created, the context is exposed and accessible as a variable named after it. The context contains properties that you can access directly:</p>
 <ul>

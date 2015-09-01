@@ -54,6 +54,27 @@
             'rome': {
                 'css': ['libs/rome/rome.css'],
                 'js': ['libs/rome/rome.standalone.js']
+            },
+            'fullcalendar': {
+                'css': ['libs/fullcalendar/fullcalendar.min.css'],
+                'js': [
+                    'libs/fullcalendar/fullcalendar.min.js'
+                ],
+                'language_specific': {
+                    'ar': {
+                        'js': ['libs/fullcalendar/lang/ar.js']
+                    },
+                    'fr': {
+                        'js': ['libs/fullcalendar/lang/fr.js']
+                    },
+                    'nl': {
+                        'js': ['libs/fullcalendar/lang/nl.js']
+                    }
+                }
+            },
+            'qtip': {
+                'css': ['libs/qtip/jquery.qtip.min.css'],
+                'js': ['libs/qtip/jquery.qtip.min.js']
             }
         };
 
@@ -140,16 +161,28 @@
 
                 return deferred.promise;
             };
-            return function(name) {
-                var module = lazyloading[name];
+            return function() {
                 var promises = [];
-                if (module.css) {
-                    promises.push(loadSequence('css', module.css, $q.defer()));
-                }
-                if (module.js) {
-                    promises.push(loadSequence('js', module.js, $q.defer()));
-                }
+                for (var i=0; i < arguments.length; i++) {
+                    var module = lazyloading[arguments[i]];
+                    // enrich module with language specific settings
+                    if (module.language_specific && module.language_specific[ODSWidgetsConfig.language]) {
+                        angular.forEach(module.language_specific[ODSWidgetsConfig.language], function (sources, type) {
+                            if (module[type]) {
+                                module[type] = module[type].concat(sources);
+                            } else {
+                                module[type] = sources;
+                            }
+                        });
+                    }
 
+                    if (module.css) {
+                        promises.push(loadSequence('css', module.css, $q.defer()));
+                    }
+                    if (module.js) {
+                        promises.push(loadSequence('js', module.js, $q.defer()));
+                    }
+                }
                 return $q.all(promises);
             };
         }];
@@ -449,4 +482,182 @@
             }
         };
     });
+
+    mod.factory('URLSynchronizer', ['$location', '$document', function($location, $document) {
+        /*
+        This service handles the synchronization of the querystring in the browser's URL, and specific JavaScript objects.
+
+        The point of this service is to handle the frequent need to store in the URL the content of an object, typically
+        API parameters. This gives the ability to copy the URL at any point, and open it in another browser with the same state.
+        The service can be used to watch a given object in a given scope, and reproduce its content in the URL, and vice versa.
+
+        The service uses $location.search to ensure we do things in an "Angularic" way, and gives us theoric ability to switch
+        to HTML5 when we want.
+
+        You can register any number of JSONObject, but only one regular object that will gather all the non-JSON parameters.
+         */
+        var suspended = false;
+        var syncers = [];
+
+        // Waiting for the day the prefixes are gone
+        $document.bind('webkitfullscreenchange mozfullscreenchange ofullscreenchange msfullscreenchange khtmlfullscreenchange', function() {
+            var fullscreenElement = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement;
+            if (fullscreenElement) {
+                // Stop replicating
+                suspended = true;
+            } else {
+                suspended = false;
+
+                // Apply at once
+                for (var i=0; i<syncers.length; i++) {
+                    syncers[i]();
+                }
+            }
+        });
+        var ignoreList = [];
+        return {
+            addSynchronizedValue: function(scope, objName, urlName, skipHistory) {
+                ignoreList.push(objName);
+                if (urlName) {
+                    ignoreList.push(urlName);
+                }
+                var urlValue = $location.search()[urlName || objName];
+                scope.$eval(objName + '=newObj', {newObj: urlValue});
+
+                var sync = function() {
+                    // Watching the object to sync the changes to URL
+                    var val = scope.$eval(objName);
+                    if (skipHistory) {
+                        $location.replace();
+                    }
+                    $location.search(urlName || objName,val);
+                };
+                var unwatchObject = scope.$watch(objName, function(nv, ov) {
+                    if (!suspended) {
+                        sync();
+                    }
+                }, true);
+
+                syncers.push(sync);
+
+                var unwatchLocation = scope.$watch(function() { return $location.search()[urlName || objName]; }, function(nv, ov) {
+                    // Watching URL param to sync to object
+                    if (nv){
+                        scope.$eval(objName + '=newObj', {newObj: nv});
+                    }
+                }, true);
+
+                return function unwatch() {
+                    unwatchObject();
+                    unwatchLocation();
+                };
+            },
+            addJSONSynchronizedObject: function(scope, objName, urlName) {
+                // Upon first call, the URLparams  erases the current object
+                ignoreList.push(urlName || objName);
+                var urlValue = $location.search()[urlName || objName];
+                if(urlValue){
+                    // does it starts with a {  ?
+                    if(urlValue[0] === '{' ){
+                        // old format ?
+                        scope.$eval(objName + '=newObj', {newObj: JSON.parse(urlValue)});
+                    } else {
+                        // new format
+                        scope.$eval(objName + '=newObj', {newObj: JSON.parse(b64_to_utf8(urlValue))});
+                    }
+                }
+
+                var last_serialization;
+                var sync = function() {
+                    // Watching the object to sync the changes to URL
+                    var val = scope.$eval(objName);
+                    if (typeof val === "undefined") {
+                        val = "";
+                    }
+                    last_serialization = utf8_to_b64(angular.toJson(val));
+                    $location.search(urlName || objName, last_serialization);
+                };
+
+                syncers.push(sync);
+                var unwatch = scope.$watch(function() { return [scope.$eval(objName), $location.search()[urlName || objName]]; }, function(nv, ov) {
+                    if (typeof nv[0] === "undefined") {
+                        nv[0] = "";
+                    }
+                    if (last_serialization !== utf8_to_b64(angular.toJson(nv[0])) && !suspended) {
+                        // sync to url if object has changed since last sync
+                        sync();
+                    } else if (last_serialization !== nv[1] && nv[1]) {
+                        // else if something changed in the url, push it to the object
+                        scope.$eval(function(scope) {
+                            scope[objName] = JSON.parse(b64_to_utf8(nv[1]));
+                        });
+                    }
+                }, true);
+
+                return unwatch;
+            },
+            addSynchronizedObject: function(scope, objName, localObjectIgnoreList) {
+                // Add an object as a synchronized object, meaning its content will be synchronized with the querystring.
+                localObjectIgnoreList = localObjectIgnoreList || [];
+
+                var syncFromURL = function() {
+                    // Watching URL params to sync to object
+                    var nv = angular.copy($location.search());
+                    angular.forEach(nv, function(value, key){
+                        // preserve ignored values
+                        if(ignoreList.indexOf(key) >= 0){
+                            delete nv[key];
+                        }
+                    });
+                    if (localObjectIgnoreList.length > 0) {
+                        var oldVal = scope.$eval(objName);
+                        angular.forEach(localObjectIgnoreList, function(name) {
+                            // We need to keep this parameter
+                            if (angular.isDefined(oldVal[name])) {
+                                nv[name] = oldVal[name];
+                            }
+                        });
+                    }
+                    scope.$eval(objName + '=newVal', {newVal: nv});
+                };
+
+                var syncToURL = function() {
+                    var val = angular.copy(scope.$eval(objName));
+                    angular.forEach(localObjectIgnoreList, function(name) {
+                        // Don't send in the URL this parameters
+                        if (angular.isDefined(val[name])) {
+                            delete val[name];
+                        }
+                    });
+                    angular.forEach($location.search(), function(value, key){
+                        // preserve ignored values
+                        if(ignoreList.indexOf(key) >= 0){
+                            val[key] = value;
+                        }
+                    });
+                    $location.search(val);
+                };
+
+                // Upon first call, the URLparams  erases the current object
+                syncFromURL();
+
+                var unwatchObject = scope.$watch(objName, function(nv, ov) {
+                    if (!suspended) {
+                        // Watching the object to sync the changes to URL
+                        syncToURL();
+                    }
+                }, true);
+
+                syncers.push(syncToURL);
+
+
+                var unwatchLocation = scope.$watch(function() { return $location.search(); }, syncFromURL, true);
+
+                return function unwatch() {
+                    unwatchObject();
+                    unwatchLocation();
+                };
+            }
+        };
+    }]);
 }());

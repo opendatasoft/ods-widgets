@@ -59,10 +59,10 @@ hovers the shapes, using <code>hoverField</code> and the name of a field.</li>
 <p>Apart from <code>heatmap</code>, all display modes support color configuration. Three types of configurations are available, depending on the display mode.</p>
 <ul>
 <li><code>color</code>: a simple color, as an hex code (#FF0F05) or a simple CSS color name like &quot;red&quot;. Available for any mode except <code>heatmap</code>.</li>
-<li><code>colorScale</code>: the name of a ColorBrewer [<a href="http://colorbrewer2.org/">http://colorbrewer2.org/</a>] scheme, like &quot;YlGnBu&quot;. Available for <code>shape</code>.</li>
+<li><code>colorScale</code>: the name of a ColorBrewer [<a href="http://colorbrewer2.org/">http://colorbrewer2.org/</a>] scheme, like &quot;YlGnBu&quot;. Available for <code>aggregation</code>.</li>
 <li><code>colorRanges</code>: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example &quot;red;20;orange;40;#00CE00&quot; to color anything between
 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a field name in <code>colorByField</code> to configure which field will be
-used to decide on the color. Available for <code>raw</code> and <code>shape</code>.</li>
+used to decide on the color. Available for <code>raw</code> and <code>aggregation</code>.</li>
 </ul>
 <p>When displaying shapes, you can also use <code>borderColor</code> and <code>opacity</code> to configure the color of the shape border and the opacity of the shape&#39;s fill.</p>
 <p>If you are displaying data where multiple points or shapes are stacked, you can configure the order in which the items will be
@@ -85,7 +85,7 @@ a <code>fields</code> object with all the values associated with the clicked poi
        &lt;/ods-map-layer&gt;
    &lt;/ods-map&gt;
 </pre>
-<p>If your layer is displayed as <code>raw</code> or <code>shape</code>, you can configure a layer so that a click on an item triggers a refine on another context, using <code>refineOnClickContext</code>.
+<p>If your layer is displayed as <code>raw</code> or <code>aggregation</code>, you can configure a layer so that a click on an item triggers a refine on another context, using <code>refineOnClickContext</code>.
 One or more contexts can be defined:
 <pre class="prettyprint linenums">
     &lt;ods-map&gt;

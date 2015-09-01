@@ -126,10 +126,10 @@
          * Apart from `heatmap`, all display modes support color configuration. Three types of configurations are available, depending on the display mode.
          *
          * - `color`: a simple color, as an hex code (#FF0F05) or a simple CSS color name like "red". Available for any mode except `heatmap`.
-         * - `colorScale`: the name of a ColorBrewer [http://colorbrewer2.org/] scheme, like "YlGnBu". Available for `shape`.
+         * - `colorScale`: the name of a ColorBrewer [http://colorbrewer2.org/] scheme, like "YlGnBu". Available for `aggregation`.
          * - `colorRanges`: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example "red;20;orange;40;#00CE00" to color anything between
          * 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a field name in `colorByField` to configure which field will be
-         * used to decide on the color. Available for `raw` and `shape`.
+         * used to decide on the color. Available for `raw` and `aggregation`.
          *
          * When displaying shapes, you can also use `borderColor` and `opacity` to configure the color of the shape border and the opacity of the shape's fill.
          *
@@ -158,7 +158,7 @@
          *    </ods-map>
          * </pre>
          *
-         * If your layer is displayed as `raw` or `shape`, you can configure a layer so that a click on an item triggers a refine on another context, using `refineOnClickContext`.
+         * If your layer is displayed as `raw` or `aggregation`, you can configure a layer so that a click on an item triggers a refine on another context, using `refineOnClickContext`.
          * One or more contexts can be defined:
          * <pre>
          *     <ods-map>
@@ -282,9 +282,9 @@
                         basemap: scope.mapContext.basemap,
                         dragging: !isStatic,
                         keyboard: !isStatic,
-                        zoomControl: !isStatic,
                         prependAttribution: ODSWidgetsConfig.mapPrependAttribution,
-                        maxBounds: [[-90, -180], [90, 180]]
+                        maxBounds: [[-90, -180], [90, 180]],
+                        zoomControl: false
                     };
 
                     if (isStatic) {
@@ -299,12 +299,24 @@
 //                    map.setView(new L.LatLng(48.8567, 2.3508),13);
                     map.addControl(new L.Control.Scale());
 
+                    if (!isStatic) {
+                        map.addControl(new L.Control.Zoom({
+                            zoomInTitle: translate('Zoom in'),
+                            zoomOutTitle: translate('Zoom out')
+                        }));
+                    }
+
                     if (toolbarFullscreen) {
                         // Only add the Fullscreen control if we are not in an iframe, as it is blocked by browsers
                         try {
                             if (window.self === window.top) {
                                 // We are NOT in an iframe
-                                map.addControl(new L.Control.Fullscreen());
+                                map.addControl(new L.Control.Fullscreen({
+                                    title: {
+                                        'false': translate('View Fullscreen'),
+                                        'true': translate('Exit Fullscreen')
+                                    }
+                                }));
                             }
                         } catch (e) {
                             // We are in an iframe
@@ -346,7 +358,14 @@
                     }
 
                     if (toolbarGeolocation && !isStatic) {
-                        map.addControl(new L.Control.Locate({maxZoom: 18}));
+                        map.addControl(new L.Control.Locate({
+                            maxZoom: 18,
+                            strings: {
+                                title: translate("Show me where I am"),
+                                popup: translate("You are within {distance} {unit} from this point"),
+                                outsideMapBoundsMsg: translate("You seem located outside the boundaries of the map")
+                            }
+                        }));
                     }
 
                     // Drawing
@@ -435,6 +454,11 @@
                         scope.initialLoading = false;
                         onViewportMove(scope.map);
 
+                        if (!isStatic) {
+                            // Initialize all the drawing support events
+                            waitForVisibleContexts().then(initDrawingTools);
+                        }
+
                         scope.map.on('moveend', function(e) {
                             // Whenever the map moves, we update the displayed data
                             scope.$apply(function() {
@@ -451,11 +475,6 @@
                                 refreshData(false, true);
                             }
                         });
-
-                        if (!isStatic) {
-                            // Initialize all the drawing support events
-                            initDrawingTools();
-                        }
 
                         // INitialize watcher
                         scope.$watch(function() {
@@ -716,27 +735,25 @@
                                     scope.drawnItems.addLayer(drawn);
                                     setLayerNonInteractive(scope.drawnItems.getLayers()[0]);
                                 }
-
-                                // Apply to every context available
-                                waitForVisibleContexts().then(function() {
-                                    angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true), function(ctx) {
-                                        if (nv) {
-                                            // There is something to apply
-                                            if (nv.shape === 'circle') {
-                                                ctx.parameters['geofilter.distance'] = nv.coordinates;
-                                                delete ctx.parameters['geofilter.polygon'];
-                                            } else if (nv.shape === 'polygon') {
-                                                ctx.parameters['geofilter.polygon'] = nv.coordinates;
-                                                delete ctx.parameters['geofilter.distance'];
-                                            }
-                                        } else {
-                                            // Remove the filters
-                                            delete ctx.parameters['geofilter.polygon'];
-                                            delete ctx.parameters['geofilter.distance'];
-                                        }
-                                    });
-                                });
                             }
+
+                            // Apply to every context available
+                            angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true), function(ctx) {
+                                if (nv) {
+                                    // There is something to apply
+                                    if (nv.shape === 'circle') {
+                                        ctx.parameters['geofilter.distance'] = nv.coordinates;
+                                        delete ctx.parameters['geofilter.polygon'];
+                                    } else if (nv.shape === 'polygon') {
+                                        ctx.parameters['geofilter.polygon'] = nv.coordinates;
+                                        delete ctx.parameters['geofilter.distance'];
+                                    }
+                                } else {
+                                    // Remove the filters
+                                    delete ctx.parameters['geofilter.polygon'];
+                                    delete ctx.parameters['geofilter.distance'];
+                                }
+                            });
 
                         }, true);
                     };

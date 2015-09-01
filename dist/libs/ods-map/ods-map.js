@@ -1,6 +1,6 @@
 L.ODSMap = L.Map.extend({
     options: {
-        basemapsList: null,
+        basemapsList: [],
         appendAttribution: null,
         prependAttribution: null,
         basemap: null,
@@ -10,7 +10,14 @@ L.ODSMap = L.Map.extend({
     initialize: function (id, options) {
         L.Map.prototype.initialize.call(this, id, options);
         if (options) {
-            this._setTilesProvider(options.basemapsList, options.prependAttribution, options.appendAttribution, options.basemap, options.disableAttribution, options.attributionSeparator);
+            this._setTilesProvider(
+                this.options.basemapsList,
+                this.options.prependAttribution,
+                this.options.appendAttribution,
+                this.options.basemap,
+                this.options.disableAttribution,
+                this.options.attributionSeparator
+            );
         }
     },
     _setTilesProvider: function(basemapsList, prependAttribution, appendAttribution, selectedBasemap, disableAttribution, attributionSeparator) {
@@ -62,7 +69,7 @@ L.ODSMap = L.Map.extend({
             } else {
                 this.addLayer(layers[0]);
             }
-        } else {
+        } else if (layers.length > 0) {
             this.addLayer(layers[0]);
         }
 

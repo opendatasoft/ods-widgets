@@ -4,35 +4,43 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odstagcloud-page"><p>This widget displays a &quot;tag cloud&quot; of the values available in a facet (either the facet of a dataset, or a facet from the dataset catalog). The &quot;weight&quot; (size) of a tag depends on the number
-of occurences (&quot;count&quot;) for this tag.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odstagcloud-page"><p>This widget displays a &quot;tag cloud&quot; of the values available in a facet (either the facet of a dataset, or a
+facet from the dataset catalog). The &quot;weight&quot; (size) of a tag depends on the number of occurences (&quot;count&quot;)
+for this tag.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-tag-cloud
        context="{CatalogContext|DatasetContext}"
        facet-name="{string}"
-       max="{number}"&gt;
+       max="{number}"
+       redirect-to="{string}"
+       context-to-refine="{CatalogContext|DatasetContext}"&gt;
 &lt;/ods-tag-cloud&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstagcloud-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstagcloud-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or
+<a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
 </div></td></tr><tr><td>facetName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstagcloud-page"><p>Name of the facet to build the tag cloud from.</p>
 </div></td></tr><tr><td>max</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstagcloud-page"><p>Maximum number of tags to show in the cloud.</p>
-</div> <p><em>(default: all)</em></p></td></tr></tbody></table></div>
+</div> <p><em>(default: all)</em></p></td></tr><tr><td>redirectTo</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstagcloud-page"><p>URL.
+If specified, a click on any tag will redirect to the given URL and apply the filter there.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>contextToRefine</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstagcloud-page"><p>Specify the context that will be
+refined. If not specified at all, the refined context will be the one defined through the <code>context</code> parameter.</p>
+</div> <p><em>(default: current context)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odstagcloud-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-16" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-19" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-16" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-16">
+<pre class="prettyprint linenums" ng-set-text="index.html-19" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-19">
     <ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com">
         <ods-tag-cloud context="catalog" facet-name="keyword"></ods-tag-cloud>
     </ods-catalog-context>
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-16" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-19" ng-eval-javascript=""></div>
 </div></div>
 </div>

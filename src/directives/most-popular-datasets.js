@@ -29,7 +29,7 @@
                 '<ul>' +
                 '   <li class="no-data" ng-hide="datasets" translate>No data available yet</li>' +
                 '   <li ng-repeat="dataset in datasets" ng-if="datasets">' +
-                '       <ods-theme-picto theme="{{dataset.metas.theme}}"></ods-theme-picto>' +
+                '       <ods-theme-picto theme="{{dataset.metas.theme|firstValue}}"></ods-theme-picto>' +
                 '       <div class="dataset-details">' +
                 '           <div class="title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
                 '           <div class="count"><i class="icon-download-alt"></i> {{ dataset.extra_metas.explore.download_count }} ' + "<span ng-pluralize count=\"dataset.extra_metas.explore.download_count\" translate=\"when\" when=\"{'0': 'download', '1': 'download', 'other': 'downloads'}\"></span>" + '</div>' +

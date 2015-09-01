@@ -1,0 +1,52 @@
+<h1><code ng:non-bindable="">odsCalendar</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>This widget can take any dataset containing at least two datetime fields and a text field and use it to
+display a calendar.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-calendar
+       context="{DatasetContext}"
+       start-field="{string}"
+       end-field="{string}"
+       title-field="{string}"
+       event-color="{string}"
+       tooltip-fields="{string}"&gt;
+&lt;/ods-calendar&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive creates new scope.</li>
+</ul>
+</div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
+</div></td></tr><tr><td>startField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The name of the datetime field to use as event start datetime.</p>
+</div></td></tr><tr><td>endField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The name of the datetime field to use as event end datetime.</p>
+</div></td></tr><tr><td>titleField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The name of the text field to use as event title.</p>
+</div></td></tr><tr><td>eventColor</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The color (in hexadecimal form) used for all events.</p>
+</div> <p><em>(default: #C32D1C)</em></p></td></tr><tr><td>tooltipFields</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>An ordered, comma separated list of fields to display in the event
+tooltip.</p>
+</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><h4 id="example_source">Source</h4>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-3" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html-3" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-3">
+        <ods-dataset-context context="events"
+                             events-domain="public.opendatasoft.com"
+                             events-dataset="evenements-publics-cibul">
+            <ods-calendar context="events"
+                          start-field="date_start"
+                          end-field="date_end"
+                          title-field="title"
+                          event-color="#333"
+                          tooltip-fields="image, latlon, link, description"></ods-calendar>
+        </ods-dataset-context>
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-3" ng-eval-javascript=""></div>
+</div></div>
+</div>
