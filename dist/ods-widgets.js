@@ -7951,7 +7951,7 @@ mod.directive('infiniteScroll', [
                     }
                     var shapefield = shapefields[0].name;
                     getShape = function(item) {
-                        if (item.x[0].fields) {
+                        if (angular.isArray(item.x) && item.x[0].fields) {
                             return item.x[0].fields[shapefield];
                         } else {
                             return null;
