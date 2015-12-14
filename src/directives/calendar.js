@@ -3,8 +3,8 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsCalendar', ['ODSAPI', 'ModuleLazyLoader', 'ODSWidgetsConfig', '$compile',
-        function (ODSAPI, ModuleLazyLoader, ODSWidgetsConfig, $compile) {
+    mod.directive('odsCalendar', ['ODSAPI', 'ModuleLazyLoader', 'ODSWidgetsConfig', '$compile', 'URLSynchronizer',
+        function (ODSAPI, ModuleLazyLoader, ODSWidgetsConfig, $compile, URLSynchronizer) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsCalendar
@@ -17,9 +17,14 @@
          * @param {string} [eventColor=#C32D1C] The color (in hexadecimal form) used for all events.
          * @param {string} [tooltipFields=none] An ordered, comma separated list of fields to display in the event
          * tooltip.
+         * @param {string} [calendarView=month] The default mode for the calendar. Can be 'month', 'agendaWeek' or
+         * 'agendaDay'.
+         * @param {string} [availableCalendarViews='month','agendaWeek','agendaDay'] A comma separated list of available
+         * views for the calendar. Must be a sub list of ['month', 'agendaWeek', 'agendaDay'].
+         * @param {boolean} [syncToUrl] If true, persists the `calendarView` in the page's URL.
          * @description
          * This widget can take any dataset containing at least two datetime fields and a text field and use it to
-         * display a calendar.
+         * display a calendar. It can load at most 1000 events (records) at once.
          *
          * @example
          *  <example module="ods-widgets">
@@ -45,16 +50,32 @@
                 endField: '@?',
                 titleField: '@?',
                 tooltipFields: '@?',
-                eventColor: '@?'
+                eventColor: '@?',
+                calendarView: '@?',
+                availableCalendarViews: '@?',
+                syncToUrl: '@'
             },
             replace: true,
             template: ''+
             '<div class="odswidget-calendar">' +
-            '    <div class="fullcalendar"></div>'+
-            '    <div class="fullcalendar-tooltip"></div>'+
-            '    <div class="calendar-loading"><i class="icon-spinner icon-spin"></i></div>'+
+            '    <div class="odswidget-calendar__fullcalendar"></div>'+
+            '    <div class="odswidget-calendar__tooltip"></div>'+
+            '    <div class="odswidget-calendar__loading-backdrop">' +
+            '        <ods-spinner class="odswidget-calendar__loading-wheel"></ods-spinner>'+
+            '    </div>'+
             '</div>',
+            controller: function ($scope) {
+                if ($scope.syncToUrl !== 'false') {
+                    URLSynchronizer.addSynchronizedValue($scope, 'calendarView', 'calendarview');
+                }
+            },
             link: function (scope, element) {
+                var updateCalendarView = function () {
+                    var currentView = scope.fullcalendar.fullCalendar('getView');
+                    if (currentView.name != scope.calendarView) {
+                        scope.calendarView = currentView.name;
+                    }
+                };
                 var setupCalendar = function () {
                     // check directive params and fallback to metas if they are not set
                     var visualization_metas = {};
@@ -82,6 +103,25 @@
                             scope.eventColor = '#C32D1C';
                         }
                     }
+                    if (!angular.isDefined(scope.availableCalendarViews)) {
+                        if (visualization_metas.calendar_available_views) {
+                            scope.availableCalendarViews = visualization_metas.calendar_available_views.split(/\s*,\s*/);
+                        } else {
+                            scope.availableCalendarViews = ['month', 'agendaWeek', 'agendaDay'];
+                        }
+                    } else {
+                        scope.availableCalendarViews = scope.availableCalendarViews.split(/\s*,\s*/);
+                    }
+                    if (!angular.isDefined(scope.calendarView)) {
+                        if (visualization_metas.calendar_default_view
+                            && scope.availableCalendarViews.indexOf(visualization_metas.calendar_default_view) > -1) {
+                            scope.calendarView = visualization_metas.calendar_default_view;
+                        } else {
+                            scope.calendarView = scope.availableCalendarViews[0];
+                        }
+                    } else if (scope.availableCalendarViews.indexOf(scope.calendarView) === -1) {
+                        scope.calendarView = scope.availableCalendarViews[0];
+                    }
 
                     if (angular.isDefined(scope.tooltipFields)) {
                         var tooltipFields = [];
@@ -96,9 +136,10 @@
                     }
 
                     // actual calendar setup
-                    scope.tooltip = $(element).children('.fullcalendar-tooltip').first()
+                    scope.tooltip = $(element).children('.odswidget-calendar__tooltip').first()
                         .qtip({
-                            id: 'ods', // this sets the tooltip id to "qtip-ods", essential for styling
+                            // this sets the tooltip id to "qtip-odswidget-calendar", essential for styling
+                            id: 'odswidget-calendar',
                             content: {
                                 text: '',
                                 button: true // close tooltip upon click
@@ -107,7 +148,7 @@
                                 my: 'bottom center',
                                 at: 'top center',
                                 target: 'mouse',
-                                viewport: $('.fullcalendar'),
+                                viewport: $('.odswidget-calendar__fullcalendar'),
                                 adjust: {
                                     mouse: false,
                                     scroll: false
@@ -121,18 +162,18 @@
                     // hide tooltip for any click not directed at a calendar object
                     $(document).on('click', function (event) {
                         if (!$(event.target).parents('.fc-event').length &&
-                            !$(event.target).parents('#qtip-ods').length) {
+                            !$(event.target).parents('#qtip-odswidget-calendar').length) {
                             hideTooltip();
                         }
                     });
 
-                    scope.fullcalendar = $(element).children('.fullcalendar').first();
+                    scope.fullcalendar = $(element).children('.odswidget-calendar__fullcalendar').first();
                     scope.fullcalendar.fullCalendar({
                         lazyFetching: false,
                         header: {
                             left: 'prevYear,prev,next,nextYear, today',
                             center: 'title',
-                            right: 'month,agendaWeek,agendaDay'
+                            right: scope.availableCalendarViews.join(',')
                         },
                         lang: ODSWidgetsConfig.language,
                         loading: toggleLoadingWheel,
@@ -141,6 +182,7 @@
                         events: calendarDataSource,
                         eventDataTransform: buildEventFromRecord,
                         eventColor: scope.eventColor,
+                        defaultView: scope.calendarView,
                         eventClick: function(data, event) {
                             hideTooltip();
                             scope.tooltip
@@ -155,7 +197,7 @@
                 };
 
                 var hideTooltip = function () {
-                    $('#qtip-ods').hide();
+                    $('#qtip-odswidget-calendar').hide();
                 };
 
                 var updateCalendar = function () {
@@ -164,13 +206,14 @@
 
                 var toggleLoadingWheel = function (isLoading) {
                     if (isLoading) {
-                        $('.calendar-loading').show();
+                        $('.odswidget-calendar__loading-backdrop').show();
                     } else {
-                        $('.calendar-loading').hide();
+                        $('.odswidget-calendar__loading-backdrop').hide();
                     }
                 };
 
                 var calendarDataSource = function (start, end, timezone, callback) {
+                    updateCalendarView();
                     ODSAPI.records.search(scope.context, getSearchOptions(start, end)).
                         success(function (data) {
                             callback(data.records);
@@ -205,7 +248,7 @@
                     // most basic options
                     var options = {
                         dataset: scope.context.dataset.datasetid,
-                        rows: 10000
+                        rows: 1000
                     };
                     // apply common filters
                     options = $.extend(options, scope.context.parameters);
@@ -240,10 +283,11 @@
         return {
             restrict: 'E',
             template: '' +
-            '<h2>{{ record.fields[titleField] }}</h2>' +
-            '<dl>' +
+            '<h2 class="odswidget-calendar__tooltip-title">{{ record.fields[titleField] }}</h2>' +
+            '<dl class="odswidget-calendar__tooltip-fields">' +
             '    <dt ng-repeat-start="field in dataset.fields|fieldsForVisualization:\'calendar\'|fieldsFilter:tooltipFields"' +
-            '        ng-show="record.fields[field.name]|isDefined">' +
+            '        ng-show="record.fields[field.name]|isDefined"' +
+            '        class="odswidget-calendar__tooltip-field-name">' +
             '        {{ field.label }}' +
             '    </dt>' +
             '    <dd ng-repeat-end ng-switch="field.type" ng-show="record.fields[field.name]|isDefined">' +

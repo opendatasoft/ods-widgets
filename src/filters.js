@@ -60,7 +60,7 @@
                 var match = re.exec(value);
                 if (match !== null) {
                     // It looks like an image
-                    return $sce.trustAsHtml('<img class="imagify" src="' + match[1] + '" />');
+                    return $sce.trustAsHtml('<img class="odswidget odswidget-imagified" src="' + match[1] + '" />');
                 }
             }
             return value;
@@ -110,6 +110,24 @@
         };
     });
 
+    mod.filter('keys', function() {
+        return function(value) {
+            return Object.keys(value);
+        };
+    });
+
+    mod.filter('numKeys', function() {
+        return function(value) {
+            return Object.keys(value).length;
+        };
+    });
+
+    mod.filter('isEmpty', function() {
+        return function(value) {
+            return Object.keys(value).length === 0;
+        };
+    });
+
     mod.filter('displayImageValue', function($sce) {
         return function(value, datasetid) {
             if (!value) {
@@ -117,7 +135,7 @@
             }
             var url = '/explore/dataset/'+datasetid+'/files/'+value.id+'/300/';
 
-            return $sce.trustAsHtml('<img class="imagify" src="' + url + '" />');
+            return $sce.trustAsHtml('<img class="odswidget odswidget-imagified" src="' + url + '" />');
         };
     });
 
@@ -138,6 +156,7 @@
     });
 
     mod.filter('formatFieldValue', ['$filter', '$sce', function($filter, $sce) {
+        var DATASETID_RE = /^\/explore\/(embed\/)?dataset\/([\w_@-]+)\//;
         var getPrecision = function(field) {
             if (field.annotations) {
                 var annos = field.annotations.filter(function(anno) { return anno.name === 'timeserie_precision'; });
@@ -194,7 +213,12 @@
                 return $filter('moment')(value, 'LLL');
             } else if (field.type === 'file') { // it's 'file' type really
                 if (angular.isObject(value)) {
-                    return $sce.trustAsHtml('<a target="_self" href="' + 'files/'+value.id+'/download/' + '">' + (value.filename || record.filename) + '</a>');
+                    // Ugly hack to fix https://github.com/opendatasoft/platform/issues/4019
+                    // The idea is that once we have API V2, we'll have an absolute link
+                    // https://opendatasoft.clubhouse.io/story/423
+                    var datasetID = DATASETID_RE.exec(window.location.pathname)[2];
+                    var url = '/explore/dataset/' + datasetID + '/files/'+value.id+'/download/';
+                    return $sce.trustAsHtml('<a target="_self" href="' + url + '">' + (value.filename || record.filename) + '</a>');
                 } else {
                     return ''+value;
                 }
@@ -519,7 +543,7 @@
         };
     });
 
-    mod.filter('themeColor', function(ODSWidgetsConfig) {
+    mod.filter('themeColor', ['ODSWidgetsConfig', function(ODSWidgetsConfig) {
         return function(theme) {
             if (!theme) {
                 return '';
@@ -530,7 +554,7 @@
                 return '';
             }
         };
-    });
+    }]);
 
     mod.filter('isBefore', function() {
         return function(date1, date2) {
@@ -543,5 +567,29 @@
             return moment(date1).isAfter(date2);
         };
     });
+
+    mod.filter('propagateAppendedURLParameters', ['ODSWidgetsConfig', function(ODSWidgetsConfig) {
+        return function(url) {
+            if (!url) {
+                return url;
+            }
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+                // Don't propagate to external links
+                return url;
+            }
+
+            if (!ODSWidgetsConfig.appendedURLQuerystring) {
+                return url;
+            }
+
+            if (url.indexOf('?') > -1) {
+                url += '&';
+            } else {
+                url += '?';
+            }
+            url += ODSWidgetsConfig.appendedURLQuerystring;
+            return url;
+        };
+    }]);
 
 }());

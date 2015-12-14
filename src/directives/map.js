@@ -39,14 +39,15 @@
      When persisting, the context can be serialized as a datasetid and searchparameters. We trust Cartograph to make the
      transformation in both direction.
      */
-    mod.directive('odsMap', ['MapHelper', 'ModuleLazyLoader', 'ODSWidgetsConfig', 'MapLayerRenderer', 'translate', '$q', '$timeout', function(MapHelper, ModuleLazyLoader, ODSWidgetsConfig, MapLayerRenderer, translate, $q, $timeout) {
+    mod.directive('odsMap', ['URLSynchronizer', 'MapHelper', 'ModuleLazyLoader', 'ODSWidgetsConfig', 'MapLayerRenderer', 'translate', '$q', '$timeout', function(URLSynchronizer, MapHelper, ModuleLazyLoader, ODSWidgetsConfig, MapLayerRenderer, translate, $q, $timeout) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsMap
          * @scope
          * @restrict E
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {Object} [mapContext] An object where the `location` and `basemap` selection is kept. You can use it from
+         * @param {boolean} [syncToUrl] If true, persists the `location` and `basemap` in the page's URL.
+         * @param {Object} [syncToObject] An object where the `location` and `basemap` selection is kept. You can use it from
          * anither widget to read the location or basemap.
          * @param {string} [location] The default location of the map upon initialization, under the following format: "zoom,latitude,longitude".
          * For example, to have a map centered on Paris, France, you can use "12,48.85218,2.36996". By default, if a location is not specified,
@@ -59,6 +60,9 @@
          * @param {boolean} [toolbarGeolocation=true] If "false", then the "geolocate" button won't be displayed in the map's toolbar.
          * @param {boolean} [toolbarDrawing=true] If "false", then the drawing tools (to draw filter areas) won't be displayed in the map's toolbar.
          * @param {boolean} [toolbarFullscreen=true] If "false", then the "go fullscreen" button won't be displayed in the map's toolbar.
+         * @param {boolean} [scrollWheelZoom=true] If "false", then scrolling your mouse wheel over the map won't zoom/unzoom it.
+         * @param {integer} [minZoom=none] Limits the map to a minimum zoom value. By default this is defined by the minimum zoom of the basemap.
+         * @param {integer} [maxZoom=none] Limits the map to a maximum zoom value. By default this is defined by the maximum zoom of the basemap.
          * @description
          * This widget allows you to build a map visualization and show data using various modes of display using layers.
          * Each layer is based on a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, a mode of display (clusters...), and various properties to define the
@@ -128,8 +132,19 @@
          * - `color`: a simple color, as an hex code (#FF0F05) or a simple CSS color name like "red". Available for any mode except `heatmap`.
          * - `colorScale`: the name of a ColorBrewer [http://colorbrewer2.org/] scheme, like "YlGnBu". Available for `aggregation`.
          * - `colorRanges`: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example "red;20;orange;40;#00CE00" to color anything between
-         * 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a field name in `colorByField` to configure which field will be
+         * 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a decimal or integer field name in `colorByField` to configure which field will be
          * used to decide on the color. Available for `raw` and `aggregation`.
+         *
+         * On top of color configuration, the icon used as a marker on the map can be configured through the `picto`
+         * property. The property supports the following keywords:
+         * star, circle, bike, bus, train, plane, roadblock, coffee, college, flag, policeman, envelope, restaurant,
+         * flower, tree, tree2, tennis, soccer, ski, baby, bed, playground, christianism, judaism, islam, car,
+         * wheelchair, recycling, cinema, danger, science, gas-station, anchor, parking, toilets, dog, cross, hospital,
+         * drop, music, plus, minus, question, information, wrench, trash, heart, thumbs-up, thumbs-down, check,
+         * cross-alt, fire-extinguisher, flame, man, man-alt, woman, glass, beer, house, truck, briefcase, camera,
+         * luggage, phone, road, video-game, lightning, trophy, cow, factory, boat, wifi, light, windsurfing, gym,
+         * shopping-cart, building, calendar, administration, culture, economy, leaf, justice, health, sport
+         *
          *
          * When displaying shapes, you can also use `borderColor` and `opacity` to configure the color of the shape border and the opacity of the shape's fill.
          *
@@ -181,12 +196,24 @@
          *                                            refine-on-click-mycontext2-context-field="field4"></ods-map-layer>
          *     </ods-map>
          * </pre>
+         *
+         * When you first load the map (if there is no `location` parameter), and when your context parameters change, the
+         * map is refreshed and moves to fit the content of the new data to display. If you want to exclude a layer's data
+         * from the new position's calculation, you can use `excludeFromRefit`:
+         *
+         * <pre>
+         *     <ods-map>
+         *         <ods-map-layer context="mycontext"></ods-map-layer>
+         *         <ods-map-layer context="mycontext3" exclude-from-refit="true"></ods-map-layer>
+         *     </ods-map>
+         * </pre>
          */
         return {
             restrict: 'EA',
             scope: {
                 context: '=',
-                mapContext: '=?', // An object holding location and basemap and updating it in realtime
+                syncToUrl: '@',
+                syncToObject: '=',
                 location: '@', // Hard-coded location (widget)
                 basemap: '@', // Hard-coded basemap (widget),
                 staticMap: '@', // Prevent the map to be moved,
@@ -194,15 +221,23 @@
                 autoResize: '@',
                 toolbarDrawing: '@',
                 toolbarGeolocation: '@',
-                toolbarFullscreen: '@'
+                toolbarFullscreen: '@',
+                scrollWheelZoom: '@',
+                minZoom: '@',
+                maxZoom: '@'
             },
             transclude: true,
-            template: '<div class="odswidget odswidget-map">' +
-                        '<div class="map"></div>' +
-                        '<div class="overlay map opaque-overlay" ng-show="pendingRequests.length && initialLoading"><spinner class="spinner"></spinner></div>' +
-                        '<div class="loading-tiles" ng-show="loading"><i class="icon-spinner icon-spin"></i></div>' +
-                        '<div ng-transclude></div>' + // Can't find any better solution...
-                        '</div>',
+            template: '' +
+            '<div class="odswidget odswidget-map">' +
+            '    <div class="odswidget odswidget-map__map"></div>' +
+            '    <div class="odswidget-overlay map odswidget-overlay--opaque" ng-show="initialLoading">' +
+            '        <ods-spinner></ods-spinner>' +
+            '    </div>' +
+            '    <div class="odswidget-map__loading" ng-show="loading">' +
+            '        <ods-spinner></ods-spinner>' +
+            '    </div>' +
+            '    <div ng-transclude></div>' + // Can't find any better solution...
+            '</div>',
             link: function(scope, element, attrs) {
                 var mapElement = angular.element(element.children()[0]);
                 // "Porting" the attributes to the real map.
@@ -222,7 +257,7 @@
                     var layer = MapHelper.MapConfiguration.createLayerConfiguration();
                     group.activeDatasets.push(layer);
                     scope.mapConfig.layers.push(group);
-                    var unwatch = scope.$watch('context', function(nv, ov) {
+                    var unwatch = scope.$watch('context', function(nv) {
                         layer.context = nv;
 
                         // FIXME: Factorize the same code with odsLayerGroup
@@ -247,10 +282,11 @@
                 }
 
                 function resizeMap() {
-                    if (scope.autoResize === 'true' && $('.odswidget-map > .map').length > 0) {
+                    var mapElement = $('.odswidget-map__map');
+                    if (scope.autoResize === 'true' && mapElement.length > 0) {
                         // Only do this if visible
-                        var height = Math.max(200, $(window).height() - $('.odswidget-map > .map').offset().top);
-                        $('.odswidget-map > .map').height(height);
+                        var height = Math.max(200, $(window).height() - mapElement.offset().top);
+                        mapElement.height(height);
                     }
                 }
 
@@ -261,14 +297,26 @@
 
                 /* INITIALISATION AND DEFAULT VALUES */
                 scope.initialLoading = true;
-                if (angular.isUndefined(scope.mapContext)) {
+
+
+                if (scope.syncToObject) {
+                    scope.mapContext = scope.syncToObject;
+                } else {
                     scope.mapContext = {};
-                    if (scope.location) {
-                        scope.mapContext.location = scope.location;
-                    }
-                    if (scope.basemap) {
-                        scope.mapContext.basemap = scope.basemap;
-                    }
+                }
+
+                if (scope.syncToUrl === 'true') {
+                    // We can't safely have more than one addSynchronizedObject so we target explicitely what we want,
+                    // because the context could also use addSynchronizedObject
+                    URLSynchronizer.addSynchronizedValue(scope, 'mapContext.location', 'location', true);
+                    URLSynchronizer.addSynchronizedValue(scope, 'mapContext.basemap', 'basemap');
+                }
+
+                if (scope.location) {
+                    scope.mapContext.location = scope.mapContext.location || scope.location;
+                }
+                if (scope.basemap) {
+                    scope.mapContext.basemap = scope.mapContext.basemap || scope.basemap;
                 }
 
                 /* END OF INITIALISATION */
@@ -284,8 +332,16 @@
                         keyboard: !isStatic,
                         prependAttribution: ODSWidgetsConfig.mapPrependAttribution,
                         maxBounds: [[-90, -180], [90, 180]],
-                        zoomControl: false
+                        zoomControl: false,
+                        scrollWheelZoom: scope.scrollWheelZoom !== 'false'
                     };
+
+                    if (scope.minZoom) {
+                        mapOptions.minZoom = scope.minZoom;
+                    }
+                    if (scope.maxZoom) {
+                        mapOptions.maxZoom = scope.maxZoom;
+                    }
 
                     if (isStatic) {
                         mapOptions.doubleClickZoom = false;
@@ -432,7 +488,7 @@
                             deferred.resolve();
                         } else {
                             waitForVisibleContexts().then(function() {
-                                MapHelper.retrieveBounds(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true)).then(function (bounds) {
+                                MapHelper.retrieveBounds(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, {geoOnly: true, skipExcludedFromRefit: true})).then(function (bounds) {
                                     // Fit to dataset boundingbox if there is no viewport or geofilter
                                     if (bounds) {
                                         scope.map.fitBounds(bounds);
@@ -488,27 +544,29 @@
                             });
                             return pending;
                         }, function(nv) {
-                            if (nv) {
-                                scope.loading = true;
-                            } else {
-                                scope.loading = false;
-                            }
+                            scope.loading = !!nv;
                         });
 
                         // Initialize data watchers
                         // TODO: Make the contexts broadcast an event when the parameters change? Will spare
                         // a potentially heavy watch.
                         scope.$watch(function() {
-                            var params = [];
+                            // We create a second param list with all the parameters that should trigger a refit, so that
+                            // we can check if it changed before triggering a refit.
+                            var params = [],
+                                paramsNoRefit = [];
                             angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig), function(ctx) {
-                                params.push(ctx.parameters);
+                                params.push([ctx.name, ctx.parameters]);
                             });
-                            return params;
+                            angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, {skipExcludedFromRefit: true}), function(ctx) {
+                                paramsNoRefit.push([ctx.name, ctx.parameters]);
+                            });
+                            return [params, paramsNoRefit];
                         }, function(nv, ov) {
                             if (nv !== ov) {
                                 // Refresh with a refit
                                 syncGeofilterToDrawing();
-                                refreshData(true);
+                                refreshData(!angular.equals(nv[1], ov[1]));
                             }
                         }, true);
                     });
@@ -580,7 +638,7 @@
 
                         if (fitView) {
                             // Move the viewport to the new location, and change the tile
-                            MapHelper.retrieveBounds(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true)).then(function(bounds) {
+                            MapHelper.retrieveBounds(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, {geoOnly: true, skipExcludedFromRefit: true})).then(function(bounds) {
                                 if (bounds && bounds !== MapHelper.WORLD_BOUNDS) {
                                     // Until $applyAsync... Make sure the fitting is done outside this digest cycle,
                                     // so that the triggering of viewport move doesn't clash with it
@@ -652,7 +710,7 @@
                             scope.$apply();
                         });
 
-                        scope.map.on('draw:deleted', function(e) {
+                        scope.map.on('draw:deleted', function() {
                             delete scope.mapConfig.drawnArea;
                             scope.$apply();
                         });
@@ -691,7 +749,7 @@
                             clickable: true
                         };
 
-                        scope.$watch('mapConfig.drawnArea', function(nv, ov) {
+                        scope.$watch('mapConfig.drawnArea', function(nv) {
                             // Wipe the current drawn polygon
                             if (scope.drawnItems.getLayers().length > 0) {
                                 scope.drawnItems.removeLayer(scope.drawnItems.getLayers()[0]);
@@ -738,7 +796,7 @@
                             }
 
                             // Apply to every context available
-                            angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true), function(ctx) {
+                            angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, {geoOnly: true}), function(ctx) {
                                 if (nv) {
                                     // There is something to apply
                                     if (nv.shape === 'circle') {
@@ -778,7 +836,7 @@
                     // Check if there are geofilters shared by everyone at init time, and if so, synchronize the
                     // drawn shapes to match them.
                     var polygon, distance;
-                    angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, true), function(context) {
+                    angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, {geoOnly: true}), function(context) {
                         if (angular.isUndefined(polygon) && angular.isUndefined(polygon)) {
                             // First time
                             polygon = context.parameters['geofilter.polygon'];
@@ -877,7 +935,9 @@
 
                 joinContext: '=',
                 localKey: '@',
-                remoteKey: '@'
+                remoteKey: '@',
+
+                excludeFromRefit: '=?'
             },
             template: function(tElement) {
                 var tpl = '';
@@ -928,7 +988,8 @@
                     'localKey': scope.localKey,
                     'remoteKey': scope.remoteKey,
                     'tooltipSort': scope.tooltipSort,
-                    'hoverField': scope.hoverField
+                    'hoverField': scope.hoverField,
+                    'excludeFromRefit': scope.excludeFromRefit
                 };
                 var layer = MapHelper.MapConfiguration.createLayerConfiguration(customTemplate, config);
                 var layerGroup;
@@ -946,7 +1007,7 @@
                     });
                 }
 
-                var unwatch = scope.$watch('context', function(nv, ov) {
+                var unwatch = scope.$watch('context', function(nv) {
                     if (nv) {
                         layer.context = nv;
                         nv.wait().then(function() {
@@ -1016,23 +1077,25 @@
         };
     }]);
 
-    mod.directive('geoScroller', ['$compile', '$templateCache', function($compile, $templateCache) {
-        // FIXME: remove the ugly div from the DL tag, once we migrate to Angular 1.2+
+    mod.directive('odsMapTooltip', ['$compile', '$templateCache', function($compile, $templateCache) {
         return {
             restrict: 'E',
             transclude: true,
-            template: '<div class="odswidget-geo-scroller">' +
-                    '<spinner ng-hide="records"></spinner>' +
-                    '<h2 ng-show="records.length > 1" class="scroller-control ng-leaflet-tooltip-cloak">' +
-                        '<i class="icon-chevron-left" ng-click="moveIndex(-1)"></i>' +
-                        '<span ng-bind="(selectedIndex+1)+\'/\'+records.length" ng-click="moveIndex(1)"></span>' +
-                        '<i class="icon-chevron-right" ng-click="moveIndex(1)"></i>' +
-                    '</h2>' +
-                    '<div class="ng-leaflet-tooltip-cloak limited-results" ng-show="records && records.length == RECORD_LIMIT" translate>(limited to the first {{RECORD_LIMIT}} records)</div>' +
-                    '<div ng-repeat="record in records" ng-show="$index == selectedIndex" class="map-tooltip">' +
-                        '<div ng-if="!template" ng-include src="\'default-tooltip\'"></div>' +
-                        '<div ng-if="template" ng-include src="\'custom-tooltip-\'+context.dataset.datasetid"></div>' +
-                    '</div>' +
+            template: '' +
+                '<div class="odswidget-map-tooltip">' +
+                '   <ods-spinner class="odswidget-map-tooltip__spinner" ng-hide="records"></ods-spinner>' +
+                '   <h2 ng-show="records.length > 1" class="odswidget-map-tooltip__scroll-control ng-leaflet-tooltip-cloak">' +
+                '       <i class="odswidget-map-tooltip__scroll-left fa fa-chevron-left" ng-click="moveIndex(-1)"></i>' +
+                '       <span ng-bind="(selectedIndex+1)+\'/\'+records.length" ng-click="moveIndex(1)"></span>' +
+                '       <i class="odswidget-map-tooltip__scroll-right fa fa-chevron-right" ng-click="moveIndex(1)"></i>' +
+                '   </h2>' +
+                '   <div class="ng-leaflet-tooltip-cloak odswidget-map-tooltip__limited-results-warning" ng-show="records && records.length == RECORD_LIMIT" translate>' +
+                '      (limited to the first {{RECORD_LIMIT}} records)' +
+                '   </div>' +
+                '   <div ng-repeat="record in records" ng-show="$index == selectedIndex" class="odswidget-map-tooltip__record">' +
+                '       <div ng-if="!template" ng-include src="\'default-tooltip\'"></div>' +
+                '       <div ng-if="template" ng-include src="\'custom-tooltip-\'+context.dataset.datasetid"></div>' +
+                '   </div>' +
                 '</div>',
             scope: {
                 shape: '=',
@@ -1064,13 +1127,17 @@
                     $templateCache.put('custom-tooltip-' + scope.context.dataset.datasetid, attrs.template);
                 } else {
                     $templateCache.put('default-tooltip', '<div class="infoPaneLayout">' +
-                        '<h2 ng-show="!!getTitle(record)" ng-bind="getTitle(record)"></h2>' +
-                        '<dl>' +
-                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields" ng-show="record.fields[field.name]|isDefined">' +
+                        '<h2 class="odswidget-map-tooltip__header" ng-show="!!getTitle(record)" ng-bind="getTitle(record)"></h2>' +
+                        '<dl class="odswidget-map-tooltip__record-values">' +
+                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields" ' +
+                        '        ng-show="record.fields[field.name]|isDefined"' +
+                        '        class="odswidget-map-tooltip__field-name">' +
                         '        {{ field.label }}' +
                         '    </dt>' +
-                        '    <dd ng-repeat-end ng-switch="field.type" ng-show="record.fields[field.name]|isDefined">' +
-                        '        <debug data="record.fields[field.name]"></debug>' +
+                        '    <dd ng-repeat-end ' +
+                        '        ng-switch="field.type" ' +
+                        '        ng-show="record.fields[field.name]|isDefined"' +
+                        '        class="odswidget-map-tooltip__field-value">' +
                         '        <span ng-switch-when="geo_point_2d">' +
                         '            <ods-geotooltip width="300" height="300" coords="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
                         '        </span>' +
@@ -1088,7 +1155,7 @@
                 }
 
             },
-            controller: ['$scope', '$filter', 'ODSAPI', 'ODSWidgetsConfig', '$sce', function($scope, $filter, ODSAPI, ODSWidgetsConfig, $sce) {
+            controller: ['$scope', '$filter', 'ODSAPI', function($scope, $filter, ODSAPI) {
                 $scope.RECORD_LIMIT = 100;
                 $scope.records = [];
                 $scope.selectedIndex = 0;
@@ -1124,7 +1191,7 @@
                         options.geo_digest = $scope.geoDigest;
                     } else if ($scope.gridData) {
                         // From an UTFGrid tile
-                        if ($scope.gridData['ods:geo_grid'] != null) {
+                        if ($scope.gridData['ods:geo_grid'] !== null) {
                             // Request geo_grid
                             options.geo_grid = $scope.gridData['ods:geo_grid'];
                         } else {
@@ -1184,9 +1251,9 @@
                     }
                 };
 
-                $scope.$watch('searchOptions', function(nv, ov) {
+                $scope.$watch('context.parameters', function() {
                     refresh();
-                });
+                }, true);
                 $scope.$apply();
 
                 /* *** HELPER METHODS FOR THE TEMPLATES *** */

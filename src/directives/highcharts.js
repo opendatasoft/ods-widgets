@@ -174,6 +174,14 @@
             var search_promises = [];
             var charts_by_query = [];
             var original_domain = domain;
+            search_parameters = search_parameters || {};
+            if (queries.length === 1) {
+                if (['hour', 'minute', 'second'].indexOf(queries[0].timescale) !== -1) {
+                    search_parameters.output_timezone = 'UTC';
+                }
+            } else if (['hour', 'minute', 'second'].indexOf(timeSerieMode) !== -1) {
+                search_parameters.output_timezone = 'UTC';
+            }
 
             angular.forEach(queries, function(query, query_index){
                 var charts = {};
@@ -663,37 +671,37 @@
         };
 
         var getDateFromXObject = function(x, minDate) {
-            var minYear = minDate ? minDate.getFullYear() : 2000;
-            var minMonth = minDate ? minDate.getMonth() : 0;
-            var minDay = minDate ? minDate.getDate() : 1;
-            var minHour = minDate ? minDate.getHours() : 0;
-            var minMinute = minDate ? minDate.getMinutes() : 0;
+            var minYear = minDate ? minDate.getUTCFullYear() : 2000;
+            var minMonth = minDate ? minDate.getUTCMonth() : 0;
+            var minDay = minDate ? minDate.getUTCDate() : 1;
+            var minHour = minDate ? minDate.getUTCHours() : 0;
+            var minMinute = minDate ? minDate.getUTCMinutes() : 0;
             if (angular.isObject(x) && ('year' in x || 'month' in x || 'day' in x || 'hour' in x || 'minute' in x || 'weekday' in x || 'yearday' in x)) {
                 // default to 2000 because it's a leap year
-                var date = new Date(x.year || minYear, x.month-1 || 0, x.day || 1, x.hour || 0, x.minute || 0);
+                var date = new Date(Date.UTC(x.year || minYear, x.month-1 || 0, x.day || 1, x.hour || 0, x.minute || 0));
                 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
-                date.setFullYear(x.year || minYear);
+                date.setUTCFullYear(x.year || minYear);
                 if (!'month' in x) date.setUTCMonth(minMonth);
                 if (!'day' in x) date.setUTCDate(minDay);
                 if (!'hour' in x) date.setUTCHours(minHour);
                 if (!'minute' in x) date.setUTCMinutes(minMinute);
                 if(! ('year' in x)){
                     if('weekday' in x){
-                        date.setDate(date.getDate() + 7 - date.getDay() + x.weekday );
+                        date.setUTCDate(date.getUTCDate() + 7 - date.getUTCDay() + x.weekday );
                     }
                     if('yearday' in x){
-                        date.setDate(0 + x.yearday );
+                        date.setUTCDate(0 + x.yearday );
                     }
                 }
                 if('day' in x){
                     // handle bisextil years
                     if(x.day == 29 && x.month == 2 && !x.year) {
-                        date.setDate(28);
-                        date.setMonth(1);
+                        date.setUTCDate(28);
+                        date.setUTCMonth(1);
                     }
                 } else {
                     if('month' in x){
-                        date.setDate(16);
+                        date.setUTCDate(16);
                     }
                 }
                 return date;
@@ -768,7 +776,14 @@
                 contexts: '=?'
             },
 
-            template: '<div class="ods-chart"><div class="loading-tiles" ng-show="loading"><i class="icon-spinner icon-spin"></i></div><div class="chartplaceholder"></div><debug data="chartoptions"></debug></div>',
+            template: '' +
+            '<div class="ods-chart">' +
+            '    <div class="ods-chart__loading" ng-show="loading">' +
+            '        <ods-spinner></ods-spinner>' +
+            '    </div>' +
+            '    <div class="chartplaceholder"></div>' +
+            '    <debug data="chartoptions"></debug>' +
+            '</div>',
             controller: ['$scope', '$element', '$attrs', function($scope) {
                 var timeSerieMode, precision, periodic, yAxisesIndexes, domain,
                     that = this;
@@ -822,7 +837,7 @@
                             }
                         } else {
                             if (angular.isObject(value) && ("day" in value || "month" in value || "year" in value)) {
-                                var date = new Date(value.year, value.month-1 || 0, value.day || 1, value.hour || 0, value.minute || 0);
+                                var date = new Date(Date.UTC(value.year, value.month-1 || 0, value.day || 1, value.hour || 0, value.minute || 0));
                                 return Highcharts.dateFormat("%Y-%m-%d", date);
                             }
                             return "" + value;
@@ -1019,7 +1034,7 @@
                                     for (var i=0; i < http_call.data.length; i++) {
                                         var row = http_call.data[i];
                                         if(row.x.year){
-                                            var date = new Date(row.x.year, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0);
+                                            var date = new Date(Date.UTC(row.x.year, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0));
                                             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
                                             date.setFullYear(row.x.year);
                                             if(minDate === undefined || date < minDate) {
@@ -1597,8 +1612,8 @@
                         singleAxis: !!$scope.singleYAxis,
                         singleAxisLabel: angular.isDefined($scope.singleYAxisLabel) ? $scope.singleYAxisLabel : undefined,
                         singleAxisScale: $scope.logarithmic ? 'logarithmic' : '',
-                        yRangeMin: angular.isDefined($scope.min) ? parseInt($scope.min, 10) : undefined,
-                        yRangeMax: angular.isDefined($scope.max) ? parseInt($scope.max, 10) : undefined,
+                        yRangeMin: angular.isDefined($scope.min) && $scope.min !== "" ? parseInt($scope.min, 10) : undefined,
+                        yRangeMax: angular.isDefined($scope.max) && $scope.max !== "" ? parseInt($scope.max, 10) : undefined,
                         displayLegend: angular.isDefined($scope.displayLegend) && $scope.displayLegend === "false" ? false : true
                     };
                 }
@@ -1893,8 +1908,8 @@
                     cumulative: !!attrs.cumulative || false,
                     yLabelOverride: angular.isDefined(attrs.labelY) ? attrs.labelY : undefined,
                     scale: attrs.logarithmic ? 'logarithmic' : '',
-                    yRangeMin: angular.isDefined(attrs.min) ? parseInt(attrs.min, 10) : undefined,
-                    yRangeMax: angular.isDefined(attrs.max) ? parseInt(attrs.max, 10) : undefined,
+                    yRangeMin: angular.isDefined(attrs.min) && attrs.min !== "" ? parseInt(attrs.min, 10) : undefined,
+                    yRangeMax: angular.isDefined(attrs.max) && attrs.max !== "" ? parseInt(attrs.max, 10) : undefined,
                     displayUnits: attrs.displayUnits === "true",
                     displayValues: attrs.displayValues === "true",
                     multiplier: angular.isDefined(attrs.multiplier) ? parseInt(attrs.multiplier, 10) : undefined,

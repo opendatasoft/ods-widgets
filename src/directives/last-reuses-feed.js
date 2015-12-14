@@ -40,17 +40,17 @@
             replace: true,
             transclude: true,
             template: '<div class="odswidget odswidget-last-reuses-feed">' +
-                '<ul>' +
+                '<ul class="odswidget-last-reuses-feed__reuses">' +
                 '   <li class="no-data" ng-hide="reuses" translate>No data available yet</li>' +
-                '   <li ng-repeat="reuse in reuses" ng-if="reuses" inject>' +
-                '       <div class="reuse-thumbnail">' +
+                '   <li class="odswidget-last-reuses-feed__reuse" ng-repeat="reuse in reuses" ng-if="reuses" inject>' +
+                '       <div class="odswidget-last-reuses-feed__reuse-thumbnail">' +
                 '           <span style="display: inline-block; height: 100%; vertical-align: middle;"></span>' +
-                '           <a ng-href="{{reuse.url}}" target="_self"><img ng-if="reuse.thumbnail" ng-src="{{ reuse.thumbnail }}"></a>' +
+                '           <a ng-href="{{reuse.url}}" target="_self"><img class="odswidget-last-reuses-feed__reuse-thumbnail-image" ng-if="reuse.thumbnail" ng-src="{{ reuse.thumbnail }}"></a>' +
                 '       </div>' +
-                '       <div class="reuse-details">' +
-                '           <div class="title"><a ng-href="{{reuse.url}}" target="_self">{{ reuse.title }}</a></div>' +
-                '           <div class="dataset"><a ng-href="{{reuse.url}}" target="_self">{{ reuse.dataset.title }}</a></div>' +
-                '           <div class="modified"><span title="{{ reuse.created_at|moment:\'LLL\' }}"><i class="icon-calendar"></i> {{ reuse.created_at|timesince }}</span></div>' +
+                '       <div class="odswidget-last-reuses-feed__reuse-details">' +
+                '           <div class="odswidget-last-reuses-feed__reuse-details-title"><a ng-href="{{reuse.url}}" target="_self">{{ reuse.title }}</a></div>' +
+                '           <div class="odswidget-last-reuses-feed__reuse-details-dataset"><a ng-href="{{reuse.url}}" target="_self">{{ reuse.dataset.title }}</a></div>' +
+                '           <div class="odswidget-last-reuses-feed__reuse-details-modified"><span title="{{ reuse.created_at|moment:\'LLL\' }}"><i class="fa fa-calendar"></i> {{ reuse.created_at|timesince }}</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +

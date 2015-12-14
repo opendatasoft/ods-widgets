@@ -46,7 +46,7 @@
                         "L.Draw@libs/leaflet-draw/leaflet.draw.js",
                         //"L.BundleTileLayer@libs/ods-bundletilelayer/bundletilelayer.js",
                         "QuadTree@libs/leaflet-heatmap/QuadTree.js",
-                        "h337@libs/leaflet-heatmap/heatmap.js",
+                        "h337@libs/leaflet-heatmap/heatmap-backend.js",
                         "L.TileLayer.HeatMap@libs/leaflet-heatmap/heatmap-leaflet.js"
                     ]
                 ]
@@ -250,7 +250,7 @@
                 if (getPromise) {
                     deferred = $q.defer();
                 }
-                var element = angular.element('<div></div>');
+                var element = angular.element('<div class="ods-svginliner__svg-container"></div>');
                 if (!url) {
                     loadImageInline(element, FALLBACK, color);
                     if (getPromise) { deferred.resolve(element); }
@@ -630,8 +630,11 @@
                         }
                     });
                     angular.forEach($location.search(), function(value, key){
-                        // preserve ignored values
-                        if(ignoreList.indexOf(key) >= 0){
+                        // Preserve ignored values that already exist in the URL:
+                        // - from ignoreList, which is the list of values handled by other URLSync's
+                        // - from localObjectIgnoreList, which is the list of object properties that we want to ignore
+                        //   (both ways)
+                        if(ignoreList.indexOf(key) >= 0 || localObjectIgnoreList.indexOf(key) >= 0){
                             val[key] = value;
                         }
                     });

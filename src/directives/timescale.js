@@ -44,14 +44,15 @@
                 timeField: '@',
                 defaultValue: '@'
             },
-            template: '<div class="odswidget odswidget-timescale">' +
-                '<ul>' +
-                    '<li ng-class="{\'active\': scale == \'everything\' || !scale}"><a href="#" ng-click="scale = \'everything\'; $event.preventDefault();" translate>Everything</a></li>' +
-                    '<li ng-class="{\'active\': scale == \'year\'}"><a href="#" ng-click="scale = \'year\'; $event.preventDefault();" translate>Last 12 months</a></li>' +
-                    '<li ng-class="{\'active\': scale == \'month\'}"><a href="#" ng-click="scale = \'month\'; $event.preventDefault();" translate>Last 4 weeks</a></li>' +
-                    '<li ng-class="{\'active\': scale == \'week\'}"><a href="#" ng-click="scale = \'week\'; $event.preventDefault();" translate>Last 7 days</a></li>' +
-                    '<li ng-class="{\'active\': scale == \'day\'}"><a href="#" ng-click="scale = \'day\'; $event.preventDefault();" translate>Last 24 hours</a></li>' +
-                '</ul>' +
+            template: '' +
+                '<div class="odswidget odswidget-timescale">' +
+                '   <ul class="odswidget-timescale__scale-list">' +
+                '       <li class="odswidget-timescale__scale" ng-class="{\'odswidget-timescale__scale--active\': scale == \'everything\' || !scale}"> <a class="odswidget-timescale__scale-link" href="#" ng-click="scale = \'everything\'; $event.preventDefault();" translate>Everything</a></li>' +
+                '       <li class="odswidget-timescale__scale" ng-class="{\'odswidget-timescale__scale--active\': scale == \'year\'}">                 <a class="odswidget-timescale__scale-link" href="#" ng-click="scale = \'year\'; $event.preventDefault();" translate>Last 12 months</a></li>' +
+                '       <li class="odswidget-timescale__scale" ng-class="{\'odswidget-timescale__scale--active\': scale == \'month\'}">                <a class="odswidget-timescale__scale-link" href="#" ng-click="scale = \'month\'; $event.preventDefault();" translate>Last 4 weeks</a></li>' +
+                '       <li class="odswidget-timescale__scale" ng-class="{\'odswidget-timescale__scale--active\': scale == \'week\'}">                 <a class="odswidget-timescale__scale-link" href="#" ng-click="scale = \'week\'; $event.preventDefault();" translate>Last 7 days</a></li>' +
+                '       <li class="odswidget-timescale__scale" ng-class="{\'odswidget-timescale__scale--active\': scale == \'day\'}">                  <a class="odswidget-timescale__scale-link" href="#" ng-click="scale = \'day\'; $event.preventDefault();" translate>Last 24 hours</a></li>' +
+                '   </ul>' +
                 '</div>',
             controller: ['$scope', '$attrs', '$q', function($scope, $attrs, $q) {
                 var contexts = [];

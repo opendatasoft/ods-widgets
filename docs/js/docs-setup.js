@@ -11,7 +11,7 @@ NG_DOCS={
       "type": "overview",
       "moduleName": "index",
       "shortDescription": "This documentation contains the complete reference of available ODS Widgets, including examples.",
-      "keywords": "api complete documentation examples including ods overview reference widgets"
+      "keywords": "api complete discover documentation examples including left list ods overview reference search widgets"
     },
     {
       "section": "api",
@@ -42,12 +42,21 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsBreezometer",
+      "shortName": "odsBreezometer",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Integrates a Breezometer &quot;widget&quot; using the widget key provided by Breezometer",
+      "keywords": "api breezometer city directive html http integrates key location module ods-widgets paris provided widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsCalendar",
       "shortName": "odsCalendar",
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget can take any dataset containing at least two datetime fields and a text field and use it to",
-      "keywords": "api c32d1c calendar color comma context dataset date_end date_start datetime description directive display end-field endfield evenements-publics-cibul event event-color events events-dataset events-domain field fields form hexadecimal html image latlon link list module ods-widgets opendatasoft ordered public separated start start-field startfield text title title-field titlefield tooltip tooltip-fields widget"
+      "keywords": "agendaday agendaweek api c32d1c calendar calendarview color comma context dataset date_end date_start datetime default description directive display end-field endfield evenements-publics-cibul event event-color events events-dataset events-domain field fields form hexadecimal html image latlon link list load mode module month ods-widgets opendatasoft ordered persists public separated start start-field startfield text title title-field titlefield tooltip tooltip-fields true url views widget"
     },
     {
       "section": "api",
@@ -87,6 +96,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsClearAllFilters",
+      "shortName": "odsClearAllFilters",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays a button which will clear all active filters in the given context.",
+      "keywords": "active api button catalog clear context dataset directive display displays filters ods-widgets widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsDatasetCard",
       "shortName": "odsDatasetCard",
       "type": "directive",
@@ -101,7 +119,16 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "A &quot;dataset context&quot; represents a dataset, and a set of parameters used to query its data. A context can be used",
-      "keywords": "absolute access accessible active address ae allow alphanum alphanumerical angularjs api apikey applied apply arbresalignementparis2010 assume attribute attributes behavior bike boolean call case change characters child clocks clocks-dataset clocks-domain commas configure configured construct context contexts contract_name conventions create created creates csv current currently data dataset declare default defaultdomain described directive directives directly displayed displays domain domainurl download element enable enabled example export exposed exposes expression field filter filters find format fr full geojson getdownloadurl holding horloges_exterieures_et_interieures hostname http identifier including indicate initialize initially inside jcdecaux_bike_data json key links list local lowercase map method mycontext-domain mydomain named names naming nest note object ods-widgets odsdatasetcontext odswidgetsconfig odswidgetsconfigprovider opendatasoft original parameter parameters parametersfromcontext paris pass path place places plugged prefixed properties public queries query refine replicate represents retrieved returns root scope separated set settings share simple single sort specific stations stations-dataset stations-domain stations-parameters string synchronization table time trees trees-dataset trees-domain trees-in-paris unpredictable url urlsync user variable view won"
+      "keywords": "absolute access accessible active additional address ae allow alphanum alphanumerical angularjs api apikey applied apply arbresalignementparis2010 assume attribute attributes based behavior bike boolean build call case change characters child clocks clocks-dataset clocks-domain comma commas configure configured construct context contexts contract_name conventions create created creates csv current currently data dataset declare default defaultdomain described dict dictionary directive directives directly displayed displays domain domainurl download element enable enabled example export exposed exposes expression field fields filter filters find format fr full geojson getdownloadurl getquerystringurl holding horloges_exterieures_et_interieures hostname http identifier including indicate initialize initially inside jcdecaux_bike_data json key links list local lowercase map method mycontext-domain mydomain named names naming nest note object ods-widgets odsdatasetcontext odswidgetsconfig odswidgetsconfigprovider opendatasoft optional options original parameter parameters parametersfromcontext paris pass path place places plugged prefixed properties public queries query refine refinement replicate represents retrieved returns root scope separated set settings share simple single sort specific stations stations-dataset stations-domain stations-parameters string suffix synchronization table time trees trees-dataset trees-domain trees-in-paris unpredictable url urlsync use_labels_for_header user variable view won"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsDatetime",
+      "shortName": "odsDatetime",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Get the ISO local datetime and store it into a variable (into the scope).",
+      "keywords": "api call datetime directive equivalent format hh html iso javascript local module moment ods-datetime ods-widgets scope store variable yyyy-mm-dd"
     },
     {
       "section": "api",
@@ -168,6 +195,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsInfiniteScrollResults",
+      "shortName": "odsInfiniteScrollResults",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays the results of a query inside an infinite scroll list. It uses the HTML template inside the widget tag,",
+      "keywords": "_blank angularjs api applied belongs catalog change class classes content context dataset datasetid directive displayed displays domainurl fetch fields geojson geometrical geometry hold holding holds html identifier infinite inside item key list metadata metas module ng-href object ods-widgets odsresultscontext opendatasoft parameters public public-domain query record repeats representation result scroll sentence tag target template title top variables widget window"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsLastDatasetsFeed",
       "shortName": "odsLastDatasetsFeed",
       "type": "directive",
@@ -191,7 +227,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget allows you to build a map visualization and show data using various modes of display using layers.",
-      "keywords": "ability adding advanced aggregated aggregating aggregation allows alphanumerically angular angularjs-enabled anither apart api area areas associated auto automatic automatically based basemap basemaps best border bordercolor browser build button categories centered changes chosen chronologically click clicked clicking close cluster clustering clusters clustersforced code color colorbrewer colorbyfield colorranges colors colorscale combine combined configurable configuration configurations configure context contexts control css custom data dataset datasets datetime decide decreasing default define defined density depending directive directly display displayed displaying displays downloaded draw drawing dynamic exact example false ff0000 ff0f05 field field1 field2 field3 field4 fields fill filter filters fit format france freeze fullscreen function geo geolocate geometrical geometry heatmap hex hide hoverfield hovers html identifier indicating initialization initializing inside item items join joincontext joined kind large latitude layer layers level local localkey location longitude map markers maximum mode modes mot mouse move multiple mycontext mycontext2 mycontext3 mycontext5 myvalue names ngif note number numeric object occurs ods-widgets odsmaplayer odswidgetsconfig odswidgetsconfigprovider opacity orange order org paris point points prefixed properties property propose provided ranges raw read record records red refine refine-on-click-context refine-on-click-mycontext-context-field refine-on-click-mycontext-map-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-map-field refineonclick refineonclickcontext refineonclickcontextfield refineonclickmapfield refits refreshed relevant remote remotekey represent represents result reverse reversed road scheme second selection semicolon sense separated serie settings shape shapes show-if showheatmap showif simple simplification simply single sort sorted sources spatially specific stacked stay support supports table tag template text three time toolbar tools tooltip tooltip-sort tooltips tooltipsort traffic trigger triggers true type types user users values view visualization ways widget widgets won ylgnbu zones zoom"
+      "keywords": "ability adding administration advanced aggregated aggregating aggregation allows alphanumerically anchor angular angularjs-enabled anither apart api area areas associated auto automatic automatically baby based basemap basemaps bed beer best bike boat border bordercolor briefcase browser build building bus button calculation calendar camera car categories centered change changes check chosen christianism chronologically cinema circle click clicked clicking close cluster clustering clusters clustersforced code coffee college color colorbrewer colorbyfield colorranges colors colorscale combine combined configurable configuration configurations configure configured content context contexts control cow cross cross-alt css culture custom danger data dataset datasets datetime decide decimal decreasing default define defined density depending directive directly display displayed displaying displays dog downloaded draw drawing drop dynamic economy envelope exact example exclude exclude-from-refit excludefromrefit factory false ff0000 ff0f05 field field1 field2 field3 field4 fields fill filter filters fire-extinguisher fit flag flame flower format france freeze fullscreen function gas-station geo geolocate geometrical geometry glass gym health heart heatmap hex hide hospital house hoverfield hovers html icon identifier indicating initialization initializing inside integer islam item items join joincontext joined judaism justice keywords kind large latitude layer layers leaf level light lightning limits load local localkey location longitude luggage man man-alt map marker markers maximum minimum minus mode modes mot mouse move moves multiple music mycontext mycontext2 mycontext3 mycontext5 myvalue names ngif note number numeric object occurs ods-widgets odsmaplayer odswidgetsconfig odswidgetsconfigprovider opacity orange order org parameter parameters paris parking persists phone picto plane playground point points policeman position prefixed properties property propose provided question ranges raw read record records recycling red refine refine-on-click-context refine-on-click-mycontext-context-field refine-on-click-mycontext-map-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-map-field refineonclick refineonclickcontext refineonclickcontextfield refineonclickmapfield refits refreshed relevant remote remotekey represent represents restaurant result reverse reversed road roadblock scheme science scrolling second selection semicolon sense separated serie settings shape shapes shopping-cart show-if showheatmap showif simple simplification simply single ski soccer sort sorted sources spatially specific sport stacked star stay support supports table tag template tennis text three thumbs-down thumbs-up time toilets toolbar tools tooltip tooltip-sort tooltips tooltipsort top traffic train trash tree tree2 trigger triggers trophy truck true type types url user users values video-game view visualization ways wheel wheelchair widget widgets wifi windsurfing woman won wrench ylgnbu zones zoom"
     },
     {
       "section": "api",
@@ -244,7 +280,25 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a &quot;picto&quot; specified by a url and force a fill color on it.",
-      "keywords": "api color defs directive display displays element fallback fill force ie8 image implement ods-widgets picto styled svg url vectorial widget width"
+      "keywords": "api apply classes color defs directive directly display displays element fill force image implement ods-widgets picto string styled svg url vectorial widget width"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsPlumeAirQuality",
+      "shortName": "odsPlumeAirQuality",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Integrates a Plume Air Embed using a city name.",
+      "keywords": "air api city directive embed en_us english fr_fr french html http integrate integrates lang module new-york ods-widgets plume plumelabs version"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsRedirectIfNotLoggedIn",
+      "shortName": "odsRedirectIfNotLoggedIn",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget forces a redirect to the login page of the domain if the user is not logged in",
+      "keywords": "api directive domain forces logged login ods-widgets redirect user widget"
     },
     {
       "section": "api",
@@ -281,6 +335,24 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.",
       "keywords": "api catalog context current directive display displays domain empty explore homepage indicating local ods-widgets placeholder redirect redirects search searchbox text user wide widget"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsSocialButtons",
+      "shortName": "odsSocialButtons",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays a share button that on hover will reveal social media sharing buttons.",
+      "keywords": "account addthis addthis-pubid addthispubid api button buttons comma directive display displays facebook google-plus hover html list media module myaddthispubid ods-widgets public reveal separated share sharing social twitter widget"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsSpinner",
+      "shortName": "odsSpinner",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays the custom OpenDataSoft spinner.",
+      "keywords": "animated animation api browser color css current custom directive displayed displays doesn font gif html loading match module ods-widgets opendatasoft size spinner support svg widget"
     },
     {
       "section": "api",
@@ -361,7 +433,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget, when used on a checkbox, allows the checkbox to be used to &quot;toggle&quot; a value in an object, in other words to add it or remove when the checkbox",
-      "keywords": "add allows api apply array bank case catalog catalog-domain checkbox checkboxes checked context created directive government hold holds key model multiple object ods-toggle-key ods-toggle-model ods-toggle-value ods-widgets odstogglekey odstogglemodel odstogglvalue opendatasoft parameters public publisher refine remove toggle toggled type unchecked values widget world"
+      "keywords": "add allows api apply array bank case catalog catalog-domain checkbox checkboxes checked context created csv directive government hold holds key model multiple object ods-toggle-key ods-toggle-model ods-toggle-value ods-widgets odstogglekey odstogglemodel odstogglvalue opendatasoft parameters public publisher refine remove toggle toggled type unchecked values variable widget world"
     },
     {
       "section": "api",
@@ -379,7 +451,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "Integrates a Twitter &quot;widget&quot; using the widget ID provided by Twitter.",
-      "keywords": "allow api avoid cross-scripting directive enter example html https identifier integrate integrates module ods-widgets provided risks tags text twitter users widget widget-id widgetid"
+      "keywords": "api directive forces height html https identifier integrate integrates module ods-widgets provided timeline twitter widget widget-id widgetid width"
     },
     {
       "section": "api",
@@ -480,7 +552,7 @@ NG_DOCS={
   "editExample": true,
   "startPage": "/api",
   "scripts": [
-    "jquery-1.11.1.min.js",
+    "jquery-2.1.4.min.js",
     "angular.js",
     "angular-animate.js",
     "angular-sanitize.js",

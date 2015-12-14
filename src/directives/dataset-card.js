@@ -12,7 +12,7 @@
             $(datasetItem).css('bottom', cardHeight);
         } else { // top
             $(datasetItem).css('top', cardHeight);
-            $(datasetItem).height(elem.outerHeight() - cardHeight);
+            $(datasetItem).css('bottom', 0);
         }
         transcludeService(function(clone) {
             $(datasetItem).html(clone);
@@ -50,7 +50,7 @@
             template: '<div class="odswidget odswidget-dataset-card">' +
                          '<div class="card-container" ng-class="{bottom: position == \'bottom\', expanded: expanded, expandable: isExpandable()}">' +
                             '<h2 class="dataset-title" ng-click="expanded = !expanded" ng-show="!expanded || (expanded && !context.dataset.metas.description)">{{context.dataset.metas.title}}</h2>' +
-                            '<div ng-click="expanded = !expanded" class="expand-control"><span translate>Details</span> <i class="icon-chevron-down" ng-show="!expanded"></i><i class="icon-chevron-up" ng-hide="!expanded"></i></div>' +
+                            '<div ng-click="expanded = !expanded" class="expand-control"><span translate>Details</span> <i class="fa fa-chevron-down" ng-show="!expanded"></i><i class="fa fa-chevron-up" ng-hide="!expanded"></i></div>' +
                             '<div class="dataset-expanded" ng-click="expanded = !expanded"">'+
                                 '<h2 class="dataset-title" ng-show="expanded">{{context.dataset.metas.title}}</h2>' +
                                 '<p class="dataset-description" ng-if="expanded" ng-bind-html="safeHtml(context.dataset.metas.description)"></p>' +
@@ -110,21 +110,21 @@
         return {
             restrict: 'E',
             scope: {
-                title: '=',
+                odsTitle: '=',
                 datasets: '=',
                 context: '='
             },
             template: '<div class="odswidget-multidatasets-card">' +
                       '  <div class="card-container multidatasets" ng-class="{bottom: (position == \'bottom\'), expanded: expanded, expandable: isExpandable()}">' +
-                      '      <h2 ng-show="!expanded" ng-click="tryToggleExpand()">{{ title }}</h2>' +
-                      '      <div ng-click="tryToggleExpand()" class="expand-control" ng-class="{expanded: expanded}"><span translate>Details</span> <i class="icon-chevron-down"></i></div>' +
+                      '      <h2 ng-show="!expanded" ng-click="tryToggleExpand()">{{ odsTitle }}</h2>' +
+                      '      <div ng-click="tryToggleExpand()" class="expand-control" ng-class="{expanded: expanded}"><span translate>Details</span> <i class="fa fa-chevron-down"></i></div>' +
                       '      <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="!expanded">' +
                       '          <span class="count-text" ng-hide="!datasetObjectKeys || datasetObjectKeys.length <= 1">' +
                       '               <span ng-pluralize count="datasetObjectKeys.length" translate="when" when="{\'0\': \'no datasets to display\', \'1\': \'{} dataset\', \'other\': \'{} datasets\'}"></span>' +
                       '          </span>' +
                       '      </h3>' +
                       '      <div class="datasets-expanded">' +
-                      '          <h2 ng-show="expanded" ng-click="tryToggleExpand()">{{ title }}</h2>' +
+                      '          <h2 ng-show="expanded" ng-click="tryToggleExpand()">{{ odsTitle }}</h2>' +
                       '          <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="expanded">' +
                       '              <span class="count-text">' +
                       '                   <span ng-pluralize count="datasetObjectKeys.length" translate="when" when="{\'0\': \'no datasets to display\', \'1\': \'{} dataset\', \'other\': \'{} datasets\'}"></span>' +
@@ -173,18 +173,20 @@
                 };
 
                 var unwatch = $scope.$watch('datasets', function(nv, ov) {
-                    var keys = Object.keys(nv);
-                    if (keys.length === 0) {
-                        return;
-                    }
-                    $scope.datasetObjectKeys = keys;
+                    if (nv) {
+                        var keys = Object.keys(nv);
+                        if (keys.length === 0) {
+                            return;
+                        }
+                        $scope.datasetObjectKeys = keys;
 
-                    // waiting for re-render
-                    setTimeout(function() {
-                        $scope.renderContent($transclude, $scope, $element);
-                    }, 0);
-                    $scope.expanded = false;
-                    unwatch();
+                        // waiting for re-render
+                        setTimeout(function() {
+                            $scope.renderContent($transclude, $scope, $element);
+                        }, 0);
+                        $scope.expanded = false;
+                        unwatch();
+                    }
                 }, true);
             }]
         };

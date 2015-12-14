@@ -1,0 +1,40 @@
+.odswidget-social-buttons {
+    background-color: @color-socialButtons-background;
+    border: 1px solid @color-socialButtons-border;
+    border-radius: 3px;
+    padding: 1rem;
+    line-height: 1em;
+}
+
+.odswidget-social-buttons__header {
+    cursor: pointer;
+}
+
+.odswidget-social-buttons__header {
+}
+
+.odswidget-social-buttons__buttons {
+    max-height: 0;
+    width: auto;
+    background: #fff;
+    overflow: hidden;
+    opacity: 0;
+    text-align: center;
+    transition: all 0.5s ease;
+}
+.odswidget-social-buttons__buttons--open {
+    opacity: 1;
+    max-height: 400px;
+    margin-top: 0.5em;
+}
+
+
+// Non-BEM styles: this styles the elements injected by AddThis
+.odswidget-social-buttons__buttons--open a {
+    display: block;
+    margin: 0.5em auto;
+    width: 100%;
+    iframe {
+        min-width: 60px;
+    }
+}

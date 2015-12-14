@@ -9,6 +9,7 @@
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-text-search
        placeholder="{string}"
+       show-button="{string}"
        button="{string}"
        field="{string}"
        context="{CatalogContext|DatasetContext}"&gt;
@@ -18,7 +19,8 @@
 </ul>
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>placeholder</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>the text to display as a placeholder when the searchbox is empty</p>
-</div></td></tr><tr><td>button</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>the text to display in the &quot;search&quot; button</p>
+</div></td></tr><tr><td>showButton</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>display the &quot;search&quot; button</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>button</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>the text to display in the &quot;search&quot; button</p>
 </div></td></tr><tr><td>field</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>The name of a field you want to restrict the search on (i.e. only search on the textual content of a specific field).
 The search will be a simple text search and won&#39;t support any query language or operators.</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>

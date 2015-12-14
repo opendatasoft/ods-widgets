@@ -12,6 +12,7 @@
     position: absolute;
     background-clip: padding-box;
     font-weight: bold;
+    box-sizing: content-box;
 }
 
 .cluster-marker .cluster-marker-circle span {

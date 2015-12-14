@@ -123,6 +123,7 @@
                     'disjunctive="'+(facet.disjunctive || '')+'" ' +
                     'hide-if-single-category="'+(facet.hideIfSingleCategory ? 'true' : 'false')+'" ' +
                     'hide-category-if="'+(facet.hideCategoryIf || '')+'"' +
+                    'value-formatter="'+(facet.valueFormatter || '')+'"' +
                     '>'+(facet.template || '')+'</ods-facet>';
             });
             var tags = angular.element(html);
@@ -244,7 +245,7 @@
 
                     req.success(function(data) {
                         $scope.context.nhits = data.nhits;
-                        var facetGroup, categories, facetItem, addedCategories;
+                        var categories, facetItem, addedCategories;
                         angular.forEach($scope.facets, function(facet) {
                             facet.categories.splice(0, facet.categories.length);
                         });
@@ -310,13 +311,14 @@
                 hideCategoryIf: '@',
                 sort: '@',
                 disjunctive: '@',
-                valueSearch: '@'
+                valueSearch: '@',
+                valueFormatter: '@'
             },
             template: function(tElement) {
                 tElement.data('facet-template', tElement.html());
-                return '<div class="odswidget odswidget-facet">' +
-                '<h3 class="facet-title" ng-if="title && categories.length && visible()">{{title}}</h3>' +
-                '<ods-facet-category-list ng-if="visible()" facet-name="{{ name }}" value-search="{{ valueSearch }}" hide-category-if="{{ hideCategoryIf }}" categories="categories" template="{{ customTemplate }}"></ods-facet-category-list>' +
+                return '<div ng-class="{\'odswidget\': true, \'odswidget-facet\': true, \'odswidget-facet--disjunctive\': isDisjunctive()}">' +
+                '<h3 class="odswidget-facet__facet-title" ng-if="title && categories.length && visible()">{{title}}</h3>' +
+                '<ods-facet-category-list ng-if="visible()" facet-name="{{ name }}" value-search="{{ valueSearch }}" hide-category-if="{{ hideCategoryIf }}" categories="categories" template="{{ customTemplate }}" value-formatter="{{valueFormatter}}"></ods-facet-category-list>' +
                 '</div>';
             },
             require: '^odsFacets',
@@ -326,11 +328,15 @@
                 }
                 scope.categories = facetsCtrl.registerFacet(scope.name, scope.sort);
                 scope.facetsCtrl = facetsCtrl;
-                if (angular.isString(scope.disjunctive) && scope.disjunctive.toLowerCase() === 'true') {
+                if (scope.isDisjunctive()) {
                     facetsCtrl.setDisjunctive(scope.name);
                 }
             },
             controller: ['$scope', '$element', function($scope, $element) {
+                $scope.isDisjunctive = function() {
+                    return angular.isString($scope.disjunctive) && $scope.disjunctive.toLowerCase() === 'true';
+                };
+
                 $scope.visibleItemsNumber = $scope.visibleItems || 6;
 
                 this.toggleRefinement = function(path) {
@@ -357,22 +363,31 @@
                 template: '@',
                 facetName: '@',
                 hideCategoryIf: '@',
-                valueSearch: '@'
+                valueSearch: '@',
+                valueFormatter: '@'
             },
             require: '^odsFacet',
-            template: '<ul class="category-list">' +
-                '<li class="value-search" ng-show="valueSearchEnabled">' +
-                    '<input ng-model="valueFilter">' +
-                    '<i ng-show="!!valueFilter" class="value-search-cancel icon-remove" ng-click="valueFilter=\'\'"></i>' +
-                '</li>' +
-                '<li ng-repeat="category in categories|filter:searchValue(valueFilter)">' +
-                '<ods-facet-category ng-if="!categoryIsHidden(category)" facet-name="{{ facetName }}" category="category" template="{{template}}" ng-show="visible($index)"></ods-facet-category>' +
-                '</li>' +
-                '<li ng-if="!suggestMode && visibleItems < (categories|filter:searchValue(valueFilter)).length" class="expansion-control">' +
-                '<a ng-hide="expanded" href="#" ng-click="toggle($event)" translate>More</a>' +
-                '<a ng-show="expanded" href="#" ng-click="toggle($event)" translate>Less</a>' +
-                '</li>' +
-                '</ul>',
+            template: '' +
+            '<ul class="odswidget-facet__category-list">' +
+            '   <li class="odswidget-facet__value-search" ng-show="valueSearchEnabled">' +
+            '       <input class="odswidget-facet__value-search-input" ng-model="valueFilter">' +
+            '       <i ng-show="!!valueFilter" class="odswidget-facet__value-search-cancel fa fa-times" ng-click="valueFilter=\'\'"></i>' +
+            '   </li>' +
+            '   <li ng-repeat="category in categories|filter:searchValue(valueFilter)" class="odswidget-facet__category-container">' +
+            '       <ods-facet-category ng-if="!categoryIsHidden(category)" facet-name="{{ facetName }}" category="category" template="{{template}}" value-formatter="{{valueFormatter}}" ng-show="visible($index)"></ods-facet-category>' +
+            '   </li>' +
+            '   <li ng-if="!suggestMode && visibleItems < (categories|filter:searchValue(valueFilter)).length" ' +
+            '       class="odswidget-facet__expansion-control">' +
+            '       <a ng-hide="expanded" href="#" ng-click="toggle($event)" class="odswidget-facet__expansion-control-link">' +
+            '           <i class="fa fa-angle-right"></i>' +
+            '           <span translate>More</span>' +
+            '       </a>' +
+            '       <a ng-show="expanded" href="#" ng-click="toggle($event)" class="odswidget-facet__expansion-control-link">' +
+            '           <i class="fa fa-angle-right"></i>' +
+            '           <span translate>Less</span>' +
+            '       </a>' +
+            '   </li>' +
+            '</ul>',
             link: function(scope, element, attrs, facetCtrl) {
                 scope.expanded = false;
                 scope.visibleItems = facetCtrl.getVisibleItemsNumber();
@@ -417,7 +432,7 @@
                 };
                 this.emptySearch = function() {
                     $scope.valueFilter = '';
-                }
+                };
             }]
         };
     });
@@ -430,12 +445,18 @@
             scope: {
                 category: '=',
                 facetName: '@',
-                template: '@'
+                template: '@',
+                valueFormatter: '@'
             },
-            template: '<div class="odswidget odswidget-facet-category">' +
-                '   <a href="#" ng-click="toggleRefinement($event, category.path)" ng-class="{\'refined\': category.state === \'refined\'}" title="{{ category.name }}">' +
-                '   </a>' +
-                '</div>',
+            template: '' +
+            '<div class="odswidget odswidget-facet-category">' +
+            '   <a class="odswidget-facet__category" ' +
+            '      href="#" ' +
+            '      ng-click="toggleRefinement($event, category.path)" ' +
+            '      ng-class="{\'odswidget-facet__category--refined\': category.state === \'refined\'}" ' +
+            '      title="{{ category.name }}">' +
+            '   </a>' +
+            '</div>',
             link: function(scope, element, attrs, ctrls) {
                 var facetCtrl = ctrls[0];
                 var categoryList = ctrls[1];
@@ -444,8 +465,11 @@
                     facetCtrl.toggleRefinement(path);
                     categoryList.emptySearch();
                 };
-                var template = scope.template || '<span class="category-name">{{ category.name }}</span> <span class="category-count">{{ category.count|number }}</span>';
-                element.find('a').append($compile('<div>'+template+'</div>')(scope)[0]);
+                var defaultTemplate = '' +
+                    '<span class="odswidget-facet__category-count">{{ category.count|number }}</span> ' +
+                    '<span class="odswidget-facet__category-name" ng-bind-html="formatCategory(category.name)"></span>';
+                var template = scope.template || defaultTemplate;
+                element.find('a').append($compile(template)(scope));
 
                 if (scope.category.facets) {
                     var sublist = angular.element('<ods-facet-category-list categories="category.facets" template="{{template}}"></ods-facet-category-list>');
@@ -454,8 +478,15 @@
                 }
 
             },
-            controller: ['$scope', function($scope) {
-
+            controller: ['$scope', 'ValueDisplay', function($scope, ValueDisplay) {
+                $scope.formatCategory = function(value) {
+                    value = ODS.StringUtils.escapeHTML(value);
+                    if ($scope.valueFormatter) {
+                        return ValueDisplay.format(value, $scope.valueFormatter);
+                    } else {
+                        return value;
+                    }
+                };
             }]
         };
     }]);

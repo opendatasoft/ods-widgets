@@ -61,9 +61,18 @@ hovers the shapes, using <code>hoverField</code> and the name of a field.</li>
 <li><code>color</code>: a simple color, as an hex code (#FF0F05) or a simple CSS color name like &quot;red&quot;. Available for any mode except <code>heatmap</code>.</li>
 <li><code>colorScale</code>: the name of a ColorBrewer [<a href="http://colorbrewer2.org/">http://colorbrewer2.org/</a>] scheme, like &quot;YlGnBu&quot;. Available for <code>aggregation</code>.</li>
 <li><code>colorRanges</code>: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example &quot;red;20;orange;40;#00CE00&quot; to color anything between
-20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a field name in <code>colorByField</code> to configure which field will be
+20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a decimal or integer field name in <code>colorByField</code> to configure which field will be
 used to decide on the color. Available for <code>raw</code> and <code>aggregation</code>.</li>
 </ul>
+<p>On top of color configuration, the icon used as a marker on the map can be configured through the <code>picto</code>
+property. The property supports the following keywords:
+star, circle, bike, bus, train, plane, roadblock, coffee, college, flag, policeman, envelope, restaurant,
+flower, tree, tree2, tennis, soccer, ski, baby, bed, playground, christianism, judaism, islam, car,
+wheelchair, recycling, cinema, danger, science, gas-station, anchor, parking, toilets, dog, cross, hospital,
+drop, music, plus, minus, question, information, wrench, trash, heart, thumbs-up, thumbs-down, check,
+cross-alt, fire-extinguisher, flame, man, man-alt, woman, glass, beer, house, truck, briefcase, camera,
+luggage, phone, road, video-game, lightning, trophy, cow, factory, boat, wifi, light, windsurfing, gym,
+shopping-cart, building, calendar, administration, culture, economy, leaf, justice, health, sport</p>
 <p>When displaying shapes, you can also use <code>borderColor</code> and <code>opacity</code> to configure the color of the shape border and the opacity of the shape&#39;s fill.</p>
 <p>If you are displaying data where multiple points or shapes are stacked, you can configure the order in which the items will be
 displayed in the tooltip, using <code>tooltipSort</code> and the name of a field, prefixed by <code>-</code> to have a reversed sort.
@@ -106,25 +115,39 @@ name of the property, as <code>refineOnClick[context]MapField</code> and <code>r
                                            refine-on-click-mycontext2-context-field="field4"&gt;&lt;/ods-map-layer&gt;
     &lt;/ods-map&gt;
 </pre>
+<p>When you first load the map (if there is no <code>location</code> parameter), and when your context parameters change, the
+map is refreshed and moves to fit the content of the new data to display. If you want to exclude a layer&#39;s data
+from the new position&#39;s calculation, you can use <code>excludeFromRefit</code>:</p>
+<pre class="prettyprint linenums">
+    &lt;ods-map&gt;
+        &lt;ods-map-layer context="mycontext"&gt;&lt;/ods-map-layer&gt;
+        &lt;ods-map-layer context="mycontext3" exclude-from-refit="true"&gt;&lt;/ods-map-layer&gt;
+    &lt;/ods-map&gt;
+</pre>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-map
        context="{DatasetContext}"
-       [map-context]="{Object}"
+       [sync-to-url]="{boolean}"
+       [sync-to-object]="{Object}"
        [location]="{string}"
        [basemap]="{string}"
        [static-map]="{boolean}"
        [no-refit]="{boolean}"
        toolbar-geolocation="{boolean}"
        toolbar-drawing="{boolean}"
-       toolbar-fullscreen="{boolean}"&gt;
+       toolbar-fullscreen="{boolean}"
+       scroll-wheel-zoom="{boolean}"
+       min-zoom="{integer}"
+       max-zoom="{integer}"&gt;
 &lt;/ods-map&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
-</div></td></tr><tr><td>[mapContext]</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>An object where the <code>location</code> and <code>basemap</code> selection is kept. You can use it from
+</div></td></tr><tr><td>[syncToUrl]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, persists the <code>location</code> and <code>basemap</code> in the page&#39;s URL.</p>
+</div></td></tr><tr><td>[syncToObject]</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>An object where the <code>location</code> and <code>basemap</code> selection is kept. You can use it from
 anither widget to read the location or basemap.</p>
 </div></td></tr><tr><td>[location]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>The default location of the map upon initialization, under the following format: &quot;zoom,latitude,longitude&quot;.
 For example, to have a map centered on Paris, France, you can use &quot;12,48.85218,2.36996&quot;. By default, if a location is not specified,
@@ -137,5 +160,8 @@ If &quot;true&quot;, then the map will stay at the same location instead.</p>
 </div></td></tr><tr><td>toolbarGeolocation</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;false&quot;, then the &quot;geolocate&quot; button won&#39;t be displayed in the map&#39;s toolbar.</p>
 </div> <p><em>(default: true)</em></p></td></tr><tr><td>toolbarDrawing</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;false&quot;, then the drawing tools (to draw filter areas) won&#39;t be displayed in the map&#39;s toolbar.</p>
 </div> <p><em>(default: true)</em></p></td></tr><tr><td>toolbarFullscreen</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;false&quot;, then the &quot;go fullscreen&quot; button won&#39;t be displayed in the map&#39;s toolbar.</p>
-</div> <p><em>(default: true)</em></p></td></tr></tbody></table></div>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>scrollWheelZoom</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;false&quot;, then scrolling your mouse wheel over the map won&#39;t zoom/unzoom it.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>minZoom</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Limits the map to a minimum zoom value. By default this is defined by the minimum zoom of the basemap.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>maxZoom</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Limits the map to a maximum zoom value. By default this is defined by the maximum zoom of the basemap.</p>
+</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
 </div>

@@ -80,8 +80,8 @@
                 from: '=?'
             },
             template: '<div class="odswidget odswidget-timerange">' +
-                    '<span class="odswidget-timerange-from"><span translate>From</span> <input type="text"></span>' +
-                    '<span class="odswidget-timerange-to"><span translate>to</span> <input type="text"></span>' +
+                    '<span class="odswidget-timerange__from"><span translate>From</span> <input type="text"></span>' +
+                    '<span class="odswidget-timerange__to"><span translate>to</span> <input type="text"></span>' +
                 '</div>',
             link: function(scope, element, attrs) {
                 var inputs = element.find('input');

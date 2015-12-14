@@ -22,8 +22,7 @@ module.exports = function(grunt) {
                     report: 'gzip'
                 },
                 files: {
-                    'dist/ods-widgets.min.js': JS_FILES,
-                    'dist/ieshiv.min.js': 'src/ieshiv.js'
+                    'dist/ods-widgets.min.js': JS_FILES
                 }
             }
         },
@@ -34,7 +33,7 @@ module.exports = function(grunt) {
                     cleancss: false
                 },
                 files: {
-                    "dist/ods-widgets.css": "src/ods-widgets.less"
+                    "dist/ods-widgets.css": "src/less/ods-widgets.less"
                 }
             },
             dist: {
@@ -43,7 +42,7 @@ module.exports = function(grunt) {
                     cleancss: true
                 },
                 files: {
-                    "dist/ods-widgets.min.css": "src/ods-widgets.less"
+                    "dist/ods-widgets.min.css": "src/less/ods-widgets.less"
                 }
             }
         },
@@ -71,12 +70,6 @@ module.exports = function(grunt) {
                 options: {
                     spawn: false
                 }
-            },
-            ieshiv: {
-                files: {
-                    'dist/ieshiv.min.js': 'src/ieshiv.js'
-                },
-                tasks: ['copy:ieshiv']
             }
         },
         concat: {
@@ -101,21 +94,16 @@ module.exports = function(grunt) {
                 expand: true,
                 src: ['libs/**'],
                 dest: 'dist/'
-            },
-            ieshiv: {
-                files: {
-                    'dist/ieshiv.js': 'src/ieshiv.js'
-                }
             }
 		},
 		ngdocs: {
 			options: {
 				dest: 'docs',
                 scripts: [
-                    'https://code.jquery.com/jquery-1.11.1.min.js',
-                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular.js',
-                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular-animate.js',
-                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular-sanitize.js',
+                    'https://code.jquery.com/jquery-2.1.4.min.js',
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.js',
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular-animate.js',
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular-sanitize.js',
                     '../dist/ods-widgets.js',
                     '../docs-load-css.js'
                 ],
@@ -179,6 +167,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['dist']);
-    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'copy:libs', 'copy:ieshiv', 'ngdocs']);
+    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'copy:libs', 'ngdocs']);
     grunt.registerTask('server', ['default', 'connect', 'watch']);
 };

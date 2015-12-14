@@ -2,6 +2,40 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.0.0 - 2015-12-14
+This release is the one that finally jumps to the 1.x.x major version number! Many changes in the structure and styles, most of
+them being breaking changes, so it warranted a major version; and at the same time we are now confident that it is going
+to stay stable for a long time, so the jump to 1.x seemed warranted. 
+
+There are two (big) breaking changes:
+- **Internet Explorer 8 is no longer supported.** This seems harsh, but this enabled us to upgrade Angular version to 1.4,
+and allowed a lot of improvements under the hood. In other words, everything is a bit better and faster, at the expense
+of IE8.
+- **Every CSS class name and widget style have changed.** Previously, styles and classes were done without much consistency,
+and it made it harder to override the style of some widgets. Everything has been rewritten to be easier to alter the style
+of every widget to match the style of your own website, without having to use 8-levels-deep-nested styles (or even worse, `!important`).
+But unfortunately, this means that any current customization is likely to be entirely broken.
+
+### Added
+- New `odsInfiniteScrollResults` widget
+- New `odsPlumeAirQuality`: displays the status of the air quality in a specific city
+- New `odsClearAllFilters`: a simple link to reset all filters on a context.
+- New `odsDatetime`: can be used to inject the current date/time as a variable in the page.
+- New `odsRedirectIfNotLoggedIn` (OpenDataSoft customers): redirects the users to the login page if they are not logged in.
+Can be used on a public page that uses private datasets, to ensure the user doesn't stop at an empty dashboard. Only works
+on the OpenDataSoft platform.
+- New `availableCalendarViews` parameter on `odsCalendar`, allowing you to restrict the available views in the calendar.
+- New `minZoom` and `maxZoom` parameters on `odsMap`, to restrict the available zoom levels.
+- New `scrollWheelZoom` parameter on `odsMap` to prevent the mousewheel to zoom/unzoom. Can be useful on a scrollable
+page with a large map, to avoid frustrating behavior where you want to scroll the page but your mousewheel gets stopped
+by a map right in the middle.
+- `odsTwitterTimeline` now supports `width` and `height` parameters to configure the dimensions of the widget.
+
+### Fixed
+- When using two or more layers with the `showIf` parameter, sometimes the map wouldn't detect the changes and wouldn't
+refresh. This is now fixed. There can still be issues if these layers are using the same context, which will be fixed
+in the close future.
+
 ## 0.1.8 - 2015-09-01
 ### Added
 - New `odsCalendar` widget! Displays a calendar view of your data. Live example: http://data.issy.com/explore/dataset/agendav2/?tab=calendar

@@ -19,17 +19,27 @@
         return {
             restrict: 'E',
             replace: true,
-            template: '<ul class="odswidget odswidget-filter-summary filters">' +
-                '<li ng-show="isParameterActive(\'q\')">' +
-                '    <a ng-click="removeParameter(\'q\')"><span class="filter-label" translate>Text</span> {{context.parameters.q}}</a>' +
-                '</li>' +
-                '<li ng-show="isParameterActive(\'geofilter.polygon\') || isParameterActive(\'geofilter.distance\')">' +
-                '    <a ng-click="removeParameter(\'geofilter.polygon\'); removeParameter(\'geofilter.distance\');" translate>Drawn area on the map</a>' +
-                '</li>' +
-                '<li ng-repeat="refinement in refinements">' +
-                '    <a ng-click="removeParameter(\'refine.\'+refinement.groupName, refinement.path)"><span class="filter-label">{{refinement.groupLabel}}</span> {{refinement.label}}</a>' +
-                '</li>' +
-                '<li ng-show="clearAllButton && isAnyFilterActive"><a ng-click="clearAll()" class="clear-all"><i class="icon-ban-circle"></i> <span translate>Clear all</span></a></li>' +
+            template: '' +
+                '<ul class="odswidget odswidget-filter-summary">' +
+                '    <li class="odswidget-filter-summary__active-filter" ng-show="isParameterActive(\'q\')">' +
+                '        <a class="odswidget-filter-summary__active-filter-link" ng-click="removeParameter(\'q\')">' +
+                '            <span class="odswidget-filter-summary__active-filter-label" translate>Text</span> {{context.parameters.q}}' +
+                '        </a>' +
+                '    </li>' +
+                '    <li class="odswidget-filter-summary__active-filter" ng-show="isParameterActive(\'geofilter.polygon\') || isParameterActive(\'geofilter.distance\')">' +
+                '        <a class="odswidget-filter-summary__active-filter-link" ng-click="removeParameter(\'geofilter.polygon\'); removeParameter(\'geofilter.distance\');"> ' +
+                '            <span class="odswidget-filter-summary__active-filter-label" translate>Drawn area on the map</span>' +
+                '        </a>' +
+                '    </li>' +
+                '    <li class="odswidget-filter-summary__active-filter" ng-repeat="refinement in refinements">' +
+                '        <a class="odswidget-filter-summary__active-filter-link" ng-click="removeParameter(\'refine.\'+refinement.groupName, refinement.path)">' +
+                '            <span class="odswidget-filter-summary__active-filter-label">{{refinement.groupLabel}}</span> ' +
+                '            {{refinement.label}}' +
+                '        </a>' +
+                '    </li>' +
+                '    <li class="odswidget-filter-summary__clear-all" ng-show="clearAllButton && isAnyFilterActive">' +
+                '        <ods-clear-all-filters context="context"></ods-clear-all-filters>' +
+                '    </li>' +
                 '</ul>',
             scope: {
                 context: '=',
@@ -45,7 +55,7 @@
 
                 var excludes = $scope.exclude ? $scope.exclude.split(',') : [];
                 $scope.isParameterActive = function(name) {
-                    return $scope.context.parameters && excludes.indexOf(name) === -1 && $scope.context.parameters[name] && $scope.context.parameters[name] !== undefined;
+                    return $scope.context && $scope.context.parameters && excludes.indexOf(name) === -1 && $scope.context.parameters[name] && $scope.context.parameters[name] !== undefined;
                 };
                 var getFacetGroupLabel = function(facetGroupName) {
                     if ($scope.context.type === 'catalog') {
@@ -63,22 +73,6 @@
                         }
                     }
 
-                };
-
-                var getActiveFilters = function () {
-                    var filters = Object.keys($scope.context.parameters);
-                    return filters.filter(function(filter) {
-                        return filter == 'q'
-                            || filter == 'geofilter.polygon'
-                            || filter == 'geofilter.distance'
-                            || filter.indexOf('refine.') === 0
-                    });
-                };
-
-                $scope.clearAll = function() {
-                    angular.forEach(getActiveFilters(), function (k) {
-                        delete $scope.context.parameters[k];
-                    });
                 };
 
                 $scope.removeParameter = function(paramName, paramValue) {
@@ -103,7 +97,7 @@
                 var refreshRefinements = function() {
                     var refinements = [];
 
-                    if ($scope.context.parameters && ($scope.context.type === 'catalog' || $scope.context.dataset))
+                    if ($scope.context && $scope.context.parameters && ($scope.context.type === 'catalog' || $scope.context.dataset))
                         for (var paramName in $scope.context.parameters) {
                             if (paramName.substring(0, 7) == 'refine.' && excludes.indexOf(paramName) === -1) {
                                 var refinementPaths = $scope.context.parameters[paramName];
@@ -126,7 +120,7 @@
                         }
                     $scope.refinements = refinements;
 
-                    $scope.isAnyFilterActive = getActiveFilters().length > 0;
+                    $scope.isAnyFilterActive = $scope.context.getActiveFilters().length > 0;
                 };
 
                 $scope.$watch('context', function(newValue, oldValue) {

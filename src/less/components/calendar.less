@@ -1,0 +1,76 @@
+.odswidget-calendar {
+    position: relative;
+    display: block;
+    min-height: 6rem;
+}
+.odswidget-calendar__loading-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: @color-calendarLoadingBackdrop;
+    z-index: @zIndex-10;
+    text-align: center;
+}
+.odswidget-calendar__loading-wheel {
+    position: absolute;
+    top: 50%;
+    font-size: 4rem;
+    margin-top: -2rem;
+}
+.odswidget-calendar__tooltip-title {
+    text-align: center;
+    padding-right: 1em;
+}
+.odswidget-calendar__tooltip-fields {
+    max-height: 200px;
+    font-size: 12px;
+    overflow-y: scroll;
+}
+.odswidget-calendar__tooltip-field-name {
+    font-weight: bold;
+}
+
+// Calendar: styles overriding vendor's styles
+.fc-event {
+    cursor: pointer;
+}
+#qtip-odswidget-calendar {
+    background-color: @color-calendarTooltipBackground;
+    border-radius: 0.4em;
+    border: 1px solid @color-calendarTooltipBorder;
+    box-shadow: 0 1px 2px @color-calendarTooltipBorder;
+    margin-top: -10px;
+    line-height: normal;
+
+    &:after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 50%;
+        bottom: -10px;
+        margin-left: -10px;
+        width: 17px;
+        height: 17px;
+        padding: 1px;
+        transform: rotate(45deg);
+        background-color: @color-calendarTooltipBackground;
+        box-shadow: 1px 1px @color-calendarTooltipBorder;
+    }
+}
+#qtip-odswidget-calendar .qtip-close {
+    right: 5px;
+    top: 5px;
+    font-size: 2em;
+    text-decoration: none;
+    color: #c3c3c3;
+    border: 0;
+    background: none;
+    &:hover {
+        color: #999;
+        text-decoration: none;
+    }
+}
+
+

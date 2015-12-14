@@ -17,14 +17,13 @@
         return {
             restrict: 'E',
             replace: false,
-            template: '<div class="odswidget odswidget-theme-boxes">' +
-                '<div class="odswidget odswidget-facet-enumerator">' +
-                    '<div ng-repeat="item in items" class="item" ods-facet-results="items" ods-facet-results-context="context" ods-facet-results-facet-name="theme">' +
-                        '<a ng-href="{{context.domainUrl}}/explore/?refine.theme={{item.path}}" target="_self" ods-tooltip="{{item.name}} ({{formatCount(item.count)}})" ods-tooltip-direction="bottom" style="display: block;">' +
-                            '<ods-theme-picto theme="{{item.name}}"></ods-theme-picto>' +
-                        '</a>' +
-                    '</div>' +
-                '</div>' +
+            template: '' +
+                '<div class="odswidget odswidget-theme-boxes">' +
+                '   <div ng-repeat="item in items" class="odswidget-theme-boxes__box" ods-facet-results="items" ods-facet-results-context="context" ods-facet-results-facet-name="theme">' +
+                '       <a ng-href="{{context.domainUrl}}/explore/?refine.theme={{item.path}}" target="_self" ods-tooltip="{{item.name}} ({{formatCount(item.count)}})" ods-tooltip-direction="bottom" style="display: block;">' +
+                '           <ods-theme-picto class="odswidget-theme-boxes__picto" theme="{{item.name}}"></ods-theme-picto>' +
+                '       </a>' +
+                '   </div>' +
                 '</div>',
             scope: {
                 context: '='

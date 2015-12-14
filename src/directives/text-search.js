@@ -9,6 +9,7 @@
          * @scope
          * @restrict E
          * @param {string} placeholder the text to display as a placeholder when the searchbox is empty
+         * @param {string} [showButton=false] display the "search" button
          * @param {string} button the text to display in the "search" button
          * @param {string} [field=none] The name of a field you want to restrict the search on (i.e. only search on the textual content of a specific field).
          * The search will be a simple text search and won't support any query language or operators.
@@ -20,12 +21,13 @@
         return {
             restrict: 'E',
             replace: true,
-            template: '<div class="odswidget odswidget-text-search">' +
-                    '<form ng-submit="applySearch()">' +
-                    '<input class="searchbox" name="q" type="text" ng-model="searchExpression" placeholder="{{placeholder}}">' +
-                    '<button ng-bind="buttonText"></button>' +
-                    '</form>' +
-                '</div>',
+            template: '' +
+            '<div class="odswidget odswidget-text-search">' +
+            '    <form ng-submit="applySearch()" class="odswidget-text-search__form">' +
+            '        <input class="odswidget-text-search__search-box" name="q" type="text" ng-model="searchExpression" placeholder="{{ translatedPlaceholder }}">' +
+            '        <button type="submit" class="odswidget-text-search__submit"><i class="fa fa-search"></i></button>' +
+            '    </form>' +
+            '</div>',
             scope: {
                 placeholder: '@?',
                 button: '@?',
@@ -33,12 +35,17 @@
                 field: '@'
             },
             controller: ['$scope', 'translate', function($scope, translate) {
-                $scope.buttonText = $scope.button || translate("Search");
-                
                 var unwatch = $scope.$watch('context', function(nv, ov) {
                     if (nv) {
                         $scope.searchExpression = $scope.context.parameters.q;
                         unwatch();
+                    }
+                });
+
+                var placeholderUnwatcher = $scope.$watch('placeholder', function (nv, ov) {
+                    if (nv) {
+                        $scope.translatedPlaceholder = translate($scope.placeholder);
+                        placeholderUnwatcher();
                     }
                 });
 

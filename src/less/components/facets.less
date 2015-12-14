@@ -1,0 +1,104 @@
+.odswidget-facet {
+    margin: 1rem 0;
+}
+.odswidget-facet__facet-title {
+    margin: 0 0 0.33rem 0;
+}
+.odswidget-facet__category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.odswidget-facet__category {
+    position: relative;
+    color: @color-facetCategory-text;
+    padding: 0.1rem 0 0.1rem 0.67rem;
+    border-left: solid 3px @color-facetCategoryList-border;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    align-content: flex-start;
+}
+.odswidget-facet__category:hover,
+.odswidget-facet__category--refined {
+    color: @color-facetCategory-hover-text;
+    text-decoration: none;
+    border-color: @color-facetCategoryList-hover-border;
+}
+.odswidget-facet__category-container .odswidget-facet__category-list {
+    margin-left: ~"calc(0.67rem + 3px)";
+}
+
+.odswidget-facet--disjunctive .odswidget-facet__category:hover:before {
+    content: "+";
+    position: absolute;
+    top: 0;
+    left: 0.05rem;
+}
+.odswidget-facet--disjunctive .odswidget-facet__category--refined:hover:before {
+    content: "-";
+    position: absolute;
+    top: 0;
+    left: 0.05rem;
+}
+.odswidget-facet__category-name {
+    word-break: break-word;
+    order: 1;
+}
+.odswidget-facet__category-count {
+    font-size: 0.9rem;
+    padding-left: 0.33rem;
+    padding-top: 0.1rem;
+    order: 2;
+    // ie9 fallback
+    float: right;
+}
+
+.odswidget-facet__expansion-control-link {
+    font-style: italic;
+    padding: 0 1rem;
+    color: @color-facetExpansionControl-text;
+}
+.odswidget-facet__expansion-control-link:hover {
+    color: @color-facetExpansionControl-hover-text;
+    text-decoration: none;
+}
+
+.odswidget-facet__value-search-cancel {
+    position: absolute;
+    top: 0;
+    right: 0.5em;
+    line-height: 1.6;
+    opacity: 0.5;
+    cursor: pointer;
+}
+.odswidget-facet__value-search {
+    // The searchbox for a facet's values
+    position: relative;
+}
+.odswidget-facet__value-search:before {
+    font-family: 'FontAwesome';
+    content: "\f002";
+    position: absolute;
+    top: 0;
+    left: 0.5em;
+    line-height: 1.6;
+    width: 1em;
+    text-align: center;
+    display: block;
+    opacity: 0.5;
+}
+
+.odswidget-facet__value-search-input {
+    padding: 0 2em;
+    box-sizing : border-box;
+    width: 100%;
+    line-height: 1.6;
+}
+
+.odswidget-facet__value-icon {
+    width: 1.2rem;
+}

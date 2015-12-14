@@ -31,25 +31,26 @@
                 context: '=',
                 displayedFields: '@',
                 sort: '@',
+                autoResize: '@',
                 datasetFeedback: '@' // FIXME: This is entirely tied to ODS, which is bad
             },
             replace: true,
             transclude: true,
             template: '<div class="records records-table odswidget odswidget-table">' +
-                       ' <div class="records-header" ng-show="records.length">' +
-                       '     <table>' +
-                       '         <thead>' +
+                       ' <div class="odswidget-table__header" ng-show="records.length">' +
+                       '     <table class="odswidget-table__internal-table">' +
+                       '         <thead class="odswidget-table__internal-header-table-header">' +
                        '         <tr>' +
-                       '             <th><div><i ng-show="fetching" class="icon-spinner icon-spin icon-large"></i></div></th>' +
-                       '             <th ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray"' +
-                       '                 title="{{ field.description }}"' +
+                       '             <th class="odswidget-table__header-cell odswidget-table__header-cell--spinner"><div class="odswidget-table__cell-container"><ods-spinner ng-show="fetching" class="odswidget-spinner--large"></ods-spinner></div></th>' +
+                       '             <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray"' +
+                       '                 title="{{ field.description || field.label }}"' +
                        '                 ng-click="toggleSort(field)"' +
-                       '                 ng-class="{\'active\': field.name == context.parameters.sort || \'-\'+field.name == context.parameters.sort}">' +
-                       '                 <div>' +
+                       '                 >' +
+                       '                 <div class="odswidget-table__header-cell-container">' +
                        '                     <span ng-bind="field.label"></span>' +
-                       '                     <div class="sort-icons" ng-show="isFieldSortable(field)">' +
-                       '                         <i class="icon-caret-up" ng-hide="isAscendingSorted(field)"></i>' +
-                       '                         <i class="icon-caret-down" ng-hide="isDescendingSorted(field)"></i>' +
+                       '                     <div ng-class="{\'odswidget-table__sort-icons\': true, \'odswidget-table__sort-icons--active\': field.name == context.parameters.sort || \'-\'+field.name == context.parameters.sort}" ng-show="isFieldSortable(field)">' +
+                       '                         <i class="fa fa-chevron-up odswidget-table__sort-icons__up" ng-hide="isAscendingSorted(field)"></i>' +
+                       '                         <i class="fa fa-chevron-down odswidget-table__sort-icons__down" ng-hide="isDescendingSorted(field)"></i>' +
                        '                     </div>' +
                        '                 </div>' +
                        '             </th>' +
@@ -57,30 +58,30 @@
                        '         </thead>' +
                        '     </table>' +
                        ' </div>' +
-                       ' <div class="records-body">' +
-                       '     <table infinite-scroll="loadMore()" infinite-scroll-distance="1" infinite-scroll-disabled="fetching">' +
-                       '         <thead>' +
+                       ' <div class="odswidget-table__records">' +
+                       '     <table class="odswidget-table__internal-table" infinite-scroll="loadMore()" infinite-scroll-distance="1" infinite-scroll-disabled="fetching">' +
+                       '         <thead class="odswidget-table__internal-table-header">' +
                        '             <tr>' +
-                       '                 <th><div><i ng-show="fetching" class="icon-spinner icon-spin icon-large"></i></div></th>' +
-                       '                 <th ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray"' +
+                       '                 <th class="odswidget-table__header-cell odswidget-table__header-cell--spinner"><div class="odswidget-table__cell-container"><ods-spinner ng-show="fetching" class="odswidget-spinner--large"></ods-spinner></div></th>' +
+                       '                 <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray"' +
                        '                     title="{{ field.name }}">' +
-                       '                     <div>' +
+                       '                     <div class="odswidget-table__cell-container">' +
                        '                         <span ng-bind="field.label"></span>' +
-                       '                         <div class="sort-icons" ng-show="isFieldSortable(field)">' +
-                       '                             <i class="icon-caret-up"></i>' +
-                       '                             <i class="icon-caret-down"></i>' +
+                       '                         <div class="odswidget-table__sort-icons" ng-show="isFieldSortable(field)">' +
+                       '                             <i class="fa fa-chevron-up odswidget-table__sort-icons__up"></i>' +
+                       '                             <i class="fa fa-chevron-down odswidget-table__sort-icons__down"></i>' +
                        '                         </div>' +
                        '                     </div>' +
                        '                 </th>' +
                        '             </tr>' +
                        '         </thead>' +
-                       '         <tbody>' +
+                       '         <tbody class="odswidget-table__records-tbody">' +
                        '         </tbody>' +
                        '     </table>' +
                        ' </div>' +
-                       ' <div ng-if="displayDatasetFeedback" class="table-feedback-new"><a ods-dataset-feedback ods-dataset-feedback-dataset="context.dataset"><i class="icon-comment"></i> <span translate>Suggest a new record</span></a></div>' +
-                       ' <div class="overlay" ng-hide="fetching || records"><span translate>No results</span></div>' +
-                       ' <div class="overlay" ng-hide="(!fetching || records) && !working"><spinner class="spinner"></spinner></div>' +
+                       ' <div ng-if="displayDatasetFeedback" class="table-feedback-new"><a ods-dataset-feedback ods-dataset-feedback-dataset="context.dataset"><i class="fa fa-comment"></i> <span translate>Suggest a new record</span></a></div>' +
+                       ' <div class="odswidget-overlay" ng-hide="fetching || records"><span class="odswidget-overlay__message" translate>No results</span></div>' +
+                       ' <div class="odswidget-overlay" ng-hide="(!fetching || records) && !working"><ods-spinner></ods-spinner></div>' +
                     '</div>',
             controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', '$transclude', '$q', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile, $transclude, $q) {
                 $scope.displayedFieldsArray = null;
@@ -102,7 +103,7 @@
                 $scope.done = false;
 
                 // Needed to construct the table
-                var datasetFields, recordsHeader = $element.find('.records-header'), recordsBody = $element.find('.records-body tbody');
+                var datasetFields, recordsHeader = $element.find('.odswidget-table__header'), recordsBody = $element.find('.odswidget-table__records-tbody');
 
                 var initScrollLeft = recordsHeader.offset().left;
                 var prevScrollLeft = 0; // Use to know if it is a horizontal or vertical scroll
@@ -145,7 +146,7 @@
                     // Retrieve only the displayed fields
                     if ($scope.displayedFieldsArray &&
                         $scope.context.dataset.fields.length > $scope.displayedFieldsArray.length) {
-                        jQuery.extend(options, {fields: $scope.displayedFieldsArray.join(',')})
+                        jQuery.extend(options, {fields: $scope.displayedFieldsArray.join(',')});
                     }
 
                     if (options.sort) {
@@ -264,24 +265,26 @@
                     var tr, td, record = records[index];
 
                     tr = document.createElement('tr');
-                    tr.className = 'record-'+index;
+                    tr.className = 'odswidget-table__internal-table-row record-'+index;
 
                     // TODO: Don't use jQuery if there is performance issue.
                     if (position === 'end') {
-                        var beforePlaceholder = $element.find('.placeholderBot')[0];
+                        var beforePlaceholder = $element.find('.js-placeholder-bottom')[0];
                         beforePlaceholder.parentNode.insertBefore(tr, beforePlaceholder);
                     } else {
-                        var afterPlaceholder = $element.find('.placeholderTop')[0];
+                        var afterPlaceholder = $element.find('.js-placeholder-top')[0];
                         afterPlaceholder.parentNode.insertBefore(tr, afterPlaceholder.nextSibling);
                     }
 
                     // Insert the record number
                     td = document.createElement('td');
+                    td.className = 'odswidget-table__cell';
                     var div = document.createElement('div');
+                    div.className = 'odswidget-table__cell-container';
 
                     if ($scope.displayDatasetFeedback) {
                         // FIXME: This is entirely tied to ODS platform, it should not be within a widget
-                        var feedbackButton = '<i class="icon-comment table-feedback-icon" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="Suggest changes for this record" translate="ods-tooltip"></i>';
+                        var feedbackButton = '<i class="fa fa-comment table-feedback-icon" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="Suggest changes for this record" translate="ods-tooltip"></i>';
                         var localScope = $scope.$new(true);
                         localScope.record = record;
                         localScope.dataset = $scope.context.dataset;
@@ -297,9 +300,11 @@
                         var fieldValue = $filter('formatFieldValue')(record.fields, field);
 
                         td = document.createElement('td');
+                        td.className = 'odswidget-table__cell';
                         tr.appendChild(td);
 
-                        var div = document.createElement('div');
+                        div = document.createElement('div');
+                        div.className = 'odswidget-table__cell-container';
                         td.appendChild(div);
 
                         var newScope, node;
@@ -317,22 +322,10 @@
 
                             if (field && field.type === 'geo_point_2d') {
                                 newScope.fieldValue = fieldValue;
-                                if (!window.ie8) {
-                                    node = $compile('<ods-geotooltip width="300" height="300" coords="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
-                                } else {
-                                    node = document.createElement('span');
-                                    node.title = fieldValue;
-                                    node.innerHTML = fieldValue;
-                                }
+                                node = $compile('<ods-geotooltip width="300" height="300" coords="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
                             } else if (field && field.type === 'geo_shape') {
                                 newScope.fieldValue = $filter('truncate')(fieldValue);
-                                if (!window.ie8) {
-                                    node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
-                                } else {
-                                    node = document.createElement('span');
-                                    node.title = fieldValue;
-                                    node.innerHTML = fieldValue;
-                                }
+                                node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
                             } else if (field && field.type === 'file') {
                                 node = document.createElement('span');
                                 node.title = record.fields[field.name] ? record.fields[field.name].filename : '';
@@ -358,15 +351,25 @@
                     }
                 };
 
+                var getRowRecordNumber = function(rowTr) {
+                    var num;
+                    angular.forEach(rowTr.classList, function(className) {
+                        if (className.startsWith('record-')) {
+                            num = parseInt(className.substr(7), 10);
+                        }
+                    });
+                    return num;
+                };
+
                 var displayRecords = function() {
-                    var offsetHeight = $element.find('.records-body')[0].offsetHeight;
-                    var scrollTop = $element.find('.records-body')[0].scrollTop;
+                    var offsetHeight = $element.find('.odswidget-table__records')[0].offsetHeight;
+                    var scrollTop = $element.find('.odswidget-table__records')[0].scrollTop;
                     var recordHeight = recordsBody.find('tr').eq(1).height(); // First row is the placeholder
 
                     // Compute the index of the records that will be visible = that we have in the DOM
                     // TODO: Don't use jQuery if there is performance issue.
-                    var placeholderTop = $element.find('.placeholderTop')[0];
-                    var placeholderBot = $element.find('.placeholderBot')[0];
+                    var placeholderTop = $element.find('.js-placeholder-top')[0];
+                    var placeholderBot = $element.find('.js-placeholder-bottom')[0];
 
                     if(recordHeight) {
                         startIndex = Math.max(Math.floor((scrollTop - (extraRecords * recordHeight)) / recordHeight), 0);
@@ -388,55 +391,57 @@
                     // $element.hide();
 
                     // Insert placeholder tr
-                    var tr;
+                    var tr, trInDom, visible, count, i, newHeight;
 
                     if (!placeholderTop) {
                         tr = document.createElement('tr');
-                        tr.className = 'placeholderTop';
+                        tr.className = 'js-placeholder-top';
                         tr.style.height = '0px';
                         recordsBody[0].appendChild(tr);
-                        placeholderTop = $element.find('.placeholderTop')[0];
+                        placeholderTop = $element.find('.js-placeholder-top')[0];
                     }
 
                     if (!placeholderBot) {
                         tr = document.createElement('tr');
-                        tr.className = 'placeholderBot';
+                        tr.className = 'js-placeholder-bottom';
                         tr.style.height = '0px';
                         recordsBody[0].appendChild(tr);
-                        placeholderBot = $element.find('.placeholderBot')[0];
+                        placeholderBot = $element.find('.js-placeholder-bottom')[0];
                     }
 
                     if (!$scope.layout.length && $scope.records.length) {
                         var numberRecordsToRender = Math.min($scope.records.length, $scope.resultsPerPage);
 
-                        for (var i=0; i<numberRecordsToRender; i++) {
+                        for (i=0; i<numberRecordsToRender; i++) {
                             renderOneRecord(i, $scope.records, 'end');
                         }
                     }
                     else {
                         if (scrollDown) {
-                            for (var i=0; i<startIndex; i++) {
+                            for (i=0; i<startIndex; i++) {
                                 deleteOneRecord(i);
                             }
 
+                            //debugger;
+
                             placeholderTop.style.height = startIndex*recordHeight + 'px';
 
-                            var trInDom = $element[0].getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-                            var visible = trInDom.length > 2;
-                            var lastRecordNumber = visible ? parseInt(trInDom[trInDom.length-2].className.substr(7), 10) : startIndex;
+                            trInDom = $element[0].getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+                            visible = trInDom.length > 2;
+                            var lastRecordNumber = visible ? getRowRecordNumber(trInDom[trInDom.length-2]) : startIndex;
 
-                            var count = 0;
-                            for (var i=lastRecordNumber+1; i<endIndex; i++) {
+                            count = 0;
+                            for (i=lastRecordNumber+1; i<endIndex; i++) {
                                 renderOneRecord(i, $scope.records, 'end');
                                 count++;
                             }
 
-                            var newHeight = visible ? $(placeholderBot).height() - count*recordHeight : ($scope.records.length-endIndex)*recordHeight;
+                            newHeight = visible ? $(placeholderBot).height() - count*recordHeight : ($scope.records.length-endIndex)*recordHeight;
                             newHeight = newHeight > 0 ? newHeight : 0;
                             placeholderBot.style.height = newHeight + 'px';
                         } else {
-                            var count = 0;
-                            for (var i=endIndex+1; i<$scope.records.length; i++) {
+                            count = 0;
+                            for (i=endIndex+1; i<$scope.records.length; i++) {
                                 deleteOneRecord(i);
                                 count++;
                             }
@@ -445,18 +450,17 @@
                             deltaRecords = deltaRecords >= 0 ? deltaRecords : 0;
                             placeholderBot.style.height = deltaRecords*recordHeight + 'px';
 
-                            var trInDom = $element[0].getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-                            var visible = trInDom.length > 2;
-                            var firstRecordNumber = visible ? parseInt(trInDom[1].className.substr(7), 10) : endIndex;
+                            trInDom = $element[0].getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+                            visible = trInDom.length > 2;
+                            var firstRecordNumber = visible ? getRowRecordNumber(trInDom[1]) : endIndex;
 
-                            var count = 0;
-                            for (var i=firstRecordNumber-1; i>=startIndex; i--) {
+                            count = 0;
+                            for (i=firstRecordNumber-1; i>=startIndex; i--) {
                                 renderOneRecord(i, $scope.records, 'begin');
                                 count++;
                             }
 
-                            var newHeight = visible ? $(placeholderTop).height() - count*recordHeight : startIndex*recordHeight;
-
+                            newHeight = visible ? $(placeholderTop).height() - count*recordHeight : startIndex*recordHeight;
                             newHeight = newHeight > 0 ? newHeight : 0;
                             placeholderTop.style.height = newHeight + 'px';
                         }
@@ -528,7 +532,7 @@
                     // Reset all variables for next time
                     $scope.layout = []; // Reset layout (layout depends on records data)
                     $scope.working = true;
-                    lastScrollLeft = $element.find('.records-body')[0].scrollLeft; // Keep scrollbar position
+                    lastScrollLeft = $element.find('.odswidget-table__records')[0].scrollLeft; // Keep scrollbar position
                     forceScrollLeft = true;
 
                     recordsBody.empty();
@@ -537,13 +541,22 @@
                 }, true);
 
                 var resetScroll = function() {
-                    $element.find('.records-body').scrollLeft(0);
+                    $element.find('.odswidget-table__records').scrollLeft(0);
                     recordsHeader.css({left: 'auto'});
-                    initScrollLeft = $element.find('.records-header').offset().left;
+                    initScrollLeft = $element.find('.odswidget-table__header').offset().left;
                 };
+
+                var resize = function() {
+                    if ($scope.autoResize === 'true') {
+                        var height = Math.max(200, $(window).height() - $element.offset().top);
+                        $element.height(height);
+                    }
+                };
+                resize();
 
                 $(window).on('resize', function() {
                     $timeout(function() {
+                        resize();
                         resetScroll();
                         $scope.layout = [];
                         $scope.computeLayout();
@@ -551,7 +564,7 @@
                 });
 
                 var lastRecordDisplayed = 0;
-                $element.find('.records-body').on('scroll', function() {
+                $element.find('.odswidget-table__records').on('scroll', function() {
                     if (this.scrollLeft !== prevScrollLeft) {
                         // Horizontal scroll
                         recordsHeader.offset({left: initScrollLeft - this.scrollLeft});
@@ -559,7 +572,7 @@
                     } else {
                         // Vertical scroll
                         forceScrollLeft = false;
-                        var recordDisplayed = Math.max(Math.floor(($element.find('.records-body')[0].scrollTop) / recordsBody.find('tr').eq(1).height()), 0);
+                        var recordDisplayed = Math.max(Math.floor(($element.find('.odswidget-table__records')[0].scrollTop) / recordsBody.find('tr').eq(1).height()), 0);
 
                         if (Math.abs(recordDisplayed-lastRecordDisplayed) < extraRecords && recordDisplayed > startIndex) {
                             return;
@@ -575,8 +588,8 @@
                     for (var i=0; i<$scope.layout.length; i++) {
                         var j = i+1;
                         var maxWidth = disableMaxWidth ? 'max-width: none; ' : ''; // Table with few columns
-                        styles += '#' + tableId + ' .records-header tr th:nth-child(' + j + ') > div, ' +
-                                  '#' + tableId + ' .records-body tr td:nth-child(' + j + ') > div ' +
+                        styles += '#' + tableId + ' .odswidget-table__header tr th:nth-child(' + j + ') > div, ' +
+                                  '#' + tableId + ' .odswidget-table__records tr td:nth-child(' + j + ') > div ' +
                                   '{ width: ' + $scope.layout[i] + 'px; ' + maxWidth + '} ';
 
                     }
@@ -584,7 +597,8 @@
                 };
 
                 $scope.computeLayout = function() {
-                    var rows = $element.find('.records-body tbody tr');
+                    var elementHeight;
+                    var rows = $element.find('.odswidget-table__internal-table-row');
 
                     var padding = 22; // 22 = 2*paddingDiv + 2*paddingTh = 2*10 + 2*1
 
@@ -593,17 +607,17 @@
                             $element.attr('id', tableId);
                         }
 
-                        if ($('.embedded').length) {
-                            var elementHeight = $(window).height() - $element.offset().top;
+                        if ($element.hasClass('odswidget-table--embedded')) {
+                            elementHeight = $(window).height() - $element.offset().top;
                             $element.height(elementHeight);
                         } else {
-                            var elementHeight = $element.height();
+                            elementHeight = $element.height();
                         }
                         var bodyOffset = 0;
                         if ($scope.displayDatasetFeedback) {
                             bodyOffset = $element.find('.table-feedback-new').height() + 5;
                         }
-                        $element.find('.records-body').height(elementHeight - 25 - bodyOffset); // Horizontal scrollbar height
+                        $element.find('.odswidget-table__records').height(elementHeight - 25 - bodyOffset); // Horizontal scrollbar height
 
                         var recordHeight = recordsBody.find('tr').eq(1).height();
                         var bodyHeight = (rows.length-2)*recordHeight; // Don't take in account placeholders
@@ -615,53 +629,61 @@
                         }
 
                         // Switch between the fake header and the default header
-                        $element.find('.records-header thead').hide();
-                        $element.find('.records-body thead').show();
+                        $element.find('.odswidget-table__internal-header-table-header').hide();
+                        $element.find('.odswidget-table__internal-table-header').show();
 
                         var totalWidth = 0;
-                        angular.forEach($element.find('.records-body thead th > div'), function (thDiv, i) {
+                        angular.forEach($element.find('.odswidget-table__internal-table-header .odswidget-table__cell-container'), function (thDiv, i) {
                             $scope.layout[i] = $(thDiv).width() + 8; // For sortable icons
                             totalWidth += $scope.layout[i];
                         });
                         $scope.layout[0] = 30; // First column is the record number
 
-                        var tableWidth = $element.find('.records-body table').width();
-                        var tableFewColumns = (totalWidth + padding * $scope.layout.length) < $element.width();
+                        // WARNING: The following lines are commented because they caused the bug in CH #1401
+                        // Commenting them doesn't seem to change anything to the expected behaviour, but the code is
+                        // left here nonetheless should issues appear.
 
-                        if (tableFewColumns) {
-                            var toAdd = Math.floor(tableWidth / $scope.layout.length);
-                            var remaining = tableWidth - toAdd * $scope.layout.length;
-
-                            // Dispatch the table width between the other columns
-                            for (var i = 1; i < $scope.layout.length; i++) {
-                                $scope.layout[i] = toAdd - padding;
-                            }
-                            $scope.layout[$scope.layout.length - 1] += remaining;
-
-                            // Scrollbar is here: too many records
-                            if (bodyHeight > 500) {
-                                $element.find('.records-header table').width(tableWidth);
-                            } else {
-                                $element.find('.records-header table').width('');
-                            }
-                        }
+                        //var tableWidth = $element.find('.odswidget-table__internal-table').width();
+                        //var tableFewColumns = (totalWidth + padding * $scope.layout.length) < $element.width();
+                        //
+                        //if (tableFewColumns) {
+                        //    var toAdd = Math.floor(tableWidth / $scope.layout.length);
+                        //    var remaining = tableWidth - toAdd * $scope.layout.length;
+                        //
+                        //    // Dispatch the table width between the other columns
+                        //    for (var i = 1; i < $scope.layout.length; i++) {
+                        //        $scope.layout[i] = toAdd - padding;
+                        //    }
+                        //    $scope.layout[$scope.layout.length - 1] += remaining;
+                        //
+                        //    // Scrollbar is here: too many records
+                        //    if (bodyHeight > 500) {
+                        //        $element.find('.odswidget-table__internal-header-table').width(tableWidth);
+                        //    } else {
+                        //        $element.find('.odswidget-table__internal-header-table').width('');
+                        //    }
+                        //}
 
                         // Append new style
                         var css = document.createElement('style');
-                        var styles = computeStyle(tableId, tableFewColumns);
+                        // WARNING: goes with the commented block above
+                        //var styles = computeStyle(tableId, tableFewColumns);
+                        var styles = computeStyle(tableId, false);
 
                         css.id = styleSheetId;
                         css.type = 'text/css';
 
-                        css.styleSheet ?
-                            css.styleSheet.cssText = styles :
+                        if (css.styleSheet) {
+                            css.styleSheet.cssText = styles;
+                        } else {
                             css.appendChild(document.createTextNode(styles));
+                        }
 
                         $element[0].appendChild(css);
 
                         // Switch between the default header and the fake header
-                        $element.find('.records-body thead').hide();
-                        $element.find('.records-header thead').show();
+                        $element.find('.odswidget-table__internal-table-header').hide();
+                        $element.find('.odswidget-table__internal-header-table-header').show();
 
                         if (!forceScrollLeft) {
                             $timeout(function () {
@@ -675,7 +697,7 @@
                         if (!lastScrollLeft) {
                             recordsHeader.css({left: 'auto'});
                         }
-                        $element.find('.records-body')[0].scrollLeft = lastScrollLeft;
+                        $element.find('.odswidget-table__records')[0].scrollLeft = lastScrollLeft;
                     }
 
                     if ($scope.layout.length) {

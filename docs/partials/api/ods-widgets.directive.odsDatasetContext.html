@@ -53,8 +53,12 @@ Note that there can only be a single context with URL synchronization enabled, e
 </li>
 <li><p>dataset: the dataset object for this context</p>
 </li>
-<li><p>getDownloadURL(format): a method that returns an URL to download the data, including currently active filters (refinements, queries...). By default
-the URL will allow to download a CSV export, but you can pass another format such as &quot;geojson&quot; or &quot;json&quot;.</p>
+<li><p>getDownloadURL(format[, dict options]): a method that returns an URL to download the data, including currently active filters (refinements, queries...). By default
+the URL will allow to download a CSV export, but you can pass another format such as &quot;geojson&quot; or &quot;json&quot;.
+Two optional parameters : <code>{&#39;use_labels_for_header&#39;: &#39;&lt;true/false&gt;&#39;, &#39;fields&#39;: &#39;&lt;list of comma separated field name&gt;&#39;}</code></p>
+</li>
+<li><p>getQueryStringURL([dict options]): a method that build the URL suffix (<code>?key1=value1&amp;key2=value2&amp;...</code>) based on context parameters (active filters, refinement, sort, query...).
+The optional dictionary parameter allow to build the URL with additional key/value parameters.</p>
 </li>
 </ul>
 <p><strong>Note:</strong> Due to naming conventions in various places (HTML attributes, AngularJS...), context names

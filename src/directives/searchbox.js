@@ -20,7 +20,7 @@
             replace: true,
             template: '<div class="odswidget odswidget-searchbox">' +
                     '<form method="GET" action="{{ actionUrl }}" ng-if="actionUrl">' +
-                    '<input class="searchbox" name="q" type="text" placeholder="{{placeholder|translate}}">' +
+                    '<input class="odswidget-searchbox__box" name="q" type="text" placeholder="{{placeholder|translate}}">' +
                     '</form>' +
                 '</div>',
             scope: {

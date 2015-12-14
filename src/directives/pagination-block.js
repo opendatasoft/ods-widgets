@@ -10,7 +10,7 @@
          * @scope
          * @restrict E
          * @param {CatalogContext|DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {number} perPage How many results should be contained per page.
+         * @param {number} [perPage=10] How many results should be contained per page.
          * @param {boolean} [nofollow=false] If true, all links within the widget (used to change page) will contain a `rel="nofollow"` attribute.
          * It should be used if you don't want search engines to crawl all the pages of your widget.
          * @description
@@ -28,14 +28,19 @@
         return {
             restrict: 'E',
             replace: true,
-            template: '<div class="odswidget odswidget-pagination" ng-show="pages.length > 1">' +
-                    '<ul>' +
-                    '    <li ng-repeat="page in pages" ng-class="{\'active\': page.start == (context.parameters.start||0)}">' +
-                    '        <a ng-if="nofollow==\'true\'" ng-click="click($event, page.start)" href="?start={{ page.start }}" rel="nofollow">{{ page.label }}</a>' +
-                    '        <a ng-if="nofollow!=\'true\'" ng-click="click($event, page.start)" href="?start={{ page.start }}">{{ page.label }}</a>' +
-                    '    </li>' +
-                    '</ul>' +
-                    '</div>',
+            template: '' +
+                '<div class="odswidget odswidget-pagination" ng-show="pages.length > 1">' +
+                '    <ul class="odswidget-pagination__page-list">' +
+                '        <li class="odswidget-pagination__page" ng-repeat="page in pages">' +
+                '            <a class="odswidget-pagination__page-link" ' +
+                '               ng-class="{\'odswidget-pagination__page-link--active\': page.start == (context.parameters.start||0)}" ' +
+                '               ng-attr-rel="{{nofollow?\'nofollow\':\'\'}}"' +
+                '               ng-click="click($event, page.start)" ' +
+                '               href="?start={{ page.start }}" ' +
+                '               rel="nofollow">{{ page.label }}</a>' +
+                '        </li>' +
+                '    </ul>' +
+                '</div>',
             scope: {
                 context: '=',
                 perPage: '@',
@@ -44,6 +49,7 @@
             controller: ['$scope', '$anchorScroll', function($scope, $anchorScroll) {
                 $scope.location = $location;
                 $scope.pages = [];
+                $scope.perPage = $scope.perPage || 10;
 
                 $scope.click = function(e, start) {
                     e.preventDefault();

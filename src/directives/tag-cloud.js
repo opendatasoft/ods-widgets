@@ -99,11 +99,11 @@
             replace: true,
             template: '' +
             '<div class="odswidget odswidget-tag-cloud">' +
-            '    <ul>' +
-            '        <li class="no-data" ng-hide="tags" translate>No data available yet</li>' +
+            '    <ul class="odswidget-tag-cloud__tag-list">' +
+            '        <li class="odswidget-tag-cloud__no-data-label" ng-hide="tags" translate>No data available yet</li>' +
             '        <li ng-repeat="tag in tags" ' +
-            '            class="tag tag{{ tag.weight }}" ' +
-            '            ng-class="{\'tag-selected\': tag.selected}"'+
+            '            class="odswidget-tag-cloud__tag" ' +
+            '            ng-class="{\'odswidget-tag-cloud__tag--selected\': tag.selected}"'+
             '            ng-style="{\'font-size\': tag.size + \'em\', \'opacity\': tag.opacity}">' +
             '            <a ng-click="refine(tag.name)" href="">' +
             '                {{ tag.name }}' +

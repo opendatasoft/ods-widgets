@@ -11,13 +11,12 @@
          * @restrict E
          * @param {string} url The url of the svg or image to display
          * @param {string} color The color to use to fill the svg
+         * @param {classes} string The classes to directly apply to the svg element
          * @description
          * This widget displays a "picto" specified by a url and force a fill color on it.
          * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
-         * @todo implement IE8 and image fallback for svg
          * @todo implement defs and use in svg
          */
-        var inlineImages = {};
         return {
             restrict: 'E',
             replace: true,
@@ -39,7 +38,7 @@
                         }
                         svgContainer = SVGInliner.getElement(scope.url, scope.color);
                         if (!scope.color) {
-                            svgContainer.addClass('colorless');
+                            svgContainer.addClass('ods-svginliner__svg-container--colorless');
                         }
                         element.append(svgContainer);
                     }
@@ -70,8 +69,6 @@
             link: function(scope, element) {
                 scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
                 var template = '<ods-picto url="themeConfig.img" color="themeConfig.color" classes="originalClasses + \' odswidget-theme-picto theme-\' + (getTheme()|themeSlug) "></ods-picto>';
-                // TODO: IE8 fallback
-                // TODO: png fallback
                 var themeConfig = null;
                 var defaultPicto = false;
                 if (ODSWidgetsConfig.themes[scope.theme]) {

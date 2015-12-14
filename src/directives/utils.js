@@ -29,17 +29,17 @@
         };
     });
 
-    mod.directive('fullClick', function(){
+    mod.directive('odsFullClick', function(){
         return {
             restrict: 'A',
             link: function(scope, element, attrs) {
-                if (attrs.fullClick) {
-                    element.find('[main-click]').attr('href', attrs.fullClick);
+                if (attrs.odsFullClick) {
+                    element.find('[ods-main-click]').attr('href', attrs.odsFullClick);
                 }
                 element.click(function(evt){
                     if (!$(evt.target).is('a,button,[ng-click]') && // The element is not a link in itself
                         ($(evt.target).parents('a,button,[ng-click]').length === 0) && // The element is not within a clickable element
-                        element.find('[main-click]').length) {
+                        element.find('[ods-main-click]').length) {
                         if (document.createEvent){
                             // Web Browsers
                             // you cannot redispatch an existing event :(
@@ -49,12 +49,12 @@
                                 e.screenX, e.screenY, e.clientX, e.clientY, e.ctrlKey, e.altKey, e.shiftKey,
                                 e.metaKey, e.button, e.relatedTarget);
 
-                            element.find('[main-click]')[0].dispatchEvent(cloneEvent);
+                            element.find('[ods-main-click]')[0].dispatchEvent(cloneEvent);
                         } else if (document.createEventObject){
                             // IE
                             // This should be the proper way to do it, but it doesn't work :/
                             // element.find('[main-click]')[0].fireEvent('onclick', document.createEventObject())
-                            window.location = element.find('[main-click]')[0].href;
+                            window.location = element.find('[ods-main-click]')[0].href;
                         }
                     }
                 });

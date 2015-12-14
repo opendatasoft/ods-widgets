@@ -71,19 +71,25 @@
                 return zoom + locationDelimiter + lat + locationDelimiter + lng;
             },
             MapConfiguration: {
-                getActiveContextList: function(config, geoOnly) {
+                getActiveContextList: function(config, options) {
+                    /*
+                    Options:
+                    {
+                        geoOnly (true/false, default false): only keeps datasets with geo field
+                        skipExcludedFromRefit (true/false, default false): effectively excludes from the list the layers
+                            that have been "excluded from refit"
+                    }
+                     */
+                    options = options || {};
                     var contexts = [];
                     /* Returns all the contexts from active layergroups */
                     angular.forEach(config.layers, function(group) {
                         if (group.displayed) {
                             angular.forEach(group.activeDatasets, function(datasetConfig) {
-                                if (geoOnly) {
-                                    // Ensure the dataset is geo
-                                    if (datasetConfig.context.dataset.hasGeoField()) {
+                                if (!options.geoOnly || datasetConfig.context.dataset.hasGeoField()) {
+                                    if (!(datasetConfig.excludeFromRefit && options.skipExcludedFromRefit)) {
                                         contexts.push(datasetConfig.context);
                                     }
-                                } else {
-                                    contexts.push(datasetConfig.context);
                                 }
                             });
                         }
@@ -121,7 +127,8 @@
                         "tooltipSort": config.tooltipSort,
                         "hoverField": config.hoverField || null,
                         "opacity": config.opacity,
-                        "borderColor": config.borderColor
+                        "borderColor": config.borderColor,
+                        "excludeFromRefit": config.excludeFromRefit
                     };
                 }
             }
@@ -259,8 +266,8 @@
 
                         var returnPolygons = (data.count < POLYGONCLUSTERS_HIGHCAP);
 
-                        if (data.count < DOWNLOAD_CAP || map.getZoom() === map.getMaxZoom()) {
-                            // Low enough: always download
+                        if (data.geometries && data.geometries.Point && data.geometries.Point > data.count/2 && (data.count < DOWNLOAD_CAP || map.getZoom() === map.getMaxZoom())) {
+                            // Low enough and mostly points: always download
                             service.buildRawLayer(layerConfig, map, timeout).then(function(rawLayer) {
                                 service.swapLayers(map, previousRenderedLayer, rawLayer);
                                 layerConfig.rendered = rawLayer;
@@ -270,7 +277,7 @@
                             });
                         } else if (data.count < SHAPEPREVIEW_HIGHCAP) {
                             // We take our decision depending on the content of the envelope
-                            if (data.geometries.Point && data.geometries.Point > data.count/2) {
+                            if (data.geometries && data.geometries.Point && data.geometries.Point > data.count/2) {
                                 // Geo polygons
                                 service.buildClusteredLayer(layerConfig, map, timeout, returnPolygons).then(function(clusteredLayer) {
                                     service.swapLayers(map, previousRenderedLayer, clusteredLayer);
@@ -317,7 +324,7 @@
                 var deferred = $q.defer();
                 var markerLayerGroup = new L.LayerGroup();
                 var parameters = angular.extend({}, layerConfig.context.parameters, {
-                    'rows': 10000,
+                    'rows': 1000,
                     'format': 'json',
                     'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
                 });
@@ -425,7 +432,10 @@
                                         icon: svg,
                                         marker: layerConfig.marker
                                     });
-                                    service.bindTooltip(map, singleMarker, layerConfig, record.cluster);
+                                    var point = {
+                                        type: "Point", coordinates: [record.cluster_center[1], record.cluster_center[0]]
+                                    };
+                                    service.bindTooltip(map, singleMarker, layerConfig, point);
                                     layerGroup.addLayer(singleMarker);
                                 });
                             }(record));
@@ -609,7 +619,7 @@
                                 var grades = chroma.scale().domain([min, max], Math.min(10, values.length)).domain(),
                                     htmlContent = '';
 
-                                var legendDiv = L.DomUtil.create('div', 'info legend');
+                                var legendDiv = L.DomUtil.create('div', 'odswidget-map__legend');
                                 var datasetTitle = layerConfig.context.dataset.datasetid;
                                 var fieldName = layerConfig.expr;
                                 //if ($scope.datasetSchemas && $scope.datasetSchemas[datasetConfig.datasetid]) {
@@ -618,29 +628,29 @@
                                     }
                                     datasetTitle = layerConfig.context.dataset.metas.title;
                                 //}
-                                htmlContent += '<div class="title">' + datasetTitle + '<br/>' + AggregationHelper.getFunctionLabel(layerConfig.func);
+                                htmlContent += '<div class="odswidget-map__legend-title">' + datasetTitle + '<br/>' + AggregationHelper.getFunctionLabel(layerConfig.func);
                                 if (layerConfig.func !== 'COUNT') {
                                     htmlContent += ' ' + fieldName;
                                 }
                                 htmlContent += '</div>';
-                                htmlContent += '<div class="colors">';
+                                htmlContent += '<div class="odswidget-map__legend-colors">';
                                 if (values.length === 1) {
                                     htmlContent += '<i class="color_0" style="width: 90%; background-color:' + colorScale((grades[0] + grades[1]) / 2) + '; opacity: 1;"></i>';
-                                    htmlContent += '</div><div class="counts">';
-                                    htmlContent += '<span>';
+                                    htmlContent += '</div><div class="odswidget-map__legend-counts">';
+                                    htmlContent += '<span class="odswidget-map__legend-value">';
                                     htmlContent += service.formatNumber(grades[0]);
                                     htmlContent += '</span>';
                                 } else {
                                     var widthPercent = 90 / (grades.length - 1);
                                     // loop through our density intervals and generate a label with a colored square for each interval
                                     for (var i = 0; i < grades.length - 1; i++) {
-                                        htmlContent += '<i class="color_' + i + '" style="width:' + widthPercent + '%; background-color:' + colorScale((grades[i] + grades[i + 1]) / 2) + '; opacity: 1;"></i>';
+                                        htmlContent += '<i class="odswidget-map__legend-color" style="width:' + widthPercent + '%; background-color:' + colorScale((grades[i] + grades[i + 1]) / 2) + '; opacity: 1;"></i>';
                                     }
                                     htmlContent += '</div><div>';
-                                    htmlContent += '<span>';
+                                    htmlContent += '<span class="odswidget-map__legend-value">';
                                     htmlContent += service.formatNumber(grades[0]);
                                     htmlContent += '</span>';
-                                    htmlContent += '<span>';
+                                    htmlContent += '<span class="odswidget-map__legend-value">';
                                     htmlContent += service.formatNumber(grades[grades.length - 1]);
                                     htmlContent += '</span>';
                                 }
@@ -958,9 +968,9 @@
                     //autoPanPaddingTopLeft: [50, 305]
                 };
                 newScope.context = layerConfig.context;
-                // TODO: Move the custom template detection from the dataset inside geoscroller? (the dataset object is available in the context)
+                // TODO: Move the custom template detection from the dataset inside odsMapTooltip? (the dataset object is available in the context)
                 var popup = new L.Popup(popupOptions).setLatLng(latLng)
-                    .setContent($compile('<geo-scroller tooltip-sort="'+(layerConfig.tooltipSort||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" grid-data="gridData" geo-digest="'+(geoDigest||'')+'"></geo-scroller>')(newScope)[0]);
+                    .setContent($compile('<ods-map-tooltip tooltip-sort="'+(layerConfig.tooltipSort||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" grid-data="gridData" geo-digest="'+(geoDigest||'')+'"></ods-map-tooltip>')(newScope)[0]);
                 popup.openOn(map);
             },
             /*                              */

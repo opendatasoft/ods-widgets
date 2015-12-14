@@ -11,8 +11,18 @@ new L.ClusterMarker(latlng, {
 L.ClusterMarker = L.FeatureGroup.extend({
     initialize: function(latlng, options) {
        L.FeatureGroup.prototype.initialize.call(this, []);
-
-        var ratio = options.value / options.total;
+        var ratio;
+        // FIXME: A ratio should only be between 1 and 0. Right now, the calculations go very wrong with negative numbers.
+        // -> https://opendatasoft.clubhouse.io/story/370
+        if (options.total === 0) {
+            ratio = 1;
+        } else {
+            ratio = options.value / options.total;
+        }
+        if (ratio < 0) {
+            // A ratio superior to 1 is a bad idea, but it's still a better idea than a negative ratio. To be fixed...
+            ratio = ratio * -1;
+        }
         var styles = this._getShapeStyle(options.color, ratio);
 
         if (options.geojson) {

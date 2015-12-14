@@ -214,6 +214,14 @@
             },
             startsWith: function(input, searchedString) {
                 return input && input.indexOf(searchedString) === 0;
+            },
+            escapeHTML: function(text) {
+                return text
+                     .replace(/&/g, "&amp;")
+                     .replace(/</g, "&lt;")
+                     .replace(/>/g, "&gt;")
+                     .replace(/"/g, "&quot;")
+                     .replace(/'/g, "&#039;");
             }
         },
         URLUtils: {
@@ -329,6 +337,9 @@
                         iterateFields(this.fields);
                     }
                     return types;
+                },
+                hasFeature: function(featureName) {
+                    return (dataset.features.indexOf(featureName) > -1);
                 },
                 hasFieldType: function(fieldType) {
                     for (var i = 0; i < this.fields.length; i++) {

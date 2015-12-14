@@ -85,8 +85,8 @@
                     tElement.data('tooltip-template', tElement.children().html());
                 }
                 return '<div class="odswidget odswidget-map">' +
-                        '<div class="map"></div>' +
-                        '<div class="overlay map opaque-overlay" ng-show="pendingRequests.length && initialLoading"><spinner class="spinner"></spinner></div>' +
+                        '<div class="odswidget-map__map"></div>' +
+                        '<div class="odswidget-overlay map odswidget-overlay--opaque" ng-show="pendingRequests.length && initialLoading"><ods-spinner></ods-spinner></div>' +
                     '</div>';
             },
             link: function(scope, element) {
@@ -101,9 +101,9 @@
                 }
 
                 function resizeMap(){
-                    if ($('.odswidget-map > .map').length > 0) {
+                    if ($('.odswidget-map__map').length > 0) {
                         // Only do this if visible
-                        $('.odswidget-map > .map').height(Math.max(200, $(window).height() - $('.odswidget-map > .map').offset().top));
+                        $('.odswidget-map__map').height(Math.max(200, $(window).height() - $('.odswidget-map__map').offset().top));
                     }
                 }
                 if (scope.autoResize === 'true') {
@@ -365,7 +365,7 @@
                         }
                         newScope.template = html;
                         var popup = new L.Popup(popupOptions).setLatLng(latLng)
-                            .setContent($compile('<geo-scroller shape="shape" context="context" recordid="recordid" map="map" template="{{template}}"></geo-scroller>')(newScope)[0]);
+                            .setContent($compile('<ods-map-tooltip shape="shape" context="context" recordid="recordid" map="map" template="{{template}}"></ods-map-tooltip>')(newScope)[0]);
                         popup.openOn($scope.map);
                     }
                 };

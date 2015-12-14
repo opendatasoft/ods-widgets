@@ -65,23 +65,14 @@ copy into your project.
 
 ### Setup
 The following libraries are required as dependencies in your pages for ODS-Widgets to work:
-- **jQuery** (1.6+ should work) *(note: we're looking to remove this dependency in the future)*
-- **AngularJS** 1.2.* and the **angular-sanitize** module
-- Some widgets are using icons from **[FontAwesome 3.2.1](http://fontawesome.io/3.2.1/icons/)** *(note: we're looking to remove this dependency in the future)*
-
-Note: Angular 1.3 has not been tested with ODS-Widgets, and it is not planned to support it yet, due to Angular 1.3's end of support of IE8.
+- **jQuery** (2.1+ should work) *(note: we're looking to remove this dependency in the future)*
+- **AngularJS** 1.4.* and the **angular-sanitize** module
+- Some widgets are using icons from **[FontAwesome 4.4.0](http://fontawesome.io/icons/)** *(note: we're looking to remove this dependency in the future)*
 
 To load ODS-Widgets, you can then simply load `ods-widgets.js` and `ods-widgets.css`, or their minified version also included
 in the distribution.
 
 Note: When including the scripts in your page, you need to include jQuery, then AngularJS, then angular-sanitize, then ODS-Widgets.
-
-If you want to improve compatibility with Internet Explorer 8, you can also load `ieshiv.js` (or the minified version). It must be loaded in the HEAD part of the page.
-```html
-<!--[if lte IE 8]>
-<script type="text/javascript" src="dist/ieshiv.js"></script>
-<![endif]-->
-```
 
 ODS-Widgets require an AngularJS app to run, which can for example be done with a simple `ng-app="ods-widgets"`:
 ```html

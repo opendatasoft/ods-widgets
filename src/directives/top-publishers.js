@@ -26,12 +26,12 @@
             restrict: 'E',
             replace: true,
             template: '<div class="odswidget odswidget-top-publishers">' +
-                '<ul>' +
+                '<ul class="odswidget-top-publishers__publishers">' +
                 '   <li class="no-data" ng-hide="publishers" translate>No data available yet</li>' +
-                '   <li ng-repeat="publisher in publishers" ng-if="publishers">' +
-                '       <div class="dataset-details">' +
-                '           <div class="name"><a ng-href="{{ context.domainUrl }}/explore/?refine.publisher={{ publisher.path }}" target="_self">{{ publisher.name }}</a></div>' +
-                '           <div class="count"><i class="icon-table"></i> <span translate>Used by</span> {{ publisher.count }} ' + "<span ng-pluralize count=\"publisher.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
+                '   <li class="odswidget-top-publishers__publisher" ng-repeat="publisher in publishers" ng-if="publishers">' +
+                '       <div class="odswidget-top-publishers__publisher-details">' +
+                '           <div class="odswidget-top-publishers__publisher-details-name"><a ng-href="{{ context.domainUrl }}/explore/?refine.publisher={{ publisher.path }}" target="_self">{{ publisher.name }}</a></div>' +
+                '           <div class="odswidget-top-publishers__publisher-details-count"><i class="fa fa-table"></i> <span translate>Used by</span> {{ publisher.count }} ' + "<span ng-pluralize count=\"publisher.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +

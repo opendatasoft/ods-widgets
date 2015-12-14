@@ -26,12 +26,12 @@
             restrict: 'E',
             replace: true,
             template: '<div class="odswidget odswidget-most-used-themes">' +
-                '<ul>' +
+                '<ul class="odswidget-most-used-themes__themes">' +
                 '   <li class="no-data" ng-hide="themes" translate>No data available yet</li>' +
-                '   <li ng-repeat="theme in themes" ng-if="themes">' +
-                '       <div class="dataset-details">' +
-                '           <div class="name"><a ng-href="{{ context.domainUrl }}/explore/?refine.theme={{ theme.path }}" target="_self">{{ theme.name }}</a></div>' +
-                '           <div class="count"><i class="icon-table"></i> <span translate>Used by</span> {{ theme.count }} ' + "<span ng-pluralize count=\"theme.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
+                '   <li class="odswidget-most-used-themes__theme" ng-repeat="theme in themes" ng-if="themes">' +
+                '       <div class="odswidget-most-used-themes__theme-details">' +
+                '           <div class="odswidget-most-used-themes__theme-details-name"><a ng-href="{{ context.domainUrl }}/explore/?refine.theme={{ theme.path }}" target="_self">{{ theme.name }}</a></div>' +
+                '           <div class="odswidget-most-used-themes__theme-details-count"><i class="fa fa-table"></i> <span translate>Used by</span> {{ theme.count }} ' + "<span ng-pluralize count=\"theme.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +

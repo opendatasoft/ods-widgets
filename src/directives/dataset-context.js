@@ -61,8 +61,12 @@
          *
          *  * dataset: the dataset object for this context
          *
-         *  * getDownloadURL(format): a method that returns an URL to download the data, including currently active filters (refinements, queries...). By default
+         *  * getDownloadURL(format[, dict options]): a method that returns an URL to download the data, including currently active filters (refinements, queries...). By default
          *  the URL will allow to download a CSV export, but you can pass another format such as "geojson" or "json".
+         *  Two optional parameters : `{'use_labels_for_header': '<true/false>', 'fields': '<list of comma separated field name>'}`
+         *
+         *  * getQueryStringURL([dict options]): a method that build the URL suffix (`?key1=value1&key2=value2&...`) based on context parameters (active filters, refinement, sort, query...).
+         *  The optional dictionary parameter allow to build the URL with additional key/value parameters.
          *
          *  **Note:** Due to naming conventions in various places (HTML attributes, AngularJS...), context names
          *  have to be lowercase, can only contain alphanumerical characters, and can't begin with "data" or "x".
@@ -99,7 +103,7 @@
          *  </pre>
          */
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
-        var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext, source, urlSync) {
+        var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext, source, urlSync, schema) {
             var contextParams;
             if (!angular.equals(parameters, {})) {
                 contextParams = parameters;
@@ -132,20 +136,36 @@
                 contextParams.source = source;
             }
             var deferred = $q.defer();
-
             scope[contextName] = {
                 'wait': function() {
                     return deferred.promise;
                 },
                 'getDownloadURL': function(format, parameters) {
-                    parameters = parameters || {};
                     format = format || 'csv';
                     var url = this.domainUrl + '/explore/dataset/' + this.dataset.datasetid + '/download/?format=' + format;
-                    url += '&' + ODS.URLUtils.getAPIQueryString(angular.extend({}, this.parameters, parameters));
+                    url += this.getQueryStringURL(parameters)
                     return url;
+                },
+                'getQueryStringURL': function(parameters) {
+                    parameters = parameters || {};
+                    return '&' + ODS.URLUtils.getAPIQueryString(angular.extend({}, this.parameters, parameters));
                 },
                 'toggleRefine': function(facetName, path, replace) {
                     ODS.Context.toggleRefine(this, facetName, path, replace);
+                },
+                'getActiveFilters':  function () {
+                    if (this.parameters) {
+                        var filters = Object.keys(this.parameters);
+                        var that = this;
+                        return filters.filter(function (filter) {
+                            return (filter == 'q' && that.parameters.q && that.parameters.q.length > 0)
+                                || filter == 'geofilter.polygon'
+                                || filter == 'geofilter.distance'
+                                || filter.indexOf('refine.') === 0
+                        });
+                    } else {
+                        return [];
+                    }
                 },
                 'name': contextName,
                 'type': 'dataset',
@@ -154,20 +174,36 @@
                 'apikey': apikey,
                 'dataset': null,
                 'parameters': contextParams
+
             };
 
             if (urlSync) {
                 // Param
-                URLSynchronizer.addSynchronizedObject(scope, contextName + '.parameters');
+                /* FIXME V4
+                    Currently, addSynchronizedObject supports a blacklist of parameters it doesn't want to watch.
+                    This implies that the context has to know the list of things it doesn't want from the other components.
+
+                    We probably instead want a whitelist, because each component knows what is relevant to it.
+                 */
+                URLSynchronizer.addSynchronizedObject(scope, contextName + '.parameters', ['basemap', 'location']);
             }
 
-            ODSAPI.datasets.get(scope[contextName], datasetID, {extrametas: true, interopmetas: true, source: contextParams.source}).
-                success(function(data) {
-                    scope[contextName].dataset = new ODS.Dataset(data);
-                    deferred.resolve(scope[contextName].dataset);
-                }).error(function(data) {
-                    deferred.reject("Failed to fetch " + contextName + " context.");
-                });
+            if (schema) {
+                scope[contextName].dataset = new ODS.Dataset(schema);
+                deferred.resolve(scope[contextName].dataset);
+            } else {
+                ODSAPI.datasets.get(scope[contextName], datasetID, {
+                    extrametas: true,
+                    interopmetas: true,
+                    source: contextParams.source
+                }).
+                    success(function (data) {
+                        scope[contextName].dataset = new ODS.Dataset(data);
+                        deferred.resolve(scope[contextName].dataset);
+                    }).error(function (data) {
+                        deferred.reject("Failed to fetch " + contextName + " context.");
+                    });
+            }
         };
 
         return {
@@ -181,13 +217,16 @@
                     // initialization, which is before the standard interpolation occurs.
                     var contextName = contextNames[i].trim();
 
-                    // We need a dataset ID
-                    if (!$attrs[contextName+'Dataset']) {
+                    // We need a dataset ID or a schema
+                    if (!$attrs[contextName+'Dataset'] && !$attrs[contextName+'DatasetSchema']) {
                         console.log('ERROR : Context ' + contextName + ' : Missing dataset parameter');
                     }
-                    var datasetID = $interpolate($attrs[contextName+'Dataset'])($scope);
 
-                    var domain, apikey, sort, source;
+                    var datasetID, domain, apikey, sort, source, schema;
+
+                    if ($attrs[contextName+'Dataset']) {
+                        datasetID = $interpolate($attrs[contextName + 'Dataset'])($scope);
+                    }
 
                     // Do we have a domain ID?
                     if ($attrs[contextName+'Domain']) {
@@ -204,6 +243,10 @@
                         source = $interpolate($attrs[contextName + 'Source'])($scope);
                     }
 
+                    if ($attrs[contextName+'DatasetSchema']) {
+                        schema = angular.fromJson($interpolate($attrs[contextName + 'DatasetSchema'])($scope));
+                    }
+
                     var parameters = $scope.$eval($attrs[contextName+'Parameters']) || {};
                     var parametersFromContext = $attrs[contextName+'ParametersFromContext'];
 
@@ -213,7 +256,7 @@
 
                     var urlSync = $scope.$eval($attrs[contextName+'Urlsync']);
 
-                    exposeContext(domain, datasetID, $scope, contextName, apikey, parameters, parametersFromContext, source, urlSync);
+                    exposeContext(domain, datasetID, $scope, contextName, apikey, parameters, parametersFromContext, source, urlSync, schema);
                 }
             }]
         };

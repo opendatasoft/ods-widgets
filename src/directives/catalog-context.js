@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsCatalogContext', ['ODSAPI', 'URLSynchronizer', function(ODSAPI, URLSynchronizer) {
+    mod.directive('odsCatalogContext', ['ODSAPI', 'URLSynchronizer', '$interpolate', function(ODSAPI, URLSynchronizer, $interpolate) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsCatalogContext
@@ -68,39 +68,61 @@
             restrict: 'AE',
             scope: true,
             replace: true,
-            link: function(scope, element, attrs) {
-                var contextNames = attrs.context.split(',');
+            controller: ['$scope', '$attrs', function($scope, $attrs) {
+                var contextNames = $attrs.context.split(',');
                 for (var i=0; i<contextNames.length; i++) {
                     var contextName = contextNames[i].trim();
 
                     // Do we have a domain ID?
-                    var domain = attrs[contextName+'Domain'];
-
-                    var parameters = scope.$eval(attrs[contextName+'Parameters']) || {};
-                    if (attrs[contextName+'Source']) {
-                        parameters.source = attrs[contextName+'Source'];
+                    var domain = $attrs[contextName+'Domain'];
+                    if (domain) {
+                        domain = $interpolate(domain)($scope);
                     }
 
-                    scope[contextName] = {
+                    var parameters = $scope.$eval($attrs[contextName+'Parameters']) || {};
+                    if ($attrs[contextName+'Source']) {
+                        parameters.source = $interpolate($attrs[contextName+'Source'])($scope);
+                    }
+
+                    var apikey = $attrs[contextName+'Apikey'];
+                    if (apikey) {
+                       apikey = $interpolate(apikey)($scope);
+                    }
+
+                    $scope[contextName] = {
                         'name': contextName,
                         'type': 'catalog',
                         'domain': domain,
                         'domainUrl': ODSAPI.getDomainURL(domain),
-                        'apikey': attrs[contextName+'Apikey'],
+                        'apikey': apikey,
                         'parameters': parameters,
                         'toggleRefine': function(facetName, path, replace) {
                             ODS.Context.toggleRefine(this, facetName, path, replace);
+                        },
+                        'getActiveFilters':  function () {
+                            if (this.parameters) {
+                                var filters = Object.keys(this.parameters);
+                                var that = this;
+                                return filters.filter(function (filter) {
+                                    return (filter == 'q' && that.parameters.q && that.parameters.q.length > 0)
+                                        || filter == 'geofilter.polygon'
+                                        || filter == 'geofilter.distance'
+                                        || filter.indexOf('refine.') === 0
+                                });
+                            } else {
+                                return [];
+                            }
                         }
                     };
 
-                    if (scope.$eval(attrs[contextName+'Urlsync'])) {
+                    if ($scope.$eval($attrs[contextName+'Urlsync'])) {
                         if (!angular.equals(parameters, {})) {
                             console.log('WARNING : Context ' + contextName + ' : There are specific parameters defined, but URL sync is enabled, so the parameters will be ignored.');
                         }
-                        URLSynchronizer.addSynchronizedObject(scope, contextName + '.parameters');
+                        URLSynchronizer.addSynchronizedObject($scope, contextName + '.parameters');
                     }
                 }
-            }
+            }]
         };
     }]);
 }());

@@ -1,0 +1,149 @@
+.odswidget-map {
+    position: relative;
+    min-height: 400px;
+}
+.odswidget-map__map {
+    height: 100%;
+    min-height: 400px;
+}
+
+.odswidget-map__loading {
+    position: absolute;
+    right: 10px;
+    bottom: 30px; // Room for the attribution line
+    background: rgba(255,255,255,0.9);
+    padding: 5px 12px;
+    color: #333;
+    font-size: 30px;
+    pointer-events: none;
+}
+
+.odswidget-map-picto {
+    height: 18px;
+    width: 18px;
+}
+.odswidget-map-picto svg {
+    width: 18px;
+    height: 18px;
+}
+
+.odswidget-map__legend {
+    border-radius: 2px;
+    text-align: left;
+    line-height: 18px;
+    color: #555;
+    background-color: white;
+    padding: 0.4em;
+    min-width: 200px;
+    // border: 1px solid red;
+    box-sizing: border-box;
+}
+
+.odswidget-map__legend-title {
+    text-align: center;
+    overflow: hidden;
+    font-weight: bold;
+}
+
+.odswidget-map__legend-color {
+    height: 18px;
+    width: 10%;
+    padding: 0;
+    display: inline-block;
+    opacity: 0.8;
+    box-sizing: border-box;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px 1px 1px 0;
+}
+
+.odswidget-map__legend-color:first-child {
+    margin-left: 5%;
+    border-left-width: 1px;
+}
+
+.odswidget-map__legend-color:last-child {
+    margin-right: 5%;
+    border-right-width: 1px;
+}
+
+.odswidget-map__legend-counts {
+    text-align: center;
+}
+.odswidget-map__legend-value {
+    padding: 1px;
+    line-height: 0.7rem;
+    font-size: 0.7rem;
+}
+.odswidget-map__legend-value:first-child {
+    float: left;
+}
+.odswidget-map__legend-value:last-child {
+    float: right;
+}
+.odswidget-map__legend-value:first-child:last-child {
+    float: none;
+}
+
+// Leaflet controls
+.leaflet-control-geocoder {
+    // Fixing a few style side effect from outside, and improving a bit
+
+    input[type="text"] {
+        padding: 0!important;
+        box-shadow: none !important;
+        line-height: 36px !important;
+        font-size: 18px;
+        width: 0 !important;
+        border: none;
+    }
+
+    .leaflet-control-geocoder-icon {
+        height: 36px;
+        width: 36px;
+    }
+
+    &.leaflet-control-geocoder-expanded {
+        input {
+            padding-left: 5px !important;
+            width: 226px !important;
+        }
+    }
+}
+.leaflet-geocoder-highlight {
+    opacity: 1;
+    transition: opacity 2s ease-out;
+}
+
+.geocoder-highlight-on .leaflet-geocoder-highlight {
+    opacity: 0;
+}
+
+.leaflet-control-filterview {
+    // /!\ ONLY USED IN ODS-MAP-LEGACY
+    margin-left: 13px;
+    margin-top: 12px;
+
+    a {
+        background-position: 50% 50%;
+        background-repeat: no-repeat;
+        display: block;
+        width: 30px;
+        height: 30px;
+        border-radius: 4px 4px 4px 4px;
+        &::after {
+            font-family: 'FontAwesome';
+            font-size: 16px;
+            content: "\f0B0";
+            position: absolute;
+            left: 8px;
+            top: 3px;
+        };
+    }
+    &.active a {
+        background-color: black;
+        &::after {
+            color: white;
+        }
+    }
+}

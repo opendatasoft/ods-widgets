@@ -14,6 +14,7 @@
 
     var mod = angular.module('ods-widgets');
 
+
     mod.directive('odsAnalysis', ['ODSAPI', function(ODSAPI) {
         /**
          * @ngdoc directive

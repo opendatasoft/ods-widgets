@@ -40,21 +40,21 @@
             transclude: true,
             template: '<div class="odswidget odswidget-reuses">' +
                       '  <div infinite-scroll="loadMore()" infinite-scroll-distance="1">' +
-                      '      <div class="reuse-card" ng-repeat="reuse in reuses" full-click inject>' +
-                      '          <h2>{{ reuse.title }}' +
-                      '             <a href="/explore/dataset/{{ reuse.dataset.id }}/?tab=metas" class="reuse-dataset-link" target="_self"><span translate>From dataset:</span> {{ reuse.dataset.title }}</a>' +
+                      '      <div class="odswidget-reuses__reuse" ng-repeat="reuse in reuses" ods-full-click inject>' +
+                      '          <h2 class="odswidget-reuses__reuse-title">{{ reuse.title }}' +
+                      '             <a href="/explore/dataset/{{ reuse.dataset.id }}/?tab=metas" class="odswidget-reuses__reuse-dataset-link" target="_self"><span translate>From dataset:</span> {{ reuse.dataset.title }}</a>' +
                       '          </h2>' +
-                      '          <div class="infos">' +
-                      '              <div class="thumbnail" ng-class="{\'no-preview\': !reuse.thumbnail}">' +
-                      '                  <a ng-show="reuse.thumbnail" href="{{ reuse.url }}" main-click title="{{ reuse.title }}" target="_blank"><img ng-src="{{ reuse.thumbnail }}" /></a>' +
-                      '                  <i ng-hide="reuse.thumbnail" class="icon icon-ban-circle"></i>' +
+                      '          <div class="odswidget-reuses__reuse-infos">' +
+                      '              <div class="odswidget-reuses__reuse-thumbnail" ng-class="{\'odswidget-reuses__reuse-thumbnail--no-thumbnail\': !reuse.thumbnail}">' +
+                      '                  <a ng-show="reuse.thumbnail" href="{{ reuse.url }}" ods-main-click title="{{ reuse.title }}" target="_blank"><img class="odswidget-reuses__reuse-thumbnail-image" ng-src="{{ reuse.thumbnail }}" /></a>' +
+                      '                  <i ng-hide="reuse.thumbnail" class="fa fa-ban odswidget-reuses__reuse-thumbnail-image--no-thumbnail"></i>' +
                       '              </div>' +
-                      '              <div class="description" ng-bind-html="reuse.description|prettyText|safenewlines"></div>' +
+                      '              <div class="odswidget-reuses__reuse-description" ng-bind-html="reuse.description|prettyText|safenewlines"></div>' +
                       '          </div>' +
-                      '          <div class="author-date">' +
+                      '          <div class="odswidget-reuses__reuse-author">' +
                       '              <strong ng-if="reuse.user.first_name || reuse.user.last_name">{{ reuse.user.first_name }} {{ reuse.user.last_name }}</strong>' +
                       '              <strong ng-if="!reuse.user.first_name && !reuse.user.last_name">{{ reuse.user.username }}</strong>' +
-                      '              <i class="icon-calendar"></i> {{ reuse.created_at|moment:\'LLL\' }}' +
+                      '              <i class="fa fa-calendar odswidget-reuses__creation-icon"></i> {{ reuse.created_at|moment:\'LLL\' }}' +
                       '          </div>' +
                       '      </div>' +
                       ' </div>' +
