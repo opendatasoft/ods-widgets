@@ -327,17 +327,20 @@
                                 newScope.fieldValue = $filter('truncate')(fieldValue);
                                 node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
                             } else if (field && field.type === 'file') {
-                                node = document.createElement('span');
-                                node.title = record.fields[field.name] ? record.fields[field.name].filename : '';
-                                node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
-                            }
-                            else {
+                                var html = $filter('nofollow')($filter('prettyText')(fieldValue)).toString();
+                                html = html.replace(/<a /, '<a ods-resource-download-conditions ');
+                                if (!html) {
+                                    node = document.createElement('span');
+                                } else {
+                                    node = $compile(html)(newScope)[0];
+                                    node.title = record.fields[field.name] ? record.fields[field.name].filename : '';
+                                }
+                            } else {
                                 node = document.createElement('span');
                                 node.title = fieldValue;
                                 node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
                             }
                         }
-
                         div.appendChild(node);
                     }
 
@@ -521,24 +524,27 @@
                     datasetFields = $filter('fieldsFilter')(fieldsForVisualization, $scope.displayedFieldsArray);
 
                     refreshRecords(true);
+
+                    $scope.$watch('context.parameters', function(newValue, oldValue) {
+                        // Don't fire at initialization time
+                        if (newValue === oldValue) return;
+
+                        DebugLogger.log('table -> searchOptions watch -> refresh records');
+
+                        // Reset all variables for next time
+                        $scope.layout = []; // Reset layout (layout depends on records data)
+                        $scope.working = true;
+                        lastScrollLeft = $element.find('.odswidget-table__records')[0].scrollLeft; // Keep scrollbar position
+                        forceScrollLeft = true;
+
+                        recordsBody.empty();
+
+                        refreshRecords(true);
+                    }, true);
+
                 });
 
-                $scope.$watch('context.parameters', function(newValue, oldValue) {
-                    // Don't fire at initialization time
-                    if (newValue === oldValue) return;
 
-                    DebugLogger.log('table -> searchOptions watch -> refresh records');
-
-                    // Reset all variables for next time
-                    $scope.layout = []; // Reset layout (layout depends on records data)
-                    $scope.working = true;
-                    lastScrollLeft = $element.find('.odswidget-table__records')[0].scrollLeft; // Keep scrollbar position
-                    forceScrollLeft = true;
-
-                    recordsBody.empty();
-
-                    refreshRecords(true);
-                }, true);
 
                 var resetScroll = function() {
                     $element.find('.odswidget-table__records').scrollLeft(0);

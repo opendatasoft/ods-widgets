@@ -38,7 +38,7 @@
          *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com" ods-domain-statistics>
          *              <p>Our portal has {{public.stats.dataset}} datasets, described by {{public.stats.theme}} themes
          *              and {{public.stats.keyword}} keywords.</p>
-         *              </p>{{public.stats.publisher}} publishers have contributed.</p>
+         *              <p>{{public.stats.publisher}} publishers have contributed.</p>
          *          </ods-catalog-context>
          *      </file>
          *  </example>
@@ -62,7 +62,7 @@
                         'publisher': 0,
                         'theme': 0
                     };
-                    ODSAPI.datasets.search(nv, {'facet': ['keyword', 'publisher', 'theme']}).success(function (data) {
+                    ODSAPI.datasets.search(nv, {'facet': ['keyword', 'publisher', 'theme'], 'rows': 0}).success(function (data) {
                         nv.stats.dataset = data.nhits;
                         if (data.facet_groups) {
                             for (var i = 0; i < data.facet_groups.length; i++) {

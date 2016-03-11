@@ -69,7 +69,7 @@
          *  The optional dictionary parameter allow to build the URL with additional key/value parameters.
          *
          *  **Note:** Due to naming conventions in various places (HTML attributes, AngularJS...), context names
-         *  have to be lowercase, can only contain alphanumerical characters, and can't begin with "data" or "x".
+         *  have to be lowercase, can only contain alphanumerical characters, and can't begin with a number, "data", or "x".
          *
          *  @example
          *  <pre>
@@ -143,7 +143,7 @@
                 'getDownloadURL': function(format, parameters) {
                     format = format || 'csv';
                     var url = this.domainUrl + '/explore/dataset/' + this.dataset.datasetid + '/download/?format=' + format;
-                    url += this.getQueryStringURL(parameters)
+                    url += this.getQueryStringURL(parameters);
                     return url;
                 },
                 'getQueryStringURL': function(parameters) {
@@ -244,7 +244,7 @@
                     }
 
                     if ($attrs[contextName+'DatasetSchema']) {
-                        schema = angular.fromJson($interpolate($attrs[contextName + 'DatasetSchema'])($scope));
+                        schema = angular.fromJson($attrs[contextName + 'DatasetSchema'].replace(/\\{/g, '{').replace(/\\}/g, '}'));
                     }
 
                     var parameters = $scope.$eval($attrs[contextName+'Parameters']) || {};

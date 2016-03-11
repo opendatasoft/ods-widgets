@@ -3,8 +3,12 @@
 //    width: 100%;
 //    height: 100%;
     padding: 0;
-    height: 400px;
-    position: relative;
+    //height: 400px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     div.card-container {
         background-color: white;
         box-shadow:  0 3px 12px 0 rgba(50, 50, 50, 0.75);
@@ -177,8 +181,10 @@
 
     div.dataset-item {
         position: absolute;
-        width: 100%;
-        height: auto;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
         & > .odswidget,
         & > ods-map .odswidget {
             position: relative;

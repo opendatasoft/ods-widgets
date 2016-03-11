@@ -11,10 +11,12 @@
          * @restrict A
          * @param {string} [odsResults=results] Variable name to use
          * @param {CatalogContext|DatasetContext} odsResultsContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {number} [odsResultsMax=all] Maximum number of results to show
+         * @param {number} [odsResultsMax=10] Maximum number of results to show
          * @description
-         * This widget exposes the results of a search (as an array) in a variable available in the scope. It can be used with AngularJS's ngRepeat to simply build a list
-         * of results.
+         * This widget exposes the results of a search (as an array) in a variable available in the scope. It can be
+         * used with AngularJS's ngRepeat to simply build a list of results.
+         * It also adds to the context variable a "nhits" property containing the total number of records matching the
+         * query regardless of the odsResultsMax value.
          *
          * @example
          *  <example module="ods-widgets">
@@ -37,6 +39,17 @@
          *          </ods-catalog-context>
          *      </file>
          *  </example>
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com" tree-parameters="{'sort': '-objectid'}">
+         *              <p ods-results="items" ods-results-context="tree" ods-results-max="10">
+         *                  Total number of trees : {{ tree.nhits }}
+         *              </p>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
 
         return {
@@ -44,30 +57,38 @@
             scope: true,
             priority: 1001, // ng-repeat need to be executed when the results is in the scope.
             controller: ['$scope', '$attrs', function($scope, $attrs) {
-                $scope.$watch($attrs.odsResultsContext, function(nv) {
-                    var options = angular.extend({}, nv.parameters, {'rows': $attrs.odsResultsMax});
+                var loadResults = function (context) {
+                    var options = angular.extend({}, context.parameters, {'rows': $attrs.odsResultsMax});
                     var variable = $attrs.odsResults || 'results';
                     $scope.loading = true;
-                    if (nv.type === 'catalog') {
+                    if (context.type === 'catalog') {
                         angular.extend(options, {
                             extrametas: 'true',
                             interopmetas: 'true'
                         });
-                        ODSAPI.datasets.search(nv, options).success(function(data) {
+                        ODSAPI.datasets.search(context, options).success(function(data) {
                             $scope[variable] = data.datasets;
-                            nv.nhits = data.nhits;
+                            context.nhits = data.nhits;
                             $scope.loading = false;
                         }).error(function() {
                             $scope.loading = false;
                         });
-                    } else if (nv.type === 'dataset' && nv.dataset) {
-                        ODSAPI.records.search(nv, options).success(function(data) {
+                    } else if (context.type === 'dataset' && context.dataset) {
+                        ODSAPI.records.search(context, options).success(function(data) {
                             $scope[variable] = data.records;
-                            nv.nhits = data.nhits;
+                            context.nhits = data.nhits;
                             $scope.loading = false;
                         }).error(function() {
                             $scope.loading = false;
                         });
+                    }
+                };
+                var firstLoad = true;
+                $scope.$watch($attrs.odsResultsContext, function(nv, ov) {
+                    if (!!(nv.type === 'catalog' || (nv.type === 'dataset' && nv.dataset)) &&
+                        (!angular.equals(nv.parameters, ov.parameters) || firstLoad)) {
+                        firstLoad = false;
+                        loadResults(nv);
                     }
                 }, true);
             }]

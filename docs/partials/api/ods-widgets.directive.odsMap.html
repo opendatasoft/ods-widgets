@@ -56,6 +56,16 @@ using a join with another context that contains geometrical shapes: use a <code>
 the field names of the local and joined datasets; you can also configure one of the fields from the &quot;remote&quot; dataset to be displayed when the mouse
 hovers the shapes, using <code>hoverField</code> and the name of a field.</li>
 </ul>
+<p>You can specify aggregation functions on display modes that support it (<code>aggregation</code>, <code>heatmap</code>, <code>clustersforced</code>).
+This is done using two parameters: <code>function</code> (AVG for average, MIN for minimum, MAX for maximum, STDDEV for standard deviation,
+COUNT to count the number of records, SUM for the sum of values), and <code>expression</code> to define the value used for the
+function, usually the name of a field (<code>expression</code> is not required when the function is COUNT).</p>
+<pre class="prettyprint linenums">
+    &lt;ods-map&gt;
+        &lt;!-- Display a heatmap of the average value --&gt;
+        &lt;ods-map-layer context="mycontext" display="heatmap" expression="value" function="AVG"&gt;&lt;/ods-map-layer&gt;
+    &lt;/ods-map&gt;
+</pre>
 <p>Apart from <code>heatmap</code>, all display modes support color configuration. Three types of configurations are available, depending on the display mode.</p>
 <ul>
 <li><code>color</code>: a simple color, as an hex code (#FF0F05) or a simple CSS color name like &quot;red&quot;. Available for any mode except <code>heatmap</code>.</li>

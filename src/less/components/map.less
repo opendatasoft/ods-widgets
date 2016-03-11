@@ -86,6 +86,11 @@
 }
 
 // Leaflet controls
+
+.leaflet-control-container .leaflet-top,
+.leaflet-control-container .leaflet-bottom {
+    z-index: inherit;
+}
 .leaflet-control-geocoder {
     // Fixing a few style side effect from outside, and improving a bit
 
@@ -146,4 +151,8 @@
             color: white;
         }
     }
+}
+
+.leaflet-control-attribution img {
+    vertical-align: bottom;
 }

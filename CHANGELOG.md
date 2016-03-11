@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.0.1 - 2016-03-11
+This release is pretty minor from a pure widget standpoint, but includes many improvements in the documentation, including
+more details about usage of aggregation functions in the `odsMap` widget.
+
+### Added
+- New `odsRecordImage` widget to simply display an image from a record. No more fiddling and creating an URL by hand!
+
+### Fixed
+- Fixed `odsFacets` documentation to mention the new custom display's syntax since ODS-Widgets v1.0.0.
+- Fixed an issue that triggered some API calls twice upon widget initialization for many visualization widgets.
+- Fixed an `odsMap` problem that would sometimes block the map's loading when there were more than one `odsMap` on the page.
+- Fixed `odsDomainStatictics` to make the smallest possible API call by default, to improve performance.
+
 ## 1.0.0 - 2015-12-14
 This release is the one that finally jumps to the 1.x.x major version number! Many changes in the structure and styles, most of
 them being breaking changes, so it warranted a major version; and at the same time we are now confident that it is going

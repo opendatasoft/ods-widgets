@@ -216,7 +216,7 @@
                     // Ugly hack to fix https://github.com/opendatasoft/platform/issues/4019
                     // The idea is that once we have API V2, we'll have an absolute link
                     // https://opendatasoft.clubhouse.io/story/423
-                    var datasetID = DATASETID_RE.exec(window.location.pathname)[2];
+                    var datasetID = DATASETID_RE.exec(decodeURIComponent(window.location.pathname))[2];
                     var url = '/explore/dataset/' + datasetID + '/files/'+value.id+'/download/';
                     return $sce.trustAsHtml('<a target="_self" href="' + url + '">' + (value.filename || record.filename) + '</a>');
                 } else {

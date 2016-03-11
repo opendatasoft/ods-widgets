@@ -591,6 +591,10 @@
                     chart.position = "center";
                 }
 
+                if (chart.type !== 'column' && chart.type !== 'bar' && chart.displayStackValues) {
+                    chart.displayStackValues = false;
+                }
+
                 // cleanup unwanted values
                 delete chart.yLabel;
                 delete chart.extras;

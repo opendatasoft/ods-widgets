@@ -6314,7 +6314,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '1.0.0';
+    var version = '1.0.1';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate', 'translate.directives', 'translate.filters']);
@@ -7138,6 +7138,10 @@ mod.directive('infiniteScroll', [
 
                 if (chart.type === "pie" && !chart.position) {
                     chart.position = "center";
+                }
+
+                if (chart.type !== 'column' && chart.type !== 'bar' && chart.displayStackValues) {
+                    chart.displayStackValues = false;
                 }
 
                 // cleanup unwanted values
@@ -8382,7 +8386,7 @@ mod.directive('infiniteScroll', [
                 }
                 var dataset = layerConfig.context.dataset;
                 newScope.map = map;
-                newScope.template = layerConfig.tooltipTemplate || dataset.extra_metas && dataset.extra_metas.visualization && dataset.extra_metas.visualization.map_tooltip_html || '';
+                newScope.template = layerConfig.tooltipTemplate || dataset.extra_metas && dataset.extra_metas.visualization && dataset.extra_metas.visualization.map_tooltip_html_enabled && dataset.extra_metas.visualization.map_tooltip_html || '';
                 var popupOptions = {
                     offset: [0, angular.isDefined(yOffset) ? yOffset : -30],
                     maxWidth: 250,
@@ -8837,6 +8841,7 @@ mod.directive('infiniteScroll', [
             'ellipsis-horizontal': 'ellipsis-h (4.0.2)',
             'ellipsis-vertical': 'ellipsis-v (4.0.2)',
             'envelope-alt': 'envelope-o',
+            'euro': 'eur',
             'exclamation-sign': 'exclamation-circle',
             'expand-alt': 'plus-square-o (4.0.2)',
             'expand': 'caret-square-o-right',
@@ -9404,7 +9409,7 @@ mod.directive('infiniteScroll', [
                     // Ugly hack to fix https://github.com/opendatasoft/platform/issues/4019
                     // The idea is that once we have API V2, we'll have an absolute link
                     // https://opendatasoft.clubhouse.io/story/423
-                    var datasetID = DATASETID_RE.exec(window.location.pathname)[2];
+                    var datasetID = DATASETID_RE.exec(decodeURIComponent(window.location.pathname))[2];
                     var url = '/explore/dataset/' + datasetID + '/files/'+value.id+'/download/';
                     return $sce.trustAsHtml('<a target="_self" href="' + url + '">' + (value.filename || record.filename) + '</a>');
                 } else {
@@ -10006,6 +10011,23 @@ mod.directive('infiniteScroll', [
                      .replace(/'/g, "&#039;");
             }
         },
+        ArrayUtils: {
+            transpose: function(input) {
+                if (angular.isArray(input)) {
+                    return input.reduce(function (resultObject, key) {
+                        resultObject[key] = true;
+                        return resultObject;
+                    }, {});
+                } else {
+                    return Object.keys(input).reduce(function (resultArray, key) {
+                        if (input[key]) {
+                            resultArray.push(key);
+                        }
+                        return resultArray;
+                    }, []);
+                }
+            }
+        },
         URLUtils: {
             cleanupAPIParams: function(params) {
                 var params = angular.copy(params);
@@ -10104,9 +10126,11 @@ mod.directive('infiniteScroll', [
                 metas: dataset.metas || {domain: 'preview'},
                 features: dataset.features,
                 attachments: dataset.attachments,
+                alternative_exports: dataset.alternative_exports,
                 fields: dataset.fields,
                 extra_metas: dataset.extra_metas,
                 interop_metas: dataset.interop_metas,
+                billing_plans: dataset.billing_plans,
                 setFields: function(fields) {
                     this.fields = fields;
                     iterateFields(this.fields);
@@ -11142,7 +11166,7 @@ mod.directive('infiniteScroll', [
                         newScope.titleField = scope.titleField;
                         newScope.tooltipFields = scope.tooltipFields;
                         newScope.dataset = scope.context.dataset;
-                        var content = $compile('<ods-calendar-tooltip></ods-calendar-tooltip')(newScope);
+                        var content = $compile('<ods-calendar-tooltip></ods-calendar-tooltip>')(newScope);
                         newScope.$apply();
                         return content;
                     };
@@ -11276,7 +11300,7 @@ mod.directive('infiniteScroll', [
          *  * parameters: the parameters object of the context
          *
          *  **Note:** Due to naming conventions in various places (HTML attributes, AngularJS...), context names
-         *  have to be lowercase, can only contain alphanumerical characters, and can't begin with "data" or "x".
+         *  have to be lowercase, can only contain alphanumerical characters, and can't begin with a number, "data", or "x".
          *
          *  @example
          *  <pre>
@@ -11407,7 +11431,6 @@ mod.directive('infiniteScroll', [
         transcludeService(function(clone) {
             $(datasetItem).html(clone);
         });
-        scope.$apply();
     };
 
     mod.directive('odsDatasetCard', function() {
@@ -11454,9 +11477,10 @@ mod.directive('infiniteScroll', [
             link: function(scope, elem, attrs) {
                 scope.position = attrs.position || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
-                scope.renderContent = renderCard;
             },
-            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, $element, ODSWidgetsConfig, $transclude, $sce) {
+            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', '$timeout',
+                function($scope, $element, ODSWidgetsConfig, $transclude, $sce, $timeout) {
+                $scope.renderContent = renderCard;
                 $scope.websiteName = ODSWidgetsConfig.websiteName;
                 $scope.expanded = false;
 
@@ -11482,7 +11506,7 @@ mod.directive('infiniteScroll', [
                         return;
                     }
                     // waiting for re-render
-                    setTimeout(function() {
+                    $timeout(function() {
                         $scope.renderContent($transclude, $scope, $element);
                     }, 0);
                     $scope.expanded = false;
@@ -11492,11 +11516,12 @@ mod.directive('infiniteScroll', [
                     }
                     unwatch();
                 }, true);
+                $scope.renderContent($transclude, $scope, $element);
             }]
         };
     });
 
-    mod.directive('odsMultidatasetsCard', ['ODSWidgetsConfig',  function(ODSWidgetsConfig) {
+    mod.directive('odsMultidatasetsCard', ['ODSWidgetsConfig', function(ODSWidgetsConfig) {
         return {
             restrict: 'E',
             scope: {
@@ -11539,9 +11564,10 @@ mod.directive('infiniteScroll', [
             link: function(scope, elem, attrs) {
                 scope.position = attrs.position || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
-                scope.renderContent = renderCard;
             },
-            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, $element, ODSWidgetsConfig, $transclude, $sce) {
+            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', '$timeout',
+                function($scope, $element, ODSWidgetsConfig, $transclude, $sce, $timeout) {
+                $scope.renderContent = renderCard;
                 $scope.datasetObjectKeys = [];
                 $scope.websiteName = ODSWidgetsConfig.websiteName;
 
@@ -11571,13 +11597,16 @@ mod.directive('infiniteScroll', [
                         $scope.datasetObjectKeys = keys;
 
                         // waiting for re-render
-                        setTimeout(function() {
+                        $timeout(function() {
                             $scope.renderContent($transclude, $scope, $element);
                         }, 0);
                         $scope.expanded = false;
                         unwatch();
                     }
                 }, true);
+                $timeout(function() {
+                    $scope.renderContent($transclude, $scope, $element);
+                }, 0);
             }]
         };
     }]);
@@ -11653,7 +11682,7 @@ mod.directive('infiniteScroll', [
          *  The optional dictionary parameter allow to build the URL with additional key/value parameters.
          *
          *  **Note:** Due to naming conventions in various places (HTML attributes, AngularJS...), context names
-         *  have to be lowercase, can only contain alphanumerical characters, and can't begin with "data" or "x".
+         *  have to be lowercase, can only contain alphanumerical characters, and can't begin with a number, "data", or "x".
          *
          *  @example
          *  <pre>
@@ -11727,7 +11756,7 @@ mod.directive('infiniteScroll', [
                 'getDownloadURL': function(format, parameters) {
                     format = format || 'csv';
                     var url = this.domainUrl + '/explore/dataset/' + this.dataset.datasetid + '/download/?format=' + format;
-                    url += this.getQueryStringURL(parameters)
+                    url += this.getQueryStringURL(parameters);
                     return url;
                 },
                 'getQueryStringURL': function(parameters) {
@@ -11828,7 +11857,7 @@ mod.directive('infiniteScroll', [
                     }
 
                     if ($attrs[contextName+'DatasetSchema']) {
-                        schema = angular.fromJson($interpolate($attrs[contextName + 'DatasetSchema'])($scope));
+                        schema = angular.fromJson($attrs[contextName + 'DatasetSchema'].replace(/\\{/g, '{').replace(/\\}/g, '}'));
                     }
 
                     var parameters = $scope.$eval($attrs[contextName+'Parameters']) || {};
@@ -11968,7 +11997,7 @@ mod.directive('infiniteScroll', [
          *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com" ods-domain-statistics>
          *              <p>Our portal has {{public.stats.dataset}} datasets, described by {{public.stats.theme}} themes
          *              and {{public.stats.keyword}} keywords.</p>
-         *              </p>{{public.stats.publisher}} publishers have contributed.</p>
+         *              <p>{{public.stats.publisher}} publishers have contributed.</p>
          *          </ods-catalog-context>
          *      </file>
          *  </example>
@@ -11992,7 +12021,7 @@ mod.directive('infiniteScroll', [
                         'publisher': 0,
                         'theme': 0
                     };
-                    ODSAPI.datasets.search(nv, {'facet': ['keyword', 'publisher', 'theme']}).success(function (data) {
+                    ODSAPI.datasets.search(nv, {'facet': ['keyword', 'publisher', 'theme'], 'rows': 0}).success(function (data) {
                         nv.stats.dataset = data.nhits;
                         if (data.facet_groups) {
                             for (var i = 0; i < data.facet_groups.length; i++) {
@@ -12189,12 +12218,13 @@ mod.directive('infiniteScroll', [
          *                  <div class="span4">
          *                      <ods-facets context="events">
          *                          <ods-facet name="updated_at" title="Date"></ods-facet>
-         *
          *                          <h3>
          *                              <i class="icon-tags"></i> Tags
          *                          </h3>
          *                          <ods-facet name="tags">
-         *                              <i class="icon-tag"></i> {{category.name}}
+         *                              <div>
+         *                                  <i class="icon-tag"></i> {{category.name}}
+         *                              </div>
          *                          </ods-facet>
          *                      </ods-facets>
          *                  </div>
@@ -13480,9 +13510,14 @@ mod.directive('infiniteScroll', [
                         'click': function(event) {
                             var value = this.category || this.name;
                             angular.forEach(serie.refineOnClick, function(refine) {
-                                scope[refine['context-name']].toggleRefine(refine.field, value);
-                                scope.$apply();
+                                for (var i = 0; i < scope.contexts.length; i++) {
+                                    if (scope.contexts[i].name === refine['context-name']) {
+                                        scope.contexts[i].toggleRefine(refine.field, value);
+                                        return;
+                                    }
+                                }
                             });
+                            scope.$apply();
                         }
                     }
                 };
@@ -13595,7 +13630,10 @@ mod.directive('infiniteScroll', [
 
             if (stacked) {
                 yAxis.stackLabels = {
-                    enabled: true
+                    enabled: true,
+                    style: {
+                        fontWeight: 'bold'
+                    }
                 };
             }
 
@@ -13721,9 +13759,11 @@ mod.directive('infiniteScroll', [
                     that = this;
 
                 $scope.$watch('contexts', function(nv,ov) {
-                    if ($scope.contexts && $scope.contexts.length > 0) {
-                        var i = $scope.contexts.length - 1;
-                        $scope[$scope.contexts[i].name] = $scope.contexts[i];
+                    if (nv && nv.length > 0) {
+                        var i;
+                        for (i = 0; i < nv.length; i++) {
+                            $scope[nv[i].name] = nv[i];
+                        }
                     }
                 }, true);
 
@@ -13826,7 +13866,7 @@ mod.directive('infiniteScroll', [
                                 if (!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])) {
                                     // we dont yet have an axis for this column :
                                     // Create axis and register it in yAxisesIndexes
-                                    var yAxis = buildYAxis(yLabel, chart, !!(options.yAxis.length % 2), chart.stacked);
+                                    var yAxis = buildYAxis(yLabel, chart, !!(options.yAxis.length % 2), !!chart.displayStackValues);
                                     yAxisesIndexes[datasetid][yLabel] = options.yAxis.push(yAxis) - 1;
                                 }
 
@@ -14536,6 +14576,9 @@ mod.directive('infiniteScroll', [
             '</div>',
             controller: ['$scope', '$element', '$attrs', '$transclude', function($scope, $element, $attrs, $transclude) {
                 $scope.contexts = [];
+                this.pushContext = function(context) {
+                    $scope.contexts.push(context);
+                };
                 if (!$scope.chart) {
                     $scope.chart = {
                         queries: [],
@@ -14643,7 +14686,15 @@ mod.directive('infiniteScroll', [
                             }
                         }
                         // copy the used context to the current $scope
-                        $scope.contexts.push(context);
+                        var contextInArray = false;
+                        for (var contextIndex = 0; contextIndex < $scope.contexts.length; contextIndex++) {
+                            if ($scope.contexts[contextIndex].name === context.name) {
+                                contextInArray = true;
+                            }
+                        }
+                        if (!contextInArray) {
+                            $scope.contexts.push(context);
+                        }
                         // make sure everything is correctly set before displying it:
                         var uniqueid = ChartHelper.getDatasetId(context);
 
@@ -14664,11 +14715,11 @@ mod.directive('infiniteScroll', [
                         for (var j = 0; j < query.charts.length; j++) {
                             ChartHelper.setSerieDefaultColors(query.charts[j], query.seriesBreakdown);
                         }
-                    }
+                    };
 
                     $scope.$watch('labelX', function(nv, ov) {
                         $scope.chart.xLabel = nv;
-                    })
+                    });
                 }
             }]
         };
@@ -14733,12 +14784,16 @@ mod.directive('infiniteScroll', [
                             if (query.charts.indexOf(chart) === -1) {
                                 query.charts.push(chart);
                             }
-                        }
+                        };
                         var pushQuery = function(context) {
                             if (context) {
                                 odsChartController.setQuery(query, context);
                             }
-                        }
+                        };
+
+                        thisController.pushContext = function(context) {
+                            odsChartController.pushContext(context);
+                        };
 
                         var context = attrs.context;
                         scope[context].wait().then(function(dataset) {
@@ -14753,7 +14808,7 @@ mod.directive('infiniteScroll', [
                                     query.charts.push(chart);
                                 }
                                 pushQuery(scope[context]);
-                            }
+                            };
 
                             pushQuery(scope[context]);
 
@@ -14786,6 +14841,8 @@ mod.directive('infiniteScroll', [
          * @param {integer} [min] minimum value to be displayed on the Y axis
          * @param {integer} [max] maximum value to be displayed on the Y axis
          * @param {boolean} [displayUnits] enable the display of the units defined for the field in the tooltip
+         * @param {boolean} [displayValues] enable the display of each invidual values in stacks
+         * @param {boolean} [displayStackValues] enable the display of the cumulated values on top of stacks
          * @param {number} [multiplier] multiply all values for this serie by the defined number
          * @param {string} [colorThresholds] an array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the defined color is used. The format for this parameter is color-thresholds="[{'value': 5, 'color': '#00ff00'},{'value': 10, 'color': '#ffff00'}]"
          * @param {string} [subsets] used when functionY is set to 'QUANTILES' to define the wanted quantile
@@ -14844,6 +14901,7 @@ mod.directive('infiniteScroll', [
                     yRangeMax: angular.isDefined(attrs.max) && attrs.max !== "" ? parseInt(attrs.max, 10) : undefined,
                     displayUnits: attrs.displayUnits === "true",
                     displayValues: attrs.displayValues === "true",
+                    displayStackValues: attrs.displayStackValues === "true",
                     multiplier: angular.isDefined(attrs.multiplier) ? parseInt(attrs.multiplier, 10) : undefined,
                     thresholds: attrs.colorThresholds ? scope.$eval(attrs.colorThresholds) : [],
                     subsets: attrs.subsets,
@@ -14851,25 +14909,34 @@ mod.directive('infiniteScroll', [
                 };
 
                 if (attrs.refineOnClickContext) {
-                    if (!angular.isArray(attrs.refineOnClickContext)) {
-                        contexts = [attrs.refineOnClickContext];
-                    } else {
-                        contexts = attrs.refineOnClickContext;
+                    contexts = scope.$eval(attrs.refineOnClickContext);
+                    if (typeof contexts === "undefined") {
+                        contexts = scope[attrs.refineOnClickContext];
+                    }
+                    if (!angular.isArray(contexts)) {
+                        contexts = [contexts];
                     }
                     for (var i = 0; i < contexts.length; i++) {
-                        if (attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i]) + 'ContextField']) {
+                        if (typeof contexts[i] === 'string') {
+                            contexts[i] = scope[contexts[i]];
+                        }
+                    }
+                    for (var i = 0; i < contexts.length; i++) {
+                        if (attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i].name) + 'ContextField']) {
                             if (!chart.refineOnClick) {
                                 chart.refineOnClick = [];
                             }
+                            odsChartQueryController.pushContext(contexts[i]);
+
                             chart.refineOnClick.push({
-                                'context': scope[contexts[i]],
-                                'context-name': contexts[i],
-                                'field': attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i]) + 'ContextField'],
+                                'context': scope[contexts[i].name],
+                                'context-name': contexts[i].name,
+                                'field': attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i].name) + 'ContextField'],
                                 'scopeApply': scope.$apply
                             });
                             
                         } else {
-                            console.warn('Field for context ' + ODS.StringUtils.capitalize(contexts[i]) + ' is not set in chart.');
+                            console.warn('Field for context ' + ODS.StringUtils.capitalize(contexts[i].name) + ' is not set in chart.');
                         }
                     }
                 }
@@ -16267,6 +16334,18 @@ mod.directive('infiniteScroll', [
          * the field names of the local and joined datasets; you can also configure one of the fields from the "remote" dataset to be displayed when the mouse
          * hovers the shapes, using `hoverField` and the name of a field.
          *
+         * You can specify aggregation functions on display modes that support it (`aggregation`, `heatmap`, `clustersforced`).
+         * This is done using two parameters: `function` (AVG for average, MIN for minimum, MAX for maximum, STDDEV for standard deviation,
+         * COUNT to count the number of records, SUM for the sum of values), and `expression` to define the value used for the
+         * function, usually the name of a field (`expression` is not required when the function is COUNT).
+         *
+         * <pre>
+         *     <ods-map>
+         *         <!-- Display a heatmap of the average value -->
+         *         <ods-map-layer context="mycontext" display="heatmap" expression="value" function="AVG"></ods-map-layer>
+         *     </ods-map>
+         * </pre>
+         *
          * Apart from `heatmap`, all display modes support color configuration. Three types of configurations are available, depending on the display mode.
          *
          * - `color`: a simple color, as an hex code (#FF0F05) or a simple CSS color name like "red". Available for any mode except `heatmap`.
@@ -16391,33 +16470,27 @@ mod.directive('infiniteScroll', [
                 var toolbarGeolocation = !(scope.toolbarGeolocation && scope.toolbarGeolocation.toLowerCase() === 'false');
                 var toolbarFullscreen = !(scope.toolbarFullscreen && scope.toolbarFullscreen.toLowerCase() === 'false');
 
-                if (attrs.context) {
+                if (scope.context) {
                     // Handle the view defined on the map tag directly
                     var group = MapHelper.MapConfiguration.createLayerGroupConfiguration();
                     var layer = MapHelper.MapConfiguration.createLayerConfiguration();
                     group.activeDatasets.push(layer);
                     scope.mapConfig.layers.push(group);
-                    var unwatch = scope.$watch('context', function(nv) {
-                        layer.context = nv;
 
-                        // FIXME: Factorize the same code with odsLayerGroup
-                        var unwatchSchema = scope.$watch('context.dataset', function(nv) {
-                            if (nv) {
-                                if (layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape') !== null) {
-                                    layer.marker = !layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape');
-                                } else {
-                                    layer.marker = true;
-                                }
+                    layer.context = scope.context;
 
-                                layer.color = layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || "#C32D1C";
-                                layer.picto = layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
-
-
-                                unwatchSchema();
+                    // FIXME: Factorize the same code with odsLayerGroup
+                    scope.context.wait().then(function (nv) {
+                        if (nv) {
+                            if (layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape') !== null) {
+                                layer.marker = !layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape');
+                            } else {
+                                layer.marker = true;
                             }
-                        });
 
-                        unwatch();
+                            layer.color = layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || "#C32D1C";
+                            layer.picto = layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
+                        }
                     });
                 }
 
@@ -17406,6 +17479,7 @@ mod.directive('infiniteScroll', [
                     }
                     return null;
                 };
+                $scope.fields = angular.copy($scope.context.dataset.fields);
             }]
         };
     }]);
@@ -17804,6 +17878,60 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
+    mod.directive('odsRecordImage', function() {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsRecordImage
+         * @restrict E
+         * @scope
+         * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {Object} record Record to take the image from
+         * @param {string} [field=none] Field to use. By default, the first `file` field will be used, but you can specify the field name if there are more than one.
+         * @description
+         * Displays an image from a record
+         *
+         */
+        return {
+            restrict: 'E',
+            replace: true,
+            template: '' +
+                '<div class="odswidget odswidget-record-image">' +
+                '   <img class="odswidget-record-image__image" ng-if="imageUrl" ng-src="{{ imageUrl }}">' +
+                '   <div class="odswidget-record-image__image odswidget-record-image__image--placeholder" ng-if="placeholder">' +
+                '</div>',
+            scope: {
+                record: '=',
+                field: '@'
+            },
+            controller: ['$scope', function($scope) {
+                $scope.imageUrl = null;
+
+                var render = function() {
+                    var image = $scope.record.fields[$scope.field];
+                    if (image.url) {
+                        $scope.imageUrl = image.url;
+                        $scope.placeholder = false;
+                    } else if (image.placeholder) {
+                        //
+                        $scope.imageUrl = null;
+                        $scope.placeholder = true;
+                    } else {
+                        $scope.imageUrl = '/explore/dataset/' + $scope.record.datasetid + '/files/' + image.id + '/300/';
+                        $scope.placeholder = false;
+                    }
+                };
+
+                $scope.$watch('[record, field]', function() {
+                    render();
+                }, true);
+            }]
+        };
+    });
+}());;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
     mod.directive('odsResultEnumerator', ['ODSAPI', function(ODSAPI) {
         /**
          * @ngdoc directive
@@ -17886,10 +18014,12 @@ mod.directive('infiniteScroll', [
          * @restrict A
          * @param {string} [odsResults=results] Variable name to use
          * @param {CatalogContext|DatasetContext} odsResultsContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {number} [odsResultsMax=all] Maximum number of results to show
+         * @param {number} [odsResultsMax=10] Maximum number of results to show
          * @description
-         * This widget exposes the results of a search (as an array) in a variable available in the scope. It can be used with AngularJS's ngRepeat to simply build a list
-         * of results.
+         * This widget exposes the results of a search (as an array) in a variable available in the scope. It can be
+         * used with AngularJS's ngRepeat to simply build a list of results.
+         * It also adds to the context variable a "nhits" property containing the total number of records matching the
+         * query regardless of the odsResultsMax value.
          *
          * @example
          *  <example module="ods-widgets">
@@ -17912,6 +18042,17 @@ mod.directive('infiniteScroll', [
          *          </ods-catalog-context>
          *      </file>
          *  </example>
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com" tree-parameters="{'sort': '-objectid'}">
+         *              <p ods-results="items" ods-results-context="tree" ods-results-max="10">
+         *                  Total number of trees : {{ tree.nhits }}
+         *              </p>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
 
         return {
@@ -17919,30 +18060,38 @@ mod.directive('infiniteScroll', [
             scope: true,
             priority: 1001, // ng-repeat need to be executed when the results is in the scope.
             controller: ['$scope', '$attrs', function($scope, $attrs) {
-                $scope.$watch($attrs.odsResultsContext, function(nv) {
-                    var options = angular.extend({}, nv.parameters, {'rows': $attrs.odsResultsMax});
+                var loadResults = function (context) {
+                    var options = angular.extend({}, context.parameters, {'rows': $attrs.odsResultsMax});
                     var variable = $attrs.odsResults || 'results';
                     $scope.loading = true;
-                    if (nv.type === 'catalog') {
+                    if (context.type === 'catalog') {
                         angular.extend(options, {
                             extrametas: 'true',
                             interopmetas: 'true'
                         });
-                        ODSAPI.datasets.search(nv, options).success(function(data) {
+                        ODSAPI.datasets.search(context, options).success(function(data) {
                             $scope[variable] = data.datasets;
-                            nv.nhits = data.nhits;
+                            context.nhits = data.nhits;
                             $scope.loading = false;
                         }).error(function() {
                             $scope.loading = false;
                         });
-                    } else if (nv.type === 'dataset' && nv.dataset) {
-                        ODSAPI.records.search(nv, options).success(function(data) {
+                    } else if (context.type === 'dataset' && context.dataset) {
+                        ODSAPI.records.search(context, options).success(function(data) {
                             $scope[variable] = data.records;
-                            nv.nhits = data.nhits;
+                            context.nhits = data.nhits;
                             $scope.loading = false;
                         }).error(function() {
                             $scope.loading = false;
                         });
+                    }
+                };
+                var firstLoad = true;
+                $scope.$watch($attrs.odsResultsContext, function(nv, ov) {
+                    if (!!(nv.type === 'catalog' || (nv.type === 'dataset' && nv.dataset)) &&
+                        (!angular.equals(nv.parameters, ov.parameters) || firstLoad)) {
+                        firstLoad = false;
+                        loadResults(nv);
                     }
                 }, true);
             }]
@@ -18561,17 +18710,20 @@ mod.directive('infiniteScroll', [
                                 newScope.fieldValue = $filter('truncate')(fieldValue);
                                 node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
                             } else if (field && field.type === 'file') {
-                                node = document.createElement('span');
-                                node.title = record.fields[field.name] ? record.fields[field.name].filename : '';
-                                node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
-                            }
-                            else {
+                                var html = $filter('nofollow')($filter('prettyText')(fieldValue)).toString();
+                                html = html.replace(/<a /, '<a ods-resource-download-conditions ');
+                                if (!html) {
+                                    node = document.createElement('span');
+                                } else {
+                                    node = $compile(html)(newScope)[0];
+                                    node.title = record.fields[field.name] ? record.fields[field.name].filename : '';
+                                }
+                            } else {
                                 node = document.createElement('span');
                                 node.title = fieldValue;
                                 node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
                             }
                         }
-
                         div.appendChild(node);
                     }
 
@@ -18755,24 +18907,27 @@ mod.directive('infiniteScroll', [
                     datasetFields = $filter('fieldsFilter')(fieldsForVisualization, $scope.displayedFieldsArray);
 
                     refreshRecords(true);
+
+                    $scope.$watch('context.parameters', function(newValue, oldValue) {
+                        // Don't fire at initialization time
+                        if (newValue === oldValue) return;
+
+                        DebugLogger.log('table -> searchOptions watch -> refresh records');
+
+                        // Reset all variables for next time
+                        $scope.layout = []; // Reset layout (layout depends on records data)
+                        $scope.working = true;
+                        lastScrollLeft = $element.find('.odswidget-table__records')[0].scrollLeft; // Keep scrollbar position
+                        forceScrollLeft = true;
+
+                        recordsBody.empty();
+
+                        refreshRecords(true);
+                    }, true);
+
                 });
 
-                $scope.$watch('context.parameters', function(newValue, oldValue) {
-                    // Don't fire at initialization time
-                    if (newValue === oldValue) return;
 
-                    DebugLogger.log('table -> searchOptions watch -> refresh records');
-
-                    // Reset all variables for next time
-                    $scope.layout = []; // Reset layout (layout depends on records data)
-                    $scope.working = true;
-                    lastScrollLeft = $element.find('.odswidget-table__records')[0].scrollLeft; // Keep scrollbar position
-                    forceScrollLeft = true;
-
-                    recordsBody.empty();
-
-                    refreshRecords(true);
-                }, true);
 
                 var resetScroll = function() {
                     $element.find('.odswidget-table__records').scrollLeft(0);
@@ -19201,7 +19356,7 @@ mod.directive('infiniteScroll', [
             template: '' +
                 '<div class="odswidget odswidget-theme-boxes">' +
                 '   <div ng-repeat="item in items" class="odswidget-theme-boxes__box" ods-facet-results="items" ods-facet-results-context="context" ods-facet-results-facet-name="theme">' +
-                '       <a ng-href="{{context.domainUrl}}/explore/?refine.theme={{item.path}}" target="_self" ods-tooltip="{{item.name}} ({{formatCount(item.count)}})" ods-tooltip-direction="bottom" style="display: block;">' +
+                '       <a ng-href="{{context.domainUrl}}/explore/?refine.theme={{encode(item.path)}}" target="_self" ods-tooltip="{{item.name}} ({{formatCount(item.count)}})" ods-tooltip-direction="bottom" style="display: block;">' +
                 '           <ods-theme-picto class="odswidget-theme-boxes__picto" theme="{{item.name}}"></ods-theme-picto>' +
                 '       </a>' +
                 '   </div>' +
@@ -19218,6 +19373,7 @@ mod.directive('infiniteScroll', [
                         return count + ' ' + translate('dataset');
                     }
                 };
+                $scope.encode = encodeURIComponent;
             }]
         };
     });

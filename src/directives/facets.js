@@ -94,12 +94,13 @@
          *                  <div class="span4">
          *                      <ods-facets context="events">
          *                          <ods-facet name="updated_at" title="Date"></ods-facet>
-         *
          *                          <h3>
          *                              <i class="icon-tags"></i> Tags
          *                          </h3>
          *                          <ods-facet name="tags">
-         *                              <i class="icon-tag"></i> {{category.name}}
+         *                              <div>
+         *                                  <i class="icon-tag"></i> {{category.name}}
+         *                              </div>
          *                          </ods-facet>
          *                      </ods-facets>
          *                  </div>

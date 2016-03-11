@@ -17,7 +17,6 @@
         transcludeService(function(clone) {
             $(datasetItem).html(clone);
         });
-        scope.$apply();
     };
 
     mod.directive('odsDatasetCard', function() {
@@ -64,9 +63,10 @@
             link: function(scope, elem, attrs) {
                 scope.position = attrs.position || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
-                scope.renderContent = renderCard;
             },
-            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, $element, ODSWidgetsConfig, $transclude, $sce) {
+            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', '$timeout',
+                function($scope, $element, ODSWidgetsConfig, $transclude, $sce, $timeout) {
+                $scope.renderContent = renderCard;
                 $scope.websiteName = ODSWidgetsConfig.websiteName;
                 $scope.expanded = false;
 
@@ -92,7 +92,7 @@
                         return;
                     }
                     // waiting for re-render
-                    setTimeout(function() {
+                    $timeout(function() {
                         $scope.renderContent($transclude, $scope, $element);
                     }, 0);
                     $scope.expanded = false;
@@ -102,11 +102,12 @@
                     }
                     unwatch();
                 }, true);
+                $scope.renderContent($transclude, $scope, $element);
             }]
         };
     });
 
-    mod.directive('odsMultidatasetsCard', ['ODSWidgetsConfig',  function(ODSWidgetsConfig) {
+    mod.directive('odsMultidatasetsCard', ['ODSWidgetsConfig', function(ODSWidgetsConfig) {
         return {
             restrict: 'E',
             scope: {
@@ -149,9 +150,10 @@
             link: function(scope, elem, attrs) {
                 scope.position = attrs.position || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
-                scope.renderContent = renderCard;
             },
-            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', function($scope, $element, ODSWidgetsConfig, $transclude, $sce) {
+            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', '$timeout',
+                function($scope, $element, ODSWidgetsConfig, $transclude, $sce, $timeout) {
+                $scope.renderContent = renderCard;
                 $scope.datasetObjectKeys = [];
                 $scope.websiteName = ODSWidgetsConfig.websiteName;
 
@@ -181,13 +183,16 @@
                         $scope.datasetObjectKeys = keys;
 
                         // waiting for re-render
-                        setTimeout(function() {
+                        $timeout(function() {
                             $scope.renderContent($transclude, $scope, $element);
                         }, 0);
                         $scope.expanded = false;
                         unwatch();
                     }
                 }, true);
+                $timeout(function() {
+                    $scope.renderContent($transclude, $scope, $element);
+                }, 0);
             }]
         };
     }]);

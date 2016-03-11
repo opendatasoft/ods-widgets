@@ -51,7 +51,7 @@
          *  * parameters: the parameters object of the context
          *
          *  **Note:** Due to naming conventions in various places (HTML attributes, AngularJS...), context names
-         *  have to be lowercase, can only contain alphanumerical characters, and can't begin with "data" or "x".
+         *  have to be lowercase, can only contain alphanumerical characters, and can't begin with a number, "data", or "x".
          *
          *  @example
          *  <pre>

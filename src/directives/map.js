@@ -127,6 +127,18 @@
          * the field names of the local and joined datasets; you can also configure one of the fields from the "remote" dataset to be displayed when the mouse
          * hovers the shapes, using `hoverField` and the name of a field.
          *
+         * You can specify aggregation functions on display modes that support it (`aggregation`, `heatmap`, `clustersforced`).
+         * This is done using two parameters: `function` (AVG for average, MIN for minimum, MAX for maximum, STDDEV for standard deviation,
+         * COUNT to count the number of records, SUM for the sum of values), and `expression` to define the value used for the
+         * function, usually the name of a field (`expression` is not required when the function is COUNT).
+         *
+         * <pre>
+         *     <ods-map>
+         *         <!-- Display a heatmap of the average value -->
+         *         <ods-map-layer context="mycontext" display="heatmap" expression="value" function="AVG"></ods-map-layer>
+         *     </ods-map>
+         * </pre>
+         *
          * Apart from `heatmap`, all display modes support color configuration. Three types of configurations are available, depending on the display mode.
          *
          * - `color`: a simple color, as an hex code (#FF0F05) or a simple CSS color name like "red". Available for any mode except `heatmap`.
@@ -251,33 +263,27 @@
                 var toolbarGeolocation = !(scope.toolbarGeolocation && scope.toolbarGeolocation.toLowerCase() === 'false');
                 var toolbarFullscreen = !(scope.toolbarFullscreen && scope.toolbarFullscreen.toLowerCase() === 'false');
 
-                if (attrs.context) {
+                if (scope.context) {
                     // Handle the view defined on the map tag directly
                     var group = MapHelper.MapConfiguration.createLayerGroupConfiguration();
                     var layer = MapHelper.MapConfiguration.createLayerConfiguration();
                     group.activeDatasets.push(layer);
                     scope.mapConfig.layers.push(group);
-                    var unwatch = scope.$watch('context', function(nv) {
-                        layer.context = nv;
 
-                        // FIXME: Factorize the same code with odsLayerGroup
-                        var unwatchSchema = scope.$watch('context.dataset', function(nv) {
-                            if (nv) {
-                                if (layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape') !== null) {
-                                    layer.marker = !layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape');
-                                } else {
-                                    layer.marker = true;
-                                }
+                    layer.context = scope.context;
 
-                                layer.color = layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || "#C32D1C";
-                                layer.picto = layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
-
-
-                                unwatchSchema();
+                    // FIXME: Factorize the same code with odsLayerGroup
+                    scope.context.wait().then(function (nv) {
+                        if (nv) {
+                            if (layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape') !== null) {
+                                layer.marker = !layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape');
+                            } else {
+                                layer.marker = true;
                             }
-                        });
 
-                        unwatch();
+                            layer.color = layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || "#C32D1C";
+                            layer.picto = layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
+                        }
                     });
                 }
 
@@ -1266,6 +1272,7 @@
                     }
                     return null;
                 };
+                $scope.fields = angular.copy($scope.context.dataset.fields);
             }]
         };
     }]);

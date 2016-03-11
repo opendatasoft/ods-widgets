@@ -353,6 +353,7 @@
             'ellipsis-horizontal': 'ellipsis-h (4.0.2)',
             'ellipsis-vertical': 'ellipsis-v (4.0.2)',
             'envelope-alt': 'envelope-o',
+            'euro': 'eur',
             'exclamation-sign': 'exclamation-circle',
             'expand-alt': 'plus-square-o (4.0.2)',
             'expand': 'caret-square-o-right',

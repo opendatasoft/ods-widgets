@@ -90,8 +90,11 @@
 .odswidget-dataset-card,
 .odswidget-multidatasets-card {
   padding: 0;
-  height: 400px;
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 .odswidget-dataset-card div.card-container,
 .odswidget-multidatasets-card div.card-container {
@@ -269,8 +272,10 @@
 .odswidget-dataset-card div.dataset-item,
 .odswidget-multidatasets-card div.dataset-item {
   position: absolute;
-  width: 100%;
-  height: auto;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
 }
 .odswidget-dataset-card div.dataset-item > .odswidget,
 .odswidget-multidatasets-card div.dataset-item > .odswidget,
@@ -598,6 +603,10 @@
 .odswidget-map__legend-value:first-child:last-child {
   float: none;
 }
+.leaflet-control-container .leaflet-top,
+.leaflet-control-container .leaflet-bottom {
+  z-index: inherit;
+}
 .leaflet-control-geocoder input[type="text"] {
   padding: 0!important;
   box-shadow: none !important;
@@ -646,6 +655,9 @@
 }
 .leaflet-control-filterview.active a::after {
   color: white;
+}
+.leaflet-control-attribution img {
+  vertical-align: bottom;
 }
 .odswidget-most-popular-datasets__datasets {
   list-style-type: none;
@@ -762,6 +774,27 @@
 .odswidget-picto:not(.ods-svginliner__svg-container--colorless) svg circle,
 .odswidget-picto:not(.ods-svginliner__svg-container--colorless) svg path {
   fill: inherit;
+}
+.odswidget-record-image {
+  width: 100%;
+}
+.odswidget-record-image .odswidget-record-image__image {
+  max-width: 100% !important;
+}
+.odswidget-record-image__image--placeholder {
+  border: dashed 1px #ddd;
+  background-color: #eee;
+  height: 200px;
+  width: 300px;
+}
+.odswidget-record-image__image--placeholder:before {
+  content: '\f03e';
+  font-family: 'FontAwesome';
+  font-size: 50px;
+  line-height: 200px;
+  opacity: 0.4;
+  display: block;
+  text-align: center;
 }
 .odswidget-reuses {
   height: 400px;

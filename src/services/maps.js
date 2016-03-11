@@ -960,7 +960,7 @@
                 }
                 var dataset = layerConfig.context.dataset;
                 newScope.map = map;
-                newScope.template = layerConfig.tooltipTemplate || dataset.extra_metas && dataset.extra_metas.visualization && dataset.extra_metas.visualization.map_tooltip_html || '';
+                newScope.template = layerConfig.tooltipTemplate || dataset.extra_metas && dataset.extra_metas.visualization && dataset.extra_metas.visualization.map_tooltip_html_enabled && dataset.extra_metas.visualization.map_tooltip_html || '';
                 var popupOptions = {
                     offset: [0, angular.isDefined(yOffset) ? yOffset : -30],
                     maxWidth: 250,

@@ -237,7 +237,7 @@
                         newScope.titleField = scope.titleField;
                         newScope.tooltipFields = scope.tooltipFields;
                         newScope.dataset = scope.context.dataset;
-                        var content = $compile('<ods-calendar-tooltip></ods-calendar-tooltip')(newScope);
+                        var content = $compile('<ods-calendar-tooltip></ods-calendar-tooltip>')(newScope);
                         newScope.$apply();
                         return content;
                     };

@@ -224,6 +224,23 @@
                      .replace(/'/g, "&#039;");
             }
         },
+        ArrayUtils: {
+            transpose: function(input) {
+                if (angular.isArray(input)) {
+                    return input.reduce(function (resultObject, key) {
+                        resultObject[key] = true;
+                        return resultObject;
+                    }, {});
+                } else {
+                    return Object.keys(input).reduce(function (resultArray, key) {
+                        if (input[key]) {
+                            resultArray.push(key);
+                        }
+                        return resultArray;
+                    }, []);
+                }
+            }
+        },
         URLUtils: {
             cleanupAPIParams: function(params) {
                 var params = angular.copy(params);
@@ -322,9 +339,11 @@
                 metas: dataset.metas || {domain: 'preview'},
                 features: dataset.features,
                 attachments: dataset.attachments,
+                alternative_exports: dataset.alternative_exports,
                 fields: dataset.fields,
                 extra_metas: dataset.extra_metas,
                 interop_metas: dataset.interop_metas,
+                billing_plans: dataset.billing_plans,
                 setFields: function(fields) {
                     this.fields = fields;
                     iterateFields(this.fields);

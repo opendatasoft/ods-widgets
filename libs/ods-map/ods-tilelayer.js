@@ -118,6 +118,26 @@ L.ODSTileLayer = L.TileLayer.extend({
                 subdomains: "abcd"
             };
             L.TileLayer.prototype.initialize.call(this, stamenUrl, layerOptions);
+        } else if (basemap.provider.startsWith('mapsquare.')) {
+            var mapsquareMap = basemap.provider.substring(10);
+            var mapsquareUrl = 'https://tile.mapsquare.io/';
+
+            if (mapsquareMap !== 'streets') {
+                mapsquareUrl += mapsquareMap + '/';
+            }
+
+            mapsquareUrl += '{z}/{x}/{y}';
+            //if (L.Browser.retina) {
+            //    mapsquareUrl += '@2x';
+            //}
+            mapsquareUrl += '.png?api-key=' + basemap.mapsquare_apikey;
+
+            layerOptions = {
+                minZoom: 1,
+                maxZoom: 22,
+                attribution: !disableAttribution ? 'Tiles Courtesy of <a href="https://www.mapsquare.io" target="_blank">mapsquare</a> <img src="https://www.mapsquare.io/assets/images/favicon.png" width="16" height="16"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors' : ''
+            };
+            L.TileLayer.prototype.initialize.call(this, mapsquareUrl, layerOptions);
         } else if (basemap.provider === 'custom') {
             if (basemap.subdomains) {
                 layerOptions.subdomains = basemap.subdomains;

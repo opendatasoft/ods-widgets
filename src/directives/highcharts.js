@@ -548,9 +548,14 @@
                         'click': function(event) {
                             var value = this.category || this.name;
                             angular.forEach(serie.refineOnClick, function(refine) {
-                                scope[refine['context-name']].toggleRefine(refine.field, value);
-                                scope.$apply();
+                                for (var i = 0; i < scope.contexts.length; i++) {
+                                    if (scope.contexts[i].name === refine['context-name']) {
+                                        scope.contexts[i].toggleRefine(refine.field, value);
+                                        return;
+                                    }
+                                }
                             });
+                            scope.$apply();
                         }
                     }
                 };
@@ -663,7 +668,10 @@
 
             if (stacked) {
                 yAxis.stackLabels = {
-                    enabled: true
+                    enabled: true,
+                    style: {
+                        fontWeight: 'bold'
+                    }
                 };
             }
 
@@ -789,9 +797,11 @@
                     that = this;
 
                 $scope.$watch('contexts', function(nv,ov) {
-                    if ($scope.contexts && $scope.contexts.length > 0) {
-                        var i = $scope.contexts.length - 1;
-                        $scope[$scope.contexts[i].name] = $scope.contexts[i];
+                    if (nv && nv.length > 0) {
+                        var i;
+                        for (i = 0; i < nv.length; i++) {
+                            $scope[nv[i].name] = nv[i];
+                        }
                     }
                 }, true);
 
@@ -894,7 +904,7 @@
                                 if (!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])) {
                                     // we dont yet have an axis for this column :
                                     // Create axis and register it in yAxisesIndexes
-                                    var yAxis = buildYAxis(yLabel, chart, !!(options.yAxis.length % 2), chart.stacked);
+                                    var yAxis = buildYAxis(yLabel, chart, !!(options.yAxis.length % 2), !!chart.displayStackValues);
                                     yAxisesIndexes[datasetid][yLabel] = options.yAxis.push(yAxis) - 1;
                                 }
 
@@ -1604,6 +1614,9 @@
             '</div>',
             controller: ['$scope', '$element', '$attrs', '$transclude', function($scope, $element, $attrs, $transclude) {
                 $scope.contexts = [];
+                this.pushContext = function(context) {
+                    $scope.contexts.push(context);
+                };
                 if (!$scope.chart) {
                     $scope.chart = {
                         queries: [],
@@ -1711,7 +1724,15 @@
                             }
                         }
                         // copy the used context to the current $scope
-                        $scope.contexts.push(context);
+                        var contextInArray = false;
+                        for (var contextIndex = 0; contextIndex < $scope.contexts.length; contextIndex++) {
+                            if ($scope.contexts[contextIndex].name === context.name) {
+                                contextInArray = true;
+                            }
+                        }
+                        if (!contextInArray) {
+                            $scope.contexts.push(context);
+                        }
                         // make sure everything is correctly set before displying it:
                         var uniqueid = ChartHelper.getDatasetId(context);
 
@@ -1732,11 +1753,11 @@
                         for (var j = 0; j < query.charts.length; j++) {
                             ChartHelper.setSerieDefaultColors(query.charts[j], query.seriesBreakdown);
                         }
-                    }
+                    };
 
                     $scope.$watch('labelX', function(nv, ov) {
                         $scope.chart.xLabel = nv;
-                    })
+                    });
                 }
             }]
         };
@@ -1801,12 +1822,16 @@
                             if (query.charts.indexOf(chart) === -1) {
                                 query.charts.push(chart);
                             }
-                        }
+                        };
                         var pushQuery = function(context) {
                             if (context) {
                                 odsChartController.setQuery(query, context);
                             }
-                        }
+                        };
+
+                        thisController.pushContext = function(context) {
+                            odsChartController.pushContext(context);
+                        };
 
                         var context = attrs.context;
                         scope[context].wait().then(function(dataset) {
@@ -1821,7 +1846,7 @@
                                     query.charts.push(chart);
                                 }
                                 pushQuery(scope[context]);
-                            }
+                            };
 
                             pushQuery(scope[context]);
 
@@ -1854,6 +1879,8 @@
          * @param {integer} [min] minimum value to be displayed on the Y axis
          * @param {integer} [max] maximum value to be displayed on the Y axis
          * @param {boolean} [displayUnits] enable the display of the units defined for the field in the tooltip
+         * @param {boolean} [displayValues] enable the display of each invidual values in stacks
+         * @param {boolean} [displayStackValues] enable the display of the cumulated values on top of stacks
          * @param {number} [multiplier] multiply all values for this serie by the defined number
          * @param {string} [colorThresholds] an array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the defined color is used. The format for this parameter is color-thresholds="[{'value': 5, 'color': '#00ff00'},{'value': 10, 'color': '#ffff00'}]"
          * @param {string} [subsets] used when functionY is set to 'QUANTILES' to define the wanted quantile
@@ -1912,6 +1939,7 @@
                     yRangeMax: angular.isDefined(attrs.max) && attrs.max !== "" ? parseInt(attrs.max, 10) : undefined,
                     displayUnits: attrs.displayUnits === "true",
                     displayValues: attrs.displayValues === "true",
+                    displayStackValues: attrs.displayStackValues === "true",
                     multiplier: angular.isDefined(attrs.multiplier) ? parseInt(attrs.multiplier, 10) : undefined,
                     thresholds: attrs.colorThresholds ? scope.$eval(attrs.colorThresholds) : [],
                     subsets: attrs.subsets,
@@ -1919,25 +1947,34 @@
                 };
 
                 if (attrs.refineOnClickContext) {
-                    if (!angular.isArray(attrs.refineOnClickContext)) {
-                        contexts = [attrs.refineOnClickContext];
-                    } else {
-                        contexts = attrs.refineOnClickContext;
+                    contexts = scope.$eval(attrs.refineOnClickContext);
+                    if (typeof contexts === "undefined") {
+                        contexts = scope[attrs.refineOnClickContext];
+                    }
+                    if (!angular.isArray(contexts)) {
+                        contexts = [contexts];
                     }
                     for (var i = 0; i < contexts.length; i++) {
-                        if (attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i]) + 'ContextField']) {
+                        if (typeof contexts[i] === 'string') {
+                            contexts[i] = scope[contexts[i]];
+                        }
+                    }
+                    for (var i = 0; i < contexts.length; i++) {
+                        if (attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i].name) + 'ContextField']) {
                             if (!chart.refineOnClick) {
                                 chart.refineOnClick = [];
                             }
+                            odsChartQueryController.pushContext(contexts[i]);
+
                             chart.refineOnClick.push({
-                                'context': scope[contexts[i]],
-                                'context-name': contexts[i],
-                                'field': attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i]) + 'ContextField'],
+                                'context': scope[contexts[i].name],
+                                'context-name': contexts[i].name,
+                                'field': attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i].name) + 'ContextField'],
                                 'scopeApply': scope.$apply
                             });
                             
                         } else {
-                            console.warn('Field for context ' + ODS.StringUtils.capitalize(contexts[i]) + ' is not set in chart.');
+                            console.warn('Field for context ' + ODS.StringUtils.capitalize(contexts[i].name) + ' is not set in chart.');
                         }
                     }
                 }
