@@ -48,7 +48,7 @@
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {boolean} [syncToUrl] If true, persists the `location` and `basemap` in the page's URL.
          * @param {Object} [syncToObject] An object where the `location` and `basemap` selection is kept. You can use it from
-         * anither widget to read the location or basemap.
+         * another widget to read the location or basemap.
          * @param {string} [location] The default location of the map upon initialization, under the following format: "zoom,latitude,longitude".
          * For example, to have a map centered on Paris, France, you can use "12,48.85218,2.36996". By default, if a location is not specified,
          * the map will try to fit all the displayed data when initializing.
@@ -63,6 +63,7 @@
          * @param {boolean} [scrollWheelZoom=true] If "false", then scrolling your mouse wheel over the map won't zoom/unzoom it.
          * @param {integer} [minZoom=none] Limits the map to a minimum zoom value. By default this is defined by the minimum zoom of the basemap.
          * @param {integer} [maxZoom=none] Limits the map to a maximum zoom value. By default this is defined by the maximum zoom of the basemap.
+         * @param {boolean} [odsAutoResize] see {@link ods-widgets.directive:odsAutoResize Auto Resize} for more informations
          * @description
          * This widget allows you to build a map visualization and show data using various modes of display using layers.
          * Each layer is based on a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, a mode of display (clusters...), and various properties to define the

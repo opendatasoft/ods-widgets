@@ -12,6 +12,7 @@
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {Object} record Record to take the image from
          * @param {string} [field=none] Field to use. By default, the first `file` field will be used, but you can specify the field name if there are more than one.
+         * @param {string} [domainUrl=none] the base url of the domain where the dataset can be record. By default, it uses the current.
          * @description
          * Displays an image from a record
          *
@@ -26,7 +27,8 @@
                 '</div>',
             scope: {
                 record: '=',
-                field: '@'
+                field: '@',
+                domainUrl: '@?'
             },
             controller: ['$scope', function($scope) {
                 $scope.imageUrl = null;
@@ -37,11 +39,10 @@
                         $scope.imageUrl = image.url;
                         $scope.placeholder = false;
                     } else if (image.placeholder) {
-                        //
                         $scope.imageUrl = null;
                         $scope.placeholder = true;
                     } else {
-                        $scope.imageUrl = '/explore/dataset/' + $scope.record.datasetid + '/files/' + image.id + '/300/';
+                        $scope.imageUrl = ($scope.domainUrl || '') + '/explore/dataset/' + $scope.record.datasetid + '/files/' + image.id + '/300/';
                         $scope.placeholder = false;
                     }
                 };

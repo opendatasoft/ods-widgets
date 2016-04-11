@@ -10,7 +10,8 @@
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-record-image
        context="{DatasetContext}"
        record="{Object}"
-       field="{string}"&gt;
+       field="{string}"
+       domain-url="{string}"&gt;
 &lt;/ods-record-image&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -19,5 +20,6 @@
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsrecordimage-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
 </div></td></tr><tr><td>record</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsrecordimage-page"><p>Record to take the image from</p>
 </div></td></tr><tr><td>field</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsrecordimage-page"><p>Field to use. By default, the first <code>file</code> field will be used, but you can specify the field name if there are more than one.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>domainUrl</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsrecordimage-page"><p>the base url of the domain where the dataset can be record. By default, it uses the current.</p>
 </div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
 </div>

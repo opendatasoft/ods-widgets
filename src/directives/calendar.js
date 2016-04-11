@@ -55,6 +55,7 @@
                 availableCalendarViews: '@?',
                 syncToUrl: '@'
             },
+            require: '?refineOnClick',
             replace: true,
             template: ''+
             '<div class="odswidget-calendar">' +
@@ -69,7 +70,7 @@
                     URLSynchronizer.addSynchronizedValue($scope, 'calendarView', 'calendarview');
                 }
             },
-            link: function (scope, element) {
+            link: function (scope, element, attrs, refineOnClickCtrl) {
                 var updateCalendarView = function () {
                     var currentView = scope.fullcalendar.fullCalendar('getView');
                     if (currentView.name != scope.calendarView) {
@@ -184,6 +185,9 @@
                         eventColor: scope.eventColor,
                         defaultView: scope.calendarView,
                         eventClick: function(data, event) {
+                            if (angular.isDefined(refineOnClickCtrl)) {
+                                refineOnClickCtrl.refineOnRecord(data.record);
+                            }
                             hideTooltip();
                             scope.tooltip
                                 .set({
@@ -226,7 +230,8 @@
                         start: record.fields[scope.startField],
                         end: record.fields[scope.endField],
                         buildTooltipContent: eventTooltipContentBuilder(record),
-                        editable: false
+                        editable: false,
+                        record: record
                     }
                 };
 

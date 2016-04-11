@@ -8,7 +8,7 @@
          * @ngdoc directive
          * @name ods-widgets.directive:odsClearAllFilters
          * @scope
-         * @restrict A
+         * @restrict E
          * @param {CatalogContext|DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to display the filters of
          * @description
          * This widget displays a button which will clear all active filters in the given context.
@@ -24,7 +24,7 @@
             '    <i class="fa fa-ban"></i> ' +
             '    <span translate>Clear all</span>' +
             '</a>',
-            controller: function ($scope) {
+            controller: ['$scope', function ($scope) {
                 $scope.clearAll = function() {
                     angular.forEach($scope.context.getActiveFilters(), function (k) {
                         delete $scope.context.parameters[k];
@@ -32,7 +32,7 @@
                     return false;
                 };
 
-            }
+            }]
         }
     });
 })();

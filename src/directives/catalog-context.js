@@ -108,6 +108,7 @@
                                         || filter == 'geofilter.polygon'
                                         || filter == 'geofilter.distance'
                                         || filter.indexOf('refine.') === 0
+                                        || (filter == 'q.geographic_area' && that.parameters['q.geographic_area'] && that.parameters['q.geographic_area'].length > 0)
                                 });
                             } else {
                                 return [];

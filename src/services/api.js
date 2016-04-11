@@ -91,7 +91,12 @@
                 // to explicitely send them together with the other parameters?
                 'analyze': function(context, parameters, timeout) {
 //                    return request(context, '/api/datasets/1.0/'+context.dataset.datasetid+'/records/analyze/', parameters);
-                    return request(context, '/api/records/1.0/analyze/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);
+                    return request(context, '/api/records/1.0/analyze/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout)
+                        .success(function(data, status, headers, config) {
+                            if (headers()['ods-analyze-truncated']) {
+                                odsErrorService.sendErrorNotification("The analysis results have been truncated because there was too many results.");
+                            }
+                        });
                 },
                 'search': function(context, parameters, timeout) {
                     return request(context, '/api/records/1.0/search/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);

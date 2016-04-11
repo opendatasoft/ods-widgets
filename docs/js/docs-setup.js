@@ -42,6 +42,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsAutoResize",
+      "shortName": "odsAutoResize",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Enables the auto resize functionality on widget that supports it. By default, it forces the affected element to fill the height",
+      "keywords": "api auto bottom default directive element enables fill forces functionality height html module ods-auto-resize ods-widgets resize supports widget window"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsBreezometer",
       "shortName": "odsBreezometer",
       "type": "directive",
@@ -177,6 +186,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsGeoSearch",
+      "shortName": "odsGeoSearch",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays a mini map with a draw-rectangle tool that can be used to search through a catalog.",
+      "keywords": "api catalog context directive displays draw-rectangle map mini ods-widgets search tool widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsGeotooltip",
       "shortName": "odsGeotooltip",
       "type": "directive",
@@ -227,7 +245,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget allows you to build a map visualization and show data using various modes of display using layers.",
-      "keywords": "ability adding administration advanced aggregated aggregating aggregation allows alphanumerically anchor angular angularjs-enabled anither apart api area areas associated auto automatic automatically average avg baby based basemap basemaps bed beer best bike boat border bordercolor briefcase browser build building bus button calculation calendar camera car categories centered change changes check chosen christianism chronologically cinema circle click clicked clicking close cluster clustering clusters clustersforced code coffee college color colorbrewer colorbyfield colorranges colors colorscale combine combined configurable configuration configurations configure configured content context contexts control count cow cross cross-alt css culture custom danger data dataset datasets datetime decide decimal decreasing default define defined density depending deviation directive directly display displayed displaying displays dog downloaded draw drawing drop dynamic economy envelope exact example exclude exclude-from-refit excludefromrefit expression factory false ff0000 ff0f05 field field1 field2 field3 field4 fields fill filter filters fire-extinguisher fit flag flame flower format france freeze fullscreen function functions gas-station geo geolocate geometrical geometry glass gym health heart heatmap hex hide hospital house hoverfield hovers html icon identifier indicating initialization initializing inside integer islam item items join joincontext joined judaism justice keywords kind large latitude layer layers leaf level light lightning limits load local localkey location longitude luggage man man-alt map marker markers max maximum min minimum minus mode modes mot mouse move moves multiple music mycontext mycontext2 mycontext3 mycontext5 myvalue names ngif note number numeric object occurs ods-widgets odsmaplayer odswidgetsconfig odswidgetsconfigprovider opacity orange order org parameter parameters paris parking persists phone picto plane playground point points policeman position prefixed properties property propose provided question ranges raw read record records recycling red refine refine-on-click-context refine-on-click-mycontext-context-field refine-on-click-mycontext-map-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-map-field refineonclick refineonclickcontext refineonclickcontextfield refineonclickmapfield refits refreshed relevant remote remotekey represent represents required restaurant result reverse reversed road roadblock scheme science scrolling second selection semicolon sense separated serie settings shape shapes shopping-cart show-if showheatmap showif simple simplification simply single ski soccer sort sorted sources spatially specific sport stacked standard star stay stddev sum support supports table tag template tennis text three thumbs-down thumbs-up time toilets toolbar tools tooltip tooltip-sort tooltips tooltipsort top traffic train trash tree tree2 trigger triggers trophy truck true type types url user users values video-game view visualization ways wheel wheelchair widget widgets wifi windsurfing woman won wrench ylgnbu zones zoom"
+      "keywords": "ability adding administration advanced aggregated aggregating aggregation allows alphanumerically anchor angular angularjs-enabled apart api area areas associated auto automatic automatically average avg baby based basemap basemaps bed beer best bike boat border bordercolor briefcase browser build building bus button calculation calendar camera car categories centered change changes check chosen christianism chronologically cinema circle click clicked clicking close cluster clustering clusters clustersforced code coffee college color colorbrewer colorbyfield colorranges colors colorscale combine combined configurable configuration configurations configure configured content context contexts control count cow cross cross-alt css culture custom danger data dataset datasets datetime decide decimal decreasing default define defined density depending deviation directive directly display displayed displaying displays dog downloaded draw drawing drop dynamic economy envelope exact example exclude exclude-from-refit excludefromrefit expression factory false ff0000 ff0f05 field field1 field2 field3 field4 fields fill filter filters fire-extinguisher fit flag flame flower format france freeze fullscreen function functions gas-station geo geolocate geometrical geometry glass gym health heart heatmap hex hide hospital house hoverfield hovers html icon identifier indicating informations initialization initializing inside integer islam item items join joincontext joined judaism justice keywords kind large latitude layer layers leaf level light lightning limits load local localkey location longitude luggage man man-alt map marker markers max maximum min minimum minus mode modes mot mouse move moves multiple music mycontext mycontext2 mycontext3 mycontext5 myvalue names ngif note number numeric object occurs ods-widgets odsmaplayer odswidgetsconfig odswidgetsconfigprovider opacity orange order org parameter parameters paris parking persists phone picto plane playground point points policeman position prefixed properties property propose provided question ranges raw read record records recycling red refine refine-on-click-context refine-on-click-mycontext-context-field refine-on-click-mycontext-map-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-map-field refineonclick refineonclickcontext refineonclickcontextfield refineonclickmapfield refits refreshed relevant remote remotekey represent represents required resize restaurant result reverse reversed road roadblock scheme science scrolling second selection semicolon sense separated serie settings shape shapes shopping-cart show-if showheatmap showif simple simplification simply single ski soccer sort sorted sources spatially specific sport stacked standard star stay stddev sum support supports table tag template tennis text three thumbs-down thumbs-up time toilets toolbar tools tooltip tooltip-sort tooltips tooltipsort top traffic train trash tree tree2 trigger triggers trophy truck true type types url user users values video-game view visualization ways wheel wheelchair widget widgets wifi windsurfing woman won wrench ylgnbu zones zoom"
     },
     {
       "section": "api",
@@ -236,6 +254,15 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "keywords": "active add additional api appear apply array attempt basemap basemaps bottom case cases click clicked clicks clusters configured content context context3 data dataset decide default described directive displayed displays estate exact example expanded facet field field1 field2 field3 filter focus format html identifier initial interaction item item-click-context item-click-roads-context-field item-click-roads-map-field item-click-trees-context-field item-click-trees-map-field itemclickcontext itemclickcontextfield itemclickmapfield jcdecaux_bike_data latitude location longitude main map marker module myctx note object ods-widgets odswidgetsconfig odswidgetsconfigprovider opendatasoft panned parameter passing point popping popup public query real refine resize roads shape shapes share space spatial specific specifies static stations stations-dataset stations-domain table tools tooltip true view viewport widgets window zoom zoomed"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsMediaGallery",
+      "shortName": "odsMediaGallery",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays an image gallery of a dataset containing media with thumbnails (images, pdf files...) with infinite scroll.",
+      "keywords": "accepted api appearing auto click coherent comma-separated compact configured constrained context custom customize dataset detail details directive display displays fields files fitted frenchcheese gallery getrecordtitle height html image images infinite informations large layout lines list media mode module ods-auto-resize ods-widget-tooltip ods-widgets opendatasoft option options pdf precedence public refine resize scroll selecting space stations stations-dataset stations-domain takes thumbnail thumbnails tooltip values view widget"
     },
     {
       "section": "api",
@@ -298,7 +325,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "Displays an image from a record",
-      "keywords": "api context dataset default directive displays field file image ods-widgets record"
+      "keywords": "api base context current dataset default directive displays domain field file image ods-widgets record url"
     },
     {
       "section": "api",
@@ -461,6 +488,24 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "Integrates a Twitter &quot;widget&quot; using the widget ID provided by Twitter.",
       "keywords": "api directive forces height html https identifier integrate integrates module ods-widgets provided timeline twitter widget widget-id widgetid width"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsWidgetTooltip",
+      "shortName": "odsWidgetTooltip",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This directive is a helper for displaying custom tooltip.",
+      "keywords": "access allows api appear array calling compiled configure context custom default directive displayedfields displaying fields getrecordtitle helper html jcdecaux_bike_data lists module ods-widget-tooltip ods-widgets opendatasoft public record rendering stations stations-dataset stations-domain template tooltip usable widget"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:refineOnClick",
+      "shortName": "refineOnClick",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This directive will refine the given context(s) for a click on an element representing a record.",
+      "keywords": "accept api called click conjunction context directive directives element exposes field1 field2 field3 field4 finite function html link method module mycontext mycontext2 ods-widgets odscalendar odschart odschartserie odsimages odsmap odsmaplayer optional order record refine refine-on-click refine-on-click-context refine-on-click-context-field refine-on-click-mycontext-context-field refine-on-click-mycontext-record-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-record-field refine-on-click-record-field refinecontext refineonclick refineonclickctrl relevant representing set support widget works"
     },
     {
       "section": "api",

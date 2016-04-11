@@ -1,0 +1,45 @@
+<h1><code ng:non-bindable="">refineOnClick</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-refineonclick-page"><p>This directive will refine the given context(s) for a click on an element representing a record.</p>
+<p>It works in conjunction with a finite set of other directives:
+<em> <a href="#/api/ods-widgets.directive:odsCalendar">odsCalendar</a>
+</em> <a href="#/api/ods-widgets.directive:odsImages">odsImages</a>
+<em> <a href="#/api/ods-widgets.directive:odsMap">odsMap</a>
+</em> <a href="#/api/ods-widgets.directive:odsMapLayer">odsMapLayer</a>
+<em> <a href="#/api/ods-widgets.directive:odsChart">odsChart</a>
+</em> <a href="#/api/ods-widgets.directive:odsChartSerie">odsChartSerie</a></p>
+<p>In order for a widget to support refineOnClick, it must accept within it link function an optional
+refineOnClickCtrl that exposes a method refineOnClickCtrl.refineContext(record) that must be called for
+each relevant click.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as attribute<pre class="prettyprint linenums">&lt;ANY refine-on-click&gt;
+   ...
+&lt;/ANY&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive creates new scope.</li>
+</ul>
+</div>
+</div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-refineonclick-page"><h4 id="example_source">Source</h4>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-21" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html-21" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-21">
+    <my-directive refine-on-click
+                  refine-on-click-context="mycontext, mycontext2"
+                  refine-on-click-mycontext-record-field="field1"
+                  refine-on-click-mycontext-context-field="field2"
+                  refine-on-click-mycontext2-record-field="field3"
+                  refine-on-click-mycontext2-context-field="field4"></my-directive>
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-21" ng-eval-javascript=""></div>
+</div></div>
+</div>

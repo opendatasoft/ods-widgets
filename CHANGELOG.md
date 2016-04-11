@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.0.2 - 2016-04-11
+This release includes two additional widgets, one for image galleries and the other for geographic searches through
+dataset catalogs.
+
+### Added
+- New `odsMediaGallery` widget to build image galleries from datasets containing images.
+- New `odsGeoSearch` widget to make geographic searches within dataset catalogs. These searches relies on the 
+  `geographic_area` metadata set on datasets.
+
+### Fixed
+- Fixed `odsClearAllButton` dependency issue that made the directive crash with the minified version of the library.
+
 ## 1.0.1 - 2016-03-11
 This release is pretty minor from a pure widget standpoint, but includes many improvements in the documentation, including
 more details about usage of aggregation functions in the `odsMap` widget.

@@ -31,11 +31,11 @@
                 context: '=',
                 displayedFields: '@',
                 sort: '@',
-                autoResize: '@',
                 datasetFeedback: '@' // FIXME: This is entirely tied to ODS, which is bad
             },
             replace: true,
             transclude: true,
+            require: ['odsTable','?odsAutoResize', '?autoResize'],
             template: '<div class="records records-table odswidget odswidget-table">' +
                        ' <div class="odswidget-table__header" ng-show="records.length">' +
                        '     <table class="odswidget-table__internal-table">' +
@@ -84,6 +84,7 @@
                        ' <div class="odswidget-overlay" ng-hide="(!fetching || records) && !working"><ods-spinner></ods-spinner></div>' +
                     '</div>',
             controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', '$transclude', '$q', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile, $transclude, $q) {
+                var ctrl = this;
                 $scope.displayedFieldsArray = null;
 
                 $scope.displayDatasetFeedback = false;
@@ -546,28 +547,11 @@
 
 
 
-                var resetScroll = function() {
+                ctrl.resetScroll = function() {
                     $element.find('.odswidget-table__records').scrollLeft(0);
                     recordsHeader.css({left: 'auto'});
                     initScrollLeft = $element.find('.odswidget-table__header').offset().left;
                 };
-
-                var resize = function() {
-                    if ($scope.autoResize === 'true') {
-                        var height = Math.max(200, $(window).height() - $element.offset().top);
-                        $element.height(height);
-                    }
-                };
-                resize();
-
-                $(window).on('resize', function() {
-                    $timeout(function() {
-                        resize();
-                        resetScroll();
-                        $scope.layout = [];
-                        $scope.computeLayout();
-                    }, 0);
-                });
 
                 var lastRecordDisplayed = 0;
                 $element.find('.odswidget-table__records').on('scroll', function() {
@@ -693,7 +677,7 @@
 
                         if (!forceScrollLeft) {
                             $timeout(function () {
-                                resetScroll();
+                                ctrl.resetScroll();
                             }, 0);
                         }
                     }
@@ -711,7 +695,18 @@
                     }
                 };
 
-            }]
+            }],
+            link: function(scope, element, attrs, ctrls) {
+                var ctrl = ctrls[0],
+                    autoResizeCtrl = ctrls[1] || ctrls[2];
+                if (autoResizeCtrl !== null) {
+                    autoResizeCtrl.onResize = function() {
+                        ctrl.resetScroll();
+                        scope.layout = [];
+                        scope.computeLayout();
+                    };
+                }
+            }
         };
     }]);
 

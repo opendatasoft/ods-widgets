@@ -149,7 +149,8 @@ from the new position&#39;s calculation, you can use <code>excludeFromRefit</cod
        toolbar-fullscreen="{boolean}"
        scroll-wheel-zoom="{boolean}"
        min-zoom="{integer}"
-       max-zoom="{integer}"&gt;
+       max-zoom="{integer}"
+       [ods-auto-resize]="{boolean}"&gt;
 &lt;/ods-map&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -158,7 +159,7 @@ from the new position&#39;s calculation, you can use <code>excludeFromRefit</cod
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
 </div></td></tr><tr><td>[syncToUrl]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, persists the <code>location</code> and <code>basemap</code> in the page&#39;s URL.</p>
 </div></td></tr><tr><td>[syncToObject]</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>An object where the <code>location</code> and <code>basemap</code> selection is kept. You can use it from
-anither widget to read the location or basemap.</p>
+another widget to read the location or basemap.</p>
 </div></td></tr><tr><td>[location]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>The default location of the map upon initialization, under the following format: &quot;zoom,latitude,longitude&quot;.
 For example, to have a map centered on Paris, France, you can use &quot;12,48.85218,2.36996&quot;. By default, if a location is not specified,
 the map will try to fit all the displayed data when initializing.</p>
@@ -173,5 +174,6 @@ If &quot;true&quot;, then the map will stay at the same location instead.</p>
 </div> <p><em>(default: true)</em></p></td></tr><tr><td>scrollWheelZoom</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;false&quot;, then scrolling your mouse wheel over the map won&#39;t zoom/unzoom it.</p>
 </div> <p><em>(default: true)</em></p></td></tr><tr><td>minZoom</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Limits the map to a minimum zoom value. By default this is defined by the minimum zoom of the basemap.</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>maxZoom</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Limits the map to a maximum zoom value. By default this is defined by the maximum zoom of the basemap.</p>
-</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>[odsAutoResize]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>see <a href="#/api/ods-widgets.directive:odsAutoResize">Auto Resize</a> for more informations</p>
+</div></td></tr></tbody></table></div>
 </div>

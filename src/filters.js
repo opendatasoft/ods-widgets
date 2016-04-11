@@ -156,7 +156,7 @@
     });
 
     mod.filter('formatFieldValue', ['$filter', '$sce', function($filter, $sce) {
-        var DATASETID_RE = /^\/explore\/(embed\/)?dataset\/([\w_@-]+)\//;
+        var DATASETID_RE = /^\/(explore\/(embed\/)?dataset|publish)\/([\w_@-]+)\//;
         var getPrecision = function(field) {
             if (field.annotations) {
                 var annos = field.annotations.filter(function(anno) { return anno.name === 'timeserie_precision'; });
@@ -173,6 +173,7 @@
             if (value === null || value === undefined) {
                 return '';
             }
+
             if (field.type === 'int' || field.type === 'double') {
                 var unit = '';
                 if (field.annotations) {
@@ -216,7 +217,7 @@
                     // Ugly hack to fix https://github.com/opendatasoft/platform/issues/4019
                     // The idea is that once we have API V2, we'll have an absolute link
                     // https://opendatasoft.clubhouse.io/story/423
-                    var datasetID = DATASETID_RE.exec(decodeURIComponent(window.location.pathname))[2];
+                    var datasetID = DATASETID_RE.exec(decodeURIComponent(window.location.pathname))[3];
                     var url = '/explore/dataset/' + datasetID + '/files/'+value.id+'/download/';
                     return $sce.trustAsHtml('<a target="_self" href="' + url + '">' + (value.filename || record.filename) + '</a>');
                 } else {

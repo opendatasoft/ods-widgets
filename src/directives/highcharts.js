@@ -542,19 +542,12 @@
                 }
             }
 
-            if (serie.refineOnClick) {
+            if (serie.refineOnClickCtrl) {
                 options.point = {
                     events: {
                         'click': function(event) {
                             var value = this.category || this.name;
-                            angular.forEach(serie.refineOnClick, function(refine) {
-                                for (var i = 0; i < scope.contexts.length; i++) {
-                                    if (scope.contexts[i].name === refine['context-name']) {
-                                        scope.contexts[i].toggleRefine(refine.field, value);
-                                        return;
-                                    }
-                                }
-                            });
+                            serie.refineOnClickCtrl.refineOnValue(value);
                             scope.$apply();
                         }
                     }
@@ -1918,12 +1911,12 @@
          */
         return {
             restrict: 'E',
-            require: "^odsChartQuery",
+            require: ["^odsChartQuery", "?refineOnClick"],
             controller: ['$scope', '$transclude', function($scope, $transclude) {
             }],
-            link: function(scope, element, attrs, ctrl) {
-                var odsChartQueryController = ctrl,
-                    contexts;
+            link: function(scope, element, attrs, ctrls) {
+                var odsChartQueryController = ctrls[0],
+                    refineOnClickCtrl = ctrls[1];
 
                 var chart = {
                     type: attrs.chartType || undefined,
@@ -1943,41 +1936,10 @@
                     multiplier: angular.isDefined(attrs.multiplier) ? parseInt(attrs.multiplier, 10) : undefined,
                     thresholds: attrs.colorThresholds ? scope.$eval(attrs.colorThresholds) : [],
                     subsets: attrs.subsets,
-                    charts: attrs.subseries ? JSON.parse(attrs.subseries) : undefined
+                    charts: attrs.subseries ? JSON.parse(attrs.subseries) : undefined,
+                    refineOnClickCtrl: refineOnClickCtrl
                 };
 
-                if (attrs.refineOnClickContext) {
-                    contexts = scope.$eval(attrs.refineOnClickContext);
-                    if (typeof contexts === "undefined") {
-                        contexts = scope[attrs.refineOnClickContext];
-                    }
-                    if (!angular.isArray(contexts)) {
-                        contexts = [contexts];
-                    }
-                    for (var i = 0; i < contexts.length; i++) {
-                        if (typeof contexts[i] === 'string') {
-                            contexts[i] = scope[contexts[i]];
-                        }
-                    }
-                    for (var i = 0; i < contexts.length; i++) {
-                        if (attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i].name) + 'ContextField']) {
-                            if (!chart.refineOnClick) {
-                                chart.refineOnClick = [];
-                            }
-                            odsChartQueryController.pushContext(contexts[i]);
-
-                            chart.refineOnClick.push({
-                                'context': scope[contexts[i].name],
-                                'context-name': contexts[i].name,
-                                'field': attrs['refineOnClick' + ODS.StringUtils.capitalize(contexts[i].name) + 'ContextField'],
-                                'scopeApply': scope.$apply
-                            });
-                            
-                        } else {
-                            console.warn('Field for context ' + ODS.StringUtils.capitalize(contexts[i].name) + ' is not set in chart.');
-                        }
-                    }
-                }
                 angular.forEach(chart, function(item, key) {
                     if (typeof item === "undefined") {
                         delete chart[key];
