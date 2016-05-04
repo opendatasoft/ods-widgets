@@ -31,7 +31,7 @@
                 '   <li class="odswidget-top-publishers__publisher" ng-repeat="publisher in publishers" ng-if="publishers">' +
                 '       <div class="odswidget-top-publishers__publisher-details">' +
                 '           <div class="odswidget-top-publishers__publisher-details-name"><a ng-href="{{ context.domainUrl }}/explore/?refine.publisher={{ publisher.path }}" target="_self">{{ publisher.name }}</a></div>' +
-                '           <div class="odswidget-top-publishers__publisher-details-count"><i class="fa fa-table"></i> <span translate>Used by</span> {{ publisher.count }} ' + "<span ng-pluralize count=\"publisher.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
+                '           <div class="odswidget-top-publishers__publisher-details-count"><i class="fa fa-table"></i> <span translate translate-n="publisher.count" translate-plural="Used by {{$count}} datasets">Used by {{$count}} dataset</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +

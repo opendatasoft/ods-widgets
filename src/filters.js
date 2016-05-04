@@ -4,6 +4,15 @@
     var mod = angular.module('ods-widgets');
 
     mod.filter('nofollow', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:nofollow
+         *
+         * @function
+         * @param {string} html A string of html code.
+         * @return {string} The input html code with all link tags now including the attributes `target="_blank"` and 
+         * `rel="nofollow"`
+         */
         return function(value) {
             if (angular.isString(value)) {
                 return value.replace(/<a href="/g, '<a target="_blank" rel="nofollow" href="');
@@ -53,6 +62,14 @@
     });
 
     mod.filter('imagify', ['$sce', function($sce) {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:imageify
+         *
+         * @function
+         * @param {string} url A url pointing to an image file (with a jpg, jpeg, png or gif extension)
+         * @return {string} An `img` tag pointing to the image.
+         */
         var re = /^(http(?:s?):\/\/[^;,]*(?:jpg|jpeg|png|gif)(?:\?[^,;]*)?)(?:$|;|,|&)/i;
         return function(value) {
             if (angular.isString(value)) {
@@ -68,6 +85,14 @@
     }]);
 
     mod.filter('videoify', ['$sce', function($sce) {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:videoify
+         *
+         * @function
+         * @param {string} url A youtube, dailymotion or vimeo URL.
+         * @return {string} An iframe tag including the relevant video player configured with the input url
+         */
         // Youtube:
         // http(s)://youtu.be/Hh-0y8Qe0Sw
         // http(s)://(www.)youtube.com/watch?v=Hh-0y8Qe0Sw
@@ -105,24 +130,74 @@
     }]);
 
     mod.filter('isDefined', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:isDefined
+         *
+         * @function
+         * @param {string|number|Object|Boolean} value Any variable
+         * @return {Boolean} true if the value is defined.
+         */
         return function(value) {
             return angular.isDefined(value);
         };
     });
 
     mod.filter('keys', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:isDefined
+         *
+         * @function
+         * @param {Object} object An object.
+         * @return {string[]} The keys of the input object.
+         */
         return function(value) {
             return Object.keys(value);
         };
     });
 
     mod.filter('numKeys', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:numKeys
+         *
+         * @function
+         * @param {Object} object An object.
+         * @return {string[]} The number of keys of the input object.
+         */
         return function(value) {
             return Object.keys(value).length;
         };
     });
 
+    mod.filter('values', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:values
+         *
+         * @function
+         * @param {Object} object An object.
+         * @return {Array} An array containing all of the object's values
+         */
+        return function(object) {
+            var values = [];
+            angular.forEach(object, function(value) {
+                values.push(value);
+            });
+            return values;
+        };
+    });
+
     mod.filter('isEmpty', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:isEmpty
+         *
+         * @function
+         * @param {Object} object An object.
+         * @return {Boolean} Return true if the object is empty (has no key)
+         */
         return function(value) {
             return Object.keys(value).length === 0;
         };
@@ -231,12 +306,30 @@
 
 
     mod.filter('capitalize', [function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:capitalize
+         *
+         * @function
+         * @param {string} text A string to capitalize
+         * @return {string} The input string, capitalized (ie with its first character in capital letter)
+         */
         return function(input) {
             return ODS.StringUtils.capitalize(input);
         };
     }]);
 
     mod.filter('truncate', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:truncate
+         *
+         * @function
+         * @param {string} text Original text to truncate.
+         * @param {number} length Max length of the truncated text.
+         * @return {string} The `length` first chars of the input `text`, or the full input `text` if it is shorter 
+         * than `length`.
+         */
         return function(text, length) {
             if (!text || !angular.isString(text)) {
                 return text;
@@ -249,6 +342,16 @@
     });
 
     mod.filter('fieldsFilter', function(){
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:fieldsFilter
+         *
+         * @function
+         * @param {string[]} fieldNames A list of field names.
+         * @param {Object[]} fields A list of fields as returned by the API.
+         * @return {Object[]} A sublist of the `fields` input, containing only fields which are referenced in the 
+         * `fieldNames` attribute.
+         */
         return function(fields, config){
             if (!fields) {
                 return fields;
@@ -268,6 +371,16 @@
     });
 
     mod.filter('moment', [function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:moment
+         *
+         * @function
+         * @description Render a given date in a specified format.
+         * @param {string|Date|Number|Array|Moment} date A date
+         * @param {string} format See http://momentjs.com/docs/#/displaying/format/ for the full list of options
+         * @return {string} The input date, formatted.
+         */
         return function(isoDate, format) {
             if (isoDate)
                 return moment(isoDate).format(format);
@@ -275,6 +388,18 @@
     }]);
 
     mod.filter('momentadd', [function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:momentAdd
+         *
+         * @function
+         * @param {string|Date|Number|Array|Moment} date A date
+         * @param {string} precision A unit describing the type of the `number` parameter. Can be any of `years`, 
+         * `quarters`, `months`, `weeks`, `days`, `hours`, `minutes`, `seconds` or `milliseconds`.
+         * @param {number} number How many years, hours, minutes (depending on `precision`) should be added. Can be a 
+         * negative number. 
+         * @return {Moment} A date 
+         */
         return function(isoDate, precision, number) {
             if (isoDate) {
                 return moment(isoDate).add(precision, parseInt(number, 10)).toISOString().replace('.000Z', 'Z');
@@ -283,6 +408,15 @@
     }]);
 
     mod.filter('timesince', [function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:timesince
+         *
+         * @function
+         * @param {string|Date|Number|Array|Moment} date A date
+         * @return {string} A fully localized string describing the time between the input date and now. For example: 
+         * "A few seconds ago"
+         */
         return function(isoDate) {
             if (isoDate)
                 return moment(isoDate).fromNow();
@@ -291,8 +425,13 @@
 
 
     mod.filter('themeSlug', ['$filter', function($filter) {
-        /*
-        From a theme or a list of themes, computes the slug of the theme
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:themeSlug
+         *
+         * @function
+         * @param {string} themeName A theme's full name
+         * @return {string} The slugified (that is normalized, with dashes instead of spaces) version of themeName.
          */
         return function(value) {
             if (!value || angular.isArray(value) && value.length === 0) {
@@ -306,6 +445,14 @@
     }]);
 
     mod.filter('slugify', function(){
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:slugify
+         *
+         * @function
+         * @param {string} text Some text
+         * @return {string} The slugified (that is normalized, with dashes instead of spaces) version of the input text.
+         */
         return function(text){
             if (!text) {
                 return text;
@@ -315,6 +462,14 @@
     });
 
     mod.filter('normalize', [function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:normalize
+         *
+         * @function
+         * @param {string} text Some text
+         * @return {string} The text cleaned of all of its diacritical signs.
+         */
         // http://stackoverflow.com/questions/990904/javascript-remove-accents-in-strings
         var defaultDiacriticsRemovalMap = [
             {'base':'A', 'letters':/[\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F]/g},
@@ -414,7 +569,16 @@
     }]);
 
     mod.filter('shortSummary', [function() {
-        // Return a short summary from the given text, usually the first paragraph
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:shortSummary
+         *
+         * @function
+         * @param {string} text Some text
+         * @param {number} length The maximum length of the summary
+         * @return {string} A short summary from the given text, usually the first paragraph. If longer than the 
+         * required length, an ellipsis will be made.
+         */
         return function(summary, length) {
             length = length || 400;
             if (!summary) {
@@ -464,6 +628,15 @@
     }]);
 
     mod.filter('imageUrl', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:imageUrl
+         *
+         * @function
+         * @param {Object} fieldValue A record field of type file
+         * @param {DatasetContext|CatalogContext} context The context from which the record is extracted
+         * @return {string} A url pointing to the file itself.
+         */
         return function(fieldValue, context) {
             if (!fieldValue || angular.equals(fieldValue, {})) {
                 return null;
@@ -484,6 +657,15 @@
     });
 
     mod.filter('thumbnailUrl', ['imageUrlFilter', function(imageUrlFilter) {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:thumbnailUrl
+         *
+         * @function
+         * @param {Object} fieldValue A record field of type file
+         * @param {DatasetContext|CatalogContext} context The context from which the record is extracted
+         * @return {string} A url pointing to a thumbnail of the file.
+         */
         return function(fieldValue, context) {
             var url = imageUrlFilter(fieldValue, context);
             if (url) {
@@ -495,7 +677,15 @@
     }]);
 
     mod.filter('firstValue', function() {
-        /* If it is an array, returns the first value, else returns the value itself */
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:firstValue
+         *
+         * @function
+         * @param {Array} array An array of anything
+         * @return {String|Number|Boolean|Array|Object} If the input value is an array, returns the first of its 
+         * values, otherwise return the value itself.
+         */
         return function(value) {
             if (angular.isArray(value)) {
                 return value.length > 0 ? value[0] : null;
@@ -506,6 +696,15 @@
     });
 
     mod.filter('split', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:split
+         *
+         * @function
+         * @param {string} arrayAsString  A string representing an array of values
+         * @param {string} [separator] The separator (default: `';'`)
+         * @return {Array} An array containing all strings generated by the String.split method.
+         */
         return function(list, separator) {
             if (!list) {
                 return list;
@@ -519,6 +718,15 @@
     });
 
     mod.filter('join', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:join
+         *
+         * @function
+         * @param {string[]} values  A list of strings
+         * @param {string} [separator] The separator (default: `', '`)
+         * @return {string} All strings joined with the given separator.
+         */
         return function(value, separator) {
             if (!value) {
                 return value;
@@ -535,6 +743,14 @@
     });
 
     mod.filter('stringify', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:stringify
+         *
+         * @function
+         * @param {Object} jsonObject A JSON object
+         * @return {string} The stringified version of the input object (generated through JSON.stringify)
+         */
         return function(value) {
             if (angular.isObject(value)) {
                 return JSON.stringify(value);
@@ -545,6 +761,16 @@
     });
 
     mod.filter('themeColor', ['ODSWidgetsConfig', function(ODSWidgetsConfig) {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:themeColor
+         *
+         * @function
+         * @param {string} theme A theme's slug (that is, its name normalized, see 
+         * {@link ods-widgets.filter:themeSlug themeSlug})
+         * @return {string} The hexadecimal color code for this theme, as defined through 
+         * {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig}'s `theme` setting.
+         */
         return function(theme) {
             if (!theme) {
                 return '';
@@ -558,12 +784,32 @@
     }]);
 
     mod.filter('isBefore', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:isBefore
+         * 
+         * @function
+         * @param {string|Date|Number|Array|Moment} date1 A date
+         * @param {string|Date|Number|Array|Moment} date2 Another date, which doesn't need to be in the same format as 
+         * date1.
+         * @return {Boolean} Whether date1 is strictly before date2 or not, down to the millisecond.
+         */
         return function(date1, date2) {
             return moment(date1).isBefore(date2);
         };
     });
 
     mod.filter('isAfter', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:isAfter
+         * 
+         * @function
+         * @param {string|Date|Number|Array|Moment} date1 A date
+         * @param {string|Date|Number|Array|Moment} date2 Another date, which doesn't need to be in the same format as 
+         * date1.
+         * @return {Boolean} Whether date1 is strictly after date2 or not, down to the millisecond.
+         */
         return function(date1, date2) {
             return moment(date1).isAfter(date2);
         };

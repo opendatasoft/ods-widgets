@@ -4,10 +4,10 @@
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '1.0.2';
+    var version = '1.0.3';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
-    var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'translate', 'translate.directives', 'translate.filters']);
+    var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
 
     mod.provider('ODSWidgetsConfig', function() {
         /**
@@ -84,10 +84,10 @@
         };
     });
 
-    mod.run(['translate', 'ODSWidgetsConfig', function(translate, ODSWidgetsConfig) {
+    mod.run(['gettextCatalog', 'ODSWidgetsConfig', function(gettextCatalog, ODSWidgetsConfig) {
         // Initialize with an empty config so that at least it doesn't crash if
         // nobody bothers to add a translation dictionary.
-        translate.add({});
+        //gettextCatalog.setStrings({});
 
         if (!ODSWidgetsConfig.basePath) {
             // Try to detect the path where ODS-Widgets is loaded from

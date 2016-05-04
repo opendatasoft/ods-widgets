@@ -2,6 +2,23 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.0.3 - 2016-05-04
+
+### Added
+- New translations module (`gettext`) with an updated `translate` directive that supports plural forms natively.
+- Support for multi-x charts in `odsChart`.
+- New `ODSCurrentDomain` provider for the setup of `odsCatalogContext`.
+- Lots of documentation for available filters.
+- Support for custom HTML tooltips in `odsCalendar`.
+- Added multi-context support in `odsClearAllFilters`, `odsFilterSummary`, `odsFacet`, `odsGeoSearch`, `odsTextSearch`.
+- New Hubspot integration: `odsHubspotForm`.
+
+
+### Fixed
+- Fixed disappearing map markers on Safari.
+- Fixed `odsCalendar` tooltip reload issue (styles were not applied to the tooltip).
+- Fixed `odsCalendar` full day events issue with single-day events.
+
 ## 1.0.2 - 2016-04-11
 This release includes two additional widgets, one for image galleries and the other for geographic searches through
 dataset catalogs.

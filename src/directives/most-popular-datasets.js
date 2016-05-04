@@ -32,7 +32,7 @@
                 '       <ods-theme-picto class="odswidget-most-popular-datasets__theme-picto" theme="{{dataset.metas.theme|firstValue}}"></ods-theme-picto>' +
                 '       <div class="odswidget-most-popular-datasets__dataset-details">' +
                 '           <div class="odswidget-most-popular-datasets__dataset-details-title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
-                '           <div class="odswidget-most-popular-datasets__dataset-details-count"><i class="fa fa-download"></i> {{ dataset.extra_metas.explore.download_count }} ' + "<span ng-pluralize count=\"dataset.extra_metas.explore.download_count\" translate=\"when\" when=\"{'0': 'download', '1': 'download', 'other': 'downloads'}\"></span>" + '</div>' +
+                '           <div class="odswidget-most-popular-datasets__dataset-details-count"><i class="fa fa-download"></i> <span translate translate-n="dataset.extra_metas.explore.download_count" translate-plural="{{$count}} downloads">{{$count}} download</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +

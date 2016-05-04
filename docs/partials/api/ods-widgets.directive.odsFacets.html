@@ -52,6 +52,14 @@ and the resulting values can be green, red, or blue.</p>
 If &#39;suggest&#39;, then the matching categories are not displayed until there is at least one character typed into the search box, effectively making it
 into a suggest-like search box.</p>
 </li>
+<li><p><strong><code>refineAlso</code></strong> <a href="#" class="label type-hint type-hint-datasetcontext">DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]</a> (optional) An 
+other context (or a list of contexts) that you want to filter based on your primary context&#39;s facets. This 
+is especially usefull for contexts who share common data.</p>
+</li>
+<li><p><strong><code>mysecondarycontextFacetName</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional) The name of the facet in one of your secondary 
+contexts (defined through the <code>refineAlso</code> parameter) that you want to map your original&#39;s facet on. You can 
+see an example below of such a behaviour.</p>
+</li>
 </ul>
 <pre class="prettyprint linenums">
     &lt;ods-facets context="mycontext"&gt;
@@ -68,6 +76,19 @@ and <code>category.state</code> (refined, excluded, or displayed).</p>
         &lt;ods-facet name="myfield"&gt;
             {{category.name}} @ {{category.state}}
         &lt;/ods-facet&gt;
+    &lt;/ods-facets&gt;
+</pre>
+<p>You can filter multiple contexts through this widget. To illustrate how this works, we&#39;ll consider 3 datasets
+containing information relative to zipcodes: one containing the geo-shape of each zipcode (the zipcode being
+stored in the column <code>zipcode</code>), one containing the population (again, the zipcode is stored in the <code>zipcode</code>
+column) and a last one containing the name of the area (the zipcode being this time stored in the
+<code>code_postal</code> column because this is a french dataset). In order to have a single zipcode facet that will
+refine all 3 contexts simultaneously, we need to write the following.</p>
+<pre class="prettyprint linenums">
+    &lt;ods-facets context="shapes"&gt;
+        &lt;ods-facet name="zipcode"
+                   refine-also="[population,areanames]"
+                   areanames-facet-name="code_postal"&gt;&lt;/ods-facet&gt;
     &lt;/ods-facets&gt;
 </pre>
 </div></div>

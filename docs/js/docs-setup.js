@@ -110,7 +110,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a button which will clear all active filters in the given context.",
-      "keywords": "active api button catalog clear context dataset directive display displays filters ods-widgets widget"
+      "keywords": "active api button catalog clear context contexts dataset directive display displays filters list ods-widgets widget"
     },
     {
       "section": "api",
@@ -137,7 +137,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "Get the ISO local datetime and store it into a variable (into the scope).",
-      "keywords": "api call datetime directive equivalent format hh html iso javascript local module moment ods-datetime ods-widgets scope store variable yyyy-mm-dd"
+      "keywords": "api call current datetime directive equivalent format gains hh html iso javascript local method module moment ods-datetime ods-widgets refresh refreshdatetime scope store variable yyyy-mm-dd"
     },
     {
       "section": "api",
@@ -173,7 +173,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays filters (facets) for a dataset or a domain&#39;s catalog of datasets, allowing the users",
-      "keywords": "allowing alphanum angularjs api based blue boolean box catalog categories category change character class click clicking collapsed combined complete configuration configure context count data dataset datasets default directive disjunctive display displayed displays domain don dynamically easily effectively evaluate evaluates evenements-publics-cibul events events-dataset events-domain example excluded expanded expression facet facetname facets field fields filter filters green hiddencategory hide-category-if hide-if-single-category hierarchical html icon-tag icon-tags including items levels link list making matching metadata mode module mycontext myfield mysecondfield num number ods-widgets odsfacet odsfacets odstable opendatasoft order parameters path possibles public red refine regular restrict row-fluid search select selected setting sort span4 span8 specific string suggest-like supports tag tags template title true typed typical typically updated_at users value1 value2 values valuesearch variables visible-items widget write"
+      "keywords": "allowing alphanum angularjs api area areanames areanames-facet-name based behaviour blue boolean box catalog categories category change character class click clicking code_postal collapsed column combined common complete configuration configure consider context contexts count data dataset datasetcontext datasets default directive disjunctive display displayed displays domain don dynamically easily effectively evaluate evaluates evenements-publics-cibul events events-dataset events-domain example excluded expanded expression facet facetname facets field fields filter filters french geo-shape green hiddencategory hide-category-if hide-if-single-category hierarchical html icon-tag icon-tags illustrate including items levels link list ll making map matching metadata mode module multiple mycontext myfield mysecondarycontextfacetname mysecondfield num number ods-widgets odsfacet odsfacets odstable opendatasoft order original parameter parameters path population possibles primary public red refine refine-also refinealso regular relative restrict row-fluid search secondary select selected setting shapes share simultaneously single sort span4 span8 specific stored string suggest-like supports tag tags template time title true typed typical typically updated_at usefull users value1 value2 values valuesearch variables visible-items widget works write zipcode zipcodes"
     },
     {
       "section": "api",
@@ -182,7 +182,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a summary of all the active filters on a context: text search, refinements...",
-      "keywords": "active api button catalog clear commas context dataset directive display displays example filters list ods-widgets optional parameters refinements rows search separated start summary text underneath widget"
+      "keywords": "active api button catalog clear commas context contexts custom dataset directive display displayed displays example filter filters label list multiple mycontext ods-widgets option optional parameters refinements rows search separated set start summary text true underneath widget working"
     },
     {
       "section": "api",
@@ -191,7 +191,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a mini map with a draw-rectangle tool that can be used to search through a catalog.",
-      "keywords": "api catalog context directive displays draw-rectangle map mini ods-widgets search tool widget"
+      "keywords": "api array catalog context contexts directive displays draw-rectangle map mini ods-widgets search tool widget"
     },
     {
       "section": "api",
@@ -210,6 +210,15 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "This widget can be used to integrate a visualization based on Highcharts.",
       "keywords": "angular api applied area areaspline avg axis bar base64 based case change changes chart chart-type chartcolors charted charttype code color colors column comma-separated complete configuration configure configured context count data dataset day default directive directly draw expects expression expressiony field field-x fieldx function function-y functiony hex highcharts hour html hurricane-tracks-1851-20071 hurricanes hurricanes-dataset hurricanes-domain ignored integrate label list max maximum min module month named number object ods-widgets odswidgetsconfig odswidgetsconfigprovider opendatasoft optional parameter parameters pie points public quoted reverse sort specific spline stddev string sum time-based timescale track_date types typically values visualization week widget year"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsHubspotForm",
+      "shortName": "odsHubspotForm",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Integrates a Hubspot form given a portal ID and the form ID.",
+      "keywords": "api d1234564-987987987-4564654-7897-456465465 directive form form-id formid html hubspot integrates module ods-widgets portal portal-id portalid"
     },
     {
       "section": "api",
@@ -424,7 +433,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a search box that can be used to do a full-text search on a context.",
-      "keywords": "api box button catalog content context dataset directive display displays empty field full-text language ods-widgets operators placeholder query restrict search searchbox simple specific support text textual widget won"
+      "keywords": "api array box button catalog cibul cibul-dataset cibul-domain cibul-field content context contexts dataset default directive display displays don donnees-sur-les-medecins-accredites empty evenements-publics-cibul example explicitely field fields full-text html language libelle_long_de_la_specialite_du_medecin medecins medecins-dataset medecins-domain medecins-field module multiple mycontext-field ods-widgets opendatasoft operators parameter placeholder public query restrict search searchbox simple specific support syntax text textual title widget won"
     },
     {
       "section": "api",
@@ -506,6 +515,241 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "This directive will refine the given context(s) for a click on an element representing a record.",
       "keywords": "accept api called click conjunction context directive directives element exposes field1 field2 field3 field4 finite function html link method module mycontext mycontext2 ods-widgets odscalendar odschart odschartserie odsimages odsmap odsmaplayer optional order record refine refine-on-click refine-on-click-context refine-on-click-context-field refine-on-click-mycontext-context-field refine-on-click-mycontext-record-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-record-field refine-on-click-record-field refinecontext refineonclick refineonclickctrl relevant representing set support widget works"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:capitalize",
+      "shortName": "capitalize",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api capital capitalize capitalized character filter input letter ods-widgets string text"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:fieldsFilter",
+      "shortName": "fieldsFilter",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api attribute field fieldnames fields filter input list names ods-widgets referenced returned sublist"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:firstValue",
+      "shortName": "firstValue",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api array filter input ods-widgets return returns values"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:imageify",
+      "shortName": "imageify",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api extension file filter gif image img jpeg jpg ods-widgets png pointing tag url"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:imageUrl",
+      "shortName": "imageUrl",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api context extracted field fieldvalue file filter ods-widgets pointing record type url"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:isAfter",
+      "shortName": "isAfter",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api date1 date2 doesn filter format millisecond ods-widgets strictly"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:isBefore",
+      "shortName": "isBefore",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api date1 date2 doesn filter format millisecond ods-widgets strictly"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:isDefined",
+      "shortName": "isDefined",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api defined filter ods-widgets true variable"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:isDefined",
+      "shortName": "isDefined",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api filter input object ods-widgets"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:isEmpty",
+      "shortName": "isEmpty",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api empty filter key object ods-widgets return true"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:join",
+      "shortName": "join",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api filter joined list ods-widgets separator strings values"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:moment",
+      "shortName": "moment",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Render a given date in a specified format.",
+      "keywords": "api filter format formatted full http input list ods-widgets options render"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:momentAdd",
+      "shortName": "momentAdd",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api days describing filter hours milliseconds minutes months negative number ods-widgets parameter precision quarters seconds type unit weeks years"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:nofollow",
+      "shortName": "nofollow",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "_blank api attributes code filter html including input link nofollow ods-widgets rel string tags target"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:normalize",
+      "shortName": "normalize",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api cleaned diacritical filter ods-widgets signs text"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:numKeys",
+      "shortName": "numKeys",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api filter input number object ods-widgets"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:shortSummary",
+      "shortName": "shortSummary",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api ellipsis filter length longer maximum ods-widgets paragraph required short summary text"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:slugify",
+      "shortName": "slugify",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api dashes filter input normalized ods-widgets slugified spaces text version"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:split",
+      "shortName": "split",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api array arrayasstring filter generated method ods-widgets representing separator split string strings values"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:stringify",
+      "shortName": "stringify",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api filter input json jsonobject object ods-widgets stringified stringify version"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:themeColor",
+      "shortName": "themeColor",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api code color defined filter hexadecimal normalized ods-widgets odswidgetsconfig odswidgetsconfigprovider setting slug theme themeslug"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:themeSlug",
+      "shortName": "themeSlug",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api dashes filter full normalized ods-widgets slugified spaces theme themename version"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:thumbnailUrl",
+      "shortName": "thumbnailUrl",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api context extracted field fieldvalue file filter ods-widgets pointing record thumbnail type url"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:timesince",
+      "shortName": "timesince",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "ago api describing example filter fully input localized ods-widgets seconds string time"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:truncate",
+      "shortName": "truncate",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api chars filter full input length max ods-widgets original shorter text truncate truncated"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:values",
+      "shortName": "values",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api array filter object ods-widgets values"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:videoify",
+      "shortName": "videoify",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api configured dailymotion filter iframe including input ods-widgets player relevant tag url video vimeo youtube"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.ODSCurrentDomain",
+      "shortName": "ods-widgets.ODSCurrentDomain",
+      "type": "service",
+      "moduleName": "ods-widgets",
+      "shortDescription": "A service containing the current domain informations. Available informations are described",
+      "keywords": "api current described documentation domain informations ods-widgets odscurrentdomain odscurrentdomainprovider service"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.ODSCurrentDomainProvider",
+      "shortName": "ods-widgets.ODSCurrentDomainProvider",
+      "type": "object",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Use ODSCurrentDomainProvider to set configuration values for the current domain.",
+      "keywords": "angular api app catalog config configuration contexts current dataset defaults directive domain domainid local module object ods-widgets odscurrentdomainprovider parameter public set setdomain settings string values var"
     },
     {
       "section": "api",

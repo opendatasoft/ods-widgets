@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('refineOnClick', function () {
+    var refineOnClickDirective = function () {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:refineOnClick
@@ -27,7 +27,6 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <
          *          <my-directive refine-on-click
          *                        refine-on-click-context="mycontext"
          *                        refine-on-click-record-field="field1"
@@ -52,16 +51,17 @@
             controller: function ($scope, $element, $attrs) {
                 var refineConfigurations = [];
 
-                // the exposed method
+                // the exposed methods
+
                 this.refineOnRecord = function (record) {
                     angular.forEach(refineConfigurations, function (refineConf) {
-                        refineConf.context.parameters['refine.'+refineConf.contextField] = record.fields[refineConf.recordField];
+                        refineConf.context.toggleRefine(refineConf.contextField, record.fields[refineConf.recordField]);
                     });
                 };
 
                 this.refineOnValue = function (value) {
                     angular.forEach(refineConfigurations, function (refineConf) {
-                        refineConf.context.parameters['refine.'+refineConf.contextField] = value;
+                        refineConf.context.toggleRefine(refineConf.contextField, value);
                     });
                 };
 
@@ -98,5 +98,9 @@
                 );
             }
         };
-    });
+    };
+
+    mod.directive('refineOnClick', refineOnClickDirective);
+    // backward compatibility with previous implementations
+    mod.directive('refineOnClickContext', refineOnClickDirective);
 })();

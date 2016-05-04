@@ -195,7 +195,7 @@
                 ODSAPI.datasets.get(scope[contextName], datasetID, {
                     extrametas: true,
                     interopmetas: true,
-                    source: contextParams.source
+                    source: (contextParams && contextParams.source) || source || ""
                 }).
                     success(function (data) {
                         scope[contextName].dataset = new ODS.Dataset(data);

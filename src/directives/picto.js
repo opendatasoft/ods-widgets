@@ -68,10 +68,10 @@
             template: '',
             link: function(scope, element) {
                 scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
-                var template = '<ods-picto url="themeConfig.img" color="themeConfig.color" classes="originalClasses + \' odswidget-theme-picto theme-\' + (getTheme()|themeSlug) "></ods-picto>';
+                var template = '<ods-picto url="themeConfig.url" color="themeConfig.color" classes="originalClasses + \' odswidget-theme-picto theme-\' + (getTheme()|themeSlug) "></ods-picto>';
                 var themeConfig = null;
                 var defaultPicto = false;
-                if (ODSWidgetsConfig.themes[scope.theme]) {
+                if (ODSWidgetsConfig.themes[scope.theme] && ODSWidgetsConfig.themes[scope.theme].url) {
                     scope.themeConfig = ODSWidgetsConfig.themes[scope.theme];
                 } else {
                     scope.themeConfig = ODSWidgetsConfig.themes['default'];

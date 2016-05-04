@@ -63,6 +63,14 @@
          * - **`valueSearch`** {@type string} (optional) if 'true', then a search box is displayed above the categories, so that you can search within them easily.
          * If 'suggest', then the matching categories are not displayed until there is at least one character typed into the search box, effectively making it
          * into a suggest-like search box.
+         * 
+         * - **`refineAlso`** {@type DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]} (optional) An 
+         * other context (or a list of contexts) that you want to filter based on your primary context's facets. This 
+         * is especially usefull for contexts who share common data.
+         *
+         * - **`mysecondarycontextFacetName`** {@type string} (optional) The name of the facet in one of your secondary 
+         * contexts (defined through the `refineAlso` parameter) that you want to map your original's facet on. You can 
+         * see an example below of such a behaviour.
          *
          * <pre>
          *     <ods-facets context="mycontext">
@@ -81,6 +89,21 @@
          *         <ods-facet name="myfield">
          *             {{category.name}} @ {{category.state}}
          *         </ods-facet>
+         *     </ods-facets>
+         * </pre>
+         *
+         * You can filter multiple contexts through this widget. To illustrate how this works, we'll consider 3 datasets
+         * containing information relative to zipcodes: one containing the geo-shape of each zipcode (the zipcode being
+         * stored in the column `zipcode`), one containing the population (again, the zipcode is stored in the `zipcode`
+         * column) and a last one containing the name of the area (the zipcode being this time stored in the
+         * `code_postal` column because this is a french dataset). In order to have a single zipcode facet that will
+         * refine all 3 contexts simultaneously, we need to write the following.
+         *
+         * <pre>
+         *     <ods-facets context="shapes">
+         *         <ods-facet name="zipcode"
+         *                    refine-also="[population,areanames]"
+         *                    areanames-facet-name="code_postal"></ods-facet>
          *     </ods-facets>
          * </pre>
          *
@@ -190,6 +213,8 @@
                 };
             },
             controller: ['$scope', 'ODSAPI', function($scope, ODSAPI) {
+                var facetsMapping = {};
+
                 $scope.facets = [];
                 $scope.init = function() {
                     // Commented until we no longer need the call to refresh the nhits on the context
@@ -283,9 +308,45 @@
                     });
                 };
 
-                this.registerFacet = function(name, sort) {
+                this.registerFacet = function(name, sort, secondaryContexts, facetAttrs) {
                     var categories = [];
                     $scope.facets.push({'name': name, 'categories': categories, 'sort': sort});
+
+                    // build mapping
+                    facetsMapping[name] = [];
+                    if (secondaryContexts) {
+                        secondaryContexts = angular.isArray(secondaryContexts) ? secondaryContexts : [secondaryContexts];
+                        angular.forEach(secondaryContexts, function (context) {
+                            var contextFacetName = facetAttrs[context.name + 'FacetName'];
+                            facetsMapping[name].push({
+                                context: context,
+                                facetName: contextFacetName ? contextFacetName : name
+                            });
+                            // check that mapping is correct
+                            var checkMappingType = function (originalContext, secondaryContext) {
+                                angular.forEach(originalContext.dataset.fields, function (originalField) {
+                                    angular.forEach(secondaryContext.dataset.fields, function (secondaryField) {
+                                        if (originalField.name === name
+                                            && secondaryField.name === contextFacetName
+                                            && originalField.type != secondaryField.type) {
+                                            console.warn(
+                                                'Error: mapping ' +
+                                                originalContext.name + '\'s ' + '"' + originalField.name + '" (type ' + originalField.type + ') on ' +
+                                                secondaryContext.name + '\'s ' + '"' + secondaryField.name + '" (type ' + secondaryField.type + ').'
+                                            )
+                                        }
+                                    });
+                                });
+                            };
+                            if (context.type === 'dataset') {
+                                context.wait().then(function () {
+                                    checkMappingType($scope.context, context);
+                                });
+                            } else {
+                                checkMappingType($scope.context, context);
+                            }
+                        });
+                    }
                     return categories;
                 };
 
@@ -295,6 +356,10 @@
 
                 this.toggleRefinement = function(facetName, path) {
                     $scope.context.toggleRefine(facetName, path);
+
+                    angular.forEach(facetsMapping[facetName], function (mapping) {
+                        mapping.context.toggleRefine(mapping.facetName, path);
+                    });
                 };
             }]
         };
@@ -313,21 +378,32 @@
                 sort: '@',
                 disjunctive: '@',
                 valueSearch: '@',
-                valueFormatter: '@'
+                valueFormatter: '@',
+                refineAlso: '=?'
             },
             template: function(tElement) {
                 tElement.data('facet-template', tElement.html());
-                return '<div ng-class="{\'odswidget\': true, \'odswidget-facet\': true, \'odswidget-facet--disjunctive\': isDisjunctive()}">' +
-                '<h3 class="odswidget-facet__facet-title" ng-if="title && categories.length && visible()">{{title}}</h3>' +
-                '<ods-facet-category-list ng-if="visible()" facet-name="{{ name }}" value-search="{{ valueSearch }}" hide-category-if="{{ hideCategoryIf }}" categories="categories" template="{{ customTemplate }}" value-formatter="{{valueFormatter}}"></ods-facet-category-list>' +
-                '</div>';
+                return '' +
+                    '<div ng-class="{\'odswidget\': true, \'odswidget-facet\': true, \'odswidget-facet--disjunctive\': isDisjunctive()}">' +
+                    '    <h3 class="odswidget-facet__facet-title" ' +
+                    '        ng-if="title && categories.length && visible()">' +
+                    '        {{ title }}' +
+                    '    </h3>' +
+                    '    <ods-facet-category-list ng-if="visible()" ' +
+                    '                             facet-name="{{ name }}" ' +
+                    '                             value-search="{{ valueSearch }}" ' +
+                    '                             hide-category-if="{{ hideCategoryIf }}" ' +
+                    '                             categories="categories" ' +
+                    '                             template="{{ customTemplate }}" ' +
+                    '                             value-formatter="{{valueFormatter}}"></ods-facet-category-list>' +
+                    '</div>';
             },
             require: '^odsFacets',
             link: function(scope, element, attrs, facetsCtrl) {
                 if (angular.isUndefined(facetsCtrl)) {
                     console.log('ERROR : odsFacet must be used within an odsFacets tag.');
                 }
-                scope.categories = facetsCtrl.registerFacet(scope.name, scope.sort);
+                scope.categories = facetsCtrl.registerFacet(scope.name, scope.sort, scope.refineAlso, attrs);
                 scope.facetsCtrl = facetsCtrl;
                 if (scope.isDisjunctive()) {
                     facetsCtrl.setDisjunctive(scope.name);

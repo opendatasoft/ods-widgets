@@ -8,7 +8,9 @@
          * @name ods-widgets.directive:odsGeoSearch
          * @scope
          * @restrict E
-         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog context} to use
+         * @param {CatalogContext|CatalogContext[]} context 
+         * {@link ods-widgets.directive:odsCatalogContext Catalog context} or array of contexts to use.
+         * 
          * @description
          * This widget displays a mini map with a draw-rectangle tool that can be used to search through a catalog.
          */
@@ -22,14 +24,17 @@
             scope: {
                 context: '='
             },
-            link: ['scope', 'element', function (scope, element) {
+            link: function (scope, element) {
                 var currentPolygonParameter;
                 var polygonParameterRE = /.*polygon\(geographic_area,"(.*)"\).*/;
 
-                var refineContext = function (layer) {
+                var refineContexts = function (layer) {
                     var geoJson = layer.toGeoJSON();
                     currentPolygonParameter = ODS.GeoFilter.getGeoJSONPolygonAsPolygonParameter(geoJson.geometry);
-                    scope.context.parameters['q.geographic_area'] = '#polygon(geographic_area,"' + currentPolygonParameter + '")';
+                    var contexts = angular.isArray(scope.context) ? scope.context : [scope.context];
+                    angular.forEach(contexts, function (context) {
+                        context.parameters['q.geographic_area'] = '#polygon(geographic_area,"' + currentPolygonParameter + '")';
+                    });
                     scope.$apply();
                 };
 
@@ -70,18 +75,21 @@
                     map.on('draw:created', function (event) {
                         var layer = event.layer;
                         drawnItems.addLayer(layer);
-                        refineContext(layer);
+                        refineContexts(layer);
                     });
 
-                    scope.$watch('context.parameters', function (nv) {
+                    scope.$watch('context', function (nv) {
                         // extract polygon parameter from query
                         var polygonParameter = false;
-                        if (nv['q.geographic_area']) {
-                            var matches = polygonParameterRE.exec(nv['q.geographic_area']);
-                            if (matches.length > 0) {
-                                polygonParameter = matches[1];
+                        var contexts = angular.isArray(nv) ? nv : [nv];
+                        angular.forEach(contexts, function (context) {
+                            if (!polygonParameter && context.parameters && context.parameters['q.geographic_area']) {
+                                var matches = polygonParameterRE.exec(context.parameters['q.geographic_area']);
+                                if (matches.length > 0) {
+                                    polygonParameter = matches[1];
+                                }
                             }
-                        }
+                        });
 
                         if (polygonParameter !== currentPolygonParameter) {
                             clearLayers();
@@ -91,9 +99,9 @@
                             }
                             currentPolygonParameter = polygonParameter;
                         }
-                    });
+                    }, true);
                 });
-            }]
+            }
         };
     }]);
 

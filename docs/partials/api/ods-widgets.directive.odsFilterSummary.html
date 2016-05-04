@@ -8,17 +8,26 @@
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as attribute<pre class="prettyprint linenums">&lt;ANY ods-filter-summary
-     context="{CatalogContext|DatasetContext}"
+     context="{CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]}"
      exclude="{string}"
-     clear-all-button="{boolean}"&gt;
+     clear-all-button="{boolean}"
+     hide-contexts-labels="{boolean}"
+     [mycontext-label]="{string}"&gt;
    ...
 &lt;/ANY&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfiltersummary-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to display the filters of</p>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext[]</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext[]</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfiltersummary-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or 
+<a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to display the filters of. Can also be a 
+list of contexts.</p>
 </div></td></tr><tr><td>exclude</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfiltersummary-page"><p>Optional: Name of parameters to not display, separated by commas. For example <code>q,rows,start</code></p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>clearAllButton</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfiltersummary-page"><p>Optional: display a &quot;clear all&quot; button underneath the active filters&#39; list.</p>
-</div> <p><em>(default: true)</em></p></td></tr></tbody></table></div>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>hideContextsLabels</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfiltersummary-page"><p>Optional: if you are working with multiple contexts, the
+context&#39;s label will be displayed within the filter. Set this option to true if you&#39;d like not to display 
+those.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>[mycontextLabel]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfiltersummary-page"><p>Optional: if you are working with multiple contexts, the context&#39;s name
+(that is &quot;mycontext&quot;) will be displayed within the filter. Use this option to specify a custom label.</p>
+</div></td></tr></tbody></table></div>
 </div>

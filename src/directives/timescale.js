@@ -9,7 +9,7 @@
          *  @name ods-widgets.directive:odsTimescale
          *  @restrict E
          *  @scope
-         *  @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} or array of context to use
+         *  @param {DatasetContext|DatasetContext[]} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} or array of context to use
          *  @param {string=} [timeField=first date/datetime field available] Name of the field (date or datetime) to filter on
          *  @param {string=} [*TimeField=first date/datetime field available] For each context you can set the name of the field (date or datetime) to filter on
          *  @param {string=} [defaultValue=everything] Define the default timescale

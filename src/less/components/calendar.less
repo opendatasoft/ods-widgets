@@ -36,13 +36,14 @@
 .fc-event {
     cursor: pointer;
 }
-#qtip-odswidget-calendar {
+.odswidget-calendar__tooltip.odswidget-calendar__tooltip--increase-precedence {
     background-color: @color-calendarTooltipBackground;
     border-radius: 0.4em;
     border: 1px solid @color-calendarTooltipBorder;
     box-shadow: 0 1px 2px @color-calendarTooltipBorder;
     margin-top: -10px;
     line-height: normal;
+    font-size: 0.9rem;
 
     &:after {
         content: '';
@@ -59,7 +60,7 @@
         box-shadow: 1px 1px @color-calendarTooltipBorder;
     }
 }
-#qtip-odswidget-calendar .qtip-close {
+.odswidget-calendar__tooltip.odswidget-calendar__tooltip--increase-precedence .qtip-close {
     right: 5px;
     top: 5px;
     font-size: 2em;

@@ -1096,9 +1096,7 @@
                 '       <span ng-bind="(selectedIndex+1)+\'/\'+records.length" ng-click="moveIndex(1)"></span>' +
                 '       <i class="odswidget-map-tooltip__scroll-right fa fa-chevron-right" ng-click="moveIndex(1)"></i>' +
                 '   </h2>' +
-                '   <div class="ng-leaflet-tooltip-cloak odswidget-map-tooltip__limited-results-warning" ng-show="records && records.length == RECORD_LIMIT" translate>' +
-                '      (limited to the first {{RECORD_LIMIT}} records)' +
-                '   </div>' +
+                '   <div class="ng-leaflet-tooltip-cloak odswidget-map-tooltip__limited-results-warning" ng-show="records && records.length == RECORD_LIMIT" translate>(limited to the first {{RECORD_LIMIT}} records)</div>' +
                 '   <div ng-repeat="record in records" ng-show="$index == selectedIndex" class="odswidget-map-tooltip__record">' +
                 '       <div ng-if="!template" ng-include src="\'default-tooltip\'"></div>' +
                 '       <div ng-if="template" ng-include src="\'custom-tooltip-\'+context.dataset.datasetid"></div>' +

@@ -46,15 +46,16 @@
 .fc-event {
   cursor: pointer;
 }
-#qtip-odswidget-calendar {
+.odswidget-calendar__tooltip.odswidget-calendar__tooltip--increase-precedence {
   background-color: #ffffff;
   border-radius: 0.4em;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   margin-top: -10px;
   line-height: normal;
+  font-size: 0.9rem;
 }
-#qtip-odswidget-calendar:after {
+.odswidget-calendar__tooltip.odswidget-calendar__tooltip--increase-precedence:after {
   content: '';
   display: block;
   position: absolute;
@@ -68,7 +69,7 @@
   background-color: #ffffff;
   box-shadow: 1px 1px rgba(0, 0, 0, 0.1);
 }
-#qtip-odswidget-calendar .qtip-close {
+.odswidget-calendar__tooltip.odswidget-calendar__tooltip--increase-precedence .qtip-close {
   right: 5px;
   top: 5px;
   font-size: 2em;
@@ -77,7 +78,7 @@
   border: 0;
   background: none;
 }
-#qtip-odswidget-calendar .qtip-close:hover {
+.odswidget-calendar__tooltip.odswidget-calendar__tooltip--increase-precedence .qtip-close:hover {
   color: #999;
   text-decoration: none;
 }

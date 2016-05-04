@@ -139,8 +139,6 @@
                     // actual calendar setup
                     scope.tooltip = $(element).children('.odswidget-calendar__tooltip').first()
                         .qtip({
-                            // this sets the tooltip id to "qtip-odswidget-calendar", essential for styling
-                            id: 'odswidget-calendar',
                             content: {
                                 text: '',
                                 button: true // close tooltip upon click
@@ -156,14 +154,17 @@
                                 }
                             },
                             show: false,
-                            hide: false
+                            hide: false,
+                            style: {
+                                classes: 'odswidget-calendar__tooltip odswidget-calendar__tooltip--increase-precedence'
+                            }
                         })
                         .qtip('api');
 
                     // hide tooltip for any click not directed at a calendar object
                     $(document).on('click', function (event) {
                         if (!$(event.target).parents('.fc-event').length &&
-                            !$(event.target).parents('#qtip-odswidget-calendar').length) {
+                            !$(event.target).parents('.odswidget-calendar__tooltip').length) {
                             hideTooltip();
                         }
                     });
@@ -185,7 +186,7 @@
                         eventColor: scope.eventColor,
                         defaultView: scope.calendarView,
                         eventClick: function(data, event) {
-                            if (angular.isDefined(refineOnClickCtrl)) {
+                            if (refineOnClickCtrl) {
                                 refineOnClickCtrl.refineOnRecord(data.record);
                             }
                             hideTooltip();
@@ -201,7 +202,7 @@
                 };
 
                 var hideTooltip = function () {
-                    $('#qtip-odswidget-calendar').hide();
+                    $('.odswidget-calendar__tooltip').hide();
                 };
 
                 var updateCalendar = function () {
@@ -225,10 +226,18 @@
                 };
 
                 var buildEventFromRecord = function (record) {
+                    var end;
+                    // fullcalendar does not handle full day event correctly (misses 1 day) so we need to add to day
+                    // to the event to render it correctly
+                    if (scope.context.dataset.getField(scope.endField).type === "date") {
+                        end = moment(record.fields[scope.endField]).add(1, "day").format('YYYY-MM-DD');
+                    } else {
+                        end = record.fields[scope.endField];
+                    }
                     return {
                         title: record.fields[scope.titleField],
                         start: record.fields[scope.startField],
-                        end: record.fields[scope.endField],
+                        end: end,
                         buildTooltipContent: eventTooltipContentBuilder(record),
                         editable: false,
                         record: record
@@ -239,10 +248,15 @@
                     var buildTooltipContent = function () {
                         var newScope = scope.$new(true);
                         newScope.record = record;
-                        newScope.titleField = scope.titleField;
-                        newScope.tooltipFields = scope.tooltipFields;
                         newScope.dataset = scope.context.dataset;
-                        var content = $compile('<ods-calendar-tooltip></ods-calendar-tooltip>')(newScope);
+                        var content;
+                        if (scope.context.dataset.extra_metas.visualization.calendar_tooltip_html_enabled && scope.context.dataset.extra_metas.visualization.calendar_tooltip_html) {
+                            content = $compile('<div>' + scope.context.dataset.extra_metas.visualization.calendar_tooltip_html + '</div>')(newScope);
+                        } else {
+                            newScope.titleField = scope.titleField;
+                            newScope.tooltipFields = scope.tooltipFields;
+                            content = $compile('<ods-calendar-tooltip></ods-calendar-tooltip>')(newScope);
+                        }
                         newScope.$apply();
                         return content;
                     };

@@ -31,7 +31,7 @@
                 '   <li class="odswidget-most-used-themes__theme" ng-repeat="theme in themes" ng-if="themes">' +
                 '       <div class="odswidget-most-used-themes__theme-details">' +
                 '           <div class="odswidget-most-used-themes__theme-details-name"><a ng-href="{{ context.domainUrl }}/explore/?refine.theme={{ theme.path }}" target="_self">{{ theme.name }}</a></div>' +
-                '           <div class="odswidget-most-used-themes__theme-details-count"><i class="fa fa-table"></i> <span translate>Used by</span> {{ theme.count }} ' + "<span ng-pluralize count=\"theme.count\" translate=\"when\" when=\"{'0': 'dataset', '1': 'dataset', 'other': 'datasets'}\"></span>" + '</div>' +
+                '           <div class="odswidget-most-used-themes__theme-details-count"><i class="fa fa-table"></i> <span translate translate-n="theme.count" translate-plural="Used by {{$count}} datasets">Used by {{$count}} dataset</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +

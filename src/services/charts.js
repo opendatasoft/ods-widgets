@@ -37,7 +37,7 @@
         }
     }]);
 
-    mod.factory('ChartHelper', ['translate', 'AggregationHelper', 'ODSWidgetsConfig', 'colorScale', function(translate, AggregationHelper, ODSWidgetsConfig, colorScale) {
+    mod.factory('ChartHelper', ['translate', 'AggregationHelper', 'ODSWidgetsConfig', 'ODSCurrentDomain', 'colorScale', function(translate, AggregationHelper, ODSWidgetsConfig, ODSCurrentDomain, colorScale) {
         var availableX = {},
             availableY = {},
             availableFunctions = [],
@@ -242,7 +242,7 @@
                 return getAvailableTimescalesFromPrecision(precision, field.type, advanced);
             },
             getDatasetId: function(context) {
-                return (context.domain || "") + "." + context.dataset.datasetid;
+                return (context.domain || ODSCurrentDomain.domainId) + "." + context.dataset.datasetid;
             },
             init: function(context, limitToTimeSeries, force) {
                 if (typeof force === "undefined") {
@@ -257,13 +257,19 @@
                 }
                 fields[datasetid] = context.dataset.fields;
 
+                var numericalXs = [];
+
                 for (var i = 0; i< fields[datasetid].length; i++) {
                     var field = fields[datasetid][i];
+
                     if (field.type == 'int' || field.type == 'double') {
                         availableY.push(field);
                     }
+
                     if (field.type == 'datetime' || field.type == 'date') {
                         availableX.unshift(field);
+                    } else if (field.type == 'double' || field.type == 'int') {
+                        numericalXs.push(field);
                     } else {
                         // Find out if this is a facet
                         if (field.annotations) {
@@ -276,6 +282,8 @@
                         }
                     }
                 }
+                availableX = availableX.concat(numericalXs);
+
                 this.setAvailableX(datasetid, availableX);
                 this.setAvailableY(datasetid, availableY);
                 initialized[datasetid] = true;

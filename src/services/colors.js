@@ -47,11 +47,19 @@
 
         if (ODSWidgetsConfig.chartColors && ODSWidgetsConfig.chartColors.length > 0) {
             domainDefaultColorSet = 'custom';
+            var localDomainColorSet = angular.copy(ODSWidgetsConfig.chartColors);
+            if (!angular.isArray(localDomainColorSet)) {
+                localDomainColorSet = [localDomainColorSet];
+            }
+            if (localDomainColorSet.length == 1) {
+                localDomainColorSet.push(localDomainColorSet[0]);
+            }
             orderedBrewer.unshift({
                 label: 'custom',
-                colors: ODSWidgetsConfig.chartColors
+                colors: localDomainColorSet
             });
-            chroma.brewer['custom'] = ODSWidgetsConfig.chartColors;
+
+            chroma.brewer['custom'] = localDomainColorSet;
         }
         function getBrewName(colorString) {
             var brewName;

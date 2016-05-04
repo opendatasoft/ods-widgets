@@ -45,7 +45,7 @@
             return xs;
         };
         var buildSearchOptions = function(query, timeSerieMode, precision, periodic) {
-            var breakdown,
+            var i, breakdown,
                 xs,
                 search_options = {
                     dataset: query.config.dataset,
@@ -55,19 +55,19 @@
                 };
 
             xs = buildTimescaleX(query.xAxis, query.timescale);
-            for (var i = 0; i < xs.length; i++) {
+            for (i = 0; i < xs.length; i++) {
                 search_options.x.push(xs[i]);
             }
 
             if (query.seriesBreakdown) {
                 breakdown = query.seriesBreakdown;
                 xs = buildTimescaleX(breakdown, query.seriesBreakdownTimescale);
-                for (var i = 0; i < xs.length; i++) {
+                for (i = 0; i < xs.length; i++) {
                     search_options.x.push(xs[i]);
                 }
             }
             if (timeSerieMode || query.seriesBreakdown) {
-                search_options['sort'] = search_options.x.map(function(item) { return 'x.' + item }).join(",");
+                search_options.sort = search_options.x.map(function(item) { return 'x.' + item; }).join(",");
             }
 
             // if (timeSerieMode){
@@ -93,7 +93,8 @@
             aggregates_holder.aggregates = [];
 
             var options = {};
-            while (match = regex.exec(serie.expr)) {
+            match = regex.exec(serie.expr);
+            while (match) {
                 var extended_match = params2regex.exec(match[0]);
                 if (extended_match && extended_match.length === 4) {
                     match = extended_match;
@@ -113,6 +114,7 @@
                         serie.compiled_expr += serie.compiled_expr.replace(match[0], 'y');
                     }
                 }
+                match = regex.exec(serie.expr);
             }
 
             return options;
@@ -145,7 +147,8 @@
             //     options['agg.' + serie_name + '.expr'] = serie_name;
             // }
             return options;
-        }
+        };
+
         var addSeriesToSearchOptions = function(search_options, serie, serie_name) {
             if(serie.type && ChartHelper.isRangeChart(serie.type)) {
                 if(search_options.sort ===  'y.' + serie_name) {
@@ -212,8 +215,8 @@
             return {
                 promise: $q.all(search_promises),
                 charts: charts_by_query
-            }
-        }
+            };
+        };
     }]);
 
     mod.directive("odsHighchartsChart", ['colorScale',
@@ -290,7 +293,7 @@
                 'periodic': periodic,
                 'timeSerieMode': timeSerieMode
             };
-        }
+        };
 
         var getGlobalOptions = function(parameters, precision, periodic, chartplaceholder, domain) {
             var height = chartplaceholder.height();
@@ -426,11 +429,20 @@
                 }
             };
 
+            var xAxisType = ChartHelper.getFieldType(datasetid, parameters.queries[0].xAxis);
+
             if (precision) {
                 options.xAxis.type = 'datetime';
                 options.xAxis.maxZoom = 3600000; // fourteen days
                 options.chart.zoomType = 'xy';
+
+                if (periodic) {
+                    options.xAxis.showFirstLabel = true;
+                }
+            } else if (['double', 'int'].indexOf(xAxisType) !== -1) {
+                options.xAxis.type = "linear";
             } else {
+                options.xAxis.type = "category";
                 options.xAxis.categories = [];
             }
 
@@ -454,7 +466,7 @@
                     } else {
                         return this.value;
                     }
-                }
+                };
             }
 
             if(parameters.singleAxis) {
@@ -526,7 +538,7 @@
                     options.dataLabels.formatter = function() {
                         var label = Highcharts.numberFormat(this.point.y, 2);
                         return label.replace(/[,\.]00$/, '');
-                    }
+                    };
                 }
             }
             if (serie.displayUnits && serie.func !== 'COUNT') {
@@ -601,7 +613,7 @@
                 }
             }
             return datePattern;
-        }
+        };
 
         var getContextualizedSeriesOptions = function(x, timeSerieMode) {
             var tooltip = {};
@@ -634,7 +646,7 @@
                     options.minTickInterval = Date.UTC(2010, 0, 1) - Date.UTC(2009, 0, 1);
                 }
             }
-        }
+        };
 
         var buildYAxis = function(yLabel, chart, opposite, stacked) {
             var hasMin = typeof chart.yRangeMin !== "undefined" && chart.yRangeMin !== '';
@@ -677,16 +689,17 @@
             var minDay = minDate ? minDate.getUTCDate() : 1;
             var minHour = minDate ? minDate.getUTCHours() : 0;
             var minMinute = minDate ? minDate.getUTCMinutes() : 0;
+
             if (angular.isObject(x) && ('year' in x || 'month' in x || 'day' in x || 'hour' in x || 'minute' in x || 'weekday' in x || 'yearday' in x)) {
                 // default to 2000 because it's a leap year
                 var date = new Date(Date.UTC(x.year || minYear, x.month-1 || 0, x.day || 1, x.hour || 0, x.minute || 0));
                 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
                 date.setUTCFullYear(x.year || minYear);
-                if (!'month' in x) date.setUTCMonth(minMonth);
-                if (!'day' in x) date.setUTCDate(minDay);
-                if (!'hour' in x) date.setUTCHours(minHour);
-                if (!'minute' in x) date.setUTCMinutes(minMinute);
-                if(! ('year' in x)){
+                if (!('month' in x)) date.setUTCMonth(minMonth);
+                if (!('day' in x)) date.setUTCDate(minDay);
+                if (!('hour' in x)) date.setUTCHours(minHour);
+                if (!('minute' in x)) date.setUTCMinutes(minMinute);
+                if(!('year' in x)){
                     if('weekday' in x){
                         date.setUTCDate(date.getUTCDate() + 7 - date.getUTCDay() + x.weekday );
                     }
@@ -709,21 +722,24 @@
             }
         };
 
-        function getXValue(dateFormatFunction, datePattern, x, minDate, precision) {
-            var date = getDateFromXObject(x, minDate);
-            if (date && precision) {
-                return date.getTime();
+        function getXValue(dateFormatFunction, datePattern, x, minDate, xAxisType) {
+            var date = getDateFromXObject(x, minDate),
+                xValue;
+
+            if (date && xAxisType === "datetime") {
+                xValue = date.getTime();
             } else if (date) {
-                return dateFormatFunction(datePattern, date);
+                xValue = dateFormatFunction(datePattern, date);
             } else if (typeof x === "undefined") {
-                return undefined;
-            } else if (angular.isObject(x)) {
-                if (x.week) {
-                    return translate("Week") + " " + x.week;
-                }
+                xValue = undefined;
+            } else if (angular.isObject(x) && x.week) {
+                xValue = translate("Week") + " " + x.week;
+            } else if (xAxisType === "linear") {
+                xValue = x;
             } else {
-                return "" + x;
+                xValue = "" + x;
             }
+            return xValue;
         }
 
         function getValidYValue(value, chart){
@@ -751,7 +767,7 @@
                         accumulation: function(accumulations, needed_aggregates) {
                             var res = {};
                             angular.forEach(needed_aggregates, function(k) {
-                                res[k] = accumulations[k]
+                                res[k] = accumulations[k];
                             });
                             return res;
                         }(accumulations, aggregates),
@@ -800,10 +816,6 @@
 
                 this.highchartsLoaded = function(Highcharts, element) {
                     var chartplaceholder = element.find('.chartplaceholder');
-
-                    Highcharts.setOptions({
-                        global: {useUTC: false}
-                    });
 
                     function formatRowX(value){
                         if (periodic) {
@@ -880,9 +892,18 @@
                             }
                         }
                         var timeserie = getTimeSerieMode(parameters);
-                        timeSerieMode = timeserie['timeSerieMode'];
-                        precision = timeserie['precision'];
-                        periodic = timeserie['periodic'];
+                        timeSerieMode = timeserie.timeSerieMode;
+                        precision = timeserie.precision;
+                        periodic = timeserie.periodic;
+
+                        var useUTC = false;
+                        if (periodic && precision === "hour") {
+                            useUTC = true;
+                        }
+
+                        Highcharts.setOptions({
+                            global: {'useUTC': useUTC}
+                        });
 
                         var options = getGlobalOptions(parameters, precision, periodic, chartplaceholder, domain);
                         $scope.chartoptions = options;
@@ -897,7 +918,7 @@
                                 if (!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])) {
                                     // we dont yet have an axis for this column :
                                     // Create axis and register it in yAxisesIndexes
-                                    var yAxis = buildYAxis(yLabel, chart, !!(options.yAxis.length % 2), !!chart.displayStackValues);
+                                    var yAxis = buildYAxis(yLabel, chart, !!(options.yAxis.length % 2), !!(chart.displayStackValues));
                                     yAxisesIndexes[datasetid][yLabel] = options.yAxis.push(yAxis) - 1;
                                 }
 
@@ -925,10 +946,11 @@
 
 
                         function pushValues(serie, categoryIndex, scale, valueX, valueY, color, thresholds) {
-                            if (options.xAxis.type === 'datetime') {
+                            var min, max, i;
+                            if (options.xAxis.type === 'datetime' || options.xAxis.type === 'linear') {
                                 if (typeof valueY === 'object') {
-                                    var min = valueY[0],
-                                        max = valueY[1];
+                                    min = valueY[0];
+                                    max = valueY[1];
                                     if (scale === 'logarithmic' && (min <= 0 || max <= 0)) {
                                         serie.data.push([
                                             valueX,
@@ -943,15 +965,29 @@
                                         ]);
                                     }
                                 } else if (serie.type == 'pie') {
-                                    serie.data.push({
-                                        name: Highcharts.dateFormat(serie.tooltip.xDateFormat, new Date(valueX)),
-                                        y: valueY
-                                    });
+                                    if (options.xAxis.type === 'datetime') {
+                                        serie.data.push({
+                                            name: Highcharts.dateFormat(serie.tooltip.xDateFormat, new Date(valueX)),
+                                            y: valueY
+                                        });
+                                    } else {
+                                        serie.data.push({
+                                            name: "" + valueX,
+                                            y: valueY
+                                        });
+                                    }
                                 } else if (serie.type == 'treemap') {
-                                    serie.data.push({
-                                        name: Highcharts.dateFormat(serie.tooltip.xDateFormat, new Date(valueX)),
-                                        value: valueY
-                                    });
+                                    if (options.xAxis.type === 'datetime') {
+                                        serie.data.push({
+                                            name: Highcharts.dateFormat(serie.tooltip.xDateFormat, new Date(valueX)),
+                                            value: valueY
+                                        });
+                                    } else {
+                                        serie.data.push({
+                                            name: "" + valueX,
+                                            y: valueY
+                                        });
+                                    }
                                 } else {
                                     if (scale === 'logarithmic' && valueY <= 0) {
                                         serie.data.push([
@@ -965,7 +1001,7 @@
                                         ]);
                                     }
                                     if (thresholds.length > 0) {
-                                        for (var i = thresholds.length - 1; i >= 0; i--) {
+                                        for (i = thresholds.length - 1; i >= 0; i--) {
                                             if (valueY >= thresholds[i].value) {
                                                 serie.data[serie.data.length - 1] = {
                                                     'x': serie.data[serie.data.length - 1][0],
@@ -977,7 +1013,7 @@
                                         }
                                     }
                                 }
-                            } else { // !precision
+                            } else { // categories
                                 // push row data into proper serie data array
                                 if(serie.type == 'pie') {
                                     serie.data[categoryIndex] = {
@@ -991,8 +1027,8 @@
                                     };
                                 } else {
                                     if (typeof valueY === 'object') {
-                                        var min = valueY[0],
-                                            max = valueY[1];
+                                        min = valueY[0];
+                                        max = valueY[1];
                                         if (scale === 'logarithmic' && (min <= 0 || max <= 0)) {
                                             serie.data[categoryIndex] = [null, null];
                                         } else {
@@ -1007,7 +1043,7 @@
                                     }
     
                                     if (thresholds.length > 0) {
-                                        for (var i = thresholds.length - 1; i >= 0; i--) {
+                                        for (i = thresholds.length - 1; i >= 0; i--) {
                                             if (valueY >= thresholds[i].value) {
                                                 serie.data[categoryIndex] = {
                                                     'y': serie.data[categoryIndex],
@@ -1030,13 +1066,13 @@
                             $scope.loading = false;
                             var charts_by_calls = requestPromise.charts;
                             // If there is both periodic & datetime timescale, we need to find the min date to properly offset the periodic data
-                            var minDate;
+                            var minDate, i;
                             if (precision) {
                                 for (var h = 0; h < http_calls.length; h++) {
                                     var http_call = http_calls[h];
-                                    for (var i=0; i < http_call.data.length; i++) {
+                                    for (i = 0; i < http_call.data.length; i++) {
                                         var row = http_call.data[i];
-                                        if(row.x.year){
+                                        if(row.x.year && angular.isNumber(row.x.year)){
                                             var date = new Date(Date.UTC(row.x.year, row.x.month-1 || 0, row.x.day || 1, row.x.hour || 0, row.x.minute || 0));
                                             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
                                             date.setFullYear(row.x.year);
@@ -1049,7 +1085,7 @@
                             }
 
                             var registered_series = [];
-                            for (var i = 0; i < parameters.queries.length; i++) {
+                            for (i = 0; i < parameters.queries.length; i++) {
                                 if (!parameters.queries[i].seriesBreakdown) {
                                     for (var j = 0; j < parameters.queries[i].charts.length; j++) {
                                         registered_series.push('serie' + (i + 1) + '-' + (j + 1));
@@ -1069,7 +1105,7 @@
                                     options.series[serieIndex] = getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope);
                                 }
 
-                                if (!precision && (categoryIndex = options.xAxis.categories.indexOf(valueX)) === -1) {
+                                if (options.xAxis.type === "category" && (categoryIndex = options.xAxis.categories.indexOf(valueX)) === -1) {
                                     categoryIndex = options.xAxis.categories.length;
                                     options.xAxis.categories.push(valueX);
                                 }
@@ -1080,11 +1116,11 @@
                                 } else {
                                     pushValues(options.series[serieIndex], categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, options.series[serieIndex].color, serie.thresholds || []);
                                 }
-                            }
+                            };
 
 
                             angular.forEach(http_calls, function(http_call, index) {
-                                var results, aggregations;
+                                var results, aggregations, i, j;
                                 if (!http_call.data || http_call.data.length === 0) {
                                     return;
                                 }
@@ -1143,7 +1179,7 @@
                                 var accumulations_x = [];
                                 var accumulations_y = {};
                                 var nb_series = parameters.queries[index].charts.length;
-                                for (var j = 0; j < nb_series; j++) {
+                                for (j = 0; j < nb_series; j++) {
                                     var chart = parameters.queries[index].charts[j];
                                     if (chart.aggregates) {
                                         for (var a = 0; a < chart.aggregates.length; a++) {
@@ -1159,12 +1195,11 @@
                                     }
                                 }
 
-                                for (var i = 0; i < results.length; i++) {
+                                for (i = 0; i < results.length; i++) {
                                     var row = results[i];
                                     angular.extend({}, query.defaultValues, row);
-                                    var valueX = getXValue(Highcharts.dateFormat, serie_options.xDateFormat, multipleXs ? row.x[xAxis]: row.x, minDate, precision);
-
-                                    var j = 0;
+                                    var valueX = getXValue(Highcharts.dateFormat, serie_options.xDateFormat, multipleXs ? row.x[xAxis]: row.x, minDate, options.xAxis.type);
+                                    j = 0;
                                     // iterate on all entries in the row...
                                     angular.forEach(row, function(rawValueY, keyY) {
                                         var valueY;
@@ -1183,7 +1218,7 @@
                                             if (keyY.endsWith('max')) {
                                                 valueY = [getValidYValue(row[keyY.replace('max', 'min')], serie.charts[0]), getValidYValue(rawValueY, serie.charts[1])];
                                             } else if (serie.charts) {
-                                                valueY = [getValidYValue(rawValueY, serie.charts[0]), getValidYValue(rawValueY, serie.charts[1])]
+                                                valueY = [getValidYValue(rawValueY, serie.charts[0]), getValidYValue(rawValueY, serie.charts[1])];
                                             } else {
                                                 valueY = getValidYValue(rawValueY, serie);
                                             }
@@ -1210,7 +1245,7 @@
                                             }
                                             j++;
                                         }
-                                    })
+                                    });
                                 }
 
                                 if (accumulate_x) {
@@ -1218,14 +1253,14 @@
                                         return a - b;
                                     });
                                     // remove duplicates in accumulations_x
-                                    for (var i = accumulations_x.length - 1; i > 0; i--) {
+                                    for (i = accumulations_x.length - 1; i > 0; i--) {
                                         if (accumulations_x[i] == accumulations_x[i - 1]) {
                                             accumulations_x.splice(i, 1);
                                         }
                                     }
                                 }
 
-                                for (var i = 0; i < query.charts.length; i++) {
+                                for (i = 0; i < query.charts.length; i++) {
                                     if (query.charts[i].aggregates) {
                                         var serie = query.charts[i];
                                         var valueY = compileAggrValue($scope, serie.compiled_expr, accumulations_y, serie.aggregates);
@@ -1239,7 +1274,7 @@
                             var categories = options.xAxis.categories;
                             
                             if (categories) {
-                                for (var i = 0; i < options.series.length; i++) {
+                                for (i = 0; i < options.series.length; i++) {
                                     for (var k = 0; k < categories.length; k++) {
                                         if (typeof options.series[i].data[k] === "undefined") {
                                             options.series[i].data[k] = null;
@@ -1278,7 +1313,7 @@
                         }, function(reason) {
                             $scope.loading = false;
                         });
-                    }
+                    };
                 };
             }],
             link: function(scope, element, attrs, ctrls) {
@@ -1412,17 +1447,17 @@
                         $scope.$broadcast('chartConfigReady', $scope.chart); //FIXME: broadcasts still used?
 
                         $scope.$watch('chart', function(nv) {
+                            var i, j;
                             if (nv) {
-
                                 var uniqueid = ChartHelper.getDatasetId($scope.context);
 
-                                for (var i = 0; i < nv.queries.length; i++) {
+                                for (i = 0; i < nv.queries.length; i++) {
                                     var query = nv.queries[i];
                                     if (typeof query.xAxis === "undefined") {
                                         ChartHelper.setDefaultQueryValues(uniqueid, query, true);
                                     }
 
-                                    for (var j = 0; j < query.charts.length; j++) {
+                                    for (j = 0; j < query.charts.length; j++) {
                                         ChartHelper.setSerieDefaultValues(uniqueid, query.charts[j], query.xAxis, true);
                                     }
 
@@ -1432,7 +1467,7 @@
                                         ChartHelper.setChartDefaultValues(uniqueid, nv, true);
                                     }
 
-                                    for (var j = 0; j < query.charts.length; j++) {
+                                    for (j = 0; j < query.charts.length; j++) {
                                         ChartHelper.setSerieDefaultColors(query.charts[j], query.seriesBreakdown);
                                     }
                                 }
@@ -1471,6 +1506,7 @@
             template: '<div class="odswidget odswidget-multihighcharts"><div ods-chart parameters="chart" domain="context.domain" apikey="context.apikey"></div></div>',
             controller: ['$scope', function($scope) {
                 var unwatch = $scope.$watch('context', function(nv) {
+                    var i;
                     if (!nv) return;
                     if (nv.type !== 'catalog') {
                         console.error('ods-multi-highcharts requires a Catalog Context');
@@ -1483,21 +1519,22 @@
                     }
 
                     var datasets = [];
-                    for (var i = 0; i < chartConfig.queries.length; i++) {
+                    for (i = 0; i < chartConfig.queries.length; i++) {
                         var datasetid = chartConfig.queries[i].config.dataset;
                         if (datasets.indexOf(datasetid) === -1) {
                             datasets.push(datasetid);
                         }
                     }
                     var requests = [];
-                    for (var i = 0; i < datasets.length; i++) {
+                    var success = function(data) {
+                        var dataset = new ODS.Dataset(data);
+                        // dataset.metas.domain = $scope.context.domain;
+                        $scope.context.dataset = dataset;
+                        ChartHelper.init($scope.context);
+                    };
+                    for (i = 0; i < datasets.length; i++) {
                         requests.push(ODSAPI.datasets.get($scope.context, datasets[i], {extrametas: true}).
-                            success(function(data) {
-                                var dataset = new ODS.Dataset(data);
-                                // dataset.metas.domain = $scope.context.domain;
-                                $scope.context.dataset = dataset;
-                                ChartHelper.init($scope.context);
-                            }));
+                            success(success));
                     }
                     $q.all(requests).then(function(arg) {
                         $scope.chart = chartConfig;
@@ -1630,7 +1667,7 @@
                     }
                 });
 
-                if ($attrs['context']) {
+                if ($attrs.context) {
                     // backward compatibility
                     (function() {
                         var colors = ODSWidgetsConfig.chartColors || defaultColors;
@@ -1699,11 +1736,11 @@
                     })();
                     this.setQuery = function(query, context) {
                         console.error("cannot use ods-chart-query when context and chartConfig are declared on ods-chart");
-                    }
+                    };
                 } else {
                     this.setQuery = function(query, context) {
                         var index = $scope.chart.queries.indexOf(query);
-                        var groups;
+                        var groups, j;
                         if (index === -1) {
                             index = $scope.chart.queries.length;
                             $scope.chart.queries.push(query);
@@ -1712,7 +1749,8 @@
                         }
 
                         if (query.sort) {
-                            if (groups = query.sort.match(/^(-?)serie([0-9]+)$/)) {
+                            groups = query.sort.match(/^(-?)serie([0-9]+)$/);
+                            if (groups) {
                                 $scope.chart.queries[index].sort = groups[1] + 'serie' + (index + 1) + '-' + groups[2];
                             }
                         }
@@ -1733,7 +1771,7 @@
                             ChartHelper.setDefaultQueryValues(uniqueid, query, true);
                         }
 
-                        for (var j = 0; j < query.charts.length; j++) {
+                        for (j = 0; j < query.charts.length; j++) {
                             ChartHelper.setSerieDefaultValues(uniqueid, query.charts[j], query.xAxis, true);
                         }
 
@@ -1743,7 +1781,7 @@
                             ChartHelper.setChartDefaultValues(uniqueid, $scope.chart, true);
                         }
 
-                        for (var j = 0; j < query.charts.length; j++) {
+                        for (j = 0; j < query.charts.length; j++) {
                             ChartHelper.setSerieDefaultColors(query.charts[j], query.seriesBreakdown);
                         }
                     };
@@ -1851,7 +1889,7 @@
                             }, true);
                         });
                     }
-                }
+                };
             }
         };
     }]);
@@ -1911,12 +1949,12 @@
          */
         return {
             restrict: 'E',
-            require: ["^odsChartQuery", "?refineOnClick"],
+            require: ["^odsChartQuery", "?refineOnClick", "?refineOnClickContext"],
             controller: ['$scope', '$transclude', function($scope, $transclude) {
             }],
             link: function(scope, element, attrs, ctrls) {
                 var odsChartQueryController = ctrls[0],
-                    refineOnClickCtrl = ctrls[1];
+                    refineOnClickCtrl = ctrls[1] || ctrls[2];
 
                 var chart = {
                     type: attrs.chartType || undefined,

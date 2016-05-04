@@ -8,7 +8,7 @@
          * @name ods-widgets.directive:odsTimerange
          * @restrict E
          * @scope
-         * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} or array of context to use
+         * @param {DatasetContext|DatasetContext[]} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} or array of context to use
          * @param {string} [timeField=first date/datetime field available] Name of the field (date or datetime) to filter on
          * @param {string} [defaultFrom=none] Default datetime for the "from" field: either "yesterday", "now" or a string representing a date
          * @param {string} [defaultTo=none] Default datetime for the "to" field: either "yesterday", "now" or a string representing a date
