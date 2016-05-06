@@ -826,18 +826,18 @@ NG_DOCS={
     {
       "section": "tutorial",
       "id": "04advancedmap",
-      "shortName": "3. Advanced dynamic map",
+      "shortName": "4. Advanced dynamic map",
       "type": "overview",
-      "moduleName": "3. Advanced dynamic map",
+      "moduleName": "4. Advanced dynamic map",
       "shortDescription": "Tutorial: An advanced dynamic map",
       "keywords": "ability advanced age allows attribute build categories checkbox chicago chicagoincidents chicagoincidents-dataset chicagoincidents-domain chronologically class clustered context data dataset default-from default-to define display displayed dynamic explore heatmap heatmapmode incident individual interact killings-by-law-enforcement-officers-in-the-usa layer layers map ng-embed-app ng-model occurrences ods-widgets offer option overview public refine row-fluid show-if span4 span8 toggle tutorial type users victim volume"
     },
     {
       "section": "tutorial",
       "id": "05filterwithmap",
-      "shortName": "4. Filter using a map",
+      "shortName": "5. Filter using a map",
       "type": "overview",
-      "moduleName": "4. Filter using a map",
+      "moduleName": "5. Filter using a map",
       "shortDescription": "Tutorial: Filter data using zones on a map",
       "keywords": "aggregate aggregation allows appears class click clicked colored contained context contexts create data dataset default-from default-to density depending display displayed districts draw enforcement ensure fields filter initialize join-context killing killings killings-by-law-enforcement-officers-in-the-usa killings-dataset killings-domain killingslist killingslist-dataset killingslist-domain killingslist-parameters law list ll local-key map meaning natural-earth-us-states-provinces-1110m ng-embed-app ods-widgets officers overview particularities points public refine refine-on-click-context refined remain remote-key row-fluid scrollable second separate side sort span6 states-dataset states-domain tutorial usa users victim victims zones"
     }
