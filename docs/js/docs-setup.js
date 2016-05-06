@@ -582,14 +582,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "ods-widgets.filter:isDefined",
-      "shortName": "isDefined",
-      "type": "filter",
-      "moduleName": "ods-widgets",
-      "keywords": "api filter input object ods-widgets"
-    },
-    {
-      "section": "api",
       "id": "ods-widgets.filter:isEmpty",
       "shortName": "isEmpty",
       "type": "filter",
@@ -603,6 +595,14 @@ NG_DOCS={
       "type": "filter",
       "moduleName": "ods-widgets",
       "keywords": "api filter joined list ods-widgets separator strings values"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:keys",
+      "shortName": "keys",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api filter input object ods-widgets"
     },
     {
       "section": "api",

@@ -146,7 +146,7 @@
     mod.filter('keys', function() {
         /**
          * @ngdoc filter
-         * @name ods-widgets.filter:isDefined
+         * @name ods-widgets.filter:keys
          *
          * @function
          * @param {Object} object An object.

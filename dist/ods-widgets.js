@@ -9971,7 +9971,7 @@ mod.directive('infiniteScroll', [
     mod.filter('keys', function() {
         /**
          * @ngdoc filter
-         * @name ods-widgets.filter:isDefined
+         * @name ods-widgets.filter:keys
          *
          * @function
          * @param {Object} object An object.
@@ -12503,14 +12503,14 @@ mod.directive('infiniteScroll', [
                       '      <div ng-click="tryToggleExpand()" class="expand-control" ng-class="{expanded: expanded}"><span translate>Details</span> <i class="fa fa-chevron-down"></i></div>' +
                       '      <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="!expanded">' +
                       '          <span class="count-text" ng-hide="!datasetObjectKeys || datasetObjectKeys.length <= 1">' +
-                      '               <span translate translate-n="datasetObjectKeys.length" translate-plural="{{$count}} datasets">no dataset to display</span>' +
+                      '               <span translate translate-n="datasetObjectKeys.length" translate-plural="{{$count}} datasets">{{$count}} dataset</span>' +
                       '          </span>' +
                       '      </h3>' +
                       '      <div class="datasets-expanded">' +
                       '          <h2 ng-show="expanded" ng-click="tryToggleExpand()">{{ odsTitle }}</h2>' +
                       '          <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="expanded">' +
                       '              <span class="count-text">' +
-                      '                   <span translate translate-n="datasetObjectKeys.length" translate-plural="{{$count}} datasets">no dataset to display</span>' +
+                      '                   <span translate translate-n="datasetObjectKeys.length" translate-plural="{{$count}} datasets">{{$count}} dataset</span>' +
                       '              </span>' +
                       '          </h3>' +
                       '          <ul class="dataset-list"' +
