@@ -2,6 +2,20 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.0.4 - 2016-07-07
+### Added
+- The widgets now use Jawg.io basemaps by default, instead of MapQuest, due to the discontinuation of MapQuest's free service.
+Widgets previously configured to use MapQuest will fallback to Jawg instead.
+- In `odsTable`, numerical values are now aligned to the right.
+- New filters have been added: `toObject`, `momentdiff`.
+- New `autoGeolocation` parameter in `odsMap`, to automatically trigger the user's geolocation on a map.
+- In `odsMap`, you can now use `colorFunction` to configure the way the color scales are computed (only logarithmic for now).
+
+### Fixed
+- Fixed an issue in `odsRecordImage` where sometimes, when used in a map tooltip, it would display a broken image.
+- Fixed performance with `odsMediaGallery` and datasets with big geo shapes.
+
+
 ## 1.0.3 - 2016-05-04
 
 ### Added

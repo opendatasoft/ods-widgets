@@ -72,8 +72,9 @@ function, usually the name of a field (<code>expression</code> is not required w
 <li><code>colorScale</code>: the name of a ColorBrewer [<a href="http://colorbrewer2.org/">http://colorbrewer2.org/</a>] scheme, like &quot;YlGnBu&quot;. Available for <code>aggregation</code>.</li>
 <li><code>colorRanges</code>: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example &quot;red;20;orange;40;#00CE00&quot; to color anything between
 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a decimal or integer field name in <code>colorByField</code> to configure which field will be
-used to decide on the color. Available for <code>raw</code> and <code>aggregation</code>.</li>
+used to decide on the color (for <code>raw</code>) or with <code>function</code> and <code>expression</code> to determine the calculation used for the color (for <code>aggregation</code>). Available for <code>raw</code> and <code>aggregation</code>.</li>
 </ul>
+<p>An additional <code>colorFunction</code> property can contain the <code>log</code> value to use logarithmic scales (instead of the default linear scale) for generating the color scale. Available for <code>aggregation</code> and with <code>color</code> and <code>colorScale</code> display modes (or when none is specified).</p>
 <p>On top of color configuration, the icon used as a marker on the map can be configured through the <code>picto</code>
 property. The property supports the following keywords:
 star, circle, bike, bus, train, plane, roadblock, coffee, college, flag, policeman, envelope, restaurant,
@@ -150,7 +151,8 @@ from the new position&#39;s calculation, you can use <code>excludeFromRefit</cod
        scroll-wheel-zoom="{boolean}"
        min-zoom="{integer}"
        max-zoom="{integer}"
-       [ods-auto-resize]="{boolean}"&gt;
+       [ods-auto-resize]="{boolean}"
+       auto-geolocation="{boolean}"&gt;
 &lt;/ods-map&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -175,5 +177,8 @@ If &quot;true&quot;, then the map will stay at the same location instead.</p>
 </div> <p><em>(default: true)</em></p></td></tr><tr><td>minZoom</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Limits the map to a minimum zoom value. By default this is defined by the minimum zoom of the basemap.</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>maxZoom</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Limits the map to a maximum zoom value. By default this is defined by the maximum zoom of the basemap.</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>[odsAutoResize]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>see <a href="#/api/ods-widgets.directive:odsAutoResize">Auto Resize</a> for more informations</p>
-</div></td></tr></tbody></table></div>
+</div></td></tr><tr><td>autoGeolocation</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;true&quot;, then the geolocation (center and zoom the map on the location of the user) is automatically done upon initialization.
+Only available when there is no <code>location</code> parameter on the widget.
+Warning: location sharing must be allowed priorly for Firefox users when multiple odsMap widget are set with autoGeolocation=true on the same page</p>
+</div> <p><em>(default: false)</em></p></td></tr></tbody></table></div>
 </div>

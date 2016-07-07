@@ -34,16 +34,18 @@
 					LazyLoad.js('https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&weather', next);
 				}
 				function loadBreezometer(next) {
-					LazyLoad.css('http://static.breezometer.com/widget/css/breezometer.plugin.min.css');
-					LazyLoad.js('http://static.breezometer.com/widget/breezometer.plugin.min.js', next);
+					LazyLoad.css('https://static.breezometer.com/widget/css/breezometer.plugin.min.css');
+					LazyLoad.js('https://static.breezometer.com/widget/breezometer.plugin.min.js', next);
 				}
 				function initWidget() {
-					$(element).find('.breezometer_widget').breezometer({
-						lang: "en",
-						key: attrs.key,
-						vertical: false,
-						location:attrs.location
-					});
+					if (angular.isDefined($(document).breezometer)) {
+						$(element).find('.breezometer_widget').breezometer({
+							lang: "en",
+							key: attrs.key,
+							vertical: false,
+							location:attrs.location
+						});
+					}
 				}
 
 				function checkBreezometer() {

@@ -4,6 +4,7 @@
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsHubspotForm', function () {
+        var alreadyCreated = [];
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsHubspotForm
@@ -24,15 +25,32 @@
         return {
             restrict: 'E',
             replace: true,
-            template: '<div class="odswidget odswidget-hubspot-form"></div>',
+            template: '<div class="odswidget odswidget-hubspot-form" id="{{uniqueId}}"></div>',
             scope: {
                 'portalId': '@',
                 'formId': '@'
             },
             link: function(scope, element, attrs) {
-                LazyLoad.js('//js.hsforms.net/forms/v2.js', function() {
-                    hbspt.forms.create({ portalId: attrs.portalId ,formId: attrs.formId, target:'.odswidget-hubspot-form' });
-                });
+                scope.uniqueId = 'hubspotform-' + Math.random().toString(36).substring(7);
+
+                var onLoad = function() {
+                    if (alreadyCreated.indexOf(scope.uniqueId) === -1) {
+                        alreadyCreated.push(scope.uniqueId);
+                        hbspt.forms.create({
+                            portalId: attrs.portalId,
+                            formId: attrs.formId,
+                            target: '#' + scope.uniqueId
+                        });
+                    }
+                };
+
+                if (angular.isUndefined(window.hbspt)) {
+                    LazyLoad.js('//js.hsforms.net/forms/v2.js', onLoad);
+                } else {
+                    onLoad();
+                }
+
+
             }
         };
     });

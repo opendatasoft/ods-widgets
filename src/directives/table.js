@@ -306,6 +306,9 @@
 
                         div = document.createElement('div');
                         div.className = 'odswidget-table__cell-container';
+                        if (field.type === "int" || field.type === "double") {
+                            div.className += ' odswidget-table__cell-container__right-aligned';
+                        }
                         td.appendChild(div);
 
                         var newScope, node;
@@ -528,7 +531,6 @@
 
                     $scope.$watch('context.parameters', function(newValue, oldValue) {
                         // Don't fire at initialization time
-                        if (newValue === oldValue) return;
 
                         DebugLogger.log('table -> searchOptions watch -> refresh records');
 
@@ -699,7 +701,7 @@
             link: function(scope, element, attrs, ctrls) {
                 var ctrl = ctrls[0],
                     autoResizeCtrl = ctrls[1] || ctrls[2];
-                if (autoResizeCtrl !== null) {
+                if (angular.isDefined(autoResizeCtrl) && autoResizeCtrl !== null) {
                     autoResizeCtrl.onResize = function() {
                         ctrl.resetScroll();
                         scope.layout = [];

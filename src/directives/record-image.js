@@ -30,27 +30,26 @@
                 field: '@',
                 domainUrl: '@?'
             },
-            controller: ['$scope', function($scope) {
-                $scope.imageUrl = null;
-
+            link: function(scope) {
+                scope.imageUrl = null;
                 var render = function() {
-                    var image = $scope.record.fields[$scope.field];
+                    var image = scope.record.fields[scope.field];
                     if (image.url) {
-                        $scope.imageUrl = image.url;
-                        $scope.placeholder = false;
+                        scope.imageUrl = image.url;
+                        scope.placeholder = false;
                     } else if (image.placeholder) {
-                        $scope.imageUrl = null;
-                        $scope.placeholder = true;
+                        scope.imageUrl = null;
+                        scope.placeholder = true;
                     } else {
-                        $scope.imageUrl = ($scope.domainUrl || '') + '/explore/dataset/' + $scope.record.datasetid + '/files/' + image.id + '/300/';
-                        $scope.placeholder = false;
+                        scope.imageUrl = (scope.domainUrl || '') + '/explore/dataset/' + scope.record.datasetid + '/files/' + image.id + '/300/';
+                        scope.placeholder = false;
                     }
                 };
 
-                $scope.$watch('[record, field]', function() {
+                scope.$watch('[record, field]', function(nv, ov) {
                     render();
                 }, true);
-            }]
+            }
         };
     });
 }());

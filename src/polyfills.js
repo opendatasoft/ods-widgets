@@ -268,4 +268,32 @@
     window.b64_to_utf8 = function(str) {
         return window.atob(str);
     };
+
+    window.format_string = function() {
+        // The string containing the format items (e.g. "{0}")
+        // will and always has to be the first argument.
+        var str = arguments[0];
+        if (arguments[1] !== null && typeof arguments[1] === 'object') {
+            var args = arguments[1];
+            // start with the second argument (i = 1)
+            for (var property in args) {
+                if (args.hasOwnProperty(property)) {
+                    // "gm" = RegEx options for Global search (more than one instance)
+                    // and for Multiline search
+                    var regEx = new RegExp("\\{" + property + "\\}", "gm");
+                    str = str.replace(regEx, args[property]);
+                }
+            }
+        } else {
+            // start with the second argument (i = 1)
+            for (var i = 1; i < arguments.length; i++) {
+                // "gm" = RegEx options for Global search (more than one instance)
+                // and for Multiline search
+                var regEx = new RegExp("\\{" + (i - 1) + "\\}", "gm");
+                str = str.replace(regEx, arguments[i]);
+            }
+        }
+
+        return str;
+    }
 }());

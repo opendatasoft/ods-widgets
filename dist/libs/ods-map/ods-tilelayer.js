@@ -40,19 +40,20 @@ L.ODSTileLayer = L.TileLayer.extend({
     _initLayer: function(basemap, disableAttribution, prependAttribution, appendAttribution) {
         var layerOptions = {};
         var attrib = this._addAttributionPart('', prependAttribution);
-        if (basemap.provider === 'mapquest') {
-            // OSM MapQuest
-            attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="http://www.mapquest.com/" target="_blank">MapQuest</a> <img src="http://developer.mapquest.com/content/osm/mq_logo.png"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
-            attrib = this._addAttributionPart(attrib, appendAttribution);
-            L.TileLayer.prototype.initialize.call(this, 'http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png',
-                {
-                    minZoom: 1,
-                    maxNativeZoom: 18,
-                    maxZoom: 19,
-                    attribution: !disableAttribution ? attrib : '',
-                    subdomains: "1234"
-                });
-        } else if (basemap.provider === 'opencycle') {
+        //if (basemap.provider === 'mapquest') {
+        //    // OSM MapQuest
+        //    attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="http://www.mapquest.com/" target="_blank">MapQuest</a> <img src="http://developer.mapquest.com/content/osm/mq_logo.png"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
+        //    attrib = this._addAttributionPart(attrib, appendAttribution);
+        //    L.TileLayer.prototype.initialize.call(this, 'http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png',
+        //        {
+        //            minZoom: 1,
+        //            maxNativeZoom: 17,
+        //            maxZoom: 18,
+        //            attribution: !disableAttribution ? attrib : '',
+        //            subdomains: "1234"
+        //        });
+        //} else
+        if (basemap.provider === 'opencycle') {
             attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="http://www.thunderforest.com" target="_blank">Thunderforest</a> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
             L.TileLayer.prototype.initialize.call(this, 'http://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png',
@@ -118,26 +119,35 @@ L.ODSTileLayer = L.TileLayer.extend({
                 subdomains: "abcd"
             };
             L.TileLayer.prototype.initialize.call(this, stamenUrl, layerOptions);
-        } else if (basemap.provider.startsWith('mapsquare.')) {
-            var mapsquareMap = basemap.provider.substring(10);
-            var mapsquareUrl = 'https://tile.mapsquare.io/';
+        } else if (basemap.provider.startsWith('jawg.') || basemap.provider === 'mapquest') {
+            var jawgUrl = 'https://tile.jawg.io/';
 
-            if (mapsquareMap !== 'streets') {
-                mapsquareUrl += mapsquareMap + '/';
+            if (basemap.provider !== 'mapquest') {
+                var jawgMap = basemap.provider.substring(5);
+                if (jawgMap !== 'streets') {
+                    jawgUrl += jawgMap + '/';
+                }
             }
 
-            mapsquareUrl += '{z}/{x}/{y}';
+            jawgUrl += '{z}/{x}/{y}';
             //if (L.Browser.retina) {
-            //    mapsquareUrl += '@2x';
+            //    jawgUrl += '@2x';
             //}
-            mapsquareUrl += '.png?api-key=' + basemap.mapsquare_apikey;
+            jawgUrl += '.png';
+            if (basemap.jawg_apikey) {
+               jawgUrl += '?api-key=' + basemap.jawg_apikey;
+                if (basemap.jawg_odsdomain) {
+                    jawgUrl += '&odsdomain=' + basemap.jawg_odsdomain;
+                }
+            }
+
 
             layerOptions = {
                 minZoom: 1,
                 maxZoom: 22,
-                attribution: !disableAttribution ? 'Tiles Courtesy of <a href="https://www.mapsquare.io" target="_blank">mapsquare</a> <img src="https://www.mapsquare.io/assets/images/favicon.png" width="16" height="16"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors' : ''
+                attribution: !disableAttribution ? 'Tiles Courtesy of <a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/assets/images/favicon.png" width="16" height="16"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors' : ''
             };
-            L.TileLayer.prototype.initialize.call(this, mapsquareUrl, layerOptions);
+            L.TileLayer.prototype.initialize.call(this, jawgUrl, layerOptions);
         } else if (basemap.provider === 'custom') {
             if (basemap.subdomains) {
                 layerOptions.subdomains = basemap.subdomains;

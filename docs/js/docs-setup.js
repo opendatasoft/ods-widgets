@@ -254,7 +254,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget allows you to build a map visualization and show data using various modes of display using layers.",
-      "keywords": "ability adding administration advanced aggregated aggregating aggregation allows alphanumerically anchor angular angularjs-enabled apart api area areas associated auto automatic automatically average avg baby based basemap basemaps bed beer best bike boat border bordercolor briefcase browser build building bus button calculation calendar camera car categories centered change changes check chosen christianism chronologically cinema circle click clicked clicking close cluster clustering clusters clustersforced code coffee college color colorbrewer colorbyfield colorranges colors colorscale combine combined configurable configuration configurations configure configured content context contexts control count cow cross cross-alt css culture custom danger data dataset datasets datetime decide decimal decreasing default define defined density depending deviation directive directly display displayed displaying displays dog downloaded draw drawing drop dynamic economy envelope exact example exclude exclude-from-refit excludefromrefit expression factory false ff0000 ff0f05 field field1 field2 field3 field4 fields fill filter filters fire-extinguisher fit flag flame flower format france freeze fullscreen function functions gas-station geo geolocate geometrical geometry glass gym health heart heatmap hex hide hospital house hoverfield hovers html icon identifier indicating informations initialization initializing inside integer islam item items join joincontext joined judaism justice keywords kind large latitude layer layers leaf level light lightning limits load local localkey location longitude luggage man man-alt map marker markers max maximum min minimum minus mode modes mot mouse move moves multiple music mycontext mycontext2 mycontext3 mycontext5 myvalue names ngif note number numeric object occurs ods-widgets odsmaplayer odswidgetsconfig odswidgetsconfigprovider opacity orange order org parameter parameters paris parking persists phone picto plane playground point points policeman position prefixed properties property propose provided question ranges raw read record records recycling red refine refine-on-click-context refine-on-click-mycontext-context-field refine-on-click-mycontext-map-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-map-field refineonclick refineonclickcontext refineonclickcontextfield refineonclickmapfield refits refreshed relevant remote remotekey represent represents required resize restaurant result reverse reversed road roadblock scheme science scrolling second selection semicolon sense separated serie settings shape shapes shopping-cart show-if showheatmap showif simple simplification simply single ski soccer sort sorted sources spatially specific sport stacked standard star stay stddev sum support supports table tag template tennis text three thumbs-down thumbs-up time toilets toolbar tools tooltip tooltip-sort tooltips tooltipsort top traffic train trash tree tree2 trigger triggers trophy truck true type types url user users values video-game view visualization ways wheel wheelchair widget widgets wifi windsurfing woman won wrench ylgnbu zones zoom"
+      "keywords": "ability adding additional administration advanced aggregated aggregating aggregation allowed allows alphanumerically anchor angular angularjs-enabled apart api area areas associated auto autogeolocation automatic automatically average avg baby based basemap basemaps bed beer best bike boat border bordercolor briefcase browser build building bus button calculation calendar camera car categories centered change changes check chosen christianism chronologically cinema circle click clicked clicking close cluster clustering clusters clustersforced code coffee college color colorbrewer colorbyfield colorfunction colorranges colors colorscale combine combined configurable configuration configurations configure configured content context contexts control count cow cross cross-alt css culture custom danger data dataset datasets datetime decide decimal decreasing default define defined density depending determine deviation directive directly display displayed displaying displays dog downloaded draw drawing drop dynamic economy envelope exact example exclude exclude-from-refit excludefromrefit expression factory false ff0000 ff0f05 field field1 field2 field3 field4 fields fill filter filters fire-extinguisher firefox fit flag flame flower format france freeze fullscreen function functions gas-station generating geo geolocate geolocation geometrical geometry glass gym health heart heatmap hex hide hospital house hoverfield hovers html icon identifier indicating informations initialization initializing inside integer islam item items join joincontext joined judaism justice keywords kind large latitude layer layers leaf level light lightning limits linear load local localkey location log logarithmic longitude luggage man man-alt map marker markers max maximum min minimum minus mode modes mot mouse move moves multiple music mycontext mycontext2 mycontext3 mycontext5 myvalue names ngif note number numeric object occurs ods-widgets odsmap odsmaplayer odswidgetsconfig odswidgetsconfigprovider opacity orange order org parameter parameters paris parking persists phone picto plane playground point points policeman position prefixed priorly properties property propose provided question ranges raw read record records recycling red refine refine-on-click-context refine-on-click-mycontext-context-field refine-on-click-mycontext-map-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-map-field refineonclick refineonclickcontext refineonclickcontextfield refineonclickmapfield refits refreshed relevant remote remotekey represent represents required resize restaurant result reverse reversed road roadblock scale scales scheme science scrolling second selection semicolon sense separated serie set settings shape shapes sharing shopping-cart show-if showheatmap showif simple simplification simply single ski soccer sort sorted sources spatially specific sport stacked standard star stay stddev sum support supports table tag template tennis text three thumbs-down thumbs-up time toilets toolbar tools tooltip tooltip-sort tooltips tooltipsort top traffic train trash tree tree2 trigger triggers trophy truck true type types url user users values video-game view visualization warning ways wheel wheelchair widget widgets wifi windsurfing woman won wrench ylgnbu zones zoom"
     },
     {
       "section": "api",
@@ -615,11 +615,20 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "ods-widgets.filter:momentAdd",
-      "shortName": "momentAdd",
+      "id": "ods-widgets.filter:momentadd",
+      "shortName": "momentadd",
       "type": "filter",
       "moduleName": "ods-widgets",
       "keywords": "api days describing filter hours milliseconds minutes months negative number ods-widgets parameter precision quarters seconds type unit weeks years"
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:momentdiff",
+      "shortName": "momentdiff",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This filter returns the difference between two dates, in the given measurement. For example",
+      "keywords": "api calculate date1 date2 dates days default difference example filter hours measurement milliseconds minutes months ods-widgets returns seconds weeks years"
     },
     {
       "section": "api",
@@ -711,6 +720,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.filter:toObject",
+      "shortName": "toObject",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Transform an array of objects into an objet, using a key passed as a parameter.",
+      "keywords": "api array bar converted count filter foo key object objects objet ods-widgets parameter passed transform transformation"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.filter:truncate",
       "shortName": "truncate",
       "type": "filter",
@@ -767,7 +785,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "ods-widgets",
       "shortDescription": "Use ODSWidgetsConfigProvider to set configuration values used by various directives.",
-      "keywords": "angular api app array basemap basemaps catalog chart chartcolors charts color colors config configuration contexts customconfig dataset default defaultdomain defaults depending directive directives disqusshortname domain existing left list local method module object objects ods-widgets odswidgetsconfig odswidgetsconfigprovider override overriding parameter picto reached second set setconfig sets settings shortname start string themes untouched values var widget widgets"
+      "keywords": "access account allow angular api app array basemap basemaps calls catalog chart chartcolors charts classic color colors config configuration configuring contact contexts create currently customconfig customer cycle dark dataset default defaultdomain defaults demos depending designs development directive directives disqusshortname documentation domain doubt existing free heavy higher io jawg jawg_apikey key label left light limited limits list local low making map mapbox mapbox_access_token maps method module number object objects ods-widgets odswidgetsconfig odswidgetsconfigprovider opencycle openstreetmap org osmtransport override overriding parameter picto production provider providers rate reached real second service set setconfig sets settings shortname specific stamen start streets string suitable suited support themes token toner traffic transport untouched usage values var visualizations watercolor widget widgets world"
     },
     {
       "section": "api",

@@ -64,6 +64,9 @@
          * @param {integer} [minZoom=none] Limits the map to a minimum zoom value. By default this is defined by the minimum zoom of the basemap.
          * @param {integer} [maxZoom=none] Limits the map to a maximum zoom value. By default this is defined by the maximum zoom of the basemap.
          * @param {boolean} [odsAutoResize] see {@link ods-widgets.directive:odsAutoResize Auto Resize} for more informations
+         * @param {boolean} [autoGeolocation=false] If "true", then the geolocation (center and zoom the map on the location of the user) is automatically done upon initialization.
+         * Only available when there is no `location` parameter on the widget.
+         * Warning: location sharing must be allowed priorly for Firefox users when multiple odsMap widget are set with autoGeolocation=true on the same page
          * @description
          * This widget allows you to build a map visualization and show data using various modes of display using layers.
          * Each layer is based on a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, a mode of display (clusters...), and various properties to define the
@@ -146,7 +149,9 @@
          * - `colorScale`: the name of a ColorBrewer [http://colorbrewer2.org/] scheme, like "YlGnBu". Available for `aggregation`.
          * - `colorRanges`: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example "red;20;orange;40;#00CE00" to color anything between
          * 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a decimal or integer field name in `colorByField` to configure which field will be
-         * used to decide on the color. Available for `raw` and `aggregation`.
+         * used to decide on the color (for `raw`) or with `function` and `expression` to determine the calculation used for the color (for `aggregation`). Available for `raw` and `aggregation`.
+         *
+         * An additional `colorFunction` property can contain the `log` value to use logarithmic scales (instead of the default linear scale) for generating the color scale. Available for `aggregation` and with `color` and `colorScale` display modes (or when none is specified).
          *
          * On top of color configuration, the icon used as a marker on the map can be configured through the `picto`
          * property. The property supports the following keywords:
@@ -232,6 +237,7 @@
                 staticMap: '@', // Prevent the map to be moved,
                 noRefit: '@',
                 autoResize: '@',
+                autoGeolocation: '@',
                 toolbarDrawing: '@',
                 toolbarGeolocation: '@',
                 toolbarFullscreen: '@',
@@ -263,6 +269,7 @@
                 var toolbarDrawing = !(scope.toolbarDrawing && scope.toolbarDrawing.toLowerCase() === 'false');
                 var toolbarGeolocation = !(scope.toolbarGeolocation && scope.toolbarGeolocation.toLowerCase() === 'false');
                 var toolbarFullscreen = !(scope.toolbarFullscreen && scope.toolbarFullscreen.toLowerCase() === 'false');
+                var autoGeolocation = scope.autoGeolocation && scope.autoGeolocation.toLowerCase() === 'true';
 
                 if (scope.context) {
                     // Handle the view defined on the map tag directly
@@ -421,14 +428,16 @@
                     }
 
                     if (toolbarGeolocation && !isStatic) {
-                        map.addControl(new L.Control.Locate({
+                        var geolocateControl = new L.Control.Locate({
                             maxZoom: 18,
                             strings: {
                                 title: translate("Show me where I am"),
                                 popup: translate("You are within {distance} {unit} from this point"),
                                 outsideMapBoundsMsg: translate("You seem located outside the boundaries of the map")
                             }
-                        }));
+                        });
+
+                        map.addControl(geolocateControl);
                     }
 
                     // Drawing
@@ -506,6 +515,12 @@
                                     refreshData(false);
 
                                     deferred.resolve();
+
+                                    //FF and IE don't fire locationerror event
+                                    //so we need to have a default view already set before trying to geolocate
+                                    if (autoGeolocation && geolocateControl) {
+                                        geolocateControl.locate();
+                                    }
                                 });
                             });
                         }
@@ -513,7 +528,7 @@
                         return deferred.promise;
                     };
 
-                    setInitialMapView(scope.mapContext.location).then(function() {
+                    setInitialMapView(scope.mapContext.location).then(function() {
                         scope.initialLoading = false;
                         onViewportMove(scope.map);
 
@@ -929,6 +944,7 @@
                 colorScale: '@',
                 colorRanges: '@',
                 colorByField: '@',
+                colorFunction: '@',
                 picto: '@',
                 showMarker: '@',
                 display: '@',
@@ -986,6 +1002,7 @@
 
                 var config = {
                     'color': color,
+                    'colorFunction': scope.colorFunction,
                     'borderColor': scope.borderColor,
                     'opacity': scope.opacity,
                     'picto': scope.picto,

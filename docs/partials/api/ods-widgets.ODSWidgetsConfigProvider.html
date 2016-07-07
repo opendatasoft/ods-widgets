@@ -9,12 +9,55 @@ The available settings are:</p>
 <ul>
 <li><strong><code>defaultDomain</code></strong> - <a href="#" class="label type-hint type-hint-string">string</a> - Value used as <code>domain</code> parameter for <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Contexts</a>
 and <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Contexts</a> when none is specified. Defaults is &#39;&#39; (empty string), which means a local API (root is /).</li>
-<li><strong><code>basemaps</code></strong> - <a href="#" class="label type-hint type-hint-array">Array</a> A list of <code>basemap</code> objects.</li>
+<li><strong><code>basemaps</code></strong> - <a href="#" class="label type-hint type-hint-array">Array</a> A list of <code>basemap</code> objects. By default, a free map service from <a href="https://www.jawg.io">Jawg.io</a> will be used, but it is not suitable to a real
+usage in production due to low rate limits.</li>
 <li><strong><code>chartColors</code></strong> - <a href="#" class="label type-hint type-hint-array">Array</a> A list of colors to use for charts. In each chart widget, the first chart will use the first color, the second chart
 will use the second color, and so on until the end of the list is reached, and we start from the beginning of the list again. If not set, default colors will be used,
 depending on the widgets themselves.</li>
 <li><strong><code>disqusShortname</code></strong> - <a href="#" class="label type-hint type-hint-string">string</a> - Shortname used by default for all <a href="#/api/ods-widgets.directive:odsDisqus">ods-widgets.directive:odsDisqus</a> widgets.</li>
 <li><strong><code>themes</code></strong> - <a href="#" class="label type-hint type-hint-object">Object</a> - Configuration of themes and their colors and/or picto</li>
+</ul>
+<h3 id="description_configuring-basemaps">Configuring basemaps</h3>
+<p>By default, the widgets will use a free map service from <a href="https://www.jawg.io">Jawg.io</a> as a basemap for every map.
+However, this is only suited for demos or development because of a limited number of calls. If you&#39;re making
+something for the &quot;real world&quot;, you should use another map provider. Currently, the widgets support the following
+providers:</p>
+<ul>
+<li><p><strong>Mapbox</strong>: you can create a free Mapbox account, which will allow you to use any of the &quot;classic maps&quot; as a provider <a href="https://www.mapbox.com/api-documentation/#maps">described on this documentation page</a>.
+<pre class="prettyprint linenums">
+    "basemaps": [{
+         "label": "Mapbox",
+         "provider": "mapbox.streets",
+         "mapbox_access_token": "&lt;your Mapbox access token&gt;"
+    }, ...
+</pre>
+</li>
+<li><p><strong>Jawg</strong>: if you are a Jawg.io customer, you can also use your Jawg API key for higher rate limits. Use <code>jawg.streets</code>, <code>jawg.light</code> or <code>jawg.dark</code> as a provider.
+<pre class="prettyprint linenums">
+    {
+         "label": "Jawg",
+         "provider": "jawg.streets",
+         "jawg_apikey": "&lt;your jawg access token&gt;"
+    }
+</pre>
+</li>
+<li><p><strong>Stamen</strong>: <a href="http://maps.stamen.com/">Stamen</a> provides free maps with very specific designs, which can be suited for some visualizations. Available providers are <code>stamen.watercolor</code> and <code>stamen.toner</code>.
+<pre class="prettyprint linenums">
+    {
+         "label": "Stamen",
+         "provider": "stamen.toner"
+    }
+</pre>
+</li>
+<li><p><strong>OpenStreetMap</strong>: The OpenStreetMap service provides two free maps for very specific uses (<code>osmtransport</code> for a transport map, <code>opencycle</code> for a cycle map).
+These maps are not suitable for very heavy traffic; in doubt, please contact <a href="http://www.openstreetmap.org/">OpenStreetMap</a> to ask them about your usage.
+<pre class="prettyprint linenums">
+    {
+         "label": "OpenStreetMap",
+         "provider": "osmtransport"
+    }
+</pre>
+</li>
 </ul>
 </div></div>
 <div class="member method"><h2 id="methods">Methods</h2>

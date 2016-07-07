@@ -24,13 +24,19 @@
                         return value;
 
                 }
+            },
+            'date': function(value, path) {
+                if (path.match(/^[0-9]{4}\/[0-9]{2}$/)) {
+                    return ODS.StringUtils.capitalize(moment.months()[parseInt(value, 10)-1]);
+                }
+                return value;
             }
         };
 
         return {
-            format: function(value, valueType) {
+            format: function(value, valueType, path) {
                 if (angular.isDefined(valueFormatters)) {
-                    return valueFormatters[valueType](value);
+                    return valueFormatters[valueType](value, path);
                 }
                 console.log('Warning (ValueDisplay): unknown value formatter "'+valueType+'"');
                 return value;

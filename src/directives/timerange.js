@@ -65,6 +65,38 @@
                 return null;
             }
         };
+        var roundTime = function (time, dateFormat, displayTime, role) {
+            if (typeof time === 'string') {
+                time = moment(time, dateFormat);
+            }
+            if (displayTime === 'false' || displayTime === false) {
+                if (role === 'from') {
+                    time.milliseconds(0);
+                    if (dateFormat.indexOf('H') === -1 && dateFormat.indexOf('h') === -1 && dateFormat.indexOf('LLL') === -1 && dateFormat.indexOf('LT') === -1) {
+                        time.hours(0);
+                    }
+                    if (dateFormat.indexOf('m') === -1 && dateFormat.indexOf('LLL') === -1 && dateFormat.indexOf('LT') === -1) {
+                        time.minutes(0);
+                    }
+                    if (dateFormat.indexOf('s') === -1 && dateFormat.indexOf('LTS') === -1) {
+                        time.seconds(0);
+                    }
+                }
+                if (role === 'to') {
+                    time.milliseconds(999);
+                    if (dateFormat.indexOf('H') === -1 && dateFormat.indexOf('h') === -1 && dateFormat.indexOf('LLL') === -1 && dateFormat.indexOf('LT') === -1) {
+                        time.hours(23);
+                    }
+                    if (dateFormat.indexOf('m') === -1 && dateFormat.indexOf('LLL') === -1 && dateFormat.indexOf('LT') === -1) {
+                        time.minutes(59);
+                    }
+                    if (dateFormat.indexOf('s') === -1 && dateFormat.indexOf('LTS') === -1) {
+                        time.seconds(59);
+                    }
+                }
+            }
+            return time;
+        };
 
         return {
             restrict: 'E',
@@ -79,22 +111,35 @@
                 to: '=?',
                 from: '=?'
             },
-            template: '<div class="odswidget odswidget-timerange">' +
-                    '<span class="odswidget-timerange__from"><span translate>From</span> <input type="text"></span>' +
-                    '<span class="odswidget-timerange__to"><span translate>to</span> <input type="text"></span>' +
-                '</div>',
+            template: '' +
+            '<div class="odswidget odswidget-timerange">' +
+            '    <span class="odswidget-timerange__from">' +
+            '        <span translate>From</span> ' +
+            '        <input type="text">' +
+            '    </span>' +
+            '    <span class="odswidget-timerange__to">' +
+            '        <span translate>to</span> ' +
+            '        <input type="text">' +
+            '    </span>' +
+            '</div>',
             link: function(scope, element, attrs) {
                 var inputs = element.find('input');
-                scope.dateFormat = scope.dateFormat || 'YYYY-MM-DD HH:mm';
+                var defaultDateFormat = 'YYYY-MM-DD HH:mm';
+                if (angular.isDefined(scope.displayTime) && scope.displayTime === 'false') {
+                    defaultDateFormat = 'YYYY-MM-DD';
+                }
+                scope.dateFormat = scope.dateFormat || defaultDateFormat;
                 // Handle default values
                 if (angular.isDefined(scope.defaultFrom)) {
-                    inputs[0].value = computeDefaultTime(scope.defaultFrom).format(scope.dateFormat);
-                    scope.from = formatTimeToISO(computeDefaultTime(scope.defaultFrom));
+                    var from = roundTime(computeDefaultTime(scope.defaultFrom), scope.dateFormat, scope.displayTime, 'from');
+                    inputs[0].value = from.format(scope.dateFormat);
+                    scope.from = formatTimeToISO(from);
                 }
 
                 if (angular.isDefined(scope.defaultTo)) {
-                    inputs[1].value = computeDefaultTime(scope.defaultTo).format(scope.dateFormat);
-                    scope.to = formatTimeToISO(computeDefaultTime(scope.defaultTo));
+                    var to = roundTime(computeDefaultTime(scope.defaultTo), scope.dateFormat, scope.displayTime, 'to');
+                    inputs[1].value = to.format(scope.dateFormat);
+                    scope.to = formatTimeToISO(to);
                 }
 
                 ModuleLazyLoader('rome').then(function() {
@@ -104,24 +149,31 @@
                         scope.displayTime = (scope.displayTime === "true");
                     }
 
-                    rome(inputs[0], angular.extend({}, romeOptions, {
+                    var fromRome = rome(inputs[0], angular.extend({}, romeOptions, {
                         time: scope.displayTime,
                         dateValidator: rome.val.beforeEq(inputs[1]),
                         initialValue: scope.defaultFrom,
                         inputFormat: scope.dateFormat
-                    })).on('data', function(value) {
+                    }));
+                    fromRome.on('data', function(value) {
                         scope.$apply(function() {
-                            scope.from = formatTimeToISO(moment(value, scope.dateFormat));
+                            var from = roundTime(moment(value, scope.dateFormat), scope.dateFormat, scope.displayTime, 'from');
+                            $(inputs[0]).val(from.format(scope.dateFormat));
+                            fromRome.setValue(from);
+                            scope.from = formatTimeToISO(from);
                         });
                     });
-                    rome(inputs[1], angular.extend({}, romeOptions, {
+                    var toRome = rome(inputs[1], angular.extend({}, romeOptions, {
                         time: scope.displayTime,
                         dateValidator: rome.val.afterEq(inputs[0]),
                         initialValue: scope.defaultTo,
                         inputFormat: scope.dateFormat
-                    })).on('data', function(value) {
+                    }));
+                    toRome.on('data', function(value) {
                         scope.$apply(function() {
-                            scope.to = formatTimeToISO(moment(value, scope.dateFormat));
+                            var to = roundTime(moment(value, scope.dateFormat), scope.dateFormat, scope.displayTime, 'to');
+                            toRome.setValue(to);
+                            scope.to = formatTimeToISO(to);
                         });
                     });
                 });

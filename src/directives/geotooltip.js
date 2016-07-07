@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('ods-widgets')
-        .directive('odsGeotooltip', ['$timeout', 'ModuleLazyLoader', function ($timeout, ModuleLazyLoader) {
+        .directive('odsGeotooltip', ['$timeout', 'ModuleLazyLoader', 'ODSWidgetsConfig', function ($timeout, ModuleLazyLoader, ODSWidgetsConfig) {
             /**
              * @ngdoc directive
              * @name ods-widgets.directive:odsGeotooltip
@@ -75,14 +75,12 @@
                 tippedElement.after(container);
 
                 if (map === null) {
-                    map = new L.map(container[0], {zoomControl: false});
-                    var tileLayer = new L.TileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
+                    map = new L.ODSMap(container[0], {
+                        zoomControl: false,
+                        basemapsList: [ODSWidgetsConfig.basemaps[0]],
                         minZoom: 1,
-                        maxZoom: 16,
-                        attribution: 'Tiles <a href="http://www.mapquest.com/" target="_blank">MapQuest</a> <img src="http://developer.mapquest.com/content/osm/mq_logo.png"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a>',
-                        subdomains: '1234'
+                        maxZoom: 16
                     });
-                    map.addLayer(tileLayer);
                 } else if (resized) {
                     map.invalidateSize();
                 }

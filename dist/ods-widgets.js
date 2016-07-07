@@ -6876,13 +6876,41 @@ mod.directive('infiniteScroll', [
     window.b64_to_utf8 = function(str) {
         return window.atob(str);
     };
+
+    window.format_string = function() {
+        // The string containing the format items (e.g. "{0}")
+        // will and always has to be the first argument.
+        var str = arguments[0];
+        if (arguments[1] !== null && typeof arguments[1] === 'object') {
+            var args = arguments[1];
+            // start with the second argument (i = 1)
+            for (var property in args) {
+                if (args.hasOwnProperty(property)) {
+                    // "gm" = RegEx options for Global search (more than one instance)
+                    // and for Multiline search
+                    var regEx = new RegExp("\\{" + property + "\\}", "gm");
+                    str = str.replace(regEx, args[property]);
+                }
+            }
+        } else {
+            // start with the second argument (i = 1)
+            for (var i = 1; i < arguments.length; i++) {
+                // "gm" = RegEx options for Global search (more than one instance)
+                // and for Multiline search
+                var regEx = new RegExp("\\{" + (i - 1) + "\\}", "gm");
+                str = str.replace(regEx, arguments[i]);
+            }
+        }
+
+        return str;
+    }
 }());;(function() {
     'use strict';
 
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '1.0.3';
+    var version = '1.0.4';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -6897,12 +6925,55 @@ mod.directive('infiniteScroll', [
          *
          * - **`defaultDomain`** - {@type string} - Value used as `domain` parameter for {@link ods-widgets.directive:odsCatalogContext Catalog Contexts}
          * and {@link ods-widgets.directive:odsDatasetContext Dataset Contexts} when none is specified. Defaults is '' (empty string), which means a local API (root is /).
-         * - **`basemaps`** - {@type Array} A list of `basemap` objects.
+         * - **`basemaps`** - {@type Array} A list of `basemap` objects. By default, a free map service from [Jawg.io](https://www.jawg.io) will be used, but it is not suitable to a real
+         * usage in production due to low rate limits.
          * - **`chartColors`** - {@type Array} A list of colors to use for charts. In each chart widget, the first chart will use the first color, the second chart
          * will use the second color, and so on until the end of the list is reached, and we start from the beginning of the list again. If not set, default colors will be used,
          * depending on the widgets themselves.
          * - **`disqusShortname`** - {@type string} - Shortname used by default for all {@link ods-widgets.directive:odsDisqus} widgets.
          * - **`themes`** - {@type Object} - Configuration of themes and their colors and/or picto
+         *
+         * # Configuring basemaps
+         * By default, the widgets will use a free map service from [Jawg.io](https://www.jawg.io) as a basemap for every map.
+         * However, this is only suited for demos or development because of a limited number of calls. If you're making
+         * something for the "real world", you should use another map provider. Currently, the widgets support the following
+         * providers:
+         *
+         * - **Mapbox**: you can create a free Mapbox account, which will allow you to use any of the "classic maps" as a provider [described on this documentation page](https://www.mapbox.com/api-documentation/#maps).
+         * <pre>
+         *     "basemaps": [{
+         *          "label": "Mapbox",
+         *          "provider": "mapbox.streets",
+         *          "mapbox_access_token": "<your Mapbox access token>"
+         *     }, ...
+         * </pre>
+         *
+         * - **Jawg**: if you are a Jawg.io customer, you can also use your Jawg API key for higher rate limits. Use `jawg.streets`, `jawg.light` or `jawg.dark` as a provider.
+         * <pre>
+         *     {
+         *          "label": "Jawg",
+         *          "provider": "jawg.streets",
+         *          "jawg_apikey": "<your jawg access token>"
+         *     }
+         * </pre>
+         *
+         * - **Stamen**: [Stamen](http://maps.stamen.com/) provides free maps with very specific designs, which can be suited for some visualizations. Available providers are `stamen.watercolor` and `stamen.toner`.
+         * <pre>
+         *     {
+         *          "label": "Stamen",
+         *          "provider": "stamen.toner"
+         *     }
+         * </pre>
+         *
+         * - **OpenStreetMap**: The OpenStreetMap service provides two free maps for very specific uses (`osmtransport` for a transport map, `opencycle` for a cycle map).
+         * These maps are not suitable for very heavy traffic; in doubt, please contact [OpenStreetMap](http://www.openstreetmap.org/) to ask them about your usage.
+         * <pre>
+         *     {
+         *          "label": "OpenStreetMap",
+         *          "provider": "osmtransport"
+         *     }
+         * </pre>
+         *
          *
          * @example
          * <pre>
@@ -6928,8 +6999,9 @@ mod.directive('infiniteScroll', [
             customAPIHeaders: null,
             basemaps: [
                 {
-                    "provider": "mapquest",
-                    "label": "MapQuest"
+                    "provider": "jawg.streets",
+                    "label": "Jawg Streets",
+                    "jawg_apikey": "opendatasoft-community"
                 }
             ],
             mapGeobox: false,
@@ -8174,6 +8246,7 @@ mod.directive('infiniteScroll', [
                     return {
                         "context": null,
                         "color": config.color,
+                        "colorFunction": config.colorFunction,
                         "picto": config.picto,
                         "clusterMode": display,
                         "func": config['function'] || (config.expression ? "AVG" : "COUNT"), // If there is a field, default to the average
@@ -8674,7 +8747,7 @@ mod.directive('infiniteScroll', [
                                 L.Control.prototype.initialize.call(this, options);
                             },
                             onAdd: function(map) {
-                                var grades = chroma.scale().domain([min, max], Math.min(10, values.length)).domain(),
+                                var grades = chroma.scale().domain([min, max], Math.min(10, values.length), layerConfig.colorFunction).domain(),
                                     htmlContent = '';
 
                                 var legendDiv = L.DomUtil.create('div', 'odswidget-map__legend');
@@ -8895,14 +8968,14 @@ mod.directive('infiniteScroll', [
                 scaleSteps = scaleSteps || 10;
                 if (angular.isString(layerConfig.color)) {
                     if (angular.isDefined(min) && angular.isDefined(max)) {
-                        return chroma.scale([chroma(layerConfig.color).brighten(50), layerConfig.color]).domain([min, max], Math.min(10, scaleSteps)).out('hex')(value);
+                        return chroma.scale([chroma(layerConfig.color).brighten(50), layerConfig.color]).domain([min, max], Math.min(10, scaleSteps), layerConfig.colorFunction).out('hex')(value);
                     } else {
                         // Simple color
                         return layerConfig.color;
                     }
                 } else {
                     if (layerConfig.color.type === 'scale') {
-                        return chroma.scale(layerConfig.color.scale).domain([min, max], Math.min(10, scaleSteps)).out('hex')(value);
+                        return chroma.scale(layerConfig.color.scale).domain([min, max], Math.min(10, scaleSteps), layerConfig.colorFunction).out('hex')(value);
                     } else if (layerConfig.color.type === 'range') {
                         var i;
                         for (i=0; i<layerConfig.color.ranges.length; i++) {
@@ -9810,13 +9883,19 @@ mod.directive('infiniteScroll', [
                         return value;
 
                 }
+            },
+            'date': function(value, path) {
+                if (path.match(/^[0-9]{4}\/[0-9]{2}$/)) {
+                    return ODS.StringUtils.capitalize(moment.months()[parseInt(value, 10)-1]);
+                }
+                return value;
             }
         };
 
         return {
-            format: function(value, valueType) {
+            format: function(value, valueType, path) {
                 if (angular.isDefined(valueFormatters)) {
-                    return valueFormatters[valueType](value);
+                    return valueFormatters[valueType](value, path);
                 }
                 console.log('Warning (ValueDisplay): unknown value formatter "'+valueType+'"');
                 return value;
@@ -10075,15 +10154,25 @@ mod.directive('infiniteScroll', [
             }
 
             if (field.type === 'int' || field.type === 'double') {
-                var unit = '';
+                var unit = '',
+                    decimals,
+                    formattedValue;
                 if (field.annotations) {
                     for (var a=0; a<field.annotations.length; a++) {
                         if (field.annotations[a].name === 'unit') {
                             unit = field.annotations[a].args[0];
                         }
+                        if(field.type == 'double' && field.annotations[a].name === 'decimals') {
+                            decimals = parseInt(field.annotations[a].args[0], 10);
+                        }
                     }
                 }
-                var formattedValue = $filter('number')(value);
+
+                if (angular.isDefined(decimals)) {
+                    formattedValue = $filter('number')(value, decimals);
+                } else {
+                    formattedValue = $filter('number')(value);
+                }
                 if (unit) {
                     if (unit === '$') {
                         formattedValue = unit + formattedValue;
@@ -10215,7 +10304,7 @@ mod.directive('infiniteScroll', [
     mod.filter('momentadd', [function() {
         /**
          * @ngdoc filter
-         * @name ods-widgets.filter:momentAdd
+         * @name ods-widgets.filter:momentadd
          *
          * @function
          * @param {string|Date|Number|Array|Moment} date A date
@@ -10247,6 +10336,25 @@ mod.directive('infiniteScroll', [
                 return moment(isoDate).fromNow();
         };
     }]);
+
+    mod.filter('momentdiff', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:momentdiff
+         *
+         * @description This filter returns the difference between two dates, in the given measurement. For example
+         * you could use it to calculate how many days there are between two dates.
+         * @function
+         * @param {string|Date|Number|Array|Moment} date1 A date
+         * @param {string|Date|Number|Array|Moment} date2 A date
+         * @param {string|Date|Number|Array|Moment} [measurement=milliseconds] The measurement to use ("years",
+         * "months", "weeks", "days", "hours", "minutes", and "seconds"). By default, milliseconds are used.
+         * @return {string} The difference in measurement between the two dates.
+         */
+        return function(date1, date2, measurement) {
+            return moment(date1).diff(date2, measurement);
+        };
+    });
 
 
     mod.filter('themeSlug', ['$filter', function($filter) {
@@ -10664,6 +10772,48 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
+    mod.filter('toObject', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:toObject
+         *
+         * @function
+         * @param {Array} array An array of objects.
+         * @param {String} key The key for the transformation.
+         * @return {Object} The array of objects converted into an object.
+         * @description Transform an array of objects into an objet, using a key passed as a parameter.
+         *
+         * @example
+         * <pre>
+         * [
+         *   { "name": "foo", "count": 201 },
+         *   { "name": "bar", "count": 202 }
+         * ]
+         * </pre>
+         *
+         * <pre>mylist|toObject:'name'</pre>
+         *
+         * <pre>
+         * {
+         *   "foo": { "name": "foo", "count": 201 },
+         *   "bar": { "name": "bar", "count": 202 }
+         * }
+         * </pre>
+         *
+         */
+        return function(array, key) {
+            if (!key) {
+                console.log('ERROR : this filter requires a key as a second parameter.');
+                return null;
+            }
+
+            return array.reduce(function(newObject, item) {
+                newObject[item[key]] = item;
+                return newObject;
+            }, {});
+        }
+    });
+
 }());;(function(target) {
     var ODS = {
         Context: {
@@ -10893,12 +11043,12 @@ mod.directive('infiniteScroll', [
         ArrayUtils: {
             transpose: function(input) {
                 if (angular.isArray(input)) {
-                    return input.reduce(function (resultObject, key) {
+                    return input.reduce(function (resultObject, key) {
                         resultObject[key] = true;
                         return resultObject;
                     }, {});
                 } else {
-                    return Object.keys(input).reduce(function (resultArray, key) {
+                    return Object.keys(input).reduce(function (resultArray, key) {
                         if (input[key]) {
                             resultArray.push(key);
                         }
@@ -11835,16 +11985,18 @@ mod.directive('infiniteScroll', [
 					LazyLoad.js('https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&weather', next);
 				}
 				function loadBreezometer(next) {
-					LazyLoad.css('http://static.breezometer.com/widget/css/breezometer.plugin.min.css');
-					LazyLoad.js('http://static.breezometer.com/widget/breezometer.plugin.min.js', next);
+					LazyLoad.css('https://static.breezometer.com/widget/css/breezometer.plugin.min.css');
+					LazyLoad.js('https://static.breezometer.com/widget/breezometer.plugin.min.js', next);
 				}
 				function initWidget() {
-					$(element).find('.breezometer_widget').breezometer({
-						lang: "en",
-						key: attrs.key,
-						vertical: false,
-						location:attrs.location
-					});
+					if (angular.isDefined($(document).breezometer)) {
+						$(element).find('.breezometer_widget').breezometer({
+							lang: "en",
+							key: attrs.key,
+							vertical: false,
+							location:attrs.location
+						});
+					}
 				}
 
 				function checkBreezometer() {
@@ -12503,14 +12655,15 @@ mod.directive('infiniteScroll', [
                       '      <div ng-click="tryToggleExpand()" class="expand-control" ng-class="{expanded: expanded}"><span translate>Details</span> <i class="fa fa-chevron-down"></i></div>' +
                       '      <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="!expanded">' +
                       '          <span class="count-text" ng-hide="!datasetObjectKeys || datasetObjectKeys.length <= 1">' +
-                      '               <span translate translate-n="datasetObjectKeys.length" translate-plural="{{$count}} datasets">{{$count}} dataset</span>' +
+                      '               <span translate translate-n="datasetObjectKeys.length" translate-plural="{{ $count }} datasets">{{ $count }} dataset</span>' +
                       '          </span>' +
                       '      </h3>' +
                       '      <div class="datasets-expanded">' +
                       '          <h2 ng-show="expanded" ng-click="tryToggleExpand()">{{ odsTitle }}</h2>' +
                       '          <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="expanded">' +
                       '              <span class="count-text">' +
-                      '                   <span translate translate-n="datasetObjectKeys.length" translate-plural="{{$count}} datasets">{{$count}} dataset</span>' +
+                      '                   <span ng-if="datasetObjectKeys.length == 0" translate>no dataset to display</span>' +
+                      '                   <span ng-if="datasetObjectKeys.length > 0" translate translate-n="datasetObjectKeys.length" translate-plural="{{ $count }} datasets">{{ $count }} dataset</span>' +
                       '              </span>' +
                       '          </h3>' +
                       '          <ul class="dataset-list"' +
@@ -13275,7 +13428,7 @@ mod.directive('infiniteScroll', [
                                 unwatchContext();
                                 if (scope.context.type === 'catalog') {
                                     facets = [
-                                        {name: 'modified', title: translate('Modified')},
+                                        {name: 'modified', title: translate('Modified'), valueFormatter: 'date'},
                                         {name: 'publisher', title: translate('Publisher')},
                                         {name: 'keyword', title: translate('Keyword')},
                                         {name: 'theme', title: translate('Theme')}
@@ -13296,6 +13449,9 @@ mod.directive('infiniteScroll', [
                                                     f.disjunctive = true;
                                                 }
                                             });
+                                            if (f.type == 'datetime' || f.type == 'date') {
+                                                f.valueFormatter = 'date';
+                                            }
                                         });
                                         buildFacetTagsHTML(scope, element, facets);
                                         scope.init();
@@ -13642,12 +13798,12 @@ mod.directive('infiniteScroll', [
                 };
                 var defaultTemplate = '' +
                     '<span class="odswidget-facet__category-count">{{ category.count|number }}</span> ' +
-                    '<span class="odswidget-facet__category-name" ng-bind-html="formatCategory(category.name)"></span>';
+                    '<span class="odswidget-facet__category-name" ng-bind-html="formatCategory(category.name, category.path)"></span>';
                 var template = scope.template || defaultTemplate;
                 element.find('a').append($compile(template)(scope));
 
                 if (scope.category.facets) {
-                    var sublist = angular.element('<ods-facet-category-list categories="category.facets" template="{{template}}"></ods-facet-category-list>');
+                    var sublist = angular.element('<ods-facet-category-list categories="category.facets" template="{{template}}" value-formatter="{{valueFormatter}}"></ods-facet-category-list>');
                     element.find('a').after(sublist);
                     $compile(sublist)(scope);
                 }
@@ -13657,7 +13813,7 @@ mod.directive('infiniteScroll', [
                 $scope.formatCategory = function(value) {
                     value = ODS.StringUtils.escapeHTML(value);
                     if ($scope.valueFormatter) {
-                        return ValueDisplay.format(value, $scope.valueFormatter);
+                        return ValueDisplay.format(value, $scope.valueFormatter, $scope.category.path);
                     } else {
                         return value;
                     }
@@ -13916,7 +14072,8 @@ mod.directive('infiniteScroll', [
                     var map = new L.ODSMap(element.find('.odswidget-geo-search__map')[0], {
                         scrollWheelZoom: false,
                         basemapsList: [ODSWidgetsConfig.basemaps[0]],
-                        disableAttribution: true
+                        disableAttribution: true,
+                        maxBounds: [[-90, -180], [90, 180]]
                     });
 
                     var drawnItems = new L.FeatureGroup();
@@ -13984,7 +14141,7 @@ mod.directive('infiniteScroll', [
     'use strict';
 
     angular.module('ods-widgets')
-        .directive('odsGeotooltip', ['$timeout', 'ModuleLazyLoader', function ($timeout, ModuleLazyLoader) {
+        .directive('odsGeotooltip', ['$timeout', 'ModuleLazyLoader', 'ODSWidgetsConfig', function ($timeout, ModuleLazyLoader, ODSWidgetsConfig) {
             /**
              * @ngdoc directive
              * @name ods-widgets.directive:odsGeotooltip
@@ -14057,14 +14214,12 @@ mod.directive('infiniteScroll', [
                 tippedElement.after(container);
 
                 if (map === null) {
-                    map = new L.map(container[0], {zoomControl: false});
-                    var tileLayer = new L.TileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png', {
+                    map = new L.ODSMap(container[0], {
+                        zoomControl: false,
+                        basemapsList: [ODSWidgetsConfig.basemaps[0]],
                         minZoom: 1,
-                        maxZoom: 16,
-                        attribution: 'Tiles <a href="http://www.mapquest.com/" target="_blank">MapQuest</a> <img src="http://developer.mapquest.com/content/osm/mq_logo.png"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a>',
-                        subdomains: '1234'
+                        maxZoom: 16
                     });
-                    map.addLayer(tileLayer);
                 } else if (resized) {
                     map.invalidateSize();
                 }
@@ -14491,7 +14646,8 @@ mod.directive('infiniteScroll', [
                     labels: {
                         step: 1,
                         rotation: -45,
-                        align: 'right'
+                        align: 'right',
+                        useHTML: true
                     },
                     startOfWeek: 1,
                     minPadding: 0,
@@ -14564,7 +14720,7 @@ mod.directive('infiniteScroll', [
                     formatter: function (tooltip) {
                         var items = this.points || angular.isArray(this) ? this : [this],
                             series = items[0].series,
-                            s;
+                            s = [];
 
                         // build the header
                         s = [tooltip.tooltipHeaderFormatter(items[0])];
@@ -14629,8 +14785,8 @@ mod.directive('infiniteScroll', [
 
             if (!precision) {
                 options.xAxis.labels.formatter = function() {
-                    if (this.value.length > 11) {
-                        return this.value.substring(0, 8) + '...';
+                    if (this.value.length > 12) {
+                        return '<span title="' + this.value.replace('"', '') + '" alt="' + this.value.replace('"', '') + '">' + this.value.substring(0, 9) + '...' + "</span>";
                     } else {
                         return this.value;
                     }
@@ -15451,6 +15607,25 @@ mod.directive('infiniteScroll', [
                                 }
                             }
 
+
+                            if (categories) {
+                                if (categories.length === 1) {
+                                    for (i = 0; i < options.series.length; i++) {
+                                        if (["line", "spline", "area", "arearange"].indexOf(options.series[i].type) !== -1) {
+                                            options.series[i].marker = options.series[i].marker || {};
+                                            options.series[i].marker.enabled = true;
+                                        }
+                                    }
+                                }
+                            } else {
+                                for (i = 0; i < options.series.length; i++) {
+                                    if (["line", "spline", "area", "arearange"].indexOf(options.series[i].type) !== -1
+                                        && options.series[i].data.length === 1) {
+                                        options.series[i].marker = options.series[i].marker || {};
+                                        options.series[i].marker.enabled = true;
+                                    }
+                                }
+                            }
                             // render the charts
                             if ($scope.chart && options.chart.renderTo) {
                                 $scope.chart.destroy();
@@ -16168,6 +16343,7 @@ mod.directive('infiniteScroll', [
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsHubspotForm', function () {
+        var alreadyCreated = [];
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsHubspotForm
@@ -16188,15 +16364,32 @@ mod.directive('infiniteScroll', [
         return {
             restrict: 'E',
             replace: true,
-            template: '<div class="odswidget odswidget-hubspot-form"></div>',
+            template: '<div class="odswidget odswidget-hubspot-form" id="{{uniqueId}}"></div>',
             scope: {
                 'portalId': '@',
                 'formId': '@'
             },
             link: function(scope, element, attrs) {
-                LazyLoad.js('//js.hsforms.net/forms/v2.js', function() {
-                    hbspt.forms.create({ portalId: attrs.portalId ,formId: attrs.formId, target:'.odswidget-hubspot-form' });
-                });
+                scope.uniqueId = 'hubspotform-' + Math.random().toString(36).substring(7);
+
+                var onLoad = function() {
+                    if (alreadyCreated.indexOf(scope.uniqueId) === -1) {
+                        alreadyCreated.push(scope.uniqueId);
+                        hbspt.forms.create({
+                            portalId: attrs.portalId,
+                            formId: attrs.formId,
+                            target: '#' + scope.uniqueId
+                        });
+                    }
+                };
+
+                if (angular.isUndefined(window.hbspt)) {
+                    LazyLoad.js('//js.hsforms.net/forms/v2.js', onLoad);
+                } else {
+                    onLoad();
+                }
+
+
             }
         };
     });
@@ -17515,6 +17708,9 @@ mod.directive('infiniteScroll', [
          * @param {integer} [minZoom=none] Limits the map to a minimum zoom value. By default this is defined by the minimum zoom of the basemap.
          * @param {integer} [maxZoom=none] Limits the map to a maximum zoom value. By default this is defined by the maximum zoom of the basemap.
          * @param {boolean} [odsAutoResize] see {@link ods-widgets.directive:odsAutoResize Auto Resize} for more informations
+         * @param {boolean} [autoGeolocation=false] If "true", then the geolocation (center and zoom the map on the location of the user) is automatically done upon initialization.
+         * Only available when there is no `location` parameter on the widget.
+         * Warning: location sharing must be allowed priorly for Firefox users when multiple odsMap widget are set with autoGeolocation=true on the same page
          * @description
          * This widget allows you to build a map visualization and show data using various modes of display using layers.
          * Each layer is based on a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, a mode of display (clusters...), and various properties to define the
@@ -17597,7 +17793,9 @@ mod.directive('infiniteScroll', [
          * - `colorScale`: the name of a ColorBrewer [http://colorbrewer2.org/] scheme, like "YlGnBu". Available for `aggregation`.
          * - `colorRanges`: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example "red;20;orange;40;#00CE00" to color anything between
          * 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a decimal or integer field name in `colorByField` to configure which field will be
-         * used to decide on the color. Available for `raw` and `aggregation`.
+         * used to decide on the color (for `raw`) or with `function` and `expression` to determine the calculation used for the color (for `aggregation`). Available for `raw` and `aggregation`.
+         *
+         * An additional `colorFunction` property can contain the `log` value to use logarithmic scales (instead of the default linear scale) for generating the color scale. Available for `aggregation` and with `color` and `colorScale` display modes (or when none is specified).
          *
          * On top of color configuration, the icon used as a marker on the map can be configured through the `picto`
          * property. The property supports the following keywords:
@@ -17683,6 +17881,7 @@ mod.directive('infiniteScroll', [
                 staticMap: '@', // Prevent the map to be moved,
                 noRefit: '@',
                 autoResize: '@',
+                autoGeolocation: '@',
                 toolbarDrawing: '@',
                 toolbarGeolocation: '@',
                 toolbarFullscreen: '@',
@@ -17714,6 +17913,7 @@ mod.directive('infiniteScroll', [
                 var toolbarDrawing = !(scope.toolbarDrawing && scope.toolbarDrawing.toLowerCase() === 'false');
                 var toolbarGeolocation = !(scope.toolbarGeolocation && scope.toolbarGeolocation.toLowerCase() === 'false');
                 var toolbarFullscreen = !(scope.toolbarFullscreen && scope.toolbarFullscreen.toLowerCase() === 'false');
+                var autoGeolocation = scope.autoGeolocation && scope.autoGeolocation.toLowerCase() === 'true';
 
                 if (scope.context) {
                     // Handle the view defined on the map tag directly
@@ -17872,14 +18072,16 @@ mod.directive('infiniteScroll', [
                     }
 
                     if (toolbarGeolocation && !isStatic) {
-                        map.addControl(new L.Control.Locate({
+                        var geolocateControl = new L.Control.Locate({
                             maxZoom: 18,
                             strings: {
                                 title: translate("Show me where I am"),
                                 popup: translate("You are within {distance} {unit} from this point"),
                                 outsideMapBoundsMsg: translate("You seem located outside the boundaries of the map")
                             }
-                        }));
+                        });
+
+                        map.addControl(geolocateControl);
                     }
 
                     // Drawing
@@ -17957,6 +18159,12 @@ mod.directive('infiniteScroll', [
                                     refreshData(false);
 
                                     deferred.resolve();
+
+                                    //FF and IE don't fire locationerror event
+                                    //so we need to have a default view already set before trying to geolocate
+                                    if (autoGeolocation && geolocateControl) {
+                                        geolocateControl.locate();
+                                    }
                                 });
                             });
                         }
@@ -17964,7 +18172,7 @@ mod.directive('infiniteScroll', [
                         return deferred.promise;
                     };
 
-                    setInitialMapView(scope.mapContext.location).then(function() {
+                    setInitialMapView(scope.mapContext.location).then(function() {
                         scope.initialLoading = false;
                         onViewportMove(scope.map);
 
@@ -18380,6 +18588,7 @@ mod.directive('infiniteScroll', [
                 colorScale: '@',
                 colorRanges: '@',
                 colorByField: '@',
+                colorFunction: '@',
                 picto: '@',
                 showMarker: '@',
                 display: '@',
@@ -18437,6 +18646,7 @@ mod.directive('infiniteScroll', [
 
                 var config = {
                     'color': color,
+                    'colorFunction': scope.colorFunction,
                     'borderColor': scope.borderColor,
                     'opacity': scope.opacity,
                     'picto': scope.picto,
@@ -18821,8 +19031,8 @@ mod.directive('infiniteScroll', [
             template: '<div class="odswidget odswidget-media-gallery">' +
                                 ' <div class="odswidget-media-gallery__container" >' +
                                 '     <div style="vertical-align: top;" class="odswidget-images__internal-table" infinite-scroll="loadMore()" infinite-scroll-distance="1" infinite-scroll-disabled="fetching">' +
-                                '        <div class="odswidget-media-gallery__media-line" ng-repeat="line in lines">' +
-                                '            <div ng-class="{\'odswidget-media-gallery__media-container--selected\': image.selected}" class="odswidget-media-gallery__media-container" style="vertical-align: top; display: inline-block" ng-repeat="image in line.images" ng-click="onClick($event, image, line)" data-index="{{ image.index + 1 }}">' +
+                                '        <div class="odswidget-media-gallery__media-line" ng-repeat="line in lines track by $index">' +
+                                '            <div ng-class="{\'odswidget-media-gallery__media-container--selected\': image.selected}" class="odswidget-media-gallery__media-container" style="vertical-align: top; display: inline-block" ng-repeat="image in line.images track by $index" ng-click="onClick($event, image, line)" data-index="{{ image.index + 1 }}">' +
                                 '                <div style="overflow: hidden" ng-style="{width: image.width, height: image.height, marginTop: image.marginTop, marginBottom: image.marginBottom, marginRight: image.marginRight, marginLeft: image.marginLeft }">' +
                                 '                    <ods-record-image record="image.record" field="{{ image.fieldname }}" domain-url="{{context.domainUrl}}"></ods-record-image>' +
                                 '                    <div ng-if="getRecordTitle(image.record)" class="odswidget-media-gallery__media-container__title-container">{{ getRecordTitle(image.record) }}</div>' +
@@ -18933,6 +19143,7 @@ mod.directive('infiniteScroll', [
                                     }
                                 }
                             }
+                            $scope.renderImages();
                             $scope.error = '';
                             $scope.fetching = false;
                             $scope.done = ($scope.page + 1) * $scope.resultsPerPage >= data.nhits;
@@ -19105,17 +19316,15 @@ mod.directive('infiniteScroll', [
                 scope.layout = layouts()[scope.displayMode + "Layout"]();
                 scope.layout.resetImages();
 
-                scope.$watch('images', function(newValue, oldValue) {
+                scope.renderImages = function() {
                     var i, width, height, image;
-                    if (newValue !== oldValue) {
-                        for (i = scope.nextImage; i < newValue.length; i++) {
-                            image = newValue[i];
-                            scope.layout.addImage(image, scope.images.length);
-                        }
-                        scope.nextImage = i;
+                    for (i = scope.nextImage; i < scope.images.length; i++) {
+                        image = scope.images[i];
+                        scope.layout.addImage(image, scope.images.length);
                     }
+                    scope.nextImage = i;
                     scope.layout.render(scope.lines, element.children()[0].getBoundingClientRect().width, scope.images.length);
-                }, true);
+                };
             }
         };
     }]);
@@ -19713,27 +19922,26 @@ mod.directive('infiniteScroll', [
                 field: '@',
                 domainUrl: '@?'
             },
-            controller: ['$scope', function($scope) {
-                $scope.imageUrl = null;
-
+            link: function(scope) {
+                scope.imageUrl = null;
                 var render = function() {
-                    var image = $scope.record.fields[$scope.field];
+                    var image = scope.record.fields[scope.field];
                     if (image.url) {
-                        $scope.imageUrl = image.url;
-                        $scope.placeholder = false;
+                        scope.imageUrl = image.url;
+                        scope.placeholder = false;
                     } else if (image.placeholder) {
-                        $scope.imageUrl = null;
-                        $scope.placeholder = true;
+                        scope.imageUrl = null;
+                        scope.placeholder = true;
                     } else {
-                        $scope.imageUrl = ($scope.domainUrl || '') + '/explore/dataset/' + $scope.record.datasetid + '/files/' + image.id + '/300/';
-                        $scope.placeholder = false;
+                        scope.imageUrl = (scope.domainUrl || '') + '/explore/dataset/' + scope.record.datasetid + '/files/' + image.id + '/300/';
+                        scope.placeholder = false;
                     }
                 };
 
-                $scope.$watch('[record, field]', function() {
+                scope.$watch('[record, field]', function(nv, ov) {
                     render();
                 }, true);
-            }]
+            }
         };
     });
 }());;(function () {
@@ -20605,6 +20813,9 @@ mod.directive('infiniteScroll', [
 
                         div = document.createElement('div');
                         div.className = 'odswidget-table__cell-container';
+                        if (field.type === "int" || field.type === "double") {
+                            div.className += ' odswidget-table__cell-container__right-aligned';
+                        }
                         td.appendChild(div);
 
                         var newScope, node;
@@ -20827,7 +21038,6 @@ mod.directive('infiniteScroll', [
 
                     $scope.$watch('context.parameters', function(newValue, oldValue) {
                         // Don't fire at initialization time
-                        if (newValue === oldValue) return;
 
                         DebugLogger.log('table -> searchOptions watch -> refresh records');
 
@@ -20998,7 +21208,7 @@ mod.directive('infiniteScroll', [
             link: function(scope, element, attrs, ctrls) {
                 var ctrl = ctrls[0],
                     autoResizeCtrl = ctrls[1] || ctrls[2];
-                if (autoResizeCtrl !== null) {
+                if (angular.isDefined(autoResizeCtrl) && autoResizeCtrl !== null) {
                     autoResizeCtrl.onResize = function() {
                         ctrl.resetScroll();
                         scope.layout = [];
@@ -21264,7 +21474,7 @@ mod.directive('infiniteScroll', [
 
                 var unwatch = $scope.$watch('context', function (nv, ov) {
  
-                    var parseParameter = function (context) {
+                    var parseParameter = function (context, returnOriginalValue) {
                         var parameter = context.parameters.q;
                         if (!parameter) {
                             return;
@@ -21274,6 +21484,8 @@ mod.directive('infiniteScroll', [
                         var matches = parameter.match(re);
                         if (matches && fields[context.name] === matches[1]) {
                             return matches[2];
+                        } else if (returnOriginalValue) {
+                            return parameter;
                         }
                     };
 
@@ -21296,6 +21508,27 @@ mod.directive('infiniteScroll', [
                             });
                         }
                         unwatch();
+                        
+                        // setup watch for future updates
+                        // the watch should reset the searchExpression only if ALL contexts share the same value
+                        $scope.$watch(
+                            function () {return contexts.map(function (context) {return context.parameters.q;})},
+                            function (nv, ov) {
+                                if (!angular.equals(nv, ov)) {
+                                    var allInSync = true;
+                                    var searchExpression = parseParameter(contexts[0], true);
+                                    for (var i = 1; i < contexts.length; i++) {
+                                        var contextSearchExpression = parseParameter(contexts[i], true);
+                                        if (searchExpression != contextSearchExpression) {
+                                            allInSync = false;
+                                            break;
+                                        }
+                                    }
+                                    if (allInSync) {
+                                        $scope.searchExpression = searchExpression;
+                                    }
+                                }
+                        }, true);
                     }
                 });
 
@@ -21342,7 +21575,7 @@ mod.directive('infiniteScroll', [
             template: '' +
                 '<div class="odswidget odswidget-theme-boxes">' +
                 '   <div ng-repeat="item in items" class="odswidget-theme-boxes__box" ods-facet-results="items" ods-facet-results-context="context" ods-facet-results-facet-name="theme">' +
-                '       <a ng-href="{{context.domainUrl}}/explore/?refine.theme={{encode(item.path)}}" target="_self" ods-tooltip="{{item.name}} ({{formatCount(item.count)}})" ods-tooltip-direction="bottom" style="display: block;">' +
+                '       <a ng-href="{{context.domainUrl}}/explore/?refine.theme={{encode(item.path)}}" target="_self" translate="ods-tooltip" translate-n="item.count" translate-plural="{{item.name}} ({{$count}} datasets)" ods-tooltip="{{item.name}} ({{$count}} dataset)" ods-tooltip-direction="bottom" style="display: block;">' +
                 '           <ods-theme-picto class="odswidget-theme-boxes__picto" theme="{{item.name}}"></ods-theme-picto>' +
                 '       </a>' +
                 '   </div>' +
@@ -21350,15 +21583,7 @@ mod.directive('infiniteScroll', [
             scope: {
                 context: '='
             },
-            controller: ['$scope', 'translate', function($scope, translate) {
-                $scope.formatCount = function(count) {
-                    // As it is very complicated to use ngPluralize with odsTooltip
-                    if (count > 1) {
-                        return count + ' ' + translate('datasets');
-                    } else {
-                        return count + ' ' + translate('dataset');
-                    }
-                };
+            controller: ['$scope', function($scope) {
                 $scope.encode = encodeURIComponent;
             }]
         };
@@ -21431,6 +21656,38 @@ mod.directive('infiniteScroll', [
                 return null;
             }
         };
+        var roundTime = function (time, dateFormat, displayTime, role) {
+            if (typeof time === 'string') {
+                time = moment(time, dateFormat);
+            }
+            if (displayTime === 'false' || displayTime === false) {
+                if (role === 'from') {
+                    time.milliseconds(0);
+                    if (dateFormat.indexOf('H') === -1 && dateFormat.indexOf('h') === -1 && dateFormat.indexOf('LLL') === -1 && dateFormat.indexOf('LT') === -1) {
+                        time.hours(0);
+                    }
+                    if (dateFormat.indexOf('m') === -1 && dateFormat.indexOf('LLL') === -1 && dateFormat.indexOf('LT') === -1) {
+                        time.minutes(0);
+                    }
+                    if (dateFormat.indexOf('s') === -1 && dateFormat.indexOf('LTS') === -1) {
+                        time.seconds(0);
+                    }
+                }
+                if (role === 'to') {
+                    time.milliseconds(999);
+                    if (dateFormat.indexOf('H') === -1 && dateFormat.indexOf('h') === -1 && dateFormat.indexOf('LLL') === -1 && dateFormat.indexOf('LT') === -1) {
+                        time.hours(23);
+                    }
+                    if (dateFormat.indexOf('m') === -1 && dateFormat.indexOf('LLL') === -1 && dateFormat.indexOf('LT') === -1) {
+                        time.minutes(59);
+                    }
+                    if (dateFormat.indexOf('s') === -1 && dateFormat.indexOf('LTS') === -1) {
+                        time.seconds(59);
+                    }
+                }
+            }
+            return time;
+        };
 
         return {
             restrict: 'E',
@@ -21445,22 +21702,35 @@ mod.directive('infiniteScroll', [
                 to: '=?',
                 from: '=?'
             },
-            template: '<div class="odswidget odswidget-timerange">' +
-                    '<span class="odswidget-timerange__from"><span translate>From</span> <input type="text"></span>' +
-                    '<span class="odswidget-timerange__to"><span translate>to</span> <input type="text"></span>' +
-                '</div>',
+            template: '' +
+            '<div class="odswidget odswidget-timerange">' +
+            '    <span class="odswidget-timerange__from">' +
+            '        <span translate>From</span> ' +
+            '        <input type="text">' +
+            '    </span>' +
+            '    <span class="odswidget-timerange__to">' +
+            '        <span translate>to</span> ' +
+            '        <input type="text">' +
+            '    </span>' +
+            '</div>',
             link: function(scope, element, attrs) {
                 var inputs = element.find('input');
-                scope.dateFormat = scope.dateFormat || 'YYYY-MM-DD HH:mm';
+                var defaultDateFormat = 'YYYY-MM-DD HH:mm';
+                if (angular.isDefined(scope.displayTime) && scope.displayTime === 'false') {
+                    defaultDateFormat = 'YYYY-MM-DD';
+                }
+                scope.dateFormat = scope.dateFormat || defaultDateFormat;
                 // Handle default values
                 if (angular.isDefined(scope.defaultFrom)) {
-                    inputs[0].value = computeDefaultTime(scope.defaultFrom).format(scope.dateFormat);
-                    scope.from = formatTimeToISO(computeDefaultTime(scope.defaultFrom));
+                    var from = roundTime(computeDefaultTime(scope.defaultFrom), scope.dateFormat, scope.displayTime, 'from');
+                    inputs[0].value = from.format(scope.dateFormat);
+                    scope.from = formatTimeToISO(from);
                 }
 
                 if (angular.isDefined(scope.defaultTo)) {
-                    inputs[1].value = computeDefaultTime(scope.defaultTo).format(scope.dateFormat);
-                    scope.to = formatTimeToISO(computeDefaultTime(scope.defaultTo));
+                    var to = roundTime(computeDefaultTime(scope.defaultTo), scope.dateFormat, scope.displayTime, 'to');
+                    inputs[1].value = to.format(scope.dateFormat);
+                    scope.to = formatTimeToISO(to);
                 }
 
                 ModuleLazyLoader('rome').then(function() {
@@ -21470,24 +21740,31 @@ mod.directive('infiniteScroll', [
                         scope.displayTime = (scope.displayTime === "true");
                     }
 
-                    rome(inputs[0], angular.extend({}, romeOptions, {
+                    var fromRome = rome(inputs[0], angular.extend({}, romeOptions, {
                         time: scope.displayTime,
                         dateValidator: rome.val.beforeEq(inputs[1]),
                         initialValue: scope.defaultFrom,
                         inputFormat: scope.dateFormat
-                    })).on('data', function(value) {
+                    }));
+                    fromRome.on('data', function(value) {
                         scope.$apply(function() {
-                            scope.from = formatTimeToISO(moment(value, scope.dateFormat));
+                            var from = roundTime(moment(value, scope.dateFormat), scope.dateFormat, scope.displayTime, 'from');
+                            $(inputs[0]).val(from.format(scope.dateFormat));
+                            fromRome.setValue(from);
+                            scope.from = formatTimeToISO(from);
                         });
                     });
-                    rome(inputs[1], angular.extend({}, romeOptions, {
+                    var toRome = rome(inputs[1], angular.extend({}, romeOptions, {
                         time: scope.displayTime,
                         dateValidator: rome.val.afterEq(inputs[0]),
                         initialValue: scope.defaultTo,
                         inputFormat: scope.dateFormat
-                    })).on('data', function(value) {
+                    }));
+                    toRome.on('data', function(value) {
                         scope.$apply(function() {
-                            scope.to = formatTimeToISO(moment(value, scope.dateFormat));
+                            var to = roundTime(moment(value, scope.dateFormat), scope.dateFormat, scope.displayTime, 'to');
+                            toRome.setValue(to);
+                            scope.to = formatTimeToISO(to);
                         });
                     });
                 });

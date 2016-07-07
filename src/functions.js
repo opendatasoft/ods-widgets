@@ -227,12 +227,12 @@
         ArrayUtils: {
             transpose: function(input) {
                 if (angular.isArray(input)) {
-                    return input.reduce(function (resultObject, key) {
+                    return input.reduce(function (resultObject, key) {
                         resultObject[key] = true;
                         return resultObject;
                     }, {});
                 } else {
-                    return Object.keys(input).reduce(function (resultArray, key) {
+                    return Object.keys(input).reduce(function (resultArray, key) {
                         if (input[key]) {
                             resultArray.push(key);
                         }

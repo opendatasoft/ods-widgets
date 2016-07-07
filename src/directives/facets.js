@@ -177,7 +177,7 @@
                                 unwatchContext();
                                 if (scope.context.type === 'catalog') {
                                     facets = [
-                                        {name: 'modified', title: translate('Modified')},
+                                        {name: 'modified', title: translate('Modified'), valueFormatter: 'date'},
                                         {name: 'publisher', title: translate('Publisher')},
                                         {name: 'keyword', title: translate('Keyword')},
                                         {name: 'theme', title: translate('Theme')}
@@ -198,6 +198,9 @@
                                                     f.disjunctive = true;
                                                 }
                                             });
+                                            if (f.type == 'datetime' || f.type == 'date') {
+                                                f.valueFormatter = 'date';
+                                            }
                                         });
                                         buildFacetTagsHTML(scope, element, facets);
                                         scope.init();
@@ -544,12 +547,12 @@
                 };
                 var defaultTemplate = '' +
                     '<span class="odswidget-facet__category-count">{{ category.count|number }}</span> ' +
-                    '<span class="odswidget-facet__category-name" ng-bind-html="formatCategory(category.name)"></span>';
+                    '<span class="odswidget-facet__category-name" ng-bind-html="formatCategory(category.name, category.path)"></span>';
                 var template = scope.template || defaultTemplate;
                 element.find('a').append($compile(template)(scope));
 
                 if (scope.category.facets) {
-                    var sublist = angular.element('<ods-facet-category-list categories="category.facets" template="{{template}}"></ods-facet-category-list>');
+                    var sublist = angular.element('<ods-facet-category-list categories="category.facets" template="{{template}}" value-formatter="{{valueFormatter}}"></ods-facet-category-list>');
                     element.find('a').after(sublist);
                     $compile(sublist)(scope);
                 }
@@ -559,7 +562,7 @@
                 $scope.formatCategory = function(value) {
                     value = ODS.StringUtils.escapeHTML(value);
                     if ($scope.valueFormatter) {
-                        return ValueDisplay.format(value, $scope.valueFormatter);
+                        return ValueDisplay.format(value, $scope.valueFormatter, $scope.category.path);
                     } else {
                         return value;
                     }

@@ -250,15 +250,25 @@
             }
 
             if (field.type === 'int' || field.type === 'double') {
-                var unit = '';
+                var unit = '',
+                    decimals,
+                    formattedValue;
                 if (field.annotations) {
                     for (var a=0; a<field.annotations.length; a++) {
                         if (field.annotations[a].name === 'unit') {
                             unit = field.annotations[a].args[0];
                         }
+                        if(field.type == 'double' && field.annotations[a].name === 'decimals') {
+                            decimals = parseInt(field.annotations[a].args[0], 10);
+                        }
                     }
                 }
-                var formattedValue = $filter('number')(value);
+
+                if (angular.isDefined(decimals)) {
+                    formattedValue = $filter('number')(value, decimals);
+                } else {
+                    formattedValue = $filter('number')(value);
+                }
                 if (unit) {
                     if (unit === '$') {
                         formattedValue = unit + formattedValue;
@@ -390,7 +400,7 @@
     mod.filter('momentadd', [function() {
         /**
          * @ngdoc filter
-         * @name ods-widgets.filter:momentAdd
+         * @name ods-widgets.filter:momentadd
          *
          * @function
          * @param {string|Date|Number|Array|Moment} date A date
@@ -422,6 +432,25 @@
                 return moment(isoDate).fromNow();
         };
     }]);
+
+    mod.filter('momentdiff', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:momentdiff
+         *
+         * @description This filter returns the difference between two dates, in the given measurement. For example
+         * you could use it to calculate how many days there are between two dates.
+         * @function
+         * @param {string|Date|Number|Array|Moment} date1 A date
+         * @param {string|Date|Number|Array|Moment} date2 A date
+         * @param {string|Date|Number|Array|Moment} [measurement=milliseconds] The measurement to use ("years",
+         * "months", "weeks", "days", "hours", "minutes", and "seconds"). By default, milliseconds are used.
+         * @return {string} The difference in measurement between the two dates.
+         */
+        return function(date1, date2, measurement) {
+            return moment(date1).diff(date2, measurement);
+        };
+    });
 
 
     mod.filter('themeSlug', ['$filter', function($filter) {
@@ -838,5 +867,47 @@
             return url;
         };
     }]);
+
+    mod.filter('toObject', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:toObject
+         *
+         * @function
+         * @param {Array} array An array of objects.
+         * @param {String} key The key for the transformation.
+         * @return {Object} The array of objects converted into an object.
+         * @description Transform an array of objects into an objet, using a key passed as a parameter.
+         *
+         * @example
+         * <pre>
+         * [
+         *   { "name": "foo", "count": 201 },
+         *   { "name": "bar", "count": 202 }
+         * ]
+         * </pre>
+         *
+         * <pre>mylist|toObject:'name'</pre>
+         *
+         * <pre>
+         * {
+         *   "foo": { "name": "foo", "count": 201 },
+         *   "bar": { "name": "bar", "count": 202 }
+         * }
+         * </pre>
+         *
+         */
+        return function(array, key) {
+            if (!key) {
+                console.log('ERROR : this filter requires a key as a second parameter.');
+                return null;
+            }
+
+            return array.reduce(function(newObject, item) {
+                newObject[item[key]] = item;
+                return newObject;
+            }, {});
+        }
+    });
 
 }());

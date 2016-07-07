@@ -92,8 +92,8 @@
             template: '<div class="odswidget odswidget-media-gallery">' +
                                 ' <div class="odswidget-media-gallery__container" >' +
                                 '     <div style="vertical-align: top;" class="odswidget-images__internal-table" infinite-scroll="loadMore()" infinite-scroll-distance="1" infinite-scroll-disabled="fetching">' +
-                                '        <div class="odswidget-media-gallery__media-line" ng-repeat="line in lines">' +
-                                '            <div ng-class="{\'odswidget-media-gallery__media-container--selected\': image.selected}" class="odswidget-media-gallery__media-container" style="vertical-align: top; display: inline-block" ng-repeat="image in line.images" ng-click="onClick($event, image, line)" data-index="{{ image.index + 1 }}">' +
+                                '        <div class="odswidget-media-gallery__media-line" ng-repeat="line in lines track by $index">' +
+                                '            <div ng-class="{\'odswidget-media-gallery__media-container--selected\': image.selected}" class="odswidget-media-gallery__media-container" style="vertical-align: top; display: inline-block" ng-repeat="image in line.images track by $index" ng-click="onClick($event, image, line)" data-index="{{ image.index + 1 }}">' +
                                 '                <div style="overflow: hidden" ng-style="{width: image.width, height: image.height, marginTop: image.marginTop, marginBottom: image.marginBottom, marginRight: image.marginRight, marginLeft: image.marginLeft }">' +
                                 '                    <ods-record-image record="image.record" field="{{ image.fieldname }}" domain-url="{{context.domainUrl}}"></ods-record-image>' +
                                 '                    <div ng-if="getRecordTitle(image.record)" class="odswidget-media-gallery__media-container__title-container">{{ getRecordTitle(image.record) }}</div>' +
@@ -204,6 +204,7 @@
                                     }
                                 }
                             }
+                            $scope.renderImages();
                             $scope.error = '';
                             $scope.fetching = false;
                             $scope.done = ($scope.page + 1) * $scope.resultsPerPage >= data.nhits;
@@ -376,17 +377,15 @@
                 scope.layout = layouts()[scope.displayMode + "Layout"]();
                 scope.layout.resetImages();
 
-                scope.$watch('images', function(newValue, oldValue) {
+                scope.renderImages = function() {
                     var i, width, height, image;
-                    if (newValue !== oldValue) {
-                        for (i = scope.nextImage; i < newValue.length; i++) {
-                            image = newValue[i];
-                            scope.layout.addImage(image, scope.images.length);
-                        }
-                        scope.nextImage = i;
+                    for (i = scope.nextImage; i < scope.images.length; i++) {
+                        image = scope.images[i];
+                        scope.layout.addImage(image, scope.images.length);
                     }
+                    scope.nextImage = i;
                     scope.layout.render(scope.lines, element.children()[0].getBoundingClientRect().width, scope.images.length);
-                }, true);
+                };
             }
         };
     }]);

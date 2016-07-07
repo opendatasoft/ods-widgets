@@ -116,6 +116,7 @@
                     return {
                         "context": null,
                         "color": config.color,
+                        "colorFunction": config.colorFunction,
                         "picto": config.picto,
                         "clusterMode": display,
                         "func": config['function'] || (config.expression ? "AVG" : "COUNT"), // If there is a field, default to the average
@@ -616,7 +617,7 @@
                                 L.Control.prototype.initialize.call(this, options);
                             },
                             onAdd: function(map) {
-                                var grades = chroma.scale().domain([min, max], Math.min(10, values.length)).domain(),
+                                var grades = chroma.scale().domain([min, max], Math.min(10, values.length), layerConfig.colorFunction).domain(),
                                     htmlContent = '';
 
                                 var legendDiv = L.DomUtil.create('div', 'odswidget-map__legend');
@@ -837,14 +838,14 @@
                 scaleSteps = scaleSteps || 10;
                 if (angular.isString(layerConfig.color)) {
                     if (angular.isDefined(min) && angular.isDefined(max)) {
-                        return chroma.scale([chroma(layerConfig.color).brighten(50), layerConfig.color]).domain([min, max], Math.min(10, scaleSteps)).out('hex')(value);
+                        return chroma.scale([chroma(layerConfig.color).brighten(50), layerConfig.color]).domain([min, max], Math.min(10, scaleSteps), layerConfig.colorFunction).out('hex')(value);
                     } else {
                         // Simple color
                         return layerConfig.color;
                     }
                 } else {
                     if (layerConfig.color.type === 'scale') {
-                        return chroma.scale(layerConfig.color.scale).domain([min, max], Math.min(10, scaleSteps)).out('hex')(value);
+                        return chroma.scale(layerConfig.color.scale).domain([min, max], Math.min(10, scaleSteps), layerConfig.colorFunction).out('hex')(value);
                     } else if (layerConfig.color.type === 'range') {
                         var i;
                         for (i=0; i<layerConfig.color.ranges.length; i++) {

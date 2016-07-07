@@ -42,7 +42,8 @@
                     var map = new L.ODSMap(element.find('.odswidget-geo-search__map')[0], {
                         scrollWheelZoom: false,
                         basemapsList: [ODSWidgetsConfig.basemaps[0]],
-                        disableAttribution: true
+                        disableAttribution: true,
+                        maxBounds: [[-90, -180], [90, 180]]
                     });
 
                     var drawnItems = new L.FeatureGroup();

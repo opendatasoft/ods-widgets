@@ -79,7 +79,7 @@
 
                 var unwatch = $scope.$watch('context', function (nv, ov) {
  
-                    var parseParameter = function (context) {
+                    var parseParameter = function (context, returnOriginalValue) {
                         var parameter = context.parameters.q;
                         if (!parameter) {
                             return;
@@ -89,6 +89,8 @@
                         var matches = parameter.match(re);
                         if (matches && fields[context.name] === matches[1]) {
                             return matches[2];
+                        } else if (returnOriginalValue) {
+                            return parameter;
                         }
                     };
 
@@ -111,6 +113,27 @@
                             });
                         }
                         unwatch();
+                        
+                        // setup watch for future updates
+                        // the watch should reset the searchExpression only if ALL contexts share the same value
+                        $scope.$watch(
+                            function () {return contexts.map(function (context) {return context.parameters.q;})},
+                            function (nv, ov) {
+                                if (!angular.equals(nv, ov)) {
+                                    var allInSync = true;
+                                    var searchExpression = parseParameter(contexts[0], true);
+                                    for (var i = 1; i < contexts.length; i++) {
+                                        var contextSearchExpression = parseParameter(contexts[i], true);
+                                        if (searchExpression != contextSearchExpression) {
+                                            allInSync = false;
+                                            break;
+                                        }
+                                    }
+                                    if (allInSync) {
+                                        $scope.searchExpression = searchExpression;
+                                    }
+                                }
+                        }, true);
                     }
                 });
 

@@ -323,7 +323,8 @@
                     labels: {
                         step: 1,
                         rotation: -45,
-                        align: 'right'
+                        align: 'right',
+                        useHTML: true
                     },
                     startOfWeek: 1,
                     minPadding: 0,
@@ -396,7 +397,7 @@
                     formatter: function (tooltip) {
                         var items = this.points || angular.isArray(this) ? this : [this],
                             series = items[0].series,
-                            s;
+                            s = [];
 
                         // build the header
                         s = [tooltip.tooltipHeaderFormatter(items[0])];
@@ -461,8 +462,8 @@
 
             if (!precision) {
                 options.xAxis.labels.formatter = function() {
-                    if (this.value.length > 11) {
-                        return this.value.substring(0, 8) + '...';
+                    if (this.value.length > 12) {
+                        return '<span title="' + this.value.replace('"', '') + '" alt="' + this.value.replace('"', '') + '">' + this.value.substring(0, 9) + '...' + "</span>";
                     } else {
                         return this.value;
                     }
@@ -1283,6 +1284,25 @@
                                 }
                             }
 
+
+                            if (categories) {
+                                if (categories.length === 1) {
+                                    for (i = 0; i < options.series.length; i++) {
+                                        if (["line", "spline", "area", "arearange"].indexOf(options.series[i].type) !== -1) {
+                                            options.series[i].marker = options.series[i].marker || {};
+                                            options.series[i].marker.enabled = true;
+                                        }
+                                    }
+                                }
+                            } else {
+                                for (i = 0; i < options.series.length; i++) {
+                                    if (["line", "spline", "area", "arearange"].indexOf(options.series[i].type) !== -1
+                                        && options.series[i].data.length === 1) {
+                                        options.series[i].marker = options.series[i].marker || {};
+                                        options.series[i].marker.enabled = true;
+                                    }
+                                }
+                            }
                             // render the charts
                             if ($scope.chart && options.chart.renderTo) {
                                 $scope.chart.destroy();
