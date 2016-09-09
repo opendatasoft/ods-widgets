@@ -83,7 +83,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget is the base widget allowing to display charts from OpenDataSoft datasets.",
-      "keywords": "affect allowing api appearance avg axis base basic case chart chart-type charts color column context data dataset datasets deaths default defined defines directive disable display displayed enable enforces example expression-y fc8d62 field-x fine form function-y generated hurricane-tracks-1851-20071 hurricanetracks185120071 hurricanetracks185120071-dataset hurricanetracks185120071-parameters ignored intervals label legend logarithmic max min multiple ods-widgets opendatasoft override parameters pressure represented requested scale series set single singleyaxislabel specific the-deadliest-hurricanes-in-the-united-states-1900-1996 thedeadliesthurricanesintheunitedstates19001996 thedeadliesthurricanesintheunitedstates19001996-dataset thedeadliesthurricanesintheunitedstates19001996-parameters timescale timeseries track_date tune type widget wind_kts works year"
+      "keywords": "active affect allowing api appearance automatically avg axis base basic case chart chart-type charts color column computed context data dataset datasets deaths default defined defines directive disable display displayed enable enforces example expression-y false fc8d62 field-x fine force form full function-y generated hurricane-tracks-1851-20071 hurricanetracks185120071 hurricanetracks185120071-dataset hurricanetracks185120071-parameters ignored intervals label legend logarithmic max min multiple numbers ods-widgets opendatasoft override parameters pressure represented requested scale series set single singleyaxis singleyaxislabel specific step the-deadliest-hurricanes-in-the-united-states-1900-1996 thedeadliesthurricanesintheunitedstates19001996 thedeadliesthurricanesintheunitedstates19001996-dataset thedeadliesthurricanesintheunitedstates19001996-parameters tick timescale timeseries track_date true tune type widget wind_kts works year"
     },
     {
       "section": "api",
@@ -101,7 +101,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "odsChartSerie is the sub widget that defines a serie in the chart with all its parameters.",
-      "keywords": "accumulated add aggreation aggregation api area arearange areas areaspline areasplinerange array avg axis bar calculate category chart charts clicked color color-thresholds colors column columnrange complete constant context contexts count counts cumulated custom define defined defines directive display displayed documents enable examples explanation expressiony facet ffff00 field format function functions functiony invidual label logarithmic max maximal maximum min minimal minimum multiply number objects ods-widgets odschart odschartserie parameter parameters pie quantile quantiles refine refined scale scatter serie series set simple spline stacks stddev sum takes three threshold todo tooltip top types units values wanted widget"
+      "keywords": "accumulated add aggreation aggregation api area arearange areas areaspline areasplinerange array automatically avg axis bar calculate category chart charts clicked color color-thresholds colors column columnrange complete computed constant context contexts count counts cumulated custom define defined defines directive display displayed documents enable examples explanation expressiony facet false ffff00 field force format full function functions functiony invidual label logarithmic max maximal maximum min minimal minimum multiply number numbers objects ods-widgets odschart odschartserie parameter parameters pie quantile quantiles refine refined scale scatter serie series set simple spline stacks stddev step sum takes three threshold tick todo tooltip top types units values wanted widget"
     },
     {
       "section": "api",
@@ -186,6 +186,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsGauge",
+      "shortName": "odsGauge",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays a gauge in one of the two following modes: circle or horizontal bar.",
+      "keywords": "api bar chart circle css css3 customizable defined directive display-mode displays empty entirely exceeding full gauge horizontal html lower max maximum modes module number ods-widgets relies represented result svg type values widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsGeoSearch",
       "shortName": "odsGeoSearch",
       "type": "directive",
@@ -235,7 +244,7 @@ NG_DOCS={
       "shortName": "odsLastDatasetsFeed",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays the last 5 datasets of a catalog, based on the modified metadata.",
+      "shortDescription": "This widget displays the last datasets of a catalog (default is last 5), based on the modified metadata.",
       "keywords": "api based catalog context datasets directive displays html metadata module ods-widgets opendatasoft public public-domain widget"
     },
     {
@@ -279,7 +288,7 @@ NG_DOCS={
       "shortName": "odsMostPopularDatasets",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays the top 5 datasets of a catalog, based on the number of downloads.",
+      "shortDescription": "This widget displays the top datasets of a catalog (default is the 5 top datasets), based on the number of downloads.",
       "keywords": "api based catalog context datasets directive displays downloads html module number ods-widgets opendatasoft public public-domain top widget"
     },
     {
@@ -478,7 +487,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget, when used on a checkbox, allows the checkbox to be used to &quot;toggle&quot; a value in an object, in other words to add it or remove when the checkbox",
-      "keywords": "add allows api apply array bank case catalog catalog-domain checkbox checkboxes checked context created csv directive government hold holds key model multiple object ods-toggle-key ods-toggle-model ods-toggle-value ods-widgets odstogglekey odstogglemodel odstogglvalue opendatasoft parameters public publisher refine remove toggle toggled type unchecked values variable widget world"
+      "keywords": "add allows api apply array bank case catalog catalog-domain checkbox checkboxes checked context created csv directive government hold holds key model multiple object ods-toggle-key ods-toggle-model ods-toggle-value ods-widgets odstogglekey odstogglemodel odstogglevalue opendatasoft parameters public publisher refine remove toggle toggled type unchecked values variable widget world"
     },
     {
       "section": "api",
@@ -514,7 +523,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This directive will refine the given context(s) for a click on an element representing a record.",
-      "keywords": "accept api called click conjunction context directive directives element exposes field1 field2 field3 field4 finite function html link method module mycontext mycontext2 ods-widgets odscalendar odschart odschartserie odsimages odsmap odsmaplayer optional order record refine refine-on-click refine-on-click-context refine-on-click-context-field refine-on-click-mycontext-context-field refine-on-click-mycontext-record-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-record-field refine-on-click-record-field refinecontext refineonclick refineonclickctrl relevant representing set support widget works"
+      "keywords": "accept api called click conjunction context directive directives element exposes field1 field2 field3 field4 finite function html link method module mycontext mycontext2 ods-widgets odscalendar odschart odschartserie odsmap odsmediagallery optional order record refine refine-on-click refine-on-click-context refine-on-click-context-field refine-on-click-mycontext-context-field refine-on-click-mycontext-record-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-record-field refine-on-click-record-field refinecontext refineonclick refineonclickctrl relevant representing set support widget works"
     },
     {
       "section": "api",
@@ -785,7 +794,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "ods-widgets",
       "shortDescription": "Use ODSWidgetsConfigProvider to set configuration values used by various directives.",
-      "keywords": "access account allow angular api app array basemap basemaps calls catalog chart chartcolors charts classic color colors config configuration configuring contact contexts create currently customconfig customer cycle dark dataset default defaultdomain defaults demos depending designs development directive directives disqusshortname documentation domain doubt existing free heavy higher io jawg jawg_apikey key label left light limited limits list local low making map mapbox mapbox_access_token maps method module number object objects ods-widgets odswidgetsconfig odswidgetsconfigprovider opencycle openstreetmap org osmtransport override overriding parameter picto production provider providers rate reached real second service set setconfig sets settings shortname specific stamen start streets string suitable suited support themes token toner traffic transport untouched usage values var visualizations watercolor widget widgets world"
+      "keywords": "access account allow angular api app array basemap basemaps calls catalog chart chartcolors charts classic color colors config configuration configuring contact contexts create currently customconfig customer cycle dark dataset default defaultdomain defaults demos depending designs development directive directives disqusshortname documentation domain doubt existing free heavy higher io jawg jawg_apikey key label left light limited limits list local low making map mapbox mapbox_access_token maps method module number object objects ods-widgets odswidgetsconfigprovider opencycle openstreetmap org osmtransport override overriding parameter picto production provider providers rate reached real second service set setconfig sets settings shortname specific stamen start streets string suitable suited support themes token toner traffic transport untouched usage values var visualizations watercolor widget widgets world"
     },
     {
       "section": "api",

@@ -48,9 +48,9 @@
                        '                 >' +
                        '                 <div class="odswidget-table__header-cell-container">' +
                        '                     <span ng-bind="field.label"></span>' +
-                       '                     <div ng-class="{\'odswidget-table__sort-icons\': true, \'odswidget-table__sort-icons--active\': field.name == context.parameters.sort || \'-\'+field.name == context.parameters.sort}" ng-show="isFieldSortable(field)">' +
-                       '                         <i class="fa fa-chevron-up odswidget-table__sort-icons__up" ng-hide="isAscendingSorted(field)"></i>' +
-                       '                         <i class="fa fa-chevron-down odswidget-table__sort-icons__down" ng-hide="isDescendingSorted(field)"></i>' +
+                       '                     <div ng-class="{\'odswidget-table__sort-icons\': true, \'odswidget-table__sort-icons--active\': field.name == context.parameters.sort || \'-\'+field.name == context.parameters.sort}" ng-show="isFieldSortable(field)" title="sort" translate="title">' +
+                       '                         <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true" ng-hide="isAscendingSorted(field)"></i>' +
+                       '                         <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true" ng-hide="isDescendingSorted(field)"></i>' +
                        '                     </div>' +
                        '                 </div>' +
                        '             </th>' +
@@ -67,9 +67,9 @@
                        '                     title="{{ field.name }}">' +
                        '                     <div class="odswidget-table__cell-container">' +
                        '                         <span ng-bind="field.label"></span>' +
-                       '                         <div class="odswidget-table__sort-icons" ng-show="isFieldSortable(field)">' +
-                       '                             <i class="fa fa-chevron-up odswidget-table__sort-icons__up"></i>' +
-                       '                             <i class="fa fa-chevron-down odswidget-table__sort-icons__down"></i>' +
+                       '                         <div class="odswidget-table__sort-icons" ng-show="isFieldSortable(field)" title="sort" translate="title">' +
+                       '                             <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true"></i>' +
+                       '                             <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true"></i>' +
                        '                         </div>' +
                        '                     </div>' +
                        '                 </th>' +
@@ -79,7 +79,7 @@
                        '         </tbody>' +
                        '     </table>' +
                        ' </div>' +
-                       ' <div ng-if="displayDatasetFeedback" class="table-feedback-new"><a ods-dataset-feedback ods-dataset-feedback-dataset="context.dataset"><i class="fa fa-comment"></i> <span translate>Suggest a new record</span></a></div>' +
+                       ' <div ng-if="displayDatasetFeedback" class="table-feedback-new"><a ods-dataset-feedback ods-dataset-feedback-dataset="context.dataset"><i class="fa fa-comment" aria-hidden="true"></i> <span translate>Suggest a new record</span></a></div>' +
                        ' <div class="odswidget-overlay" ng-hide="fetching || records"><span class="odswidget-overlay__message" translate>No results</span></div>' +
                        ' <div class="odswidget-overlay" ng-hide="(!fetching || records) && !working"><ods-spinner></ods-spinner></div>' +
                     '</div>',
@@ -125,6 +125,9 @@
 
                 var $infiniteScrollElement;
 
+                var lastLoadedPage = null; // Starts at 0
+                var pagesWaitingHandling = {};
+
                 var refreshRecords = function(init) {
                     $scope.fetching = true;
                     var options = {}, start;
@@ -138,6 +141,8 @@
                             currentRequestsTimeouts.forEach(function(t) {t.resolve();});
                             currentRequestsTimeouts.splice(0, currentRequestsTimeouts.length);
                         }
+                        pagesWaitingHandling = {};
+                        lastLoadedPage = null;
                     } else {
                         $scope.page++;
                         start = $scope.page * $scope.resultsPerPage;
@@ -163,20 +168,43 @@
                     var timeout = $q.defer();
                     currentRequestsTimeouts.push(timeout);
 
+                    function handleResponse(data, page) {
+                        if (!data.records.length) {
+                            $scope.working = false;
+                        }
+
+                        $scope.records = init ? data.records : $scope.records.concat(data.records);
+                        $scope.nhits = data.nhits;
+
+                        $scope.error = '';
+                        $scope.fetching = false;
+                        $scope.done = ($scope.page+1) * $scope.resultsPerPage >= data.nhits;
+
+                        currentRequestsTimeouts.splice(currentRequestsTimeouts.indexOf(timeout), 1);
+
+                        lastLoadedPage = page;
+
+                        $timeout(function() {
+                            // The rendering code can only handle 40 records at one go right now, so we need to let the
+                            // previous page render first.
+                            // We could change the rendering code, but no time today for that battle. :/
+                            if (angular.isDefined(pagesWaitingHandling[page+1])) {
+                                var pageInfo = pagesWaitingHandling[page+1];
+                                delete pagesWaitingHandling[page+1];
+                                pageInfo.callback(pageInfo.data, page+1);
+                            }
+                        });
+
+                    };
+
                     ODSAPI.records.search($scope.context, options, timeout.promise).
                         success(function(data, status, headers, config) {
-                            if (!data.records.length) {
-                                $scope.working = false;
+                            var responsePage = data.parameters.start / data.parameters.rows;
+                            if (lastLoadedPage === null && responsePage === 0 || angular.isNumber(lastLoadedPage) && responsePage === lastLoadedPage + 1) {
+                                handleResponse(data, responsePage);
+                            } else {
+                                pagesWaitingHandling[responsePage] = {'callback': handleResponse, 'data': data};
                             }
-
-                            $scope.records = init ? data.records : $scope.records.concat(data.records);
-                            $scope.nhits = data.nhits;
-
-                            $scope.error = '';
-                            $scope.fetching = false;
-                            $scope.done = ($scope.page+1) * $scope.resultsPerPage >= data.nhits;
-
-                            currentRequestsTimeouts.splice(currentRequestsTimeouts.indexOf(timeout), 1);
                         }).
                         error(function(data, status, headers, config) {
                             if (data) {
@@ -285,7 +313,7 @@
 
                     if ($scope.displayDatasetFeedback) {
                         // FIXME: This is entirely tied to ODS platform, it should not be within a widget
-                        var feedbackButton = '<i class="fa fa-comment table-feedback-icon" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="Suggest changes for this record" translate="ods-tooltip"></i>';
+                        var feedbackButton = '<i class="fa fa-comment table-feedback-icon" aria-hidden="true" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="Suggest changes for this record" translate="ods-tooltip"></i>';
                         var localScope = $scope.$new(true);
                         localScope.record = record;
                         localScope.dataset = $scope.context.dataset;
@@ -480,7 +508,7 @@
                 };
 
 
-                $scope.$watch('records', function(newValue, oldValue) {
+                $scope.$watchCollection('records', function(newValue, oldValue) {
                     if (newValue !== oldValue) {
                         displayRecords();
                         $scope.computeLayout();

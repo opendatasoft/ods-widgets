@@ -1,0 +1,38 @@
+<h1><code ng:non-bindable="">odsGauge</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsgauge-page"><p>This widget displays a gauge in one of the two following modes: circle or horizontal bar.
+The widget relies on CSS3 and SVG and as a result is entirely customizable in CSS.
+Values exceeding the given max will be represented as a full gauge, whereas values lower than 0 will be
+represented as an empty gauge.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-gauge
+       display-mode="{string}"
+       max="{float}"
+       value="{float}"&gt;
+&lt;/ods-gauge&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive creates new scope.</li>
+</ul>
+</div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>displayMode</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsgauge-page"><p>Type of chart : &#39;circle&#39; or &#39;bar&#39;</p>
+</div> <p><em>(default: circle)</em></p></td></tr><tr><td>max</td><td><a href="" class="label type-hint type-hint-float">float</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsgauge-page"><p>The maximum value for the gauge.</p>
+</div> <p><em>(default: 100)</em></p></td></tr><tr><td>value</td><td><a href="" class="label type-hint type-hint-float">float</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsgauge-page"><p>A number between 0 and the defined max</p>
+</div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsgauge-page"><h4 id="example_source">Source</h4>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-11" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html-11" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-11">
+    <ods-gauge display-mode="circle" value="33" max="70"></ods-gauge>
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-11" ng-eval-javascript=""></div>
+</div></div>
+</div>

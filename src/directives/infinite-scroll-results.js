@@ -95,7 +95,8 @@
                             renderResults(data.datasets, init);
                         });
                     } else {
-                        ODSAPI.records.search($scope.context, {rows: 10, start: start}).success(function(data) {
+                        var params = angular.extend({}, $scope.context.parameters, {rows: 10, start: start});
+                        ODSAPI.records.search($scope.context, params).success(function(data) {
                             noMoreResults = data.records.length == 0;
                             renderResults(data.records, init);
                         });

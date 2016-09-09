@@ -58,7 +58,7 @@
             '<div class="odswidget odswidget-text-search">' +
             '    <form ng-submit="applySearch()" class="odswidget-text-search__form">' +
             '        <input class="odswidget-text-search__search-box" name="q" type="text" ng-model="searchExpression" placeholder="{{ translatedPlaceholder }}">' +
-            '        <button type="submit" class="odswidget-text-search__submit"><i class="fa fa-search"></i></button>' +
+            '        <button type="submit" class="odswidget-text-search__submit" title="{{ translatedPlaceholder}}"><i class="fa fa-search" aria-hidden="true"></i></button>' +
             '    </form>' +
             '</div>',
             scope: {

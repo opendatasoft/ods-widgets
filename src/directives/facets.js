@@ -456,14 +456,14 @@
             '   <li ng-repeat="category in categories|filter:searchValue(valueFilter)" class="odswidget-facet__category-container">' +
             '       <ods-facet-category ng-if="!categoryIsHidden(category)" facet-name="{{ facetName }}" category="category" template="{{template}}" value-formatter="{{valueFormatter}}" ng-show="visible($index)"></ods-facet-category>' +
             '   </li>' +
-            '   <li ng-if="!suggestMode && visibleItems < (categories|filter:searchValue(valueFilter)).length" ' +
+            '   <li ng-if="!suggestMode && visibleItems < (filterInvisibleCategories(categories)|filter:searchValue(valueFilter)).length" ' +
             '       class="odswidget-facet__expansion-control">' +
             '       <a ng-hide="expanded" href="#" ng-click="toggle($event)" class="odswidget-facet__expansion-control-link">' +
-            '           <i class="fa fa-angle-right"></i>' +
+            '           <i class="fa fa-angle-right" aria-hidden="true"></i>' +
             '           <span translate>More</span>' +
             '       </a>' +
             '       <a ng-show="expanded" href="#" ng-click="toggle($event)" class="odswidget-facet__expansion-control-link">' +
-            '           <i class="fa fa-angle-right"></i>' +
+            '           <i class="fa fa-angle-right" aria-hidden="true"></i>' +
             '           <span translate>Less</span>' +
             '       </a>' +
             '   </li>' +
@@ -488,6 +488,9 @@
                     var testScope = scope.$new(false);
                     testScope.category = category;
                     return testScope.$eval(scope.hideCategoryIf);
+                };
+                scope.filterInvisibleCategories = function(categories) {
+                    return categories.filter(function(category) { return !scope.categoryIsHidden(category); });
                 };
             },
             controller: ['$scope', '$filter', function($scope, $filter) {

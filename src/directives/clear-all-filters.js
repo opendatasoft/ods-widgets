@@ -25,7 +25,7 @@
             },
             template: '' +
             '<a class="odswidget-clear-all-filters" href="" ng-click="clearAll()">' +
-            '    <i class="fa fa-ban"></i> ' +
+            '    <i class="fa fa-ban" aria-hidden="true"></i> ' +
             '    <span translate>Clear all</span>' +
             '</a>',
             controller: ['$scope', function ($scope) {

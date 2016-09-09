@@ -1,0 +1,52 @@
+.odswidget-gauge {
+    position: relative;
+}
+
+.odswidget-gauge__svg {
+
+}
+
+.odswidget-gauge__svg-background {
+    fill: none;
+    stroke-width: 10px;
+    stroke: @color-gauge-background;
+}
+
+.odswidget-gauge__svg-filler {
+    fill: none;
+    stroke-width: 8px;
+    stroke: @color-gauge-filler;
+}
+
+.odswidget-gauge__value {
+    color: @color-gauge-value;
+    font-weight: bold;
+    font-size: 1.33rem;
+    line-height: 2rem;
+    width: 100%;
+    text-align: center;
+}
+
+// Display mode specific values
+
+.odswidget-gauge--circle {
+    .odswidget-gauge__svg {
+        transform: rotate(-90deg);
+    }
+    .odswidget-gauge__value {
+        position: absolute;
+        text-align: center;
+        top: 50%;
+        left: 0;
+        margin-top: -1rem;
+    }
+}
+
+.odswidget-gauge--bar {
+    .odswidget-gauge__svg {
+        width: 100%;
+        height: 10px;
+    }
+    .odswidget-gauge__value {
+    }
+}

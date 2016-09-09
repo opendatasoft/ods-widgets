@@ -34,7 +34,7 @@
             '     ng-mouseenter="displayButtons=true" ng-mouseleave="displayButtons=false">' +
             '    <div class="odswidget-social-buttons__header">' +
             '        <span translate>Share</span>' +
-            '        <i class="fa fa-angle-down"></i>' +
+            '        <i class="fa fa-angle-down" aria-hidden="true"></i>' +
             '    </div>' +
             '    <div class="odswidget-social-buttons__buttons" ' +
             '         ng-class="{\'odswidget-social-buttons__buttons--open\': displayButtons}">' +

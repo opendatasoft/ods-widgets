@@ -1034,6 +1034,17 @@
 .odswidget-social-buttons__buttons--open a iframe {
   min-width: 60px;
 }
+.odswidget-spinner__backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .odswidget-spinner--large {
   font-size: 1.33em;
 }
@@ -1438,6 +1449,41 @@
 .odswidget-geo-search__map {
   width: 100%;
   height: 200px;
+}
+.odswidget-gauge {
+  position: relative;
+}
+.odswidget-gauge__svg-background {
+  fill: none;
+  stroke-width: 10px;
+  stroke: #e5e5e5;
+}
+.odswidget-gauge__svg-filler {
+  fill: none;
+  stroke-width: 8px;
+  stroke: #ec643c;
+}
+.odswidget-gauge__value {
+  color: #2c3f56;
+  font-weight: bold;
+  font-size: 1.33rem;
+  line-height: 2rem;
+  width: 100%;
+  text-align: center;
+}
+.odswidget-gauge--circle .odswidget-gauge__svg {
+  transform: rotate(-90deg);
+}
+.odswidget-gauge--circle .odswidget-gauge__value {
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  left: 0;
+  margin-top: -1rem;
+}
+.odswidget-gauge--bar .odswidget-gauge__svg {
+  width: 100%;
+  height: 10px;
 }
 .odswidget.odswidget-imagified {
   max-width: 100% !important;

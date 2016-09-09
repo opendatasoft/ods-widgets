@@ -11,7 +11,7 @@
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
-         * This widget displays the last 5 datasets of a catalog, based on the *modified* metadata.
+         * This widget displays the last datasets of a catalog (default is last 5), based on the *modified* metadata.
          *
          * @example
          *  <example module="ods-widgets">
@@ -32,17 +32,19 @@
                 '       <ods-theme-picto class="odswidget-last-datasets-feed__theme-picto" theme="{{dataset.metas.theme|firstValue}}"></ods-theme-picto>' +
                 '       <div class="odswidget-last-datasets-feed__dataset-details">' +
                 '           <div class="odswidget-last-datasets-feed__dataset-details-title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
-                '           <div class="odswidget-last-datasets-feed__dataset-details-modified"><i class="fa fa-calendar"></i> <span title="{{ dataset.metas.modified|moment:\'LLL\' }}"><span translate>Modified</span> {{ dataset.metas.modified|timesince }}</span></div>' +
+                '           <div class="odswidget-last-datasets-feed__dataset-details-modified"><i class="fa fa-calendar" aria-hidden="true"></i> <span title="{{ dataset.metas.modified|moment:\'LLL\' }}"><span translate>Modified</span> {{ dataset.metas.modified|timesince }}</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
                 '</div>',
             scope: {
-                context: '='
+                context: '=',
+                max: '@'
             },
             controller: ['$scope', function($scope) {
+                $scope.max = $scope.max || 5;
                 var refresh = function() {
-                    ODSAPI.datasets.search($scope.context, {'rows': 5, 'sort': 'modified'}).
+                    ODSAPI.datasets.search($scope.context, {'rows': $scope.max, 'sort': 'modified'}).
                         success(function(data) {
                             $scope.datasets = data.datasets;
                         });

@@ -14,9 +14,8 @@
          *
          * It works in conjunction with a finite set of other directives:
          * * {@link ods-widgets.directive:odsCalendar odsCalendar}
-         * * {@link ods-widgets.directive:odsImages odsImages}
+         * * {@link ods-widgets.directive:odsMediaGallery odsMediaGallery}
          * * {@link ods-widgets.directive:odsMap odsMap}
-         * * {@link ods-widgets.directive:odsMapLayer odsMapLayer}
          * * {@link ods-widgets.directive:odsChart odsChart}
          * * {@link ods-widgets.directive:odsChartSerie odsChartSerie}
          *

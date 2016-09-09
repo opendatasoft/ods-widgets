@@ -304,12 +304,13 @@
                     }
                 }
                 callbacks[datasetid] = [];
+                var callback;
                 if (callbacks['']) {
-                    for (var i = 0; i < callbacks[''].length; i++) {
-                        callbacks[''][i]();
+                    while (callbacks[''].length) {
+                        callback = callbacks[''].pop();
+                        setTimeout(callback);
                     }
                 }
-                callbacks[''] = [];
             },
             onLoad: function(datasetid, f) {
                 if (typeof datasetid === "function") {
@@ -319,6 +320,7 @@
                 if (this.isInitialized(datasetid)) {
                     f();
                 } else {
+
                     if (!(datasetid in callbacks)) {
                         callbacks[datasetid] = [];
                     }
@@ -601,6 +603,10 @@
 
                 if (chart.type !== 'column' && chart.type !== 'bar' && chart.displayStackValues) {
                     chart.displayStackValues = false;
+                }
+
+                if (typeof chart.scientificDisplay === "undefined") {
+                    chart.scientificDisplay = true;
                 }
 
                 // cleanup unwanted values

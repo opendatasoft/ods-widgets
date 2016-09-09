@@ -141,11 +141,13 @@ L.ODSTileLayer = L.TileLayer.extend({
                 }
             }
 
-
+            attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/wp-content/uploads/2016/06/favicon.png" width="16" height="16"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
+            attrib = this._addAttributionPart(attrib, appendAttribution);
+            
             layerOptions = {
                 minZoom: 1,
                 maxZoom: 22,
-                attribution: !disableAttribution ? 'Tiles Courtesy of <a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/assets/images/favicon.png" width="16" height="16"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors' : ''
+                attribution: !disableAttribution ? attrib : ''
             };
             L.TileLayer.prototype.initialize.call(this, jawgUrl, layerOptions);
         } else if (basemap.provider === 'custom') {
@@ -157,6 +159,9 @@ L.ODSTileLayer = L.TileLayer.extend({
             }
             if (basemap.maxZoom) {
                 layerOptions.maxZoom = basemap.maxZoom;
+            }
+            if (basemap.strictTMS) {
+                layerOptions.tms = true;
             }
 
             attrib = this._addAttributionPart(attrib, basemap.attribution);

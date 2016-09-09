@@ -199,25 +199,26 @@
         };
     }]);
 
-    mod.factory("odsErrorService", function() {
-        var notificationList = [];
+    mod.factory("odsNotificationService", function() {
+        var callbacks = [];
         return {
-            registerForErrorNotification: function(callback) {
-                notificationList.push(callback);
+            registerForNotifications: function(callback) {
+                callbacks.push(callback);
             },
-            sendErrorNotification: function(error) {
-                if (angular.isString(error)) {
-                    error = {
+            sendNotification: function(notification) {
+                if (angular.isString(notification)) {
+                    notification = {
                         title: 'Error',
-                        error: error
+                        type: 'error',
+                        message: notification
                     };
                 }
-                angular.forEach(notificationList, function(callback) {
-                    callback(error);
+                angular.forEach(callbacks, function(callback) {
+                    callback(notification);
                 });
             },
-            markErrorAsHandled: function(error) {
-                error.handled = true;
+            markNotificationAsHandled: function(notification) {
+                notification.handled = true;
             }
         };
     });

@@ -222,6 +222,9 @@
                      .replace(/>/g, "&gt;")
                      .replace(/"/g, "&quot;")
                      .replace(/'/g, "&#039;");
+            },
+            getRandomUUID: function() {
+                return Math.random().toString(36).substring(7);
             }
         },
         ArrayUtils: {

@@ -6910,7 +6910,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '1.0.4';
+    var version = '1.0.5';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -6978,7 +6978,7 @@ mod.directive('infiniteScroll', [
          * @example
          * <pre>
          *   var app = angular.module('ods-widgets').config(function(ODSWidgetsConfigProvider) {
-         *       ODSWidgetsConfig.setConfig({
+         *       ODSWidgetsConfigProvider.setConfig({
          *           defaultDomain: '/myapi'
          *       });
          *   });
@@ -7072,7 +7072,42 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsErrorService', function($http, ODSWidgetsConfig, odsErrorService) {
+    function encodeUriQuery(val, pctEncodeSpaces) {
+      return encodeURIComponent(val).
+                 replace(/%40/gi, '@').
+                 replace(/%3A/gi, ':').
+                 replace(/%24/g, '$').
+                 replace(/%2C/gi, ',').
+                 replace(/%20/g, (pctEncodeSpaces ? '%20' : '+'));
+    }
+
+    function serializeValue(v) {
+      if (angular.isObject(v)) {
+        return angular.isDate(v) ? v.toISOString() : angular.toJson(v);
+      }
+      return v;
+    }
+
+    mod.service('ODSParamSerializer', function() {
+        return function ngParamSerializer(params) {
+          if (!params) return '';
+          var parts = [];
+            angular.forEach(params, function(value, key) {
+            if (value === null || angular.isUndefined(value)) return;
+            if (angular.isArray(value)) {
+              angular.forEach(value, function(v, k) {
+                parts.push(encodeUriQuery(key)  + '=' + encodeUriQuery(serializeValue(v)));
+              });
+            } else {
+              parts.push(encodeUriQuery(key) + '=' + encodeUriQuery(serializeValue(value)));
+            }
+          });
+
+          return parts.join('&');
+        };
+    });
+
+    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'ODSParamSerializer', function($http, ODSWidgetsConfig, odsNotificationService, ODSParamSerializer) {
         /**
          * This service exposes OpenDataSoft APIs.
          *
@@ -7089,7 +7124,8 @@ mod.directive('infiniteScroll', [
                 params.apikey = context.apikey;
             }
             var options = {
-                params: params
+                params: params,
+                paramSerializer: ODSParamSerializer
             };
             if (timeout) {
                 options.timeout = timeout;
@@ -7108,7 +7144,7 @@ mod.directive('infiniteScroll', [
                     get(url, options).
                     error(function(data) {
                         if (data) {
-                            odsErrorService.sendErrorNotification(data);
+                            odsNotificationService.sendNotification(data);
                         }
                     });
             } else {
@@ -7163,7 +7199,7 @@ mod.directive('infiniteScroll', [
                     return request(context, '/api/records/1.0/analyze/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout)
                         .success(function(data, status, headers, config) {
                             if (headers()['ods-analyze-truncated']) {
-                                odsErrorService.sendErrorNotification("The analysis results have been truncated because there was too many results.");
+                                odsNotificationService.sendNotification("An analysis request hit the maximum number of results limit. Returned data is incomplete and not trustworthy.");
                             }
                         });
                 },
@@ -7192,7 +7228,8 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -7498,12 +7535,13 @@ mod.directive('infiniteScroll', [
                     }
                 }
                 callbacks[datasetid] = [];
+                var callback;
                 if (callbacks['']) {
-                    for (var i = 0; i < callbacks[''].length; i++) {
-                        callbacks[''][i]();
+                    while (callbacks[''].length) {
+                        callback = callbacks[''].pop();
+                        setTimeout(callback);
                     }
                 }
-                callbacks[''] = [];
             },
             onLoad: function(datasetid, f) {
                 if (typeof datasetid === "function") {
@@ -7513,6 +7551,7 @@ mod.directive('infiniteScroll', [
                 if (this.isInitialized(datasetid)) {
                     f();
                 } else {
+
                     if (!(datasetid in callbacks)) {
                         callbacks[datasetid] = [];
                     }
@@ -7795,6 +7834,10 @@ mod.directive('infiniteScroll', [
 
                 if (chart.type !== 'column' && chart.type !== 'bar' && chart.displayStackValues) {
                     chart.displayStackValues = false;
+                }
+
+                if (typeof chart.scientificDisplay === "undefined") {
+                    chart.scientificDisplay = true;
                 }
 
                 // cleanup unwanted values
@@ -8261,6 +8304,21 @@ mod.directive('infiniteScroll', [
                         "borderColor": config.borderColor,
                         "excludeFromRefit": config.excludeFromRefit
                     };
+                },
+                getVisibleLayerIds: function(config) {
+                    var layerIds = [];
+                    /* Returns all the contexts from active layergroups */
+                    angular.forEach(config.layers, function(group) {
+                        if (group.displayed) {
+                            angular.forEach(group.activeDatasets, function(layer) {
+                                if (angular.isUndefined(layer._runtimeId)) {
+                                    layer._runtimeId = ODS.StringUtils.getRandomUUID();
+                                }
+                                layerIds.push(layer._runtimeId);
+                            });
+                        }
+                    });
+                    return layerIds;
                 }
             }
         };
@@ -9392,25 +9450,26 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-    mod.factory("odsErrorService", function() {
-        var notificationList = [];
+    mod.factory("odsNotificationService", function() {
+        var callbacks = [];
         return {
-            registerForErrorNotification: function(callback) {
-                notificationList.push(callback);
+            registerForNotifications: function(callback) {
+                callbacks.push(callback);
             },
-            sendErrorNotification: function(error) {
-                if (angular.isString(error)) {
-                    error = {
+            sendNotification: function(notification) {
+                if (angular.isString(notification)) {
+                    notification = {
                         title: 'Error',
-                        error: error
+                        type: 'error',
+                        message: notification
                     };
                 }
-                angular.forEach(notificationList, function(callback) {
-                    callback(error);
+                angular.forEach(callbacks, function(callback) {
+                    callback(notification);
                 });
             },
-            markErrorAsHandled: function(error) {
-                error.handled = true;
+            markNotificationAsHandled: function(notification) {
+                notification.handled = true;
             }
         };
     });
@@ -11038,6 +11097,9 @@ mod.directive('infiniteScroll', [
                      .replace(/>/g, "&gt;")
                      .replace(/"/g, "&quot;")
                      .replace(/'/g, "&#039;");
+            },
+            getRandomUUID: function() {
+                return Math.random().toString(36).substring(7);
             }
         },
         ArrayUtils: {
@@ -12511,7 +12573,7 @@ mod.directive('infiniteScroll', [
             },
             template: '' +
             '<a class="odswidget-clear-all-filters" href="" ng-click="clearAll()">' +
-            '    <i class="fa fa-ban"></i> ' +
+            '    <i class="fa fa-ban" aria-hidden="true"></i> ' +
             '    <span translate>Clear all</span>' +
             '</a>',
             controller: ['$scope', function ($scope) {
@@ -12583,7 +12645,7 @@ mod.directive('infiniteScroll', [
             template: '<div class="odswidget odswidget-dataset-card">' +
                          '<div class="card-container" ng-class="{bottom: position == \'bottom\', expanded: expanded, expandable: isExpandable()}">' +
                             '<h2 class="dataset-title" ng-click="expanded = !expanded" ng-show="!expanded || (expanded && !context.dataset.metas.description)">{{context.dataset.metas.title}}</h2>' +
-                            '<div ng-click="expanded = !expanded" class="expand-control"><span translate>Details</span> <i class="fa fa-chevron-down" ng-show="!expanded"></i><i class="fa fa-chevron-up" ng-hide="!expanded"></i></div>' +
+                            '<div ng-click="expanded = !expanded" class="expand-control" title="Show/hide details" translate="title"><span translate>Details</span> <i class="fa fa-chevron-down" ng-show="!expanded" aria-hidden="true"></i><i class="fa fa-chevron-up" aria-hidden="true" ng-hide="!expanded"></i></div>' +
                             '<div class="dataset-expanded" ng-click="expanded = !expanded"">'+
                                 '<h2 class="dataset-title" ng-show="expanded">{{context.dataset.metas.title}}</h2>' +
                                 '<p class="dataset-description" ng-if="expanded" ng-bind-html="safeHtml(context.dataset.metas.description)"></p>' +
@@ -12652,7 +12714,7 @@ mod.directive('infiniteScroll', [
             template: '<div class="odswidget-multidatasets-card">' +
                       '  <div class="card-container multidatasets" ng-class="{bottom: (position == \'bottom\'), expanded: expanded, expandable: isExpandable()}">' +
                       '      <h2 ng-show="!expanded" ng-click="tryToggleExpand()">{{ odsTitle }}</h2>' +
-                      '      <div ng-click="tryToggleExpand()" class="expand-control" ng-class="{expanded: expanded}"><span translate>Details</span> <i class="fa fa-chevron-down"></i></div>' +
+                      '      <div ng-click="tryToggleExpand()" class="expand-control" ng-class="{expanded: expanded}" title="Show/hide details"><span translate>Details</span> <i class="fa fa-chevron-down" aria-hidden="true"></i></div>' +
                       '      <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="!expanded">' +
                       '          <span class="count-text" ng-hide="!datasetObjectKeys || datasetObjectKeys.length <= 1">' +
                       '               <span translate translate-n="datasetObjectKeys.length" translate-plural="{{ $count }} datasets">{{ $count }} dataset</span>' +
@@ -13707,14 +13769,14 @@ mod.directive('infiniteScroll', [
             '   <li ng-repeat="category in categories|filter:searchValue(valueFilter)" class="odswidget-facet__category-container">' +
             '       <ods-facet-category ng-if="!categoryIsHidden(category)" facet-name="{{ facetName }}" category="category" template="{{template}}" value-formatter="{{valueFormatter}}" ng-show="visible($index)"></ods-facet-category>' +
             '   </li>' +
-            '   <li ng-if="!suggestMode && visibleItems < (categories|filter:searchValue(valueFilter)).length" ' +
+            '   <li ng-if="!suggestMode && visibleItems < (filterInvisibleCategories(categories)|filter:searchValue(valueFilter)).length" ' +
             '       class="odswidget-facet__expansion-control">' +
             '       <a ng-hide="expanded" href="#" ng-click="toggle($event)" class="odswidget-facet__expansion-control-link">' +
-            '           <i class="fa fa-angle-right"></i>' +
+            '           <i class="fa fa-angle-right" aria-hidden="true"></i>' +
             '           <span translate>More</span>' +
             '       </a>' +
             '       <a ng-show="expanded" href="#" ng-click="toggle($event)" class="odswidget-facet__expansion-control-link">' +
-            '           <i class="fa fa-angle-right"></i>' +
+            '           <i class="fa fa-angle-right" aria-hidden="true"></i>' +
             '           <span translate>Less</span>' +
             '       </a>' +
             '   </li>' +
@@ -13739,6 +13801,9 @@ mod.directive('infiniteScroll', [
                     var testScope = scope.$new(false);
                     testScope.category = category;
                     return testScope.$eval(scope.hideCategoryIf);
+                };
+                scope.filterInvisibleCategories = function(categories) {
+                    return categories.filter(function(category) { return !scope.categoryIsHidden(category); });
                 };
             },
             controller: ['$scope', '$filter', function($scope, $filter) {
@@ -14028,6 +14093,163 @@ mod.directive('infiniteScroll', [
         };
     }]);
 }());
+;(function () {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('odsGauge', ['$timeout', function ($timeout) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsGauge
+         * @scope
+         * @restrict E
+         * @param {string} [displayMode=circle] Type of chart : 'circle' or 'bar'
+         * @param {float} [max=100] The maximum value for the gauge.
+         * @param {float} value A number between 0 and the defined max
+         * @description
+         * This widget displays a gauge in one of the two following modes: circle or horizontal bar.
+         * The widget relies on CSS3 and SVG and as a result is entirely customizable in CSS.
+         * Values exceeding the given max will be represented as a full gauge, whereas values lower than 0 will be
+         * represented as an empty gauge.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-gauge display-mode="circle" value="33" max="70"></ods-gauge>
+         *      </file>
+         *  </example>
+         */
+        return {
+            restrict: 'E',
+            replace: true,
+            scope: {
+                displayMode: '@',
+                value: '=',
+                max: '=?'
+            },
+            template: function (element, attrs) {
+                var displayMode = attrs.displayMode;
+                if (['horizontal', 'bar'].indexOf(displayMode) == -1) {
+                    displayMode = 'circle';
+                }
+                var svg;
+                if (displayMode == "bar") {
+                    svg = '' +
+                        '<svg class="odswidget-gauge__svg">' +
+                        '    <line x1="0" y1="5px" x2="100%" y2="5px" class="odswidget-gauge__svg-background"/>' +
+                        '    <line x1="0" y1="5px" x2="100%" y2="5px" class="odswidget-gauge__svg-filler" />' +
+                        '</svg>';
+                } else {
+                    svg = '' +
+                        '<svg class="odswidget-gauge__svg" viewBox="0 0 100 100" >' +
+                        '    <circle cx="50" cy="50" r="45" ' +
+                        '            class="odswidget-gauge__svg-background" ' +
+                        '            vector-effect="non-scaling-stroke"/>' +
+                        '    <circle cx="50%" cy="50%" r="45%" ' +
+                        '            class="odswidget-gauge__svg-filler"' +
+                        '            vector-effect="non-scaling-stroke"/> ' +
+                        '</svg>';
+                }
+
+                return '' +
+                    '<div class="odswidget-gauge odswidget-gauge--' + displayMode + '">' +
+                    '    <div class="odswidget-gauge__value">{{ (value/max*100)|number:0 }}%</div>' + svg +
+                    '</div>';
+            },
+            link: function (scope, element) {
+                // default values
+
+                if (!angular.isDefined(scope.max)) {
+                    scope.max = 100;
+                }
+                if (['circle', 'bar'].indexOf(scope.displayMode) == -1) {
+                    scope.displayMode = 'circle';
+                }
+
+                // common variables
+
+                var fillerElement = element.find('.odswidget-gauge__svg-filler');
+
+                // animation helpers
+
+                var setupCircleChart = function () {
+                    // we should be using 0.9 (because of r=45)
+                    // but this way we avoid having a 1px gap in the circle for 100%
+                    var perimeter = Math.PI * element.width() * 0.91;
+                    fillerElement.css({
+                        'stroke-dasharray': perimeter,
+                        'stroke-dashoffset': perimeter,
+                        'transition': 'none'
+                    });
+                    $timeout(function () {
+                        fillerElement.css({
+                            'transition': 'stroke-dashoffset 2.5s',
+                            'stroke-dashoffset': perimeter * (1 - scope.percentage / 100)
+                        });
+                    });
+                };
+
+                var animateCircleChart = function () {
+                    $timeout(function () {
+                        var perimeter = Math.PI * element.width() * 0.91;
+                        fillerElement.css({'stroke-dashoffset': perimeter * (1 - scope.percentage / 100)});
+                    });
+                };
+
+                var setupBarChart = function () {
+                    var length = element.width();
+                    fillerElement.css({
+                        'stroke-dasharray': length,
+                        'stroke-dashoffset': length,
+                        'transition': 'none'
+                    });
+                    $timeout(function () {
+                        fillerElement.css({
+                            'transition': 'stroke-dashoffset 2.5s',
+                            'stroke-dashoffset': length * (1 - scope.percentage / 100) + 'px'
+                        });
+                    });
+
+                };
+
+                var animateBarChart = function () {
+                    $timeout(function () {
+                        var length = element.width();
+                        fillerElement.css({'stroke-dashoffset': length * (1 - scope.percentage / 100) + 'px'});
+                    });
+
+                };
+
+                var animationHelpers = {
+                    'circle': {'setup': setupCircleChart, 'animate': animateCircleChart},
+                    'bar': {'setup': setupBarChart, 'animate': animateBarChart}
+                };
+
+
+                var updatePercentage = function (value) {
+                    scope.percentage = value / scope.max * 100;
+                    scope.percentage = Math.max(scope.percentage, 0);
+                    scope.percentage = Math.min(scope.percentage, 100);
+                };
+
+                updatePercentage(scope.value);
+                animationHelpers[scope.displayMode].setup();
+
+                scope.$watch('value', function (nv, ov) {
+                    if (nv != ov) {
+                        updatePercentage(nv);
+                        animationHelpers[scope.displayMode].animate();
+                    }
+                });
+
+                $(window).on('resize', function () {
+                    animationHelpers[scope.displayMode].setup();
+                });
+            }
+        }
+    }]);
+})();
 ;(function () {
     'use strict';
     var mod = angular.module('ods-widgets');
@@ -14549,9 +14771,9 @@ mod.directive('infiniteScroll', [
                                          'AggregationHelper',
                                          'ChartHelper',
                                          '$rootScope',
-                                         'odsErrorService',
+                                         'odsNotificationService',
                                          '$q',
-        function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsErrorService, $q) {
+        function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsNotificationService, $q) {
         // parameters : {
         //     timescale: year, month, week, day, hour, month year, day year, day month, day week
         //     xLabel:
@@ -14794,14 +15016,16 @@ mod.directive('infiniteScroll', [
             }
 
             if(parameters.singleAxis) {
-                var yAxisParamaters = {
+                var yAxisParameters = {
                     color: "#000000",
                     scale: parameters.singleAxisScale,
                     yRangeMin: parameters.yRangeMin,
                     yRangeMax: parameters.yRangeMax,
+                    yStep: parameters.yStep,
+                    scientificDisplay: parameters.scientificDisplay
                 };
 
-                options.yAxis = [buildYAxis(parameters.singleAxisLabel, yAxisParamaters, false)];
+                options.yAxis = [buildYAxis(parameters.singleAxisLabel, yAxisParameters, false)];
             }
 
             return options;
@@ -14988,12 +15212,22 @@ mod.directive('infiniteScroll', [
                     }
                 },
                 type: chart.scale || 'linear',
-                min: hasMin ? chart.yRangeMin : null,
-                max: hasMax ? chart.yRangeMax : null,
+                min: hasMin ? parseFloat(chart.yRangeMin) : null,
+                max: hasMax ? parseFloat(chart.yRangeMax) : null,
+                tickInterval: chart.yStep ? parseFloat(chart.yStep) : null,
                 startOnTick: hasMin ? false : true,
                 endOnTick: hasMax ? false : true,
                 opposite: opposite
             };
+            if (!chart.scientificDisplay) {
+                yAxis.labels.formatter = function() {
+                    if (angular.isNumber(this.value)) {
+                        return Highcharts.numberFormat(this.value, -1);
+                    } else {
+                        return this.value;
+                    }
+                }
+            }
 
             if (stacked) {
                 yAxis.stackLabels = {
@@ -15600,7 +15834,7 @@ mod.directive('infiniteScroll', [
                             if (categories) {
                                 for (i = 0; i < options.series.length; i++) {
                                     for (var k = 0; k < categories.length; k++) {
-                                        if (typeof options.series[i].data[k] === "undefined") {
+                                        if (options.series[i].data  && typeof options.series[i].data[k] === "undefined") {
                                             options.series[i].data[k] = null;
                                         }
                                     }
@@ -15634,22 +15868,22 @@ mod.directive('infiniteScroll', [
                             options.chart.renderTo = chartplaceholder[0];
                             try {
                                 if (options.series.length > 500) {
-                                    odsErrorService.sendErrorNotification(translate("There are too many series to be displayed correctly, try to refine your query a bit."));
+                                    odsNotificationService.sendNotification(translate("There are too many series to be displayed correctly, try to refine your query a bit."));
                                     options.series = options.series.slice(0, 10);
                                 }
                                 $scope.chart = new Highcharts.Chart(options, function() {});
                             } catch (errorMsg) {
                                 if(errorMsg.indexOf && errorMsg.indexOf('Highcharts error #19') === 0){
                                     // too many ticks
-                                    odsErrorService.sendErrorNotification(translate("There was too many points to display, the maximum number of points has been decreased."));
+                                    odsNotificationService.sendNotification(translate("There was too many points to display, the maximum number of points has been decreased."));
                                     angular.forEach($scope.parameters.queries, function(query){
                                         query.maxpoints = 20;
                                     });
                                 } else {
                                     if (angular.isString(errorMsg)) {
-                                        odsErrorService.sendErrorNotification(errorMsg);
+                                        odsNotificationService.sendNotification(errorMsg);
                                     } else {
-                                        odsErrorService.sendErrorNotification(errorMsg.message);
+                                        odsNotificationService.sendNotification(errorMsg.message);
                                     }
                                 }
                             }
@@ -15902,10 +16136,12 @@ mod.directive('infiniteScroll', [
          * @param {string} [labelX=none] If set, it override the default X Axis label. The default label is generated from series.
          * @param {boolean} [singleYAxis=false] Enforces the use of only one Y axis for all series. In this case, specific Y axis parameters defined for each series will be ignored.
          * @param {string} singleYAxisLabel Set the label for the single Y axis.
-         * @param {integer} min Set the min displayed value for Y axis
-         * @param {integer} max Set the max displayed value for Y axis
-         * @param {boolean} logarithmic Use a logarithmic scale for Y axis
-         * @param {boolean} [displayLegend=true] enable or disable the display of series legend
+         * @param {integer} [min=null] Set the min displayed value for Y axis. Active only when singleYAxis is true.
+         * @param {integer} [max=null] Set the max displayed value for Y axis. Active only when singleYAxis is true.
+         * @param {integer} [step=null] specify the step between each tick on the Y axis. If not defined, it is computed automatically. Active only when singleYAxis is true.
+         * @param {boolean} [scientificDisplay=true] When set to false, force the full display of the numbers on the Y axis. Active only when singleYAxis is true.
+         * @param {boolean} [logarithmic=false] Use a logarithmic scale for Y axis. Active only when singleYAxis is true.
+         * @param {boolean} [displayLegend=true] enable or disable the display of series legend. Active only when singleYAxis is true.
          *
          * @description
          * This widget is the base widget allowing to display charts from OpenDataSoft datasets.
@@ -15961,6 +16197,8 @@ mod.directive('infiniteScroll', [
                 singleYAxisScale: '@',
                 min: '@',
                 max: '@',
+                step: '@',
+                scientificDisplay: '@',
                 logarithmic: '@',
                 displayLegend: '@',
 
@@ -15998,8 +16236,10 @@ mod.directive('infiniteScroll', [
                         singleAxis: !!$scope.singleYAxis,
                         singleAxisLabel: angular.isDefined($scope.singleYAxisLabel) ? $scope.singleYAxisLabel : undefined,
                         singleAxisScale: $scope.logarithmic ? 'logarithmic' : '',
-                        yRangeMin: angular.isDefined($scope.min) && $scope.min !== "" ? parseInt($scope.min, 10) : undefined,
-                        yRangeMax: angular.isDefined($scope.max) && $scope.max !== "" ? parseInt($scope.max, 10) : undefined,
+                        yRangeMin: angular.isDefined($scope.min) && $scope.min !== "" ? parseFloat($scope.min) : undefined,
+                        yRangeMax: angular.isDefined($scope.max) && $scope.max !== "" ? parseFloat($scope.max) : undefined,
+                        yStep: angular.isDefined($scope.step) && $scope.step !== "" ? parseFloat($scope.step) : undefined,
+                        scientificDisplay: angular.isDefined($scope.scientificDisplay) && $scope.scientificDisplay !== "" ? $scope.scientificDisplay === "true" : true,
                         displayLegend: angular.isDefined($scope.displayLegend) && $scope.displayLegend === "false" ? false : true
                     };
                 }
@@ -16249,9 +16489,11 @@ mod.directive('infiniteScroll', [
          * @param {string} [color] defines the color used for this serie. see colors below
          * @param {string} [labelY] specify a custom label for the serie
          * @param {boolean} [cumulative] Y values are accumulated
-         * @param {boolean} [logarithmic] display the serie using a logarithmic scale
-         * @param {integer} [min] minimum value to be displayed on the Y axis
-         * @param {integer} [max] maximum value to be displayed on the Y axis
+         * @param {boolean} [logarithmic=false] display the serie using a logarithmic scale
+         * @param {integer} [min=null] minimum value to be displayed on the Y axis. If not defined, it is computed automatically.
+         * @param {integer} [max=null] maximum value to be displayed on the Y axis. If not defined, it is computed automatically.
+         * @param {integer} [step=null] specify the step between each tick on the Y axis. If not defined, it is computed automatically.
+         * @param {boolean} [scientificDisplay=true] When set to false, force the full display of the numbers on the Y axis.
          * @param {boolean} [displayUnits] enable the display of the units defined for the field in the tooltip
          * @param {boolean} [displayValues] enable the display of each invidual values in stacks
          * @param {boolean} [displayStackValues] enable the display of the cumulated values on top of stacks
@@ -16309,16 +16551,18 @@ mod.directive('infiniteScroll', [
                     cumulative: !!attrs.cumulative || false,
                     yLabelOverride: angular.isDefined(attrs.labelY) ? attrs.labelY : undefined,
                     scale: attrs.logarithmic ? 'logarithmic' : '',
-                    yRangeMin: angular.isDefined(attrs.min) && attrs.min !== "" ? parseInt(attrs.min, 10) : undefined,
-                    yRangeMax: angular.isDefined(attrs.max) && attrs.max !== "" ? parseInt(attrs.max, 10) : undefined,
+                    yRangeMin: angular.isDefined(attrs.min) && attrs.min !== "" ? parseFloat(attrs.min) : undefined,
+                    yRangeMax: angular.isDefined(attrs.max) && attrs.max !== "" ? parseFloat(attrs.max) : undefined,
+                    yStep: angular.isDefined(attrs.step) && attrs.step !== "" ? parseFloat(attrs.step) : undefined,
                     displayUnits: attrs.displayUnits === "true",
                     displayValues: attrs.displayValues === "true",
                     displayStackValues: attrs.displayStackValues === "true",
-                    multiplier: angular.isDefined(attrs.multiplier) ? parseInt(attrs.multiplier, 10) : undefined,
+                    multiplier: angular.isDefined(attrs.multiplier) ? parseFloat(attrs.multiplier) : undefined,
                     thresholds: attrs.colorThresholds ? scope.$eval(attrs.colorThresholds) : [],
                     subsets: attrs.subsets,
                     charts: attrs.subseries ? JSON.parse(attrs.subseries) : undefined,
-                    refineOnClickCtrl: refineOnClickCtrl
+                    refineOnClickCtrl: refineOnClickCtrl,
+                    scientificDisplay: attrs.scientificDisplay === "true"
                 };
 
                 angular.forEach(chart, function(item, key) {
@@ -16490,7 +16734,8 @@ mod.directive('infiniteScroll', [
                             renderResults(data.datasets, init);
                         });
                     } else {
-                        ODSAPI.records.search($scope.context, {rows: 10, start: start}).success(function(data) {
+                        var params = angular.extend({}, $scope.context.parameters, {rows: 10, start: start});
+                        ODSAPI.records.search($scope.context, params).success(function(data) {
                             noMoreResults = data.records.length == 0;
                             renderResults(data.records, init);
                         });
@@ -16542,7 +16787,7 @@ mod.directive('infiniteScroll', [
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
-         * This widget displays the last 5 datasets of a catalog, based on the *modified* metadata.
+         * This widget displays the last datasets of a catalog (default is last 5), based on the *modified* metadata.
          *
          * @example
          *  <example module="ods-widgets">
@@ -16563,17 +16808,19 @@ mod.directive('infiniteScroll', [
                 '       <ods-theme-picto class="odswidget-last-datasets-feed__theme-picto" theme="{{dataset.metas.theme|firstValue}}"></ods-theme-picto>' +
                 '       <div class="odswidget-last-datasets-feed__dataset-details">' +
                 '           <div class="odswidget-last-datasets-feed__dataset-details-title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
-                '           <div class="odswidget-last-datasets-feed__dataset-details-modified"><i class="fa fa-calendar"></i> <span title="{{ dataset.metas.modified|moment:\'LLL\' }}"><span translate>Modified</span> {{ dataset.metas.modified|timesince }}</span></div>' +
+                '           <div class="odswidget-last-datasets-feed__dataset-details-modified"><i class="fa fa-calendar" aria-hidden="true"></i> <span title="{{ dataset.metas.modified|moment:\'LLL\' }}"><span translate>Modified</span> {{ dataset.metas.modified|timesince }}</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
                 '</div>',
             scope: {
-                context: '='
+                context: '=',
+                max: '@'
             },
             controller: ['$scope', function($scope) {
+                $scope.max = $scope.max || 5;
                 var refresh = function() {
-                    ODSAPI.datasets.search($scope.context, {'rows': 5, 'sort': 'modified'}).
+                    ODSAPI.datasets.search($scope.context, {'rows': $scope.max, 'sort': 'modified'}).
                         success(function(data) {
                             $scope.datasets = data.datasets;
                         });
@@ -16585,7 +16832,8 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -16637,7 +16885,7 @@ mod.directive('infiniteScroll', [
                 '       <div class="odswidget-last-reuses-feed__reuse-details">' +
                 '           <div class="odswidget-last-reuses-feed__reuse-details-title"><a ng-href="{{reuse.url}}" target="_self">{{ reuse.title }}</a></div>' +
                 '           <div class="odswidget-last-reuses-feed__reuse-details-dataset"><a ng-href="{{reuse.url}}" target="_self">{{ reuse.dataset.title }}</a></div>' +
-                '           <div class="odswidget-last-reuses-feed__reuse-details-modified"><span title="{{ reuse.created_at|moment:\'LLL\' }}"><i class="fa fa-calendar"></i> {{ reuse.created_at|timesince }}</span></div>' +
+                '           <div class="odswidget-last-reuses-feed__reuse-details-modified"><span title="{{ reuse.created_at|moment:\'LLL\' }}"><i class="fa fa-calendar" aria-hidden="true"></i> {{ reuse.created_at|timesince }}</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
@@ -16665,7 +16913,8 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -18227,7 +18476,7 @@ mod.directive('infiniteScroll', [
                             angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, {skipExcludedFromRefit: true}), function(ctx) {
                                 paramsNoRefit.push([ctx.name, ctx.parameters]);
                             });
-                            return [params, paramsNoRefit];
+                            return [params, paramsNoRefit, MapHelper.MapConfiguration.getVisibleLayerIds(scope.mapConfig)];
                         }, function(nv, ov) {
                             if (nv !== ov) {
                                 // Refresh with a refit
@@ -19013,7 +19262,7 @@ mod.directive('infiniteScroll', [
                         '       target="_self"' +
                         '       ods-resource-download-conditions' +
                         '       class="ods-button">' +
-                        '   <i class="fa fa-download"></i>' +
+                        '   <i class="fa fa-download" aria-hidden="true"></i>' +
                         '   <span translate>Download image</span>' +
                         '</a>' +
                     '</div>' +
@@ -19514,7 +19763,7 @@ mod.directive('infiniteScroll', [
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
-         * This widget displays the top 5 datasets of a catalog, based on the number of downloads.
+         * This widget displays the top datasets of a catalog (default is the 5 top datasets), based on the number of downloads.
          *
          * @example
          *  <example module="ods-widgets">
@@ -19535,17 +19784,19 @@ mod.directive('infiniteScroll', [
                 '       <ods-theme-picto class="odswidget-most-popular-datasets__theme-picto" theme="{{dataset.metas.theme|firstValue}}"></ods-theme-picto>' +
                 '       <div class="odswidget-most-popular-datasets__dataset-details">' +
                 '           <div class="odswidget-most-popular-datasets__dataset-details-title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
-                '           <div class="odswidget-most-popular-datasets__dataset-details-count"><i class="fa fa-download"></i> <span translate translate-n="dataset.extra_metas.explore.download_count" translate-plural="{{$count}} downloads">{{$count}} download</span></div>' +
+                '           <div class="odswidget-most-popular-datasets__dataset-details-count"><i class="fa fa-download" aria-hidden="true"></i> <span translate translate-n="dataset.extra_metas.explore.download_count" translate-plural="{{$count}} downloads">{{$count}} download</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
                 '</div>',
             scope: {
-                context: '='
+                context: '=',
+                max: '@'
             },
             controller: ['$scope', function($scope) {
+                $scope.max = $scope.max || 5;
                 var refresh = function() {
-                    ODSAPI.datasets.search($scope.context, {'rows': 5, 'sort': 'explore.download_count', 'extrametas': true}).
+                    ODSAPI.datasets.search($scope.context, {'rows': $scope.max, 'sort': 'explore.download_count', 'extrametas': true}).
                         success(function(data) {
                             $scope.datasets = data.datasets;
                         });
@@ -19557,7 +19808,8 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -19590,7 +19842,7 @@ mod.directive('infiniteScroll', [
                 '   <li class="odswidget-most-used-themes__theme" ng-repeat="theme in themes" ng-if="themes">' +
                 '       <div class="odswidget-most-used-themes__theme-details">' +
                 '           <div class="odswidget-most-used-themes__theme-details-name"><a ng-href="{{ context.domainUrl }}/explore/?refine.theme={{ theme.path }}" target="_self">{{ theme.name }}</a></div>' +
-                '           <div class="odswidget-most-used-themes__theme-details-count"><i class="fa fa-table"></i> <span translate translate-n="theme.count" translate-plural="Used by {{$count}} datasets">Used by {{$count}} dataset</span></div>' +
+                '           <div class="odswidget-most-used-themes__theme-details-count"><i class="fa fa-table" aria-hidden="true"></i> <span translate translate-n="theme.count" translate-plural="Used by {{$count}} datasets">Used by {{$count}} dataset</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
@@ -19614,7 +19866,8 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -19960,9 +20213,8 @@ mod.directive('infiniteScroll', [
          *
          * It works in conjunction with a finite set of other directives:
          * * {@link ods-widgets.directive:odsCalendar odsCalendar}
-         * * {@link ods-widgets.directive:odsImages odsImages}
+         * * {@link ods-widgets.directive:odsMediaGallery odsMediaGallery}
          * * {@link ods-widgets.directive:odsMap odsMap}
-         * * {@link ods-widgets.directive:odsMapLayer odsMapLayer}
          * * {@link ods-widgets.directive:odsChart odsChart}
          * * {@link ods-widgets.directive:odsChartSerie odsChartSerie}
          *
@@ -20279,7 +20531,7 @@ mod.directive('infiniteScroll', [
                       '          <div class="odswidget-reuses__reuse-author">' +
                       '              <strong ng-if="reuse.user.first_name || reuse.user.last_name">{{ reuse.user.first_name }} {{ reuse.user.last_name }}</strong>' +
                       '              <strong ng-if="!reuse.user.first_name && !reuse.user.last_name">{{ reuse.user.username }}</strong>' +
-                      '              <i class="fa fa-calendar odswidget-reuses__creation-icon"></i> {{ reuse.created_at|moment:\'LLL\' }}' +
+                      '              <i class="fa fa-calendar odswidget-reuses__creation-icon" aria-hidden="true"></i> {{ reuse.created_at|moment:\'LLL\' }}' +
                       '          </div>' +
                       '      </div>' +
                       ' </div>' +
@@ -20334,7 +20586,8 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
     var mod = angular.module('ods-widgets');
 
@@ -20412,7 +20665,7 @@ mod.directive('infiniteScroll', [
             '     ng-mouseenter="displayButtons=true" ng-mouseleave="displayButtons=false">' +
             '    <div class="odswidget-social-buttons__header">' +
             '        <span translate>Share</span>' +
-            '        <i class="fa fa-angle-down"></i>' +
+            '        <i class="fa fa-angle-down" aria-hidden="true"></i>' +
             '    </div>' +
             '    <div class="odswidget-social-buttons__buttons" ' +
             '         ng-class="{\'odswidget-social-buttons__buttons--open\': displayButtons}">' +
@@ -20481,26 +20734,34 @@ mod.directive('infiniteScroll', [
         return {
             restrict: 'E',
             replace: true,
-            template: function () {
+            template: function (element, attrs) {
+                var spinner;
                 if (Modernizr && Modernizr.cssanimations && Modernizr.svg) {
                     // Fallback to gif
-                    return '' +
+                    spinner = '' +
                         '<img src="' + ODSWidgetsConfig.basePath + 'src/img/spinner.gif" ' +
                         '     class="odswidget-spinner odswidget-spinner--gif"/>';
+                } else {
+                    spinner = '' +
+                        '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" version="1.1"' +
+                        '     class="odswidget-spinner odswidget-spinner--svg">' +
+                        '    <rect x="0" y="0" width="30" height="30" class="odswidget-spinner__cell-11"></rect>' +
+                        '    <rect x="35" y="0" width="30" height="30" class="odswidget-spinner__cell-12"></rect>' +
+                        '    <rect x="70" y="0" width="30" height="30" class="odswidget-spinner__cell-13"></rect>' +
+                        '    <rect x="0" y="35" width="30" height="30" class="odswidget-spinner__cell-21"></rect>' +
+                        '    <rect x="35" y="35" width="30" height="30" class="odswidget-spinner__cell-22"></rect>' +
+                        '    <rect x="70" y="35" width="30" height="30" class="odswidget-spinner__cell-23"></rect>' +
+                        '    <rect x="0" y="70" width="30" height="30" class="odswidget-spinner__cell-31"></rect>' +
+                        '    <rect x="35" y="70" width="30" height="30" class="odswidget-spinner__cell-32"></rect>' +
+                        '    <rect x="70" y="70" width="30" height="30" class="odswidget-spinner__cell-33"></rect>' +
+                        '</svg>';
                 }
-                return '' +
-                    '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" version="1.1"' +
-                    '     class="odswidget-spinner odswidget-spinner--svg">' +
-                    '    <rect x="0" y="0" width="30" height="30" class="odswidget-spinner__cell-11"></rect>' +
-                    '    <rect x="35" y="0" width="30" height="30" class="odswidget-spinner__cell-12"></rect>' +
-                    '    <rect x="70" y="0" width="30" height="30" class="odswidget-spinner__cell-13"></rect>' +
-                    '    <rect x="0" y="35" width="30" height="30" class="odswidget-spinner__cell-21"></rect>' +
-                    '    <rect x="35" y="35" width="30" height="30" class="odswidget-spinner__cell-22"></rect>' +
-                    '    <rect x="70" y="35" width="30" height="30" class="odswidget-spinner__cell-23"></rect>' +
-                    '    <rect x="0" y="70" width="30" height="30" class="odswidget-spinner__cell-31"></rect>' +
-                    '    <rect x="35" y="70" width="30" height="30" class="odswidget-spinner__cell-32"></rect>' +
-                    '    <rect x="70" y="70" width="30" height="30" class="odswidget-spinner__cell-33"></rect>' +
-                    '</svg>';
+
+                if ('withBackdrop' in attrs) {
+                    spinner = '<div class="odswidget-spinner__backdrop">' + spinner + '</div>';
+                }
+
+                return spinner;
             }
         }
     }]);
@@ -20555,9 +20816,9 @@ mod.directive('infiniteScroll', [
                        '                 >' +
                        '                 <div class="odswidget-table__header-cell-container">' +
                        '                     <span ng-bind="field.label"></span>' +
-                       '                     <div ng-class="{\'odswidget-table__sort-icons\': true, \'odswidget-table__sort-icons--active\': field.name == context.parameters.sort || \'-\'+field.name == context.parameters.sort}" ng-show="isFieldSortable(field)">' +
-                       '                         <i class="fa fa-chevron-up odswidget-table__sort-icons__up" ng-hide="isAscendingSorted(field)"></i>' +
-                       '                         <i class="fa fa-chevron-down odswidget-table__sort-icons__down" ng-hide="isDescendingSorted(field)"></i>' +
+                       '                     <div ng-class="{\'odswidget-table__sort-icons\': true, \'odswidget-table__sort-icons--active\': field.name == context.parameters.sort || \'-\'+field.name == context.parameters.sort}" ng-show="isFieldSortable(field)" title="sort" translate="title">' +
+                       '                         <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true" ng-hide="isAscendingSorted(field)"></i>' +
+                       '                         <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true" ng-hide="isDescendingSorted(field)"></i>' +
                        '                     </div>' +
                        '                 </div>' +
                        '             </th>' +
@@ -20574,9 +20835,9 @@ mod.directive('infiniteScroll', [
                        '                     title="{{ field.name }}">' +
                        '                     <div class="odswidget-table__cell-container">' +
                        '                         <span ng-bind="field.label"></span>' +
-                       '                         <div class="odswidget-table__sort-icons" ng-show="isFieldSortable(field)">' +
-                       '                             <i class="fa fa-chevron-up odswidget-table__sort-icons__up"></i>' +
-                       '                             <i class="fa fa-chevron-down odswidget-table__sort-icons__down"></i>' +
+                       '                         <div class="odswidget-table__sort-icons" ng-show="isFieldSortable(field)" title="sort" translate="title">' +
+                       '                             <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true"></i>' +
+                       '                             <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true"></i>' +
                        '                         </div>' +
                        '                     </div>' +
                        '                 </th>' +
@@ -20586,7 +20847,7 @@ mod.directive('infiniteScroll', [
                        '         </tbody>' +
                        '     </table>' +
                        ' </div>' +
-                       ' <div ng-if="displayDatasetFeedback" class="table-feedback-new"><a ods-dataset-feedback ods-dataset-feedback-dataset="context.dataset"><i class="fa fa-comment"></i> <span translate>Suggest a new record</span></a></div>' +
+                       ' <div ng-if="displayDatasetFeedback" class="table-feedback-new"><a ods-dataset-feedback ods-dataset-feedback-dataset="context.dataset"><i class="fa fa-comment" aria-hidden="true"></i> <span translate>Suggest a new record</span></a></div>' +
                        ' <div class="odswidget-overlay" ng-hide="fetching || records"><span class="odswidget-overlay__message" translate>No results</span></div>' +
                        ' <div class="odswidget-overlay" ng-hide="(!fetching || records) && !working"><ods-spinner></ods-spinner></div>' +
                     '</div>',
@@ -20632,6 +20893,9 @@ mod.directive('infiniteScroll', [
 
                 var $infiniteScrollElement;
 
+                var lastLoadedPage = null; // Starts at 0
+                var pagesWaitingHandling = {};
+
                 var refreshRecords = function(init) {
                     $scope.fetching = true;
                     var options = {}, start;
@@ -20645,6 +20909,8 @@ mod.directive('infiniteScroll', [
                             currentRequestsTimeouts.forEach(function(t) {t.resolve();});
                             currentRequestsTimeouts.splice(0, currentRequestsTimeouts.length);
                         }
+                        pagesWaitingHandling = {};
+                        lastLoadedPage = null;
                     } else {
                         $scope.page++;
                         start = $scope.page * $scope.resultsPerPage;
@@ -20670,20 +20936,43 @@ mod.directive('infiniteScroll', [
                     var timeout = $q.defer();
                     currentRequestsTimeouts.push(timeout);
 
+                    function handleResponse(data, page) {
+                        if (!data.records.length) {
+                            $scope.working = false;
+                        }
+
+                        $scope.records = init ? data.records : $scope.records.concat(data.records);
+                        $scope.nhits = data.nhits;
+
+                        $scope.error = '';
+                        $scope.fetching = false;
+                        $scope.done = ($scope.page+1) * $scope.resultsPerPage >= data.nhits;
+
+                        currentRequestsTimeouts.splice(currentRequestsTimeouts.indexOf(timeout), 1);
+
+                        lastLoadedPage = page;
+
+                        $timeout(function() {
+                            // The rendering code can only handle 40 records at one go right now, so we need to let the
+                            // previous page render first.
+                            // We could change the rendering code, but no time today for that battle. :/
+                            if (angular.isDefined(pagesWaitingHandling[page+1])) {
+                                var pageInfo = pagesWaitingHandling[page+1];
+                                delete pagesWaitingHandling[page+1];
+                                pageInfo.callback(pageInfo.data, page+1);
+                            }
+                        });
+
+                    };
+
                     ODSAPI.records.search($scope.context, options, timeout.promise).
                         success(function(data, status, headers, config) {
-                            if (!data.records.length) {
-                                $scope.working = false;
+                            var responsePage = data.parameters.start / data.parameters.rows;
+                            if (lastLoadedPage === null && responsePage === 0 || angular.isNumber(lastLoadedPage) && responsePage === lastLoadedPage + 1) {
+                                handleResponse(data, responsePage);
+                            } else {
+                                pagesWaitingHandling[responsePage] = {'callback': handleResponse, 'data': data};
                             }
-
-                            $scope.records = init ? data.records : $scope.records.concat(data.records);
-                            $scope.nhits = data.nhits;
-
-                            $scope.error = '';
-                            $scope.fetching = false;
-                            $scope.done = ($scope.page+1) * $scope.resultsPerPage >= data.nhits;
-
-                            currentRequestsTimeouts.splice(currentRequestsTimeouts.indexOf(timeout), 1);
                         }).
                         error(function(data, status, headers, config) {
                             if (data) {
@@ -20792,7 +21081,7 @@ mod.directive('infiniteScroll', [
 
                     if ($scope.displayDatasetFeedback) {
                         // FIXME: This is entirely tied to ODS platform, it should not be within a widget
-                        var feedbackButton = '<i class="fa fa-comment table-feedback-icon" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="Suggest changes for this record" translate="ods-tooltip"></i>';
+                        var feedbackButton = '<i class="fa fa-comment table-feedback-icon" aria-hidden="true" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="Suggest changes for this record" translate="ods-tooltip"></i>';
                         var localScope = $scope.$new(true);
                         localScope.record = record;
                         localScope.dataset = $scope.context.dataset;
@@ -20987,7 +21276,7 @@ mod.directive('infiniteScroll', [
                 };
 
 
-                $scope.$watch('records', function(newValue, oldValue) {
+                $scope.$watchCollection('records', function(newValue, oldValue) {
                     if (newValue !== oldValue) {
                         displayRecords();
                         $scope.computeLayout();
@@ -21219,7 +21508,8 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-}());;(function () {
+}());
+;(function () {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -21453,7 +21743,7 @@ mod.directive('infiniteScroll', [
             '<div class="odswidget odswidget-text-search">' +
             '    <form ng-submit="applySearch()" class="odswidget-text-search__form">' +
             '        <input class="odswidget-text-search__search-box" name="q" type="text" ng-model="searchExpression" placeholder="{{ translatedPlaceholder }}">' +
-            '        <button type="submit" class="odswidget-text-search__submit"><i class="fa fa-search"></i></button>' +
+            '        <button type="submit" class="odswidget-text-search__submit" title="{{ translatedPlaceholder}}"><i class="fa fa-search" aria-hidden="true"></i></button>' +
             '    </form>' +
             '</div>',
             scope: {
@@ -21991,7 +22281,7 @@ mod.directive('infiniteScroll', [
          * @scope
          * @param {Object} odsToggleModel Object to apply the toggle on
          * @param {string} odsToggleKey The key that holds the toggled value
-         * @param {string} odsTogglValue The toggled value
+         * @param {string} odsToggleValue The toggled value
          * @param {string} [odsStoreAs=array] The type of the resulting variable. Either 'array' or 'csv'.
          * @description
          * This widget, when used on a checkbox, allows the checkbox to be used to "toggle" a value in an object, in other words to add it or remove when the checkbox
@@ -22141,7 +22431,7 @@ mod.directive('infiniteScroll', [
                 '   <li class="odswidget-top-publishers__publisher" ng-repeat="publisher in publishers" ng-if="publishers">' +
                 '       <div class="odswidget-top-publishers__publisher-details">' +
                 '           <div class="odswidget-top-publishers__publisher-details-name"><a ng-href="{{ context.domainUrl }}/explore/?refine.publisher={{ publisher.path }}" target="_self">{{ publisher.name }}</a></div>' +
-                '           <div class="odswidget-top-publishers__publisher-details-count"><i class="fa fa-table"></i> <span translate translate-n="publisher.count" translate-plural="Used by {{$count}} datasets">Used by {{$count}} dataset</span></div>' +
+                '           <div class="odswidget-top-publishers__publisher-details-count"><i class="fa fa-table" aria-hidden="true"></i> <span translate translate-n="publisher.count" translate-plural="Used by {{$count}} datasets">Used by {{$count}} dataset</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
@@ -22163,7 +22453,8 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-}());;(function () {
+}());
+;(function () {
     'use strict';
 
     var mod = angular.module('ods-widgets');

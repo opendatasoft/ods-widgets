@@ -41,9 +41,11 @@ see <a href="#/api/ods-widgets.directive:odsChart">odsChart</a> for complete exa
        [color]="{string}"
        [label-y]="{string}"
        [cumulative]="{boolean}"
-       [logarithmic]="{boolean}"
-       [min]="{integer}"
-       [max]="{integer}"
+       logarithmic="{boolean}"
+       min="{integer}"
+       max="{integer}"
+       step="{integer}"
+       scientific-display="{boolean}"
        [display-units]="{boolean}"
        [display-values]="{boolean}"
        [display-stack-values]="{boolean}"
@@ -64,10 +66,12 @@ see <a href="#/api/ods-widgets.directive:odsChart">odsChart</a> for complete exa
 </div></td></tr><tr><td>[color]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>defines the color used for this serie. see colors below</p>
 </div></td></tr><tr><td>[labelY]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>specify a custom label for the serie</p>
 </div></td></tr><tr><td>[cumulative]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>Y values are accumulated</p>
-</div></td></tr><tr><td>[logarithmic]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>display the serie using a logarithmic scale</p>
-</div></td></tr><tr><td>[min]</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>minimum value to be displayed on the Y axis</p>
-</div></td></tr><tr><td>[max]</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>maximum value to be displayed on the Y axis</p>
-</div></td></tr><tr><td>[displayUnits]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>enable the display of the units defined for the field in the tooltip</p>
+</div></td></tr><tr><td>logarithmic</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>display the serie using a logarithmic scale</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>min</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>minimum value to be displayed on the Y axis. If not defined, it is computed automatically.</p>
+</div> <p><em>(default: null)</em></p></td></tr><tr><td>max</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>maximum value to be displayed on the Y axis. If not defined, it is computed automatically.</p>
+</div> <p><em>(default: null)</em></p></td></tr><tr><td>step</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>specify the step between each tick on the Y axis. If not defined, it is computed automatically.</p>
+</div> <p><em>(default: null)</em></p></td></tr><tr><td>scientificDisplay</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>When set to false, force the full display of the numbers on the Y axis.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>[displayUnits]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>enable the display of the units defined for the field in the tooltip</p>
 </div></td></tr><tr><td>[displayValues]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>enable the display of each invidual values in stacks</p>
 </div></td></tr><tr><td>[displayStackValues]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>enable the display of the cumulated values on top of stacks</p>
 </div></td></tr><tr><td>[multiplier]</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartserie-page"><p>multiply all values for this serie by the defined number</p>

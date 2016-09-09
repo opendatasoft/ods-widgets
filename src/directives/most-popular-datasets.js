@@ -11,7 +11,7 @@
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
-         * This widget displays the top 5 datasets of a catalog, based on the number of downloads.
+         * This widget displays the top datasets of a catalog (default is the 5 top datasets), based on the number of downloads.
          *
          * @example
          *  <example module="ods-widgets">
@@ -32,17 +32,19 @@
                 '       <ods-theme-picto class="odswidget-most-popular-datasets__theme-picto" theme="{{dataset.metas.theme|firstValue}}"></ods-theme-picto>' +
                 '       <div class="odswidget-most-popular-datasets__dataset-details">' +
                 '           <div class="odswidget-most-popular-datasets__dataset-details-title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
-                '           <div class="odswidget-most-popular-datasets__dataset-details-count"><i class="fa fa-download"></i> <span translate translate-n="dataset.extra_metas.explore.download_count" translate-plural="{{$count}} downloads">{{$count}} download</span></div>' +
+                '           <div class="odswidget-most-popular-datasets__dataset-details-count"><i class="fa fa-download" aria-hidden="true"></i> <span translate translate-n="dataset.extra_metas.explore.download_count" translate-plural="{{$count}} downloads">{{$count}} download</span></div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
                 '</div>',
             scope: {
-                context: '='
+                context: '=',
+                max: '@'
             },
             controller: ['$scope', function($scope) {
+                $scope.max = $scope.max || 5;
                 var refresh = function() {
-                    ODSAPI.datasets.search($scope.context, {'rows': 5, 'sort': 'explore.download_count', 'extrametas': true}).
+                    ODSAPI.datasets.search($scope.context, {'rows': $scope.max, 'sort': 'explore.download_count', 'extrametas': true}).
                         success(function(data) {
                             $scope.datasets = data.datasets;
                         });

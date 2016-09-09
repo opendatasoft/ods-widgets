@@ -2,6 +2,25 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.0.5 - 2016-09-09
+### Added
+- **New odsGauge widget:** Display a gauge indicator in your dashboards.
+- `odsChart`: A new `scientificDisplay` option to toggle the display of Y axis values in a scientific notation.
+- `odsChart`: A new `step` parameter to configure the step of the Y axis.
+- `odsLastDatasetsFeed` and `odsMostPopularDatasets`: new `max` parameter to set the number of displayed items.
+- Support for TMS service base maps. Set `strictTMS` to `true` in the basemap configuration object.
+- Better accessibility markup for all widgets
+
+### Fixed
+- Fixed an issue with `odsInfiniteScrollResults`: it now uses the context parameters when used with a dataset context,
+as you would expect.
+- Fixed an issue with `odsFacets`, where the "more"/"less" toggle to display more than the 5 first results would appear based
+on the number of items regardless of `visibleIf` that makes some of them not appear in the list.
+- Fixed an issue where lines in `odsTable` were sometimes not displayed in the right order, despite being supposedly sorted.
+- Fixed an issue on `odsMap` when you had two layers that were using the same context, and you were displaying either one or
+the other at once using `showIf`: the layers are now correctly switched, where previously the change was not detected by the map.
+
+
 ## 1.0.4 - 2016-07-07
 ### Added
 - The widgets now use Jawg.io basemaps by default, instead of MapQuest, due to the discontinuation of MapQuest's free service.

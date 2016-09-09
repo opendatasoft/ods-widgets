@@ -72,7 +72,7 @@ object. Existing values that are not present in the new object are left untouche
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-odswidgetsconfigprovider-page"><pre class="prettyprint linenums">
 var app = angular.module('ods-widgets').config(function(ODSWidgetsConfigProvider) {
-    ODSWidgetsConfig.setConfig({
+    ODSWidgetsConfigProvider.setConfig({
         defaultDomain: '/myapi'
     });
 });

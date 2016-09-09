@@ -583,7 +583,7 @@
                             angular.forEach(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, {skipExcludedFromRefit: true}), function(ctx) {
                                 paramsNoRefit.push([ctx.name, ctx.parameters]);
                             });
-                            return [params, paramsNoRefit];
+                            return [params, paramsNoRefit, MapHelper.MapConfiguration.getVisibleLayerIds(scope.mapConfig)];
                         }, function(nv, ov) {
                             if (nv !== ov) {
                                 // Refresh with a refit

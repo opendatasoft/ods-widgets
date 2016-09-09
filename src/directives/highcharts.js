@@ -226,9 +226,9 @@
                                          'AggregationHelper',
                                          'ChartHelper',
                                          '$rootScope',
-                                         'odsErrorService',
+                                         'odsNotificationService',
                                          '$q',
-        function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsErrorService, $q) {
+        function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsNotificationService, $q) {
         // parameters : {
         //     timescale: year, month, week, day, hour, month year, day year, day month, day week
         //     xLabel:
@@ -471,14 +471,16 @@
             }
 
             if(parameters.singleAxis) {
-                var yAxisParamaters = {
+                var yAxisParameters = {
                     color: "#000000",
                     scale: parameters.singleAxisScale,
                     yRangeMin: parameters.yRangeMin,
                     yRangeMax: parameters.yRangeMax,
+                    yStep: parameters.yStep,
+                    scientificDisplay: parameters.scientificDisplay
                 };
 
-                options.yAxis = [buildYAxis(parameters.singleAxisLabel, yAxisParamaters, false)];
+                options.yAxis = [buildYAxis(parameters.singleAxisLabel, yAxisParameters, false)];
             }
 
             return options;
@@ -665,12 +667,22 @@
                     }
                 },
                 type: chart.scale || 'linear',
-                min: hasMin ? chart.yRangeMin : null,
-                max: hasMax ? chart.yRangeMax : null,
+                min: hasMin ? parseFloat(chart.yRangeMin) : null,
+                max: hasMax ? parseFloat(chart.yRangeMax) : null,
+                tickInterval: chart.yStep ? parseFloat(chart.yStep) : null,
                 startOnTick: hasMin ? false : true,
                 endOnTick: hasMax ? false : true,
                 opposite: opposite
             };
+            if (!chart.scientificDisplay) {
+                yAxis.labels.formatter = function() {
+                    if (angular.isNumber(this.value)) {
+                        return Highcharts.numberFormat(this.value, -1);
+                    } else {
+                        return this.value;
+                    }
+                }
+            }
 
             if (stacked) {
                 yAxis.stackLabels = {
@@ -1277,7 +1289,7 @@
                             if (categories) {
                                 for (i = 0; i < options.series.length; i++) {
                                     for (var k = 0; k < categories.length; k++) {
-                                        if (typeof options.series[i].data[k] === "undefined") {
+                                        if (options.series[i].data  && typeof options.series[i].data[k] === "undefined") {
                                             options.series[i].data[k] = null;
                                         }
                                     }
@@ -1311,22 +1323,22 @@
                             options.chart.renderTo = chartplaceholder[0];
                             try {
                                 if (options.series.length > 500) {
-                                    odsErrorService.sendErrorNotification(translate("There are too many series to be displayed correctly, try to refine your query a bit."));
+                                    odsNotificationService.sendNotification(translate("There are too many series to be displayed correctly, try to refine your query a bit."));
                                     options.series = options.series.slice(0, 10);
                                 }
                                 $scope.chart = new Highcharts.Chart(options, function() {});
                             } catch (errorMsg) {
                                 if(errorMsg.indexOf && errorMsg.indexOf('Highcharts error #19') === 0){
                                     // too many ticks
-                                    odsErrorService.sendErrorNotification(translate("There was too many points to display, the maximum number of points has been decreased."));
+                                    odsNotificationService.sendNotification(translate("There was too many points to display, the maximum number of points has been decreased."));
                                     angular.forEach($scope.parameters.queries, function(query){
                                         query.maxpoints = 20;
                                     });
                                 } else {
                                     if (angular.isString(errorMsg)) {
-                                        odsErrorService.sendErrorNotification(errorMsg);
+                                        odsNotificationService.sendNotification(errorMsg);
                                     } else {
-                                        odsErrorService.sendErrorNotification(errorMsg.message);
+                                        odsNotificationService.sendNotification(errorMsg.message);
                                     }
                                 }
                             }
@@ -1579,10 +1591,12 @@
          * @param {string} [labelX=none] If set, it override the default X Axis label. The default label is generated from series.
          * @param {boolean} [singleYAxis=false] Enforces the use of only one Y axis for all series. In this case, specific Y axis parameters defined for each series will be ignored.
          * @param {string} singleYAxisLabel Set the label for the single Y axis.
-         * @param {integer} min Set the min displayed value for Y axis
-         * @param {integer} max Set the max displayed value for Y axis
-         * @param {boolean} logarithmic Use a logarithmic scale for Y axis
-         * @param {boolean} [displayLegend=true] enable or disable the display of series legend
+         * @param {integer} [min=null] Set the min displayed value for Y axis. Active only when singleYAxis is true.
+         * @param {integer} [max=null] Set the max displayed value for Y axis. Active only when singleYAxis is true.
+         * @param {integer} [step=null] specify the step between each tick on the Y axis. If not defined, it is computed automatically. Active only when singleYAxis is true.
+         * @param {boolean} [scientificDisplay=true] When set to false, force the full display of the numbers on the Y axis. Active only when singleYAxis is true.
+         * @param {boolean} [logarithmic=false] Use a logarithmic scale for Y axis. Active only when singleYAxis is true.
+         * @param {boolean} [displayLegend=true] enable or disable the display of series legend. Active only when singleYAxis is true.
          *
          * @description
          * This widget is the base widget allowing to display charts from OpenDataSoft datasets.
@@ -1638,6 +1652,8 @@
                 singleYAxisScale: '@',
                 min: '@',
                 max: '@',
+                step: '@',
+                scientificDisplay: '@',
                 logarithmic: '@',
                 displayLegend: '@',
 
@@ -1675,8 +1691,10 @@
                         singleAxis: !!$scope.singleYAxis,
                         singleAxisLabel: angular.isDefined($scope.singleYAxisLabel) ? $scope.singleYAxisLabel : undefined,
                         singleAxisScale: $scope.logarithmic ? 'logarithmic' : '',
-                        yRangeMin: angular.isDefined($scope.min) && $scope.min !== "" ? parseInt($scope.min, 10) : undefined,
-                        yRangeMax: angular.isDefined($scope.max) && $scope.max !== "" ? parseInt($scope.max, 10) : undefined,
+                        yRangeMin: angular.isDefined($scope.min) && $scope.min !== "" ? parseFloat($scope.min) : undefined,
+                        yRangeMax: angular.isDefined($scope.max) && $scope.max !== "" ? parseFloat($scope.max) : undefined,
+                        yStep: angular.isDefined($scope.step) && $scope.step !== "" ? parseFloat($scope.step) : undefined,
+                        scientificDisplay: angular.isDefined($scope.scientificDisplay) && $scope.scientificDisplay !== "" ? $scope.scientificDisplay === "true" : true,
                         displayLegend: angular.isDefined($scope.displayLegend) && $scope.displayLegend === "false" ? false : true
                     };
                 }
@@ -1926,9 +1944,11 @@
          * @param {string} [color] defines the color used for this serie. see colors below
          * @param {string} [labelY] specify a custom label for the serie
          * @param {boolean} [cumulative] Y values are accumulated
-         * @param {boolean} [logarithmic] display the serie using a logarithmic scale
-         * @param {integer} [min] minimum value to be displayed on the Y axis
-         * @param {integer} [max] maximum value to be displayed on the Y axis
+         * @param {boolean} [logarithmic=false] display the serie using a logarithmic scale
+         * @param {integer} [min=null] minimum value to be displayed on the Y axis. If not defined, it is computed automatically.
+         * @param {integer} [max=null] maximum value to be displayed on the Y axis. If not defined, it is computed automatically.
+         * @param {integer} [step=null] specify the step between each tick on the Y axis. If not defined, it is computed automatically.
+         * @param {boolean} [scientificDisplay=true] When set to false, force the full display of the numbers on the Y axis.
          * @param {boolean} [displayUnits] enable the display of the units defined for the field in the tooltip
          * @param {boolean} [displayValues] enable the display of each invidual values in stacks
          * @param {boolean} [displayStackValues] enable the display of the cumulated values on top of stacks
@@ -1986,16 +2006,18 @@
                     cumulative: !!attrs.cumulative || false,
                     yLabelOverride: angular.isDefined(attrs.labelY) ? attrs.labelY : undefined,
                     scale: attrs.logarithmic ? 'logarithmic' : '',
-                    yRangeMin: angular.isDefined(attrs.min) && attrs.min !== "" ? parseInt(attrs.min, 10) : undefined,
-                    yRangeMax: angular.isDefined(attrs.max) && attrs.max !== "" ? parseInt(attrs.max, 10) : undefined,
+                    yRangeMin: angular.isDefined(attrs.min) && attrs.min !== "" ? parseFloat(attrs.min) : undefined,
+                    yRangeMax: angular.isDefined(attrs.max) && attrs.max !== "" ? parseFloat(attrs.max) : undefined,
+                    yStep: angular.isDefined(attrs.step) && attrs.step !== "" ? parseFloat(attrs.step) : undefined,
                     displayUnits: attrs.displayUnits === "true",
                     displayValues: attrs.displayValues === "true",
                     displayStackValues: attrs.displayStackValues === "true",
-                    multiplier: angular.isDefined(attrs.multiplier) ? parseInt(attrs.multiplier, 10) : undefined,
+                    multiplier: angular.isDefined(attrs.multiplier) ? parseFloat(attrs.multiplier) : undefined,
                     thresholds: attrs.colorThresholds ? scope.$eval(attrs.colorThresholds) : [],
                     subsets: attrs.subsets,
                     charts: attrs.subseries ? JSON.parse(attrs.subseries) : undefined,
-                    refineOnClickCtrl: refineOnClickCtrl
+                    refineOnClickCtrl: refineOnClickCtrl,
+                    scientificDisplay: attrs.scientificDisplay === "true"
                 };
 
                 angular.forEach(chart, function(item, key) {

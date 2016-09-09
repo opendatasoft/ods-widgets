@@ -131,6 +131,21 @@
                         "borderColor": config.borderColor,
                         "excludeFromRefit": config.excludeFromRefit
                     };
+                },
+                getVisibleLayerIds: function(config) {
+                    var layerIds = [];
+                    /* Returns all the contexts from active layergroups */
+                    angular.forEach(config.layers, function(group) {
+                        if (group.displayed) {
+                            angular.forEach(group.activeDatasets, function(layer) {
+                                if (angular.isUndefined(layer._runtimeId)) {
+                                    layer._runtimeId = ODS.StringUtils.getRandomUUID();
+                                }
+                                layerIds.push(layer._runtimeId);
+                            });
+                        }
+                    });
+                    return layerIds;
                 }
             }
         };

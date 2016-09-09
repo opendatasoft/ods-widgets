@@ -52,6 +52,8 @@ a type of chart and multiple parameters to fine tune the appearance of chart.</p
        single-y-axis-label="{string}"
        min="{integer}"
        max="{integer}"
+       step="{integer}"
+       scientific-display="{boolean}"
        logarithmic="{boolean}"
        display-legend="{boolean}"&gt;
 &lt;/ods-chart&gt;</pre>
@@ -63,9 +65,11 @@ a type of chart and multiple parameters to fine tune the appearance of chart.</p
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>labelX</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>If set, it override the default X Axis label. The default label is generated from series.</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>singleYAxis</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Enforces the use of only one Y axis for all series. In this case, specific Y axis parameters defined for each series will be ignored.</p>
 </div> <p><em>(default: false)</em></p></td></tr><tr><td>singleYAxisLabel</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Set the label for the single Y axis.</p>
-</div></td></tr><tr><td>min</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Set the min displayed value for Y axis</p>
-</div></td></tr><tr><td>max</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Set the max displayed value for Y axis</p>
-</div></td></tr><tr><td>logarithmic</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Use a logarithmic scale for Y axis</p>
-</div></td></tr><tr><td>displayLegend</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>enable or disable the display of series legend</p>
+</div></td></tr><tr><td>min</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Set the min displayed value for Y axis. Active only when singleYAxis is true.</p>
+</div> <p><em>(default: null)</em></p></td></tr><tr><td>max</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Set the max displayed value for Y axis. Active only when singleYAxis is true.</p>
+</div> <p><em>(default: null)</em></p></td></tr><tr><td>step</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>specify the step between each tick on the Y axis. If not defined, it is computed automatically. Active only when singleYAxis is true.</p>
+</div> <p><em>(default: null)</em></p></td></tr><tr><td>scientificDisplay</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>When set to false, force the full display of the numbers on the Y axis. Active only when singleYAxis is true.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>logarithmic</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Use a logarithmic scale for Y axis. Active only when singleYAxis is true.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>displayLegend</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>enable or disable the display of series legend. Active only when singleYAxis is true.</p>
 </div> <p><em>(default: true)</em></p></td></tr></tbody></table></div>
 </div>

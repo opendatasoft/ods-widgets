@@ -74,7 +74,7 @@
                         '       target="_self"' +
                         '       ods-resource-download-conditions' +
                         '       class="ods-button">' +
-                        '   <i class="fa fa-download"></i>' +
+                        '   <i class="fa fa-download" aria-hidden="true"></i>' +
                         '   <span translate>Download image</span>' +
                         '</a>' +
                     '</div>' +

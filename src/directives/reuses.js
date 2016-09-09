@@ -54,7 +54,7 @@
                       '          <div class="odswidget-reuses__reuse-author">' +
                       '              <strong ng-if="reuse.user.first_name || reuse.user.last_name">{{ reuse.user.first_name }} {{ reuse.user.last_name }}</strong>' +
                       '              <strong ng-if="!reuse.user.first_name && !reuse.user.last_name">{{ reuse.user.username }}</strong>' +
-                      '              <i class="fa fa-calendar odswidget-reuses__creation-icon"></i> {{ reuse.created_at|moment:\'LLL\' }}' +
+                      '              <i class="fa fa-calendar odswidget-reuses__creation-icon" aria-hidden="true"></i> {{ reuse.created_at|moment:\'LLL\' }}' +
                       '          </div>' +
                       '      </div>' +
                       ' </div>' +

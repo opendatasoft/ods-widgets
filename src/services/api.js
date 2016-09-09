@@ -3,7 +3,42 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsErrorService', function($http, ODSWidgetsConfig, odsErrorService) {
+    function encodeUriQuery(val, pctEncodeSpaces) {
+      return encodeURIComponent(val).
+                 replace(/%40/gi, '@').
+                 replace(/%3A/gi, ':').
+                 replace(/%24/g, '$').
+                 replace(/%2C/gi, ',').
+                 replace(/%20/g, (pctEncodeSpaces ? '%20' : '+'));
+    }
+
+    function serializeValue(v) {
+      if (angular.isObject(v)) {
+        return angular.isDate(v) ? v.toISOString() : angular.toJson(v);
+      }
+      return v;
+    }
+
+    mod.service('ODSParamSerializer', function() {
+        return function ngParamSerializer(params) {
+          if (!params) return '';
+          var parts = [];
+            angular.forEach(params, function(value, key) {
+            if (value === null || angular.isUndefined(value)) return;
+            if (angular.isArray(value)) {
+              angular.forEach(value, function(v, k) {
+                parts.push(encodeUriQuery(key)  + '=' + encodeUriQuery(serializeValue(v)));
+              });
+            } else {
+              parts.push(encodeUriQuery(key) + '=' + encodeUriQuery(serializeValue(value)));
+            }
+          });
+
+          return parts.join('&');
+        };
+    });
+
+    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'ODSParamSerializer', function($http, ODSWidgetsConfig, odsNotificationService, ODSParamSerializer) {
         /**
          * This service exposes OpenDataSoft APIs.
          *
@@ -20,7 +55,8 @@
                 params.apikey = context.apikey;
             }
             var options = {
-                params: params
+                params: params,
+                paramSerializer: ODSParamSerializer
             };
             if (timeout) {
                 options.timeout = timeout;
@@ -39,7 +75,7 @@
                     get(url, options).
                     error(function(data) {
                         if (data) {
-                            odsErrorService.sendErrorNotification(data);
+                            odsNotificationService.sendNotification(data);
                         }
                     });
             } else {
@@ -94,7 +130,7 @@
                     return request(context, '/api/records/1.0/analyze/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout)
                         .success(function(data, status, headers, config) {
                             if (headers()['ods-analyze-truncated']) {
-                                odsErrorService.sendErrorNotification("The analysis results have been truncated because there was too many results.");
+                                odsNotificationService.sendNotification("An analysis request hit the maximum number of results limit. Returned data is incomplete and not trustworthy.");
                             }
                         });
                 },
