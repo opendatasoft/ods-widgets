@@ -67,6 +67,11 @@
          * @param {boolean} [autoGeolocation=false] If "true", then the geolocation (center and zoom the map on the location of the user) is automatically done upon initialization.
          * Only available when there is no `location` parameter on the widget.
          * Warning: location sharing must be allowed priorly for Firefox users when multiple odsMap widget are set with autoGeolocation=true on the same page
+         * @param {boolean} [displayControl=false] If true, displays a control to toggle display of groups (or single datasets outside groups). Note:
+         * it shouldn't be combined with the usage of `showIf` on `odsMapLayer`, as it will lead to inconsistencies in the user interface.
+         * @param {boolean} [displayControlSingleLayer=false] If true, only one layer will be displayed at a time using the control to toggle the display of groups.
+         * @param {boolean} [searchBox=false] If true, a search box will appear in the map, allowing you to jump to locations, or search data on the map.
+         *
          * @description
          * This widget allows you to build a map visualization and show data using various modes of display using layers.
          * Each layer is based on a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, a mode of display (clusters...), and various properties to define the
@@ -243,7 +248,13 @@
                 toolbarFullscreen: '@',
                 scrollWheelZoom: '@',
                 minZoom: '@',
-                maxZoom: '@'
+                maxZoom: '@',
+                displayControl: '=?',
+                displayControlSingleLayer: '=?',
+                searchBox: '=?',
+                displayLegend: '=?',
+                mapConfig: '=?',
+                dynamicConfig: '=?'
             },
             transclude: true,
             template: '' +
@@ -255,6 +266,9 @@
             '    <div class="odswidget-map__loading" ng-show="loading">' +
             '        <ods-spinner></ods-spinner>' +
             '    </div>' +
+            '    <ods-map-display-control ng-if="displayControl" single-layer="displayControlSingleLayer" map-config="mapConfig"></ods-map-display-control>' +
+            '    <ods-map-search-box ng-if="searchBox"></ods-map-search-box>' +
+            '    <ods-map-legend ng-if="displayLegend" map-config="mapConfig"></ods-map-legend>' +
             '    <div ng-transclude></div>' + // Can't find any better solution...
             '</div>',
             link: function(scope, element, attrs) {
@@ -267,30 +281,63 @@
                 var isStatic = scope.staticMap && scope.staticMap.toLowerCase() === 'true';
                 var noRefit = scope.noRefit && scope.noRefit.toLowerCase() === 'true';
                 var toolbarDrawing = !(scope.toolbarDrawing && scope.toolbarDrawing.toLowerCase() === 'false');
-                var toolbarGeolocation = !(scope.toolbarGeolocation && scope.toolbarGeolocation.toLowerCase() === 'false');
-                var toolbarFullscreen = !(scope.toolbarFullscreen && scope.toolbarFullscreen.toLowerCase() === 'false');
-                var autoGeolocation = scope.autoGeolocation && scope.autoGeolocation.toLowerCase() === 'true';
+
+                var toolbarGeolocation,
+                    toolbarFullscreen,
+                    autoGeolocation;
+
+                if (angular.isUndefined(scope.toolbarGeolocation)) {
+                    if (angular.isDefined(scope.mapConfig.toolbarGeolocation)) {
+                        toolbarGeolocation = !!scope.mapConfig.toolbarGeolocation;
+                    } else {
+                        // if nothing is defined, default is true
+                        toolbarGeolocation = true;
+                    }
+                } else {
+                    toolbarGeolocation = !(scope.toolbarGeolocation && scope.toolbarGeolocation.toLowerCase() === 'false');
+                }
+                if (angular.isUndefined(scope.toolbarFullscreen)) {
+                    if (angular.isDefined(scope.mapConfig.toolbarFullscreen)) {
+                        toolbarFullscreen = !!scope.mapConfig.toolbarFullscreen;
+                    } else {
+                        // if nothing is defined, default is true
+                        toolbarFullscreen = true;
+                    }
+                } else {
+                    toolbarFullscreen = !(scope.toolbarFullscreen && scope.toolbarFullscreen.toLowerCase() === 'false');
+                }
+                if (angular.isUndefined(scope.autoGeolocation)) {
+                    autoGeolocation = !!scope.mapConfig.autoGeolocation;
+                } else {
+                    autoGeolocation = scope.autoGeolocation && scope.autoGeolocation.toLowerCase() === 'true';
+                }
+
+
+                if (angular.isUndefined(scope.displayControl)) {
+                    scope.displayControl = scope.mapConfig.layerSelection;
+                }
+                if (angular.isUndefined(scope.displayLegend)) {
+                    scope.displayLegend = true;
+                }
+                if (angular.isUndefined(scope.displayControlSingleLayer)) {
+                    scope.displayControlSingleLayer = scope.mapConfig.singleLayer;
+                }
+                if (angular.isUndefined(scope.searchBox)) {
+                    scope.searchBox = scope.mapConfig.searchBox;
+                }
 
                 if (scope.context) {
                     // Handle the view defined on the map tag directly
                     var group = MapHelper.MapConfiguration.createLayerGroupConfiguration();
                     var layer = MapHelper.MapConfiguration.createLayerConfiguration();
-                    group.activeDatasets.push(layer);
-                    scope.mapConfig.layers.push(group);
+                    group.layers.push(layer);
+                    scope.mapConfig.groups.push(group);
 
                     layer.context = scope.context;
 
-                    // FIXME: Factorize the same code with odsLayerGroup
                     scope.context.wait().then(function (nv) {
                         if (nv) {
-                            if (layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape') !== null) {
-                                layer.marker = !layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape');
-                            } else {
-                                layer.marker = true;
-                            }
-
-                            layer.color = layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || "#C32D1C";
-                            layer.picto = layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
+                            MapHelper.MapConfiguration.setLayerDisplaySettingsFromDefault(layer);
                         }
                     });
                 }
@@ -308,6 +355,17 @@
                     $(window).on('resize', resizeMap);
                     resizeMap();
                 }
+
+                scope.$on('invalidateMapSize', function() {
+                    if (scope.map) {
+                        scope.map.invalidateSize();
+                    }
+                    //console.log('Invalidate Map Size', jQuery('.odswidget-map').width());
+                });
+
+                scope.$on('mapFitBounds', function(e, bounds) {
+                    scope.map.fitBounds(bounds);
+                });
 
                 /* INITIALISATION AND DEFAULT VALUES */
                 scope.initialLoading = true;
@@ -328,9 +386,14 @@
 
                 if (scope.location) {
                     scope.mapContext.location = scope.mapContext.location || scope.location;
+                } else if (scope.mapConfig && scope.mapConfig.mapPresets && scope.mapConfig.mapPresets.location) {
+                    scope.mapContext.location = scope.mapContext.location || scope.mapConfig.mapPresets.location;
                 }
+
                 if (scope.basemap) {
                     scope.mapContext.basemap = scope.mapContext.basemap || scope.basemap;
+                } else if (scope.mapConfig && scope.mapConfig.mapPresets && scope.mapConfig.mapPresets.basemap) {
+                    scope.mapContext.basemap = scope.mapContext.basemap || scope.mapConfig.mapPresets.basemap;
                 }
 
                 /* END OF INITIALISATION */
@@ -345,6 +408,7 @@
                         dragging: !isStatic,
                         keyboard: !isStatic,
                         prependAttribution: ODSWidgetsConfig.mapPrependAttribution,
+                        appendAttribution: ODSWidgetsConfig.mapAppendAttribution,
                         maxBounds: [[-90, -180], [90, 180]],
                         zoomControl: false,
                         scrollWheelZoom: scope.scrollWheelZoom !== 'false'
@@ -371,6 +435,7 @@
 
                     if (!isStatic) {
                         map.addControl(new L.Control.Zoom({
+                            position: 'topright',
                             zoomInTitle: translate('Zoom in'),
                             zoomOutTitle: translate('Zoom out')
                         }));
@@ -394,7 +459,8 @@
                     }
 
 
-                    if (ODSWidgetsConfig.mapGeobox && !isStatic) {
+                    // Only during the Mapbuilder beta phase
+                    if (!window.location.pathname.startsWith('/map2/') && ODSWidgetsConfig.mapGeobox && !scope.searchBox && !isStatic) {
                         var geocoder = L.Control.geocoder({
                             placeholder: translate('Find a place...'),
                             errorMessage: translate('Nothing found.'),
@@ -429,6 +495,7 @@
 
                     if (toolbarGeolocation && !isStatic) {
                         var geolocateControl = new L.Control.Locate({
+                            position: 'topright',
                             maxZoom: 18,
                             strings: {
                                 title: translate("Show me where I am"),
@@ -539,7 +606,7 @@
 
                         scope.map.on('moveend', function(e) {
                             // Whenever the map moves, we update the displayed data
-                            scope.$apply(function() {
+                            scope.$applyAsync(function() {
                                 onViewportMove(e.target);
                             });
                         });
@@ -557,9 +624,9 @@
                         // INitialize watcher
                         scope.$watch(function() {
                             var pending = 0;
-                            angular.forEach(scope.mapConfig.layers, function(groupConfig) {
-                                angular.forEach(groupConfig.activeDatasets, function(layerConfig) {
-                                    if (layerConfig.loading) {
+                            angular.forEach(scope.mapConfig.groups, function(groupConfig) {
+                                angular.forEach(groupConfig.layers, function(layerConfig) {
+                                    if (layerConfig._loading) {
                                         pending++;
                                     }
                                 });
@@ -572,6 +639,9 @@
                         // Initialize data watchers
                         // TODO: Make the contexts broadcast an event when the parameters change? Will spare
                         // a potentially heavy watch.
+
+                        // This watcher ensures that whenever a displayed context changes, or whenever the list of visible
+                        // displays change, we refresh the display.
                         scope.$watch(function() {
                             // We create a second param list with all the parameters that should trigger a refit, so that
                             // we can check if it changed before triggering a refit.
@@ -586,11 +656,72 @@
                             return [params, paramsNoRefit, MapHelper.MapConfiguration.getVisibleLayerIds(scope.mapConfig)];
                         }, function(nv, ov) {
                             if (nv !== ov) {
+                                //console.log('Something changed in the contexts, refreshing');
                                 // Refresh with a refit
                                 syncGeofilterToDrawing();
                                 refreshData(!angular.equals(nv[1], ov[1]));
                             }
                         }, true);
+                    });
+
+
+                    var configWatcher;
+                    // This watch ensures the display is refreshed whenever the map display config changes.
+                    // It is very heavy, and only useful in cases where you live-edit the config (mapbuilder), so it
+                    // is not active constantly.
+                    // TODO: Maybe we can just watch a single layer and only refresh this one?
+                    var startConfigWatcher = function() {
+                        //console.log('Start config watcher');
+                        configWatcher = scope.$watch(function() {
+                            // We want a light version of the config, and the only reliable mechanism to efficiently
+                            // simplify a complex object for comparison is JSON.stringify.
+                            var simplified = JSON.stringify(scope.mapConfig, function(key, value) {
+                                if (typeof(value) === "function") {
+                                    return undefined;
+                                }
+                                if (key.substring(0, 2) === '$$') {
+                                    // Internal angular stuff
+                                    return undefined;
+                                }
+                                if (key[0] === '_') {
+                                    // Internal runtime properties
+                                    return undefined;
+                                }
+                                if (key === 'context') {
+                                    // Serialize the context object
+                                    return {
+                                        datasetId: value.dataset.datasetid,
+                                        parameters: value.parameters,
+                                    };
+                                }
+                                if (['mapPresets', 'singleLayer', 'toolbarGeolocation', 'toolbarFullscreen',
+                                        'autoGeolocation', 'layerSelection', 'searchBox'].indexOf(key) > -1) {
+                                    return undefined;
+                                }
+                                return value;
+                            });
+                            return simplified;
+                        }, function() {
+                            //console.log('Map config changed');
+                            refreshData();
+                        });
+
+                    };
+                    var stopConfigWatcher = function() {
+                        //console.log('Stop config watcher');
+                        if (configWatcher) {
+                            configWatcher();
+                        }
+                    };
+
+                    scope.$watch('dynamicConfig', function(nv, ov) {
+                        if (angular.isDefined(nv)) {
+                            if (nv) {
+                                startConfigWatcher();
+                            } else {
+                                stopConfigWatcher();
+                            }
+                        }
                     });
 
                     if (ODSWidgetsConfig.basemaps.length > 1) {
@@ -600,12 +731,12 @@
 
                             // The bundle layer zooms have to be the same as the basemap, else it will drive the map
                             // to be zoomable beyond the basemap levels
-                            angular.forEach(scope.mapConfig.layers, function(groupConfig) {
+                            angular.forEach(scope.mapConfig.groups, function(groupConfig) {
                                 if (groupConfig.displayed) {
-                                    angular.forEach(groupConfig.activeDatasets, function (layerConfig) {
-                                        if (layerConfig.clusterMode === 'tiles' && layerConfig.rendered) {
-                                            layerConfig.rendered.setMinZoom(e.layer.options.minZoom);
-                                            layerConfig.rendered.setMaxZoom(e.layer.options.maxZoom);
+                                    angular.forEach(groupConfig.layers, function (layerConfig) {
+                                        if (layerConfig.display === 'tiles' && layerConfig._rendered) {
+                                            layerConfig._rendered.setMinZoom(e.layer.options.minZoom);
+                                            layerConfig._rendered.setMaxZoom(e.layer.options.maxZoom);
                                         }
                                     });
                                 }
@@ -621,6 +752,7 @@
                         }
                     };
 
+                    var renderedLayers = {};
                     var refreshData = function(fitView, locationChangedOnly) {
                         /* Used when one of the context changes, or the viewport changes: triggers a refresh of the displayed data
                            If "fitView" is true, then the map moves to the new bounding box containing all the data, before
@@ -631,27 +763,45 @@
                          */
                         fitView = !noRefit && fitView;
                         var renderData = function(locationChangedOnly) {
+                            //console.log('renderdata');
                             var promises = [];
-                            angular.forEach(scope.mapConfig.layers, function(layerGroup) {
+                            var newlyRenderedLayers = {};
+                            angular.forEach(scope.mapConfig.groups, function(layerGroup) {
                                 if (!layerGroup.displayed) {
-                                    angular.forEach(layerGroup.activeDatasets, function(layer) {
-                                        if (layer.rendered) {
-                                            scope.map.removeLayer(layer.rendered);
-                                            layer.rendered = null;
+                                    angular.forEach(layerGroup.layers, function(layer) {
+                                        if (layer._rendered) {
+                                            scope.map.removeLayer(layer._rendered);
+                                            layer._rendered = null;
                                         }
                                     });
                                     return;
                                 }
-                                angular.forEach(layerGroup.activeDatasets, function(layer) {
+                                angular.forEach(layerGroup.layers, function(layer) {
                                     // Depending on the layer config, we can opt for various representations
 
                                     // Tiles: call a method on the existing layer
                                     // Client-side: build a new layer and remove the old one
                                     if (!locationChangedOnly || MapLayerRenderer.doesLayerRefreshOnLocationChange(layer)) {
                                         promises.push(MapLayerRenderer.updateDataLayer(layer, scope.map));
+                                        newlyRenderedLayers[layer._runtimeId] = layer;
                                     }
                                 });
                             });
+
+                            // If there is something that was rendered before but not now, this is the case of a
+                            // layer that was removed from the configuration.
+                            //console.log('renderedLayers', Object.keys(renderedLayers), 'newlyRenderedLayers', Object.keys(newlyRenderedLayers));
+                            Object.keys(renderedLayers).forEach(function(runtimeId) {
+                                if (angular.isUndefined(newlyRenderedLayers[runtimeId])) {
+                                    var layer = renderedLayers[runtimeId];
+                                    if (layer._rendered) {
+                                        scope.map.removeLayer(layer._rendered);
+                                        layer._rendered = null;
+                                    }
+                                }
+                            });
+
+                            renderedLayers = newlyRenderedLayers;
                             $q.all(promises).then(function() {
                                 // We got them all
                                 // FIXME: Do we have something to do here?
@@ -892,45 +1042,98 @@
 
             },
             controller: ['$scope', function($scope) {
-                $scope.mapConfig = {
-                    'layers': []
-                };
+                if (angular.isUndefined($scope.mapConfig)) {
+                    //console.log('Using a new config');
+                    $scope.mapConfig = {
+                        singleLayer: false,
+                        layerSelection: false,
+                        'groups': []
+                    };
+                } else {
+                    //console.log('Using existing config', $scope.mapConfig);
+                }
+
+                // DEBUG //
+                window.mapConfig = $scope.mapConfig;
+                // END OF DEBUG //
+
                 //
                 this.registerLayer = function(layer) {
                     // Register with a dummy single-layer-group
+                    //console.log('register layer');
                     var group = MapHelper.MapConfiguration.createLayerGroupConfiguration();
-                    group.activeDatasets.push(layer);
-                    $scope.mapConfig.layers.push(group);
+                    group.layers.push(layer);
+                    $scope.mapConfig.groups.push(group);
                     return group;
                 };
 
                 this.registerLayerGroup = function(layer) {
-                    $scope.mapConfig.layers.push(layer);
+                    $scope.mapConfig.groups.push(layer);
+                };
+
+                // API
+                this.getCurrentPosition = function() {
+                    return $scope.mapContext.location;
+                };
+
+                this.moveMap = function(coords, zoom) {
+                    $scope.map.setView(coords, zoom);
+                };
+
+                this.resetMapDataFilter = function() {
+                    var contexts = MapHelper.MapConfiguration.getContextList($scope.mapConfig);
+                    contexts.forEach(function(ctx) {
+                        delete ctx.parameters['q.mapfilter'];
+                    });
+                };
+                this.applyMapDataFilter = function(userQuery) {
+                    // This applies the search to all contexts. We could have done this only for the map, but this could
+                    // lead to inconsistent displays if other visualization widgets were displaying data from the same
+                    // contexts.
+                    var contexts = MapHelper.MapConfiguration.getContextList($scope.mapConfig);
+                    contexts.forEach(function(ctx) {
+                        ctx.parameters['q.mapfilter'] = userQuery;
+                    });
+                };
+
+                this.getActiveContexts = function() {
+                    return MapHelper.MapConfiguration.getActiveContextList($scope.mapConfig);
                 };
             }]
         };
     }]);
 
-    mod.directive('odsMapLayerGroup', function() {
+    mod.directive('odsMapLayerGroup', ['MapHelper', function(MapHelper) {
         // TODO: Plug for real
         return {
             restrict: 'EA',
-            scope: {},
+            scope: {
+                "title": "@",
+                "description": "@",
+                "color": "@",
+                "picto": "@"
+            },
             require: '^odsMap',
             link: function(scope, element, attrs, mapCtrl) {
                 mapCtrl.registerLayerGroup(scope.group);
             },
             controller: ['$scope', function($scope) {
-                $scope.group = {'activeDatasets': []};
+                $scope.group = MapHelper.MapConfiguration.createLayerGroupConfiguration();
+                angular.extend($scope.group, {
+                    "title": $scope.title,
+                    "description": $scope.description,
+                    "color": $scope.color,
+                    "picto": $scope.picto
+                });
 
                 this.registerLayer = function(obj) {
                     // Register to the group
-                    $scope.group.activeDatasets.push(obj);
+                    $scope.group.layers.push(obj);
                     return $scope.group;
                 };
             }]
         };
-    });
+    }]);
 
     mod.directive('odsMapLayer', ['MapHelper', function(MapHelper) {
         return {
@@ -943,6 +1146,8 @@
                 opacity: '@',
                 colorScale: '@',
                 colorRanges: '@',
+                colorCategories: '=',
+                colorCategoriesOther: '@',
                 colorByField: '@',
                 colorFunction: '@',
                 picto: '@',
@@ -959,6 +1164,9 @@
                 joinContext: '=',
                 localKey: '@',
                 remoteKey: '@',
+
+                caption: '=?',
+                captionTitle: '@',
 
                 excludeFromRefit: '=?'
             },
@@ -998,13 +1206,31 @@
                         colors: colors,
                         field: scope.colorByField
                     };
+                } else if (scope.colorCategories) {
+                    if (!scope.colorByField) {
+                        console.error('odsMapLayer: using colorCategories requires specifying a field to use, using using colorByField');
+                    }
+                    color = {
+                        type: 'categories',
+                        field: scope.colorByField,
+                        categories: scope.colorCategories
+                    };
+                    if (scope.colorCategoriesOther) {
+                        color.otherCategories = scope.colorCategoriesOther;
+                    }
+                } else if (scope.colorByField) {
+                    color = {
+                        type: 'field',
+                        field: scope.colorByField,
+                    };
                 }
 
                 var config = {
                     'color': color,
                     'colorFunction': scope.colorFunction,
                     'borderColor': scope.borderColor,
-                    'opacity': scope.opacity,
+                    'shapeOpacity': scope.opacity,
+                    'pointOpacity': scope.opacity,
                     'picto': scope.picto,
                     'display': scope.display,
                     'function': scope['function'],
@@ -1013,7 +1239,9 @@
                     'remoteKey': scope.remoteKey,
                     'tooltipSort': scope.tooltipSort,
                     'hoverField': scope.hoverField,
-                    'excludeFromRefit': scope.excludeFromRefit
+                    'excludeFromRefit': scope.excludeFromRefit,
+                    'caption': !!scope.caption,
+                    'captionTitle': scope.captionTitle
                 };
                 var layer = MapHelper.MapConfiguration.createLayerConfiguration(customTemplate, config);
                 var layerGroup;
@@ -1037,14 +1265,8 @@
                         nv.wait().then(function() {
                             if (scope.showMarker) {
                                 layer.marker = (scope.showMarker.toLowerCase() === 'true');
-                            } else if (layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape') !== null) {
-                                layer.marker = !layer.context.dataset.getExtraMeta('visualization', 'map_marker_hidemarkershape');
-                            } else {
-                                layer.marker = true;
                             }
-
-                            layer.color = layer.color || layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || "#C32D1C";
-                            layer.picto = layer.picto || layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
+                            MapHelper.MapConfiguration.setLayerDisplaySettingsFromDefault(layer);
                         });
                         unwatch();
                     }
@@ -1100,197 +1322,4 @@
             }]
         };
     }]);
-
-    mod.directive('odsMapTooltip', ['$compile', '$templateCache', function($compile, $templateCache) {
-        return {
-            restrict: 'E',
-            transclude: true,
-            template: '' +
-                '<div class="odswidget-map-tooltip">' +
-                '   <ods-spinner class="odswidget-map-tooltip__spinner" ng-hide="records"></ods-spinner>' +
-                '   <h2 ng-show="records.length > 1" class="odswidget-map-tooltip__scroll-control ng-leaflet-tooltip-cloak">' +
-                '       <i class="odswidget-map-tooltip__scroll-left fa fa-chevron-left" ng-click="moveIndex(-1)"></i>' +
-                '       <span ng-bind="(selectedIndex+1)+\'/\'+records.length" ng-click="moveIndex(1)"></span>' +
-                '       <i class="odswidget-map-tooltip__scroll-right fa fa-chevron-right" ng-click="moveIndex(1)"></i>' +
-                '   </h2>' +
-                '   <div class="ng-leaflet-tooltip-cloak odswidget-map-tooltip__limited-results-warning" ng-show="records && records.length == RECORD_LIMIT" translate>(limited to the first {{RECORD_LIMIT}} records)</div>' +
-                '   <div ng-repeat="record in records" ng-show="$index == selectedIndex" class="odswidget-map-tooltip__record">' +
-                '       <div ng-if="!template" ng-include src="\'default-tooltip\'"></div>' +
-                '       <div ng-if="template" ng-include src="\'custom-tooltip-\'+context.dataset.datasetid"></div>' +
-                '   </div>' +
-                '</div>',
-            scope: {
-                shape: '=',
-                context: '=',
-                recordid: '=',
-                map: '=',
-                template: '@',
-                gridData: '=',
-                geoDigest: '@',
-                tooltipSort: '@' // field or -field
-            },
-            replace: true,
-            link: function(scope, element, attrs) {
-                var destroyPopup = function(e) {
-                    if (e.popup._content === element[0]) {
-                        if (scope.selectedShapeLayer) {
-                            // Remove the outline on the selected shape
-                            scope.map.removeLayer(scope.selectedShapeLayer);
-                        }
-                        scope.map.off('popupclose', destroyPopup);
-                        scope.$destroy();
-                    }
-                };
-                scope.map.on('popupclose', destroyPopup);
-                scope.unCloak = function() {
-                    jQuery('.ng-leaflet-tooltip-cloak', element).removeClass('ng-leaflet-tooltip-cloak');
-                };
-                if (attrs.template && attrs.template !== '') {
-                    $templateCache.put('custom-tooltip-' + scope.context.dataset.datasetid, attrs.template);
-                } else {
-                    $templateCache.put('default-tooltip', '<div class="infoPaneLayout">' +
-                        '<h2 class="odswidget-map-tooltip__header" ng-show="!!getTitle(record)" ng-bind="getTitle(record)"></h2>' +
-                        '<dl class="odswidget-map-tooltip__record-values">' +
-                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields" ' +
-                        '        ng-show="record.fields[field.name]|isDefined"' +
-                        '        class="odswidget-map-tooltip__field-name">' +
-                        '        {{ field.label }}' +
-                        '    </dt>' +
-                        '    <dd ng-repeat-end ' +
-                        '        ng-switch="field.type" ' +
-                        '        ng-show="record.fields[field.name]|isDefined"' +
-                        '        class="odswidget-map-tooltip__field-value">' +
-                        '        <span ng-switch-when="geo_point_2d">' +
-                        '            <ods-geotooltip width="300" height="300" coords="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
-                        '        </span>' +
-                        '        <span ng-switch-when="geo_shape">' +
-                        '            <ods-geotooltip width="300" height="300" geojson="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
-                        '        </span>' +
-                        '        <span ng-switch-when="file">' +
-                        '            <div ng-if="!context.dataset.isFieldAnnotated(field, \'has_thumbnails\')" ng-bind-html="record.fields|formatFieldValue:field"></div>' +
-                        '            <div ng-if="context.dataset.isFieldAnnotated(field, \'has_thumbnails\')" ng-bind-html="record.fields[field.name]|displayImageValue:context.dataset.datasetid" style="text-align: center;"></div>' +
-                        '        </span>' +
-                        '        <span ng-switch-default title="{{record.fields|formatFieldValue:field}}" ng-bind-html="record.fields|formatFieldValue:field|imagify|videoify|prettyText|nofollow"></span>' +
-                        '    </dd>' +
-                        '</dl>' +
-                    '</div>');
-                }
-
-            },
-            controller: ['$scope', '$filter', 'ODSAPI', function($scope, $filter, ODSAPI) {
-                $scope.RECORD_LIMIT = 100;
-                $scope.records = [];
-                $scope.selectedIndex = 0;
-
-
-                var tooltipSort = $scope.tooltipSort;
-                if (!tooltipSort && $scope.context.dataset.getExtraMeta('visualization', 'map_tooltip_sort_field')) {
-                    tooltipSort = ($scope.context.dataset.getExtraMeta('visualization', 'map_tooltip_sort_direction') || '') + $scope.context.dataset.getExtraMeta('visualization', 'map_tooltip_sort_field');
-                }
-
-                $scope.moveIndex = function(amount) {
-                    var newIndex = ($scope.selectedIndex + amount) % $scope.records.length;
-                    if (newIndex < 0) {
-                        newIndex = $scope.records.length + newIndex;
-                    }
-                    $scope.selectedIndex = newIndex;
-                };
-
-                var refresh = function() {
-                    var options = {
-                        format: 'json',
-                        rows: $scope.RECORD_LIMIT
-                    };
-                    var shapeType = null;
-                    if ($scope.shape) {
-                        shapeType = $scope.shape.type;
-                    }
-                    if ($scope.recordid && shapeType !== 'Point') {
-                        // When we click on a point, we rather want to match the location so that it fetches the other points
-                        // stacked on the same place
-                        options.q = "recordid:'"+$scope.recordid+"'";
-                    } else if ($scope.geoDigest) {
-                        options.geo_digest = $scope.geoDigest;
-                    } else if ($scope.gridData) {
-                        // From an UTFGrid tile
-                        if ($scope.gridData['ods:geo_grid'] !== null) {
-                            // Request geo_grid
-                            options.geo_grid = $scope.gridData['ods:geo_grid'];
-                        } else {
-                            // Request geo_hash
-                            options.geo_digest = $scope.gridData['ods:geo_digest'];
-                        }
-                    } else if ($scope.shape) {
-                        ODS.GeoFilter.addGeoFilterFromSpatialObject(options, $scope.shape);
-                    }
-
-                    var queryOptions = {};
-                    angular.extend(queryOptions, $scope.context.parameters, options);
-
-                    if (tooltipSort) {
-                        queryOptions.sort = tooltipSort;
-                        ODSAPI.records.search($scope.context, queryOptions).success(function(data) { handleResults(data.records); });
-                    } else {
-                        ODSAPI.records.download($scope.context, queryOptions).success(handleResults);
-                    }
-
-                    function handleResults(data) {
-                        if (data.length > 0) {
-                            $scope.selectedIndex = 0;
-                            $scope.records = data;
-                            $scope.unCloak();
-                            var shapeFields = $scope.context.dataset.getFieldsForType('geo_shape');
-                            var shapeField;
-                            if (shapeFields.length) {
-                                shapeField = shapeFields[0].name;
-                            }
-                            if (shapeField && $scope.gridData &&
-                                ($scope.gridData['ods:geo_type'] === 'Polygon' ||
-                                 $scope.gridData['ods:geo_type'] === 'LineString' ||
-                                 $scope.gridData['ods:geo_type'] === 'MultiPolygon' ||
-                                 $scope.gridData['ods:geo_type'] === 'MultiLineString'
-                                )) {
-                                // Highlight the selected polygon
-                                var record = data[0];
-                                if (record.fields[shapeField]) {
-                                    var geojson = record.fields[shapeField];
-                                    if (geojson.type !== 'Point') {
-                                        $scope.selectedShapeLayer = L.geoJson(geojson, {
-                                            fill: false,
-                                            color: '#CC0000',
-                                            opacity: 1,
-                                            dashArray: [5],
-                                            weight: 2
-
-                                        });
-                                        $scope.map.addLayer($scope.selectedShapeLayer);
-                                    }
-                                }
-                            }
-                        } else {
-                            $scope.map.closePopup();
-                        }
-                    }
-                };
-
-                $scope.$watch('context.parameters', function() {
-                    refresh();
-                }, true);
-                $scope.$apply();
-
-                /* *** HELPER METHODS FOR THE TEMPLATES *** */
-                $scope.getTitle = function(record) {
-                    if ($scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.map_tooltip_title) {
-                        var titleField = $scope.context.dataset.extra_metas.visualization.map_tooltip_title;
-                        if (angular.isDefined(record.fields[titleField]) && record.fields[titleField] !== '') {
-                            return record.fields[titleField];
-                        }
-                    }
-                    return null;
-                };
-                $scope.fields = angular.copy($scope.context.dataset.fields);
-            }]
-        };
-    }]);
-
 }());

@@ -55,6 +55,13 @@
          *      </file>
          *  </example>
          */
+
+        var ICON_CIRCLE = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' +
+            '<svg width="19px" height="19px" viewBox="0 0 19 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">' +
+            '    <path d="M18,9.50004182 C18,14.1944851 14.1944015,18.0000836 9.49995818,18.0000836 C4.80551469,18.0000836 0.99991635,14.1944851 0.99991635,9.50004182 C0.99991635,4.80559834 4.80551469,1 9.49995818,1 C14.1944015,1 18,4.80559834 18,9.50004182 L18,9.50004182 Z" id="path8568" fill="#000000"></path>' +
+            '    <rect style="opacity: 0" x="0" y="0" width="19" height="19"></rect>' +
+            '</svg>';
+
         return {
             restrict: 'E',
             scope: {
@@ -859,7 +866,8 @@
                     createMarker = function(latLng, color) {
                         return new L.VectorMarker(latLng, {
                             color: color || $scope.markerColor,
-                            icon: visualization.map_marker_picto || 'icon-circle',
+                            icon: angular.element('<div>' + ICON_CIRCLE + '</div>'),
+                            size: 4,
                             marker: !visualization.map_marker_hidemarkershape
                         });
                     };

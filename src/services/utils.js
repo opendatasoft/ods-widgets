@@ -12,10 +12,11 @@
             'highcharts': {
                 'css': [],
                 'js': [
-                    ["https://code.highcharts.com/3.0.10/highcharts.js"],
-                    ["https://code.highcharts.com/3.0.10/modules/no-data-to-display.js"],
-                    ["https://code.highcharts.com/3.0.10/highcharts-more.js"],
-                    ["https://code.highcharts.com/modules/treemap.js"]
+                    ["https://code.highcharts.com/5.0.2/highcharts.js"],
+                    ["https://code.highcharts.com/5.0.2/modules/no-data-to-display.js"],
+                    ["https://code.highcharts.com/5.0.2/highcharts-more.js"],
+                    ["https://code.highcharts.com/5.0.2/modules/treemap.js"],
+                    ["https://code.highcharts.com/5.0.2/modules/funnel.js"]
                 ]
             },
             'leaflet': {
@@ -656,7 +657,9 @@
                 syncers.push(syncToURL);
 
 
-                var unwatchLocation = scope.$watch(function() { return $location.search(); }, syncFromURL, true);
+                var unwatchLocation = scope.$watch(function () {
+                    return $location.search();
+                }, syncFromURL, true);
 
                 return function unwatch() {
                     unwatchObject();

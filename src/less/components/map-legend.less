@@ -1,0 +1,127 @@
+@mapLegend-gutterWidth: 20px;
+.odswidget-map-legend {
+    width: 250px;
+    //height: 100px;
+    position: absolute;
+    bottom: @mapDisplayControl-gutterWidth;
+    right: @mapDisplayControl-gutterWidth;
+    background-color: white;
+    //transition: width .25s ease-in, height .25s ease-in;
+    padding-top: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-bottom: 25px;
+}
+
+.odswidget-map-legend--extended {
+    width: 400px;
+    //height: 300px;
+    overflow: hidden; /* Avoid a scrollbar during the transition effct */
+}
+
+.odswidget-map-legend__categories--condensed {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.odswidget-map-legend__categories--condensed__item {
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 80px;
+    padding: 2px;
+    text-align: center;
+}
+
+.odswidget-map-legend__categories__color-block {
+    width: 16px;
+    height: 16px;
+    border: solid 1px black;
+    display: inline-block;
+}
+
+.odswidget-map-legend__categories--extended {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.odswidget-map-legend__categories--extended__item {
+    flex-grow: 1;
+    flex-shrink: 0;
+    width: 190px;
+    padding: 2px;
+    text-align: center;
+    display: flex;
+}
+
+.odswidget-map-legend__categories--extended__item-color {
+    flex-grow: 0;
+    flex-shrink: 0;
+    margin-right: 5px;
+}
+.odswidget-map-legend__categories--extended__item-value {
+    flex-grow: 1;
+    flex-shrink: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-align: left;
+}
+.odswidget-map-legend__categories--extended__item-value--others {
+    font-style: italic;
+}
+
+.odswidget-map-legend__simple-container {
+    text-align: center;
+}
+.odswidget-map-legend__simple__color-block {
+    width: 60%;
+    height: 16px;
+    border: solid 1px black;
+    display: inline-block;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.odswidget-map-legend__title {
+    position: relative;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 5px;
+}
+.odswidget-map-legend__title--toggleable {
+    padding-right: 20px;
+}
+.odswidget-map-legend__title[ng-click] {
+    cursor: default;
+}
+.odswidget-map-legend__title--toggleable[ng-click] {
+    cursor: pointer;
+}
+.odswidget-map-legend__title-toggle {
+    position: absolute;
+    right: 5px;
+    top: 0;
+    bottom: 0;
+    border: none;
+    background-color: transparent;
+}
+
+.odswidget-map-legend__pagination {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+}
+.odswidget-map-legend__pagination-button {
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+.odswidget-map-legend__pagination-button.ng-hide {
+    /* Use visibility instead of display none, so that the block doesn't move when the button is hidden */
+    display: inline-block !important;
+    visibility: hidden;
+}

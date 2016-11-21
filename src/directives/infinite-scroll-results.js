@@ -69,11 +69,12 @@
                 scrollTopWhenRefresh: '='
             },
             transclude: true,
-            controller: ['$scope', '$window', 'ODSAPI', function($scope, $window, ODSAPI) {
+            controller: ['$scope', '$window', '$q', 'ODSAPI', function($scope, $window, $q, ODSAPI) {
                 var page = 0;
                 var noMoreResults = false;
                 $scope.fetching = false;
                 $scope.results = [];
+                var initialRequest = $q.defer();
                 var fetchResults = function(init) {
                     if (noMoreResults) {
                         return;
@@ -87,7 +88,7 @@
                     var func;
 
                     $scope.fetching = true;
-                    if ($scope.context.type == 'catalog') {
+                    if ($scope.context.type === 'catalog') {
                         // FIXME: the extrametas parameter has been added here because the only place we use this directive
                         // requires it, but we may be able to find something less "hardcoded".
                         ODSAPI.datasets.search($scope.context, {rows: 10, start: start, extrametas: true}).success(function(data) {
@@ -99,6 +100,7 @@
                         ODSAPI.records.search($scope.context, params).success(function(data) {
                             noMoreResults = data.records.length == 0;
                             renderResults(data.records, init);
+                            initialRequest.resolve();
                         });
                     }
                 };
@@ -112,10 +114,19 @@
                     if (init && $scope.scrollTopWhenRefresh) {
                         $window.scrollTo($window.scrollX, 0);
                     }
+                    if (init) {
+                        angular.element($window).trigger('scroll');
+                    }
                 };
 
                 $scope.loadMore = function() {
-                    fetchResults(false);
+                    if ($scope.context.type === 'dataset') {
+                        initialRequest.promise.then(function() {
+                            fetchResults(false);
+                        });
+                    } else {
+                        fetchResults(false);
+                    }
                 };
 
                 $scope.$watch('context.parameters', function(nv, ov) {

@@ -16,6 +16,8 @@
          * value of the "field" parameter.
          * The search will be a simple text search and won't support any query language or operators.
          * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use, or array of context to use.
+         * @param {string} [autofocus] Add the autofocus attribute (no need for a value) to set the focus in the text
+         * search's input.
          *
          * @description
          * This widget displays a search box that can be used to do a full-text search on a context.
@@ -67,6 +69,11 @@
                 context: '=',
                 field: '@?'
             },
+            link: function (scope, element, attrs) {
+                if ('autofocus' in attrs) {
+                    $(element).find('input').focus();
+                }
+            },
             controller: ['$scope', '$attrs', 'translate', function ($scope, $attrs, translate) {
                 var contexts = [];
                 var fields = {};
@@ -78,13 +85,13 @@
                 }
 
                 var unwatch = $scope.$watch('context', function (nv, ov) {
- 
+
                     var parseParameter = function (context, returnOriginalValue) {
                         var parameter = context.parameters.q;
                         if (!parameter) {
                             return;
                         }
- 
+
                         var re = /([\w-_]+):"(.*)"/;
                         var matches = parameter.match(re);
                         if (matches && fields[context.name] === matches[1]) {
@@ -102,7 +109,7 @@
                         angular.forEach(nv, function (context) {
                             fields[context.name] = $attrs[context.name + 'Field'] || $scope.field;
                         });
- 
+
                         // parse parameters
                         angular.forEach(nv, function (context) {
                             $scope.searchExpression = $scope.searchExpression || parseParameter(context)
@@ -113,7 +120,7 @@
                             });
                         }
                         unwatch();
-                        
+
                         // setup watch for future updates
                         // the watch should reset the searchExpression only if ALL contexts share the same value
                         $scope.$watch(

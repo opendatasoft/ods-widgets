@@ -41,7 +41,7 @@
                         scope.imageUrl = null;
                         scope.placeholder = true;
                     } else {
-                        scope.imageUrl = (scope.domainUrl || '') + '/explore/dataset/' + scope.record.datasetid + '/files/' + image.id + '/300/';
+                        scope.imageUrl = ODS.Record.getImageUrl(scope.record, scope.field, scope.domainUrl);
                         scope.placeholder = false;
                     }
                 };

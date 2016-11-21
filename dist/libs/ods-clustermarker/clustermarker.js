@@ -11,19 +11,21 @@ new L.ClusterMarker(latlng, {
 L.ClusterMarker = L.FeatureGroup.extend({
     initialize: function(latlng, options) {
        L.FeatureGroup.prototype.initialize.call(this, []);
-        var ratio;
+        var ratio = ODS.CalculationUtils.getValueOnScale(options.value, options.min, options.max, options.sizeFunction);
         // FIXME: A ratio should only be between 1 and 0. Right now, the calculations go very wrong with negative numbers.
         // -> https://opendatasoft.clubhouse.io/story/370
-        if (options.total === 0) {
-            ratio = 1;
-        } else {
-            ratio = options.value / options.total;
-        }
-        if (ratio < 0) {
-            // A ratio superior to 1 is a bad idea, but it's still a better idea than a negative ratio. To be fixed...
-            ratio = ratio * -1;
-        }
-        var styles = this._getShapeStyle(options.color, ratio);
+        //if (options.total === 0) {
+        //    ratio = 1;
+        //} else {
+        //    ratio = options.value / options.total;
+        //}
+        //if (ratio < 0) {
+        //    // A ratio superior to 1 is a bad idea, but it's still a better idea than a negative ratio. To be fixed...
+        //    ratio = ratio * -1;
+        //}
+//console.log('ratio', ratio);
+        var opacity = options.opacity || 1;
+        var styles = this._getShapeStyle(options.color, opacity, ratio);
 
         if (options.geojson) {
             if (options.geojson.type !== 'Point') {
@@ -34,7 +36,18 @@ L.ClusterMarker = L.FeatureGroup.extend({
             }
         }
 
-        this.addLayer(new L.Marker(latlng, {icon: this._getMarkerIcon(options.color, options.value, ratio, options.numberFormattingFunction)}));
+        this.addLayer(new L.Marker(latlng, {
+            icon: this._getMarkerIcon(options.color,
+                                      opacity,
+                                      options.value,
+                                      ratio,
+                                      options.minSize,
+                                      options.maxSize,
+                                      options.borderOpacity,
+                                      options.borderSize,
+                                      options.borderColor,
+                                      options.numberFormattingFunction)
+        }));
         this._latlng = latlng;
 
         if (this._clusterShape) {
@@ -59,8 +72,19 @@ L.ClusterMarker = L.FeatureGroup.extend({
     getClusterShape: function() {
         return this._clusterShape;
     },
-    _getMarkerIcon: function(color, count, ratio, numberFormattingFunction) {
-        var bgcolor, textcolor;
+    _getMarkerIcon: function(color,
+                             opacity,
+                             count,
+                             ratio,
+                             minSize,
+                             maxSize,
+                             borderOpacity,
+                             borderSize,
+                             borderColor,
+                             numberFormattingFunction) {
+        minSize = minSize || 3;
+        maxSize = maxSize || 5;
+        var bgcolor, textcolor, relativeBorderColor;
         if (!color) {
             if (ratio > 0.8) {
                 color = "#FF4444";
@@ -74,8 +98,10 @@ L.ClusterMarker = L.FeatureGroup.extend({
 
             bgcolor = chroma(color);
             textcolor = chroma('#111111');
+            relativeBorderColor = bgcolor;
         } else {
             bgcolor = chroma(color).brighter((1-ratio)*20);
+            relativeBorderColor = chroma(borderColor).brighter((1-ratio)*20);
             textcolor = chroma(bgcolor).hsl()[2] > 0.7 ? chroma('#111111'): chroma('#EEEEEE');
         }
 
@@ -84,33 +110,57 @@ L.ClusterMarker = L.FeatureGroup.extend({
             displayedNumber = numberFormattingFunction(count);
         }
 
-//        var size = Math.max(((ratio * 0.5) + 0.5) * 60, 50) + 'px';
-        var textsize = 14 * (1+ratio/3);
-        var size = Math.max(displayedNumber.toString().length, 6) + 0 + 'ch';
-        if (navigator.appVersion.indexOf("MSIE 8") > -1) {
-            // Fallback for IE8 that doesn't handle the 'ch' unit
-            size = Math.max(((ratio * 0.5) + 0.5) * 60, 50) + 'px';
-        }
-        // var rgbColor = chroma(bgcolor).rgb();
-        // bgcolor = chroma(bgcolor).hex();
-        var bordercolor = chroma(bgcolor).alpha(0.5);
+        var realBorderColor = chroma(relativeBorderColor).alpha(borderOpacity);
 
+
+        // The mix and max sizes of the cluster are configurable, so the text has to fit in it.
+        // Min and max size are on a 1-10 scale
+        var baseSizeUnit = 15;
+        var realMinSize = baseSizeUnit * minSize;
+        var realMaxSize = baseSizeUnit * maxSize;
+        var relativeMaxSize = realMaxSize - realMinSize;
+        var size = Math.ceil(relativeMaxSize * ratio) + realMinSize;
+
+        //var textsize = 14 * (1+ratio/3);
+        //var size = Math.max(displayedNumber.toString().length, 6) + 0 + 'ch';
+
+        // We have the size in pixels
+        //console.log('size in pixels', size);
+
+        var textMargin = Math.floor(size / 5);
+        var availableSizePerCharacter = (size - textMargin) / Math.max(displayedNumber.toString().length, 2); // Always account the space for at least 2 chars
+        //console.log('availableSizePerCharacter', availableSizePerCharacter);
+        var textSize = Math.ceil(availableSizePerCharacter * 1.5); // Empirically assume characters are 1.5-times as high as they are large.
+        textSize = Math.min(textSize, 24); // 24px is the maximum size we want (looks ugly otherwise)
+
+        //console.log('cluster size', size, 'margin', textMargin, 'available size per char', availableSizePerCharacter, 'text size', textSize);
+
+
+        var sizeStyle = size + 'px';
         return L.divIcon({
-            html: '<div class="cluster-marker-circle" style="width: ' + size + '; height: ' + size + '; background-color: ' + bgcolor.css() + '; border: solid 4px '+ bordercolor.css('rgba') +'; top: calc(-'+size+'/2); left: calc(-'+size+'/2); font-size: '+textsize+'px;">' +
-                '<span style="color: ' + textcolor.css() + '; line-height: ' + size + ';">' + displayedNumber + '</span>' +
-                '</div>',
+            html: '<div class="cluster-marker-circle" ' +
+                  '     style="width: ' + sizeStyle + '; ' +
+                  '            height: ' + sizeStyle + '; ' +
+                  '            background-color: ' + bgcolor.css() + '; ' +
+                  '            border: solid ' + borderSize + 'px '+ realBorderColor.css('rgba') +'; ' +
+                  '            top: calc(-'+sizeStyle+'/2); ' +
+                  '            left: calc(-'+sizeStyle+'/2); ' +
+                  '            opacity: ' + opacity + '; ' +
+                  '            font-size: '+textSize+'px;">' +
+                  '<span style="color: ' + textcolor.css() + '; line-height: ' + sizeStyle + ';">' + displayedNumber + '</span>' +
+                  '</div>',
             className: 'cluster-marker'
         });
     },
-    _getShapeStyle: function(color, ratio) {
+    _getShapeStyle: function(color, opacity, ratio) {
         if (!color) {
             color = "#000000";
         }
-        var opacity = (ratio * 0.4) + 0.2;
+        var shapeOpacity = opacity * ((ratio * 0.4) + 0.2);
 
         var highlightStyle = {
             color: color,
-            fillOpacity: opacity,
+            fillOpacity: shapeOpacity,
             stroke: false
         };
         var defaultStyle = {

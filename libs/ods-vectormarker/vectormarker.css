@@ -1,25 +1,15 @@
-.leaflet-vectormarker, .leaflet-vectormarker object {
-    width: 25px !important;
-    height: 43px !important;
-    font-size: 32px;
-}
-
 .leaflet-vectormarker .leaflet-vectormarker-iconoverlay {
     position: absolute;
-    top: 2px;
     left: 0;
-    width: 100%;
+    right: 0;
+    top: 0;
+    margin: auto;
     text-align: center;
-    font-size: 15px;
+    line-height: 0; /* To avoid an effective minimum height in very small sizes */
 }
 
 .leaflet-vectormarker .leaflet-vectormarker-singleicon {
-    position: absolute;
-    width: 40px;
-    text-align: center;
-    /*top: 29px;*/
-    left: -8px;
-    top: 20px;
+    line-height: 0; /* To avoid an effective minimum height in very small sizes */
 }
 
 .leaflet-vectormarker .leaflet-vectormarker-singleicon i {
@@ -31,16 +21,8 @@
     /*filter: drop-shadow( 0.1em 0.1em 0.1em rgba(0,0,0,0.5) );*/
 }
 
-.leaflet-vectormarker .leaflet-vectormarker-singleicon svg {
-    width: 40px;
-    height: 40px;
-    vertical-align: middle;
-}
-
-.leaflet-vectormarker .leaflet-vectormarker-iconoverlay svg {
-    width: 18px;
-    height: 18px;
-    vertical-align: middle;
+.leaflet-vectormarker svg#svg-vectormarker-marker {
+    overflow: visible; /* To prevent weird clipping of the round borders */
 }
 
 .leaflet-vectormarker .leaflet-vectormarker-singleicon #dot-icon {

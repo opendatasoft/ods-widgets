@@ -99,7 +99,10 @@
                 {label: translate('Column chart'), type: 'column', group: translate('Bar charts')},
                 {label: translate('Bar chart'), type: 'bar', group: translate('Bar charts')},
                 {label: translate('Pie chart'), type: 'pie', group: translate('Pie charts')},
-                {label: translate('Scatter plot'), type: 'scatter', group: translate('line charts')}
+                {label: translate('Scatter plot'), type: 'scatter', group: translate('line charts')},
+                {label: translate('Spiderweb chart'), type: 'spiderweb', group: translate('Pie charts')},
+                {label: translate('Polar chart'), type: 'polar', group: translate('Pie charts')},
+                {label: translate('Funnel chart'), type: 'funnel', group: translate('Pyramid charts')},
             ],
             timeserie_precision_tab = [
                 "year",
@@ -185,15 +188,10 @@
             getAllTimescales: function() {
                 return getAvailableTimescalesFromPrecision('minute', 'datetime', true);
             },
-            getAvailableX: function(datasetid, i, limitToTimeSeries) {
-                limitToTimeSeries = !!limitToTimeSeries;
+            getAvailableX: function(datasetid, i) {
                 var that = this;
                 if (typeof i === "undefined") {
-                    if (!limitToTimeSeries) {
-                        return availableX[datasetid];
-                    } else {
-                        return $.grep(availableX[datasetid], (function(x) { return (['date', 'datetime'].indexOf(that.getFieldType(datasetid, x.name)) !== -1) }));
-                    }
+                    return availableX[datasetid];
                 }
                 return availableX[datasetid][i];
             },
@@ -367,7 +365,7 @@
                 var availableChartTypes = [];
                 if (datasets[datasetid]) {
                     for (var i = 0; i < availableCharts.length; i++) {
-                        if ((stacked && ['column', 'area', 'areaspline', 'line', 'spline', 'bar'].indexOf(availableCharts[i].type) !== -1) || !stacked) {
+                        if ((stacked && ['column', 'area', 'areaspline', 'line', 'spline', 'bar', 'polar'].indexOf(availableCharts[i].type) !== -1) || !stacked) {
                             if (typeof availableCharts[i].filter === 'undefined') {
                                 availableChartTypes.push(availableCharts[i]);
                             } else if (datasets[datasetid][availableCharts[i].filter]()) {
@@ -382,36 +380,33 @@
                 return angular.copy({
                 });
             },
-            setChartDefaultValues: function(datasetid, chart, conservative) {
+            setChartDefaultValues: function(datasetid, chart, conservative, advanced) {
                 var cumulatedQueriesTimescale = '',
                     xType;
+
                 if (typeof conservative === "undefined") {
                     conservative = false;
                 }
-                if (!chart.timescale) {
-                    for (var i = 0; i < chart.queries.length; i++) {
-                        xType = this.getFieldType(datasetid, chart.queries[i].xAxis);
-                        if (chart.queries[i].timescale && (xType === 'date' || xType === "datetime")) {
-                            cumulatedQueriesTimescale = chart.queries[i].timescale;
-                        }
-                    }
+                if (typeof advanced === "undefined") {
+                    advanced = false;
+                }
 
+                for (var i = 0; i < chart.queries.length; i++) {
+                    xType = this.getFieldType(datasetid, chart.queries[i].xAxis);
+                    if (chart.queries[i].timescale && (xType === 'date' || xType === "datetime")) {
+                        cumulatedQueriesTimescale = chart.queries[i].timescale;
+                    }
+                }
+
+                if (!chart.timescale && advanced) {
                     if (cumulatedQueriesTimescale) {
-                        chart.timescale = chart.queries[0].timescale;
-                    }
-                } else {
-                    for (var i = 0; i < chart.queries.length; i++) {
-                        xType = this.getFieldType(datasetid, chart.queries[i].xAxis);
-                        if (chart.queries[i].timescale && (xType === 'date' || xType === "datetime")) {
-                            cumulatedQueriesTimescale = chart.queries[i].timescale;
-                        }
-                    }
-                    if (!cumulatedQueriesTimescale) {
+                        chart.timescale = cumulatedQueriesTimescale;
+                    } else {
                         chart.timescale = '';
                     }
                 }
 
-                // apply global timscale to queries that eventually might not anything set
+                // apply global timescale to queries that eventually might not anything set
                 if (chart.timescale) {
                     for (var i = 0; i < chart.queries.length; i++) {
                         if (!chart.queries[i].timescale) {

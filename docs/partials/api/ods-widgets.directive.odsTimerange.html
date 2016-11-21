@@ -13,7 +13,11 @@
        default-from="{string}"
        default-to="{string}"
        display-time="{string}"
-       date-format="{string}"&gt;
+       date-format="{string}"
+       label-from="{string}"
+       label-to="{string}"
+       placeholder-from="{string}"
+       placeholder-to="{string}"&gt;
 &lt;/ods-timerange&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -25,7 +29,11 @@
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>defaultTo</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Default datetime for the &quot;to&quot; field: either &quot;yesterday&quot;, &quot;now&quot; or a string representing a date</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>displayTime</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Define if the date selector displays the time selector as well</p>
 </div> <p><em>(default: true)</em></p></td></tr><tr><td>dateFormat</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Define the format for the date displayed in the inputs</p>
-</div> <p><em>(default: 'YYYY-MM-DD HH:mm')</em></p></td></tr></tbody></table></div>
+</div> <p><em>(default: 'YYYY-MM-DD HH:mm')</em></p></td></tr><tr><td>labelFrom</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Set the label before the first input</p>
+</div> <p><em>(default: 'From')</em></p></td></tr><tr><td>labelTo</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Set the label before the second input</p>
+</div> <p><em>(default: 'to')</em></p></td></tr><tr><td>placeholderFrom</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Set the label before the first input</p>
+</div> <p><em>(default: '')</em></p></td></tr><tr><td>placeholderTo</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Set the label before the second input</p>
+</div> <p><em>(default: '')</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p><ods-dataset-context
     context="cibul,medecins"

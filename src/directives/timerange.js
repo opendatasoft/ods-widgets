@@ -2,7 +2,7 @@
     'use strict';
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsTimerange', ['ModuleLazyLoader', function(ModuleLazyLoader) {
+    mod.directive('odsTimerange', ['ModuleLazyLoader', 'translate', function(ModuleLazyLoader, translate) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsTimerange
@@ -14,6 +14,10 @@
          * @param {string} [defaultTo=none] Default datetime for the "to" field: either "yesterday", "now" or a string representing a date
          * @param {string} [displayTime=true] Define if the date selector displays the time selector as well
          * @param {string} [dateFormat='YYYY-MM-DD HH:mm'] Define the format for the date displayed in the inputs
+         * @param {string} [labelFrom='From'] Set the label before the first input
+         * @param {string} [labelTo='to'] Set the label before the second input
+         * @param {string} [placeholderFrom=''] Set the label before the first input
+         * @param {string} [placeholderTo=''] Set the label before the second input
          * @description
          * This widget displays two fields to select the two bounds of a date and time range.
          *
@@ -109,27 +113,56 @@
                 displayTime: '@?',
                 dateFormat: '@?',
                 to: '=?',
-                from: '=?'
+                from: '=?',
+                labelFrom: '@?',
+                labelTo: '@?',
+                placeholderFrom: '@?',
+                placeholderTo: '@?'
             },
             template: '' +
             '<div class="odswidget odswidget-timerange">' +
-            '    <span class="odswidget-timerange__from">' +
-            '        <span translate>From</span> ' +
-            '        <input type="text">' +
-            '    </span>' +
-            '    <span class="odswidget-timerange__to">' +
-            '        <span translate>to</span> ' +
-            '        <input type="text">' +
-            '    </span>' +
+            '    <div class="odswidget-timerange__from">' +
+            '        <span ng-bind="labelFrom"></span> ' +
+            '        <input type="text" placeholder="{{ placeholderFrom }}">' +
+            '    </div>' +
+            '    <div class="odswidget-timerange__to">' +
+            '        <span ng-bind="labelTo"></span> ' +
+            '        <input type="text" placeholder="{{ placeholderTo }}">' +
+            '    </div>' +
             '</div>',
             link: function(scope, element, attrs) {
+                scope.labelFrom = angular.isDefined(scope.labelFrom) ? scope.labelFrom : translate('From');
+                scope.labelTo = angular.isDefined(scope.labelTo) ? scope.labelTo : translate('to');
                 var inputs = element.find('input');
                 var defaultDateFormat = 'YYYY-MM-DD HH:mm';
                 if (angular.isDefined(scope.displayTime) && scope.displayTime === 'false') {
                     defaultDateFormat = 'YYYY-MM-DD';
                 }
                 scope.dateFormat = scope.dateFormat || defaultDateFormat;
+
                 // Handle default values
+                // First step: override defaultFrom and defaultTo with values from context's parameters
+                var getParameterName = function (context) {
+                    var parameterName =  attrs[context.name + "ParameterName"] || 'q';
+                    if (['q', 'rq'].indexOf(parameterName) > -1) {
+                        // Naming the parameter to prevent overwriting between widgets
+                        parameterName = parameterName + '.timerange';
+                    }
+                    return parameterName;
+                };
+                var parameterValue,
+                    parameterRE = /([\w-]+):\[(.*) TO (.*)\]/;
+                if (angular.isArray(scope.context)) {
+                    parameterValue = scope.context[0].parameters[getParameterName(scope.context[0])];
+                } else {
+                    parameterValue = scope.context.parameters[getParameterName(scope.context)];
+                }
+                var matches = parameterRE.exec(decodeURIComponent(parameterValue));
+                if (matches && matches[1] == scope.timeField) {
+                    scope.defaultFrom = matches[2];
+                    scope.defaultTo = matches[3];
+                }
+                // Second step: parse defaultTo and defaultFrom and fill in the model
                 if (angular.isDefined(scope.defaultFrom)) {
                     var from = roundTime(computeDefaultTime(scope.defaultFrom), scope.dateFormat, scope.displayTime, 'from');
                     inputs[0].value = from.format(scope.dateFormat);
@@ -141,7 +174,7 @@
                     inputs[1].value = to.format(scope.dateFormat);
                     scope.to = formatTimeToISO(to);
                 }
-
+                // Init rome calendar plugin
                 ModuleLazyLoader('rome').then(function() {
                     if (typeof scope.displayTime === "undefined") {
                         scope.displayTime = true;
@@ -227,16 +260,6 @@
                     }
                 });
 
-                $q.all(contexts.map(function(context) {
-                    return context.wait().then(function(dataset) {
-                        if (conf[context.name]['timefield'] === null) {
-                            conf[context.name]['timefield'] = getTimeField(dataset);
-                        }
-                    });
-                })).then(function() {
-                    react(contexts, conf);
-                });
-
                 var react = function(contexts, configurations) {
                     $scope.$watch('[from, to]', function(nv) {
                         if (nv[0] && nv[1]) {
@@ -255,6 +278,20 @@
                         }
                     }, true);
                 };
+
+                if (contexts.length == 1 && contexts[0].type == 'catalog') {
+                    react(contexts, conf);
+                } else {
+                    $q.all(contexts.map(function(context) {
+                        return context.wait().then(function(dataset) {
+                            if (conf[context.name]['timefield'] === null) {
+                                conf[context.name]['timefield'] = getTimeField(dataset);
+                            }
+                        });
+                    })).then(function() {
+                        react(contexts, conf);
+                    });
+                }
             }]
         };
     }]);

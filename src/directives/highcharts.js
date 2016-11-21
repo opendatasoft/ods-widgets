@@ -400,14 +400,14 @@
                             s = [];
 
                         // build the header
-                        s = [tooltip.tooltipHeaderFormatter(items[0])];
+                        s = [tooltip.tooltipFooterHeaderFormatter(items[0])];
 
                         // build the values
                         angular.forEach(items, function (item) {
                             series = item.series;
                             var value = (series.tooltipFormatter && series.tooltipFormatter(item)) || item.point.tooltipFormatter(series.tooltipOptions.pointFormat);
-                            value = value.replace(/(\.|,)00</, '<');
-                            value = value.replace(/(\.|,)00 /, ' ');
+                            value = value.replace(/(\.|,)00</g, '<');
+                            value = value.replace(/(\.|,)00 /g, ' ');
                             s.push(value);
                         });
                         // footer
@@ -440,7 +440,7 @@
                 if (periodic) {
                     options.xAxis.showFirstLabel = true;
                 }
-            } else if (['double', 'int'].indexOf(xAxisType) !== -1) {
+            } else if (['double', 'int'].indexOf(xAxisType) !== -1 && parameters.queries[0].sort === "") {
                 options.xAxis.type = "linear";
             } else {
                 options.xAxis.type = "category";
@@ -483,6 +483,30 @@
                 options.yAxis = [buildYAxis(parameters.singleAxisLabel, yAxisParameters, false)];
             }
 
+            for (var i = 0; i < parameters.queries.length; i++) {
+                for (var j = 0; j < parameters.queries[i].charts.length; j++) {
+                    if (parameters.queries[i].charts[j].type === "spiderweb" || parameters.queries[i].charts[j].type === "polar") {
+                        options.chart.polar = true;
+                        options.xAxis.lineWidth = 0;
+                        options.xAxis.tickmarkPlacement = 'on';
+                        options.xAxis.labels = {};
+                        options.xAxis.title = {};
+                    }
+
+                    if (parameters.queries[i].charts[j].type === "polar") {
+                        options.plotOptions.series.pointPlacement = 'on';
+                        options.plotOptions.series.pointPadding = 0;
+                        options.plotOptions.series.groupPadding = 0;
+                    }
+
+                    if (parameters.queries[i].charts[j].type === "funnel") {
+                        options.chart.type = "funnel";
+                        options.chart.marginRight = 100;
+                        options.legend.enabled = false;
+                    }
+                }
+            }
+
             return options;
         };
 
@@ -514,10 +538,20 @@
                 serieColor = colors[suppXValue + serie.color];
             }
 
+            var type = 'line',
+                polar = false;
+            if (serie.type === 'spiderweb') {
+                type = 'line';
+            } else if (serie.type === 'polar') {
+                type = 'column';
+            } else {
+                type = serie.type;
+            }
+
             var options = angular.extend({}, {
                 name: suppXValue ? suppXValue : yLabel,
                 color: serieColor,
-                type: serie.type,
+                type: type,
                 yAxis: parameters.singleAxis ? 0 : yAxisesIndexes[datasetid][yLabel],
                 marker: {
                     enabled: (serie.type === 'scatter'),
@@ -532,6 +566,11 @@
 
             if (!options.dataLabels) {
                 options.dataLabels = {};
+            }
+
+            if (serie.type === "funnel") {
+                options.neckWidth = '30%';
+                options.neckHeight = '25%';
             }
 
             if (serie.displayValues) {
@@ -682,6 +721,21 @@
                         return this.value;
                     }
                 }
+            }
+
+            if (chart.type === 'spiderweb') {
+                yAxis.gridLineInterpolation = 'polygon';
+                yAxis.lineWidth = 0;
+                delete(yAxis.startOnTick);
+                delete(yAxis.endOnTick);
+                delete(yAxis.title);
+                delete(yAxis.labels);
+            } else if (chart.type === 'polar') {
+                min: 0,
+                yAxis.endOnTick = false;
+                yAxis.showLastLabel = true;
+                delete(yAxis.title);
+                delete(yAxis.labels);
             }
 
             if (stacked) {
@@ -977,7 +1031,7 @@
                                             max
                                         ]);
                                     }
-                                } else if (serie.type == 'pie') {
+                                } else if (['pie', 'funnel'].indexOf(serie.type) !== -1) {
                                     if (options.xAxis.type === 'datetime') {
                                         serie.data.push({
                                             name: Highcharts.dateFormat(serie.tooltip.xDateFormat, new Date(valueX)),
@@ -1028,7 +1082,7 @@
                                 }
                             } else { // categories
                                 // push row data into proper serie data array
-                                if(serie.type == 'pie') {
+                                if(['pie', 'funnel'].indexOf(serie.type) !== -1) {
                                     serie.data[categoryIndex] = {
                                         name: formatRowX(valueX),
                                         y: valueY
@@ -1963,7 +2017,7 @@
          * odsChartSerie is the sub widget that defines a serie in the chart with all its parameters.
          * see {@link ods-widgets.directive:odsChart odsChart} for complete examples.
          * # Available chart types:
-         * There are three available types of charts: simple series and areas that takes a minimal and a maximal value.
+         * There are two available types of charts: simple series and areas that takes a minimal and a maximal value.
          * ## simple series
          * - line
          * - spline
@@ -1973,6 +2027,9 @@
          * - bar
          * - pie
          * - scatter
+         * - polar
+         * - spiderweb
+         * - funnel
          * ## areas
          * - arearange
          * - areasplinerange

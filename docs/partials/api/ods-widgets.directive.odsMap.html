@@ -152,7 +152,10 @@ from the new position&#39;s calculation, you can use <code>excludeFromRefit</cod
        min-zoom="{integer}"
        max-zoom="{integer}"
        [ods-auto-resize]="{boolean}"
-       auto-geolocation="{boolean}"&gt;
+       auto-geolocation="{boolean}"
+       display-control="{boolean}"
+       display-control-single-layer="{boolean}"
+       search-box="{boolean}"&gt;
 &lt;/ods-map&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -180,5 +183,9 @@ If &quot;true&quot;, then the map will stay at the same location instead.</p>
 </div></td></tr><tr><td>autoGeolocation</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;true&quot;, then the geolocation (center and zoom the map on the location of the user) is automatically done upon initialization.
 Only available when there is no <code>location</code> parameter on the widget.
 Warning: location sharing must be allowed priorly for Firefox users when multiple odsMap widget are set with autoGeolocation=true on the same page</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>displayControl</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, displays a control to toggle display of groups (or single datasets outside groups). Note:
+it shouldn&#39;t be combined with the usage of <code>showIf</code> on <code>odsMapLayer</code>, as it will lead to inconsistencies in the user interface.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>displayControlSingleLayer</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, only one layer will be displayed at a time using the control to toggle the display of groups.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>searchBox</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, a search box will appear in the map, allowing you to jump to locations, or search data on the map.</p>
 </div> <p><em>(default: false)</em></p></td></tr></tbody></table></div>
 </div>

@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.0.6 - 2016-11-21
+### Added
+- **New odsSlideShow widget:** Browse the content of an image-based dataset using a slideshow display.
+- `odsMap`: New legend display on analytic display modes.
+- `odsMap`: Updated clusters display to make sure the cluster's radius accurately represents the associated ratio.
+- `odsChart`: Migrated to Highcharts 5 for a cleaner look and better performance.
+- `odsChart`: Added three new chart types: `polar`, `funnel`, `spiderweb`.
+
+### Fixed
+- Fixed an issue with `odsFacets` when used in disjunctive mode: in Firefox and Internet Explorer, it used to have a 
+weird centering effect when hovered.
+
+
 ## 1.0.5 - 2016-09-09
 ### Added
 - **New odsGauge widget:** Display a gauge indicator in your dashboards.

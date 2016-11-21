@@ -11,7 +11,7 @@
          * @restrict E
          * @param {string} url The url of the svg or image to display
          * @param {string} color The color to use to fill the svg
-         * @param {classes} string The classes to directly apply to the svg element
+         * @param {string} classes The classes to directly apply to the svg element
          * @description
          * This widget displays a "picto" specified by a url and force a fill color on it.
          * This element can be styled (height, width...), especially if the picto is vectorial (SVG).

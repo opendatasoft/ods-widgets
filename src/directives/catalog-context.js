@@ -105,6 +105,7 @@
                                 var that = this;
                                 return filters.filter(function (filter) {
                                     return (filter == 'q' && that.parameters.q && that.parameters.q.length > 0)
+                                        || filter == 'q.timerange'
                                         || filter == 'geofilter.polygon'
                                         || filter == 'geofilter.distance'
                                         || filter.indexOf('refine.') === 0
@@ -112,6 +113,12 @@
                                 });
                             } else {
                                 return [];
+                            }
+                        },
+                        'clearActiveFilters': function () {
+                            var activeFilters = this.getActiveFilters();
+                            for (var i = 0; i<activeFilters.length; i++) {
+                                delete this.parameters[activeFilters[i]];
                             }
                         }
                     };

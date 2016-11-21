@@ -11,7 +11,8 @@
        placeholder="{string}"
        button="{string}"
        field="{string}"
-       context="{CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]}"&gt;
+       context="{CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]}"
+       [autofocus]="{string}"&gt;
 &lt;/ods-text-search&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -25,13 +26,15 @@ syntax &quot;mycontext-field&quot;. If you don&#39;t specify explicitely a field
 value of the &quot;field&quot; parameter.
 The search will be a simple text search and won&#39;t support any query language or operators.</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext[]</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext[]</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use, or array of context to use.</p>
+</div></td></tr><tr><td>[autofocus]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Add the autofocus attribute (no need for a value) to set the focus in the text
+search&#39;s input.</p>
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-31" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-32" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-31" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-31">
+<pre class="prettyprint linenums" ng-set-text="index.html-32" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-32">
     <ods-dataset-context context="cibul,medecins"
                          cibul-domain="public.opendatasoft.com"
                          cibul-dataset="evenements-publics-cibul"
@@ -46,6 +49,6 @@ The search will be a simple text search and won&#39;t support any query language
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-31" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-32" ng-eval-javascript=""></div>
 </div></div>
 </div>

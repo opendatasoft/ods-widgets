@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsDatasetContext', ['ODSAPI', '$q', '$interpolate', 'URLSynchronizer', function(ODSAPI, $q, $interpolate, URLSynchronizer) {
+    mod.directive('odsDatasetContext', ['ODSAPI', '$q', '$interpolate', 'URLSynchronizer', 'ContextHelper', function(ODSAPI, $q, $interpolate, URLSynchronizer, ContextHelper) {
         /**
          *
          *  @ngdoc directive
@@ -135,47 +135,8 @@
             if (source && contextParams) {
                 contextParams.source = source;
             }
-            var deferred = $q.defer();
-            scope[contextName] = {
-                'wait': function() {
-                    return deferred.promise;
-                },
-                'getDownloadURL': function(format, parameters) {
-                    format = format || 'csv';
-                    var url = this.domainUrl + '/explore/dataset/' + this.dataset.datasetid + '/download/?format=' + format;
-                    url += this.getQueryStringURL(parameters);
-                    return url;
-                },
-                'getQueryStringURL': function(parameters) {
-                    parameters = parameters || {};
-                    return '&' + ODS.URLUtils.getAPIQueryString(angular.extend({}, this.parameters, parameters));
-                },
-                'toggleRefine': function(facetName, path, replace) {
-                    ODS.Context.toggleRefine(this, facetName, path, replace);
-                },
-                'getActiveFilters':  function () {
-                    if (this.parameters) {
-                        var filters = Object.keys(this.parameters);
-                        var that = this;
-                        return filters.filter(function (filter) {
-                            return (filter == 'q' && that.parameters.q && that.parameters.q.length > 0)
-                                || filter == 'geofilter.polygon'
-                                || filter == 'geofilter.distance'
-                                || filter.indexOf('refine.') === 0
-                        });
-                    } else {
-                        return [];
-                    }
-                },
-                'name': contextName,
-                'type': 'dataset',
-                'domain': domain,
-                'domainUrl': ODSAPI.getDomainURL(domain),
-                'apikey': apikey,
-                'dataset': null,
-                'parameters': contextParams
 
-            };
+            scope[contextName] = ContextHelper.getDatasetContext(contextName, domain, datasetID, contextParams, source, apikey, schema);
 
             if (urlSync) {
                 // Param
@@ -186,23 +147,6 @@
                     We probably instead want a whitelist, because each component knows what is relevant to it.
                  */
                 URLSynchronizer.addSynchronizedObject(scope, contextName + '.parameters', ['basemap', 'location']);
-            }
-
-            if (schema) {
-                scope[contextName].dataset = new ODS.Dataset(schema);
-                deferred.resolve(scope[contextName].dataset);
-            } else {
-                ODSAPI.datasets.get(scope[contextName], datasetID, {
-                    extrametas: true,
-                    interopmetas: true,
-                    source: (contextParams && contextParams.source) || source || ""
-                }).
-                    success(function (data) {
-                        scope[contextName].dataset = new ODS.Dataset(data);
-                        deferred.resolve(scope[contextName].dataset);
-                    }).error(function (data) {
-                        deferred.reject("Failed to fetch " + contextName + " context.");
-                    });
             }
         };
 

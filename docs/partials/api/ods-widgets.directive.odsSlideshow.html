@@ -1,0 +1,44 @@
+<h1><code ng:non-bindable="">odsSlideshow</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsslideshow-page"><p>This widget displays an image slideshow of a dataset containing media with thumbnails (images, pdf files...).
+You will need to set a height for the .ods-slideshow class for it to work correctly or set the height
+through the style attribute.
+You can also include a tooltip that can access the image&#39;s record through the &#39;record&#39; variable.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-slideshow
+       context="{DatasetContext}"
+       image-field="{string}"
+       [title-fields]="{string}"
+       [domain-url]="{string}"&gt;
+&lt;/ods-slideshow&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive creates new scope.</li>
+</ul>
+</div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsslideshow-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
+</div></td></tr><tr><td>imageField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsslideshow-page"><p>The name of the field containing the image.</p>
+</div></td></tr><tr><td>[titleFields]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsslideshow-page"><p>A comma-separated list of field names to display as comma-separated values in the title.</p>
+</div></td></tr><tr><td>[domainUrl]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsslideshow-page"><p>The URL of the domain</p>
+</div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsslideshow-page"><h4 id="example_source">Source</h4>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-27" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html-27" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-27">
+    <ods-dataset-context context="cheeses" cheeses-domain="public.opendatasoft.com" cheeses-dataset="frenchcheese">
+        <ods-slideshow context="cheeses" image-field="image" style="height: 300px">
+            Cheese name: {{ record.fields.cheese }}
+        </ods-slideshow>
+    </ods-dataset-context>
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-27" ng-eval-javascript=""></div>
+</div></div>
+</div>

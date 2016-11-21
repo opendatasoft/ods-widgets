@@ -53,7 +53,9 @@ L.ODSMap = L.Map.extend({
 
         if (layers.length > 1) {
             // Creating the control
-            var layersControl = new L.Control.Layers();
+            var layersControl = new L.Control.Layers(null, null, {
+                position: 'bottomleft'
+            });
             for (var j=0; j<layers.length; j++) {
                 layer = layers[j];
                 layersControl.addBaseLayer(layer, layer.basemapLabel);
