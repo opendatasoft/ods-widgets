@@ -104,3 +104,4 @@ This software library is licensed under the MIT license.
 
 ### Contact
 If you have questions, you can contact us on Twitter (@opendatasoft) or simply open a GitHub issue.
+
