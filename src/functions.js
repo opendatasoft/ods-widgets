@@ -439,6 +439,7 @@
             return {
                 datasetid: dataset.datasetid || "preview", // "preview" is here as a trick in publish as the dataset has no id
                 has_records: dataset.has_records,
+                data_visible: dataset.data_visible,
                 metas: dataset.metas || {domain: 'preview'},
                 features: dataset.features,
                 attachments: dataset.attachments,

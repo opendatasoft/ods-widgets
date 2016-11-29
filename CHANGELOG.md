@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.0.7 - 2016-11-29
+### Added
+- `odsFilterSummary`: proper support for drawn areas on maps
+- `odsCharts`: support for multiple colors in treemaps
+- `ods-widgets.css`: now includes vendor prefixes
+
+### Fixed
+- `odsSlideshow` documentation's example
+- `odsCharts`: bug with legend referencing dates
+- Fixed icons that were not displayed in this documentation
+
 ## 1.0.6 - 2016-11-21
 ### Added
 - **New odsSlideShow widget:** Browse the content of an image-based dataset using a slideshow display.

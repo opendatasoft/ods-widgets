@@ -353,10 +353,10 @@
             },
             getAllowedColors: function(serietype, breakdown) {
                 var allowedColors = [];
-                if (breakdown || ['pie'].indexOf(serietype) !== -1) {
+                if (breakdown || ['pie', 'treemap'].indexOf(serietype) !== -1) {
                     allowedColors.push('range');
                 }
-                if (!breakdown && ['pie'].indexOf(serietype) === -1) {
+                if (!breakdown && ['pie', 'treemap'].indexOf(serietype) === -1) {
                     allowedColors.push('single');
                 }
                 return allowedColors;
@@ -398,12 +398,10 @@
                     }
                 }
 
-                if (!chart.timescale && advanced) {
-                    if (cumulatedQueriesTimescale) {
-                        chart.timescale = cumulatedQueriesTimescale;
-                    } else {
-                        chart.timescale = '';
-                    }
+                if (!cumulatedQueriesTimescale) {
+                    chart.timescale = '';
+                } else if (!chart.timescale && advanced) {
+                    chart.timescale = cumulatedQueriesTimescale;
                 }
 
                 // apply global timescale to queries that eventually might not anything set
@@ -433,13 +431,14 @@
                 var defaultX = searchOptions.x || this.getAvailableX(datasetid, 0).name;
                 var defaultMaxpoints = 50;
                 var defaultTimescale = '';
-                if (this.getFieldType(datasetid, defaultX) == 'date' || this.getFieldType(datasetid, defaultX) == 'datetime') {
+                if (!query.xAxis) {
+                    query.xAxis = defaultX;
+                }
+
+                if (this.getFieldType(datasetid, query.xAxis) == 'date' || this.getFieldType(datasetid, query.xAxis) == 'datetime') {
                     // If the default X is a date/datetime, then we assume timeserie mode and we remove any limitation
                     defaultMaxpoints = '';
                     defaultTimescale = searchOptions.timescale || 'year';
-                }
-                if (!query.xAxis) {
-                    query.xAxis = defaultX;
                 }
 
                 if (typeof query.maxpoints === "undefined") {

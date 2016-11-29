@@ -397,7 +397,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays an image slideshow of a dataset containing media with thumbnails (images, pdf files...).",
-      "keywords": "access api attribute cheese cheeses cheeses-dataset cheeses-domain class comma-separated context correctly dataset directive display displays domain field fields files frenchcheese height html image image-field imagefield include list media module names ods-slideshow ods-widgets opendatasoft pdf public record set slideshow style thumbnails title tooltip url values variable widget work"
+      "keywords": "access adresse api attribute class comma-separated context coords correctly dataset directive display displays domain field fields files geo height html https image image-field imagefield include list liste-fresques-urbaines-roubaix location media module names nom_graffeur ods-slideshow ods-widgets opendatasoft pdf photo record set slideshow streetart streetart-dataset streetart-domain style thumbnails title title-fields tooltip url values variable widget work"
     },
     {
       "section": "api",

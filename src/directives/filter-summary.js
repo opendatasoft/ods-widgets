@@ -9,16 +9,16 @@
          * @name ods-widgets.directive:odsFilterSummary
          * @scope
          * @restrict A
-         * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context 
-         * {@link ods-widgets.directive:odsCatalogContext Catalog Context} or 
-         * {@link ods-widgets.directive:odsDatasetContext Dataset Context} to display the filters of. Can also be a 
+         * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context
+         * {@link ods-widgets.directive:odsCatalogContext Catalog Context} or
+         * {@link ods-widgets.directive:odsDatasetContext Dataset Context} to display the filters of. Can also be a
          * list of contexts.
          * @param {string} [exclude=none] Optional: Name of parameters to not display, separated by commas. For example `q,rows,start`
          * @param {boolean} [clearAllButton=true] Optional: display a "clear all" button underneath the active filters' list.
-         * @param {boolean} [hideContextsLabels=false] Optional: if you are working with multiple contexts, the 
-         * context's label will be displayed within the filter. Set this option to true if you'd like not to display 
+         * @param {boolean} [hideContextsLabels=false] Optional: if you are working with multiple contexts, the
+         * context's label will be displayed within the filter. Set this option to true if you'd like not to display
          * those.
-         * @param {string} [mycontextLabel] Optional: if you are working with multiple contexts, the context's name 
+         * @param {string} [mycontextLabel] Optional: if you are working with multiple contexts, the context's name
          * (that is "mycontext") will be displayed within the filter. Use this option to specify a custom label.
          * @description
          * This widget displays a summary of all the active filters on a context: text search, refinements...
@@ -34,7 +34,7 @@
             '        <a class="odswidget-filter-summary__active-filter-link" ' +
             '           ng-click="removeRefinement(refinement)">' +
             '            <span class="odswidget-filter-summary__active-filter-label">{{ refinement.label }}<span ng-if="refinement.contextsLabel && !hideContextsLabels"> ({{ refinement.contextsLabel }})</span></span>' +
-            '            {{ refinement.value }}' +
+            '            {{ refinement.displayValue || refinement.value }}' +
             '        </a>' +
             '    </li>' +
             '    <li class="odswidget-filter-summary__clear-all" ng-show="clearAllButton && refinements.length > 0">' +
@@ -82,7 +82,16 @@
                             }
                         }
                     }
+                };
 
+                var getFirstGeoFieldLabel = function (context) {
+                    for (var i = 0; i < context.dataset.fields.length; i++) {
+                        var field = context.dataset.fields[i];
+                        if (field.type === 'geo_point_2d' || field.type === 'geo_shape') {
+                            return field.label;
+                        }
+                    }
+                    return '';
                 };
 
                 $scope.removeRefinement = function (refinement) {
@@ -106,14 +115,14 @@
                         }
                     });
                 };
-                
+
                 var refreshRefinements = function (contexts) {
                     var refinements = [];
-                    
-                    var addRefinement = function (context, label, value, parameter) {
+
+                    var addRefinement = function (context, label, value, parameter, displayValue) {
                         var inserted = false;
                         angular.forEach(refinements, function (refinement) {
-                            if (refinement.parameter == parameter 
+                            if (refinement.parameter == parameter
                                 && refinement.label == label
                                 && refinement.value == value) {
                                 refinement.contexts.push(context);
@@ -124,22 +133,30 @@
                             refinements.push({
                                 label: label,
                                 value: value,
+                                displayValue: displayValue,
                                 parameter: parameter,
                                 contexts: [context]
                             });
                         }
                     };
-                    
+
                     // build refinements list
-                    
+
                     angular.forEach(contexts, function (context) {
                         if (context && context.parameters && (context.type === 'catalog' || context.dataset)) {
                             if (isParameterActive(context, 'q')) {
                                 addRefinement(context, translate('Text search'), context.parameters['q'], 'q');
                             }
-                            
-                            if (isParameterActive(context, 'geofilter.polygon')) {
-                                addRefinement(context, translate('Drawn area on the map'), context.parameters['geofilter.polygon'], 'geofilter.polygon');
+
+                            var drawnAreaParameters = ['geofilter.distance', 'geofilter.polygon'];
+                            angular.forEach(drawnAreaParameters, function (parameter) {
+                                if (isParameterActive(context, parameter)) {
+                                    addRefinement(context, getFirstGeoFieldLabel(context), context.parameters[parameter], parameter, translate('Drawn area on the map'));
+                                }
+                            });
+
+                            if (context.type === 'catalog' && isParameterActive(context, 'q.geographic_area')) {
+                                addRefinement(context, translate('Geographic area'), context.parameters['q.geographic_area'], 'q.geographic_area', translate('Drawn area on the map'));
                             }
 
                             // handle facets
@@ -156,7 +173,7 @@
                             });
                         }
                     });
-                    
+
                     // build tags for refinements
                     angular.forEach(refinements, function (refinement) {
                         if (refinement.contexts.length < contexts.length) {
@@ -167,7 +184,7 @@
                                 .join(', ')
                         }
                     });
-                    
+
                     return refinements;
                 };
 

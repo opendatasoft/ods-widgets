@@ -23,9 +23,16 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="cheeses" cheeses-domain="public.opendatasoft.com" cheeses-dataset="frenchcheese">
-         *              <ods-slideshow context="cheeses" image-field="image" style="height: 300px">
-         *                  Cheese name: {{ record.fields.cheese }}
+         *          <ods-dataset-context context="streetart"
+         *                               streetart-domain="https://data.opendatasoft.com"
+         *                               streetart-dataset="liste-fresques-urbaines-roubaix@ville-de-roubaix">
+         *              <ods-slideshow context="streetart"
+         *                             image-field="photo"
+         *                             title-fields="nom_graffeur"
+         *                             style="height: 300px">
+         *                  <strong>{{ record.fields.nom_graffeur }}</strong> <br>
+         *                  Location:
+         *                  <ods-geotooltip coords="record.fields.geo">{{ record.fields.adresse }}</ods-geotooltip>
          *              </ods-slideshow>
          *          </ods-dataset-context>
          *      </file>
@@ -276,7 +283,7 @@
                     if (nv) {
                         var i, field;
                         if (!titleFields) {
-                            for (i = 0; i< scope.context.dataset.fields.length; i++) {
+                            for (i = 0; i < scope.context.dataset.fields.length; i++) {
                                 field = scope.context.dataset.fields[i];
                                 if (field.type === 'text') {
                                     titleFields = [field.name];
@@ -285,7 +292,7 @@
                             }
                         }
                         if (!scope.imageField) {
-                            for (i = 0; i< scope.context.dataset.fields.length; i++) {
+                            for (i = 0; i < scope.context.dataset.fields.length; i++) {
                                 field = scope.context.dataset.fields[i];
                                 if (field.type === 'file') {
                                     scope.imageField = field.name;

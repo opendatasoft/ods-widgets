@@ -277,8 +277,13 @@
         var getTimeSerieMode = function(parameters) {
             var precision, periodic, timeSerieMode;
 
-            if(parameters.timescale && $.grep(parameters.queries, function(query){return query.sort;}).length === 0){
-                 timeSerieMode = parameters.timescale;
+            var timescale = parameters.timescale;
+            if (!timescale) {
+                timescale = parameters.queries[0].timescale || false;
+            }
+
+            if(timescale && $.grep(parameters.queries, function(query){return query.sort;}).length === 0){
+                 timeSerieMode = timescale;
                  var tokens = timeSerieMode.split(' ');
                  precision = tokens[0];
                  periodic = tokens.length == 2 ? tokens[1] : '';
@@ -387,7 +392,8 @@
                             headerFormat: '',
                             pointFormat: '<span style="color:{series.color}">{point.name}</span>: {point.value}</b>'
                         },
-                        layoutAlgorithm: 'squarified'
+                        layoutAlgorithm: 'squarified',
+                        colorByPoint: true
                     }
                 },
                 tooltip: {
@@ -468,6 +474,8 @@
                         return this.value;
                     }
                 };
+            } else {
+                options.xAxis.labels.useHTML = false;
             }
 
             if(parameters.singleAxis) {
@@ -516,9 +524,9 @@
             var datasetid = ChartHelper.getDatasetId({dataset: {datasetid: query.config.dataset}, domain: domain});
             var yLabel = ChartHelper.getYLabel(datasetid, serie);
             var serieColor;
-            if (!suppXValue && serie.type !== 'pie') {
+            if (!suppXValue && ['pie', 'treemap'].indexOf(serie.type) === -1) {
                 serieColor = colorScale.getUniqueColor(serie.color);
-            } else if ( serie.type === 'pie') {
+            } else if ( ['pie', 'treemap'].indexOf(serie.type) !== -1) {
                 if (!serie.extras) {
                     serie.extras = {};
                 }
@@ -966,6 +974,10 @@
                         var useUTC = false;
                         if (periodic && precision === "hour") {
                             useUTC = true;
+                        } else if (!periodic) {
+                            if (['year', 'month', 'day'].indexOf(precision) !== -1) {
+                                useUTC = true;
+                            }
                         }
 
                         Highcharts.setOptions({

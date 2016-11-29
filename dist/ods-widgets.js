@@ -6910,7 +6910,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '1.0.5';
+    var version = '1.0.7';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -7587,10 +7587,10 @@ mod.directive('infiniteScroll', [
             },
             getAllowedColors: function(serietype, breakdown) {
                 var allowedColors = [];
-                if (breakdown || ['pie'].indexOf(serietype) !== -1) {
+                if (breakdown || ['pie', 'treemap'].indexOf(serietype) !== -1) {
                     allowedColors.push('range');
                 }
-                if (!breakdown && ['pie'].indexOf(serietype) === -1) {
+                if (!breakdown && ['pie', 'treemap'].indexOf(serietype) === -1) {
                     allowedColors.push('single');
                 }
                 return allowedColors;
@@ -7632,12 +7632,10 @@ mod.directive('infiniteScroll', [
                     }
                 }
 
-                if (!chart.timescale && advanced) {
-                    if (cumulatedQueriesTimescale) {
-                        chart.timescale = cumulatedQueriesTimescale;
-                    } else {
-                        chart.timescale = '';
-                    }
+                if (!cumulatedQueriesTimescale) {
+                    chart.timescale = '';
+                } else if (!chart.timescale && advanced) {
+                    chart.timescale = cumulatedQueriesTimescale;
                 }
 
                 // apply global timescale to queries that eventually might not anything set
@@ -7667,13 +7665,14 @@ mod.directive('infiniteScroll', [
                 var defaultX = searchOptions.x || this.getAvailableX(datasetid, 0).name;
                 var defaultMaxpoints = 50;
                 var defaultTimescale = '';
-                if (this.getFieldType(datasetid, defaultX) == 'date' || this.getFieldType(datasetid, defaultX) == 'datetime') {
+                if (!query.xAxis) {
+                    query.xAxis = defaultX;
+                }
+
+                if (this.getFieldType(datasetid, query.xAxis) == 'date' || this.getFieldType(datasetid, query.xAxis) == 'datetime') {
                     // If the default X is a date/datetime, then we assume timeserie mode and we remove any limitation
                     defaultMaxpoints = '';
                     defaultTimescale = searchOptions.timescale || 'year';
-                }
-                if (!query.xAxis) {
-                    query.xAxis = defaultX;
                 }
 
                 if (typeof query.maxpoints === "undefined") {
@@ -11485,6 +11484,7 @@ mod.directive('infiniteScroll', [
             return {
                 datasetid: dataset.datasetid || "preview", // "preview" is here as a trick in publish as the dataset has no id
                 has_records: dataset.has_records,
+                data_visible: dataset.data_visible,
                 metas: dataset.metas || {domain: 'preview'},
                 features: dataset.features,
                 attachments: dataset.attachments,
@@ -14158,16 +14158,16 @@ mod.directive('infiniteScroll', [
          * @name ods-widgets.directive:odsFilterSummary
          * @scope
          * @restrict A
-         * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context 
-         * {@link ods-widgets.directive:odsCatalogContext Catalog Context} or 
-         * {@link ods-widgets.directive:odsDatasetContext Dataset Context} to display the filters of. Can also be a 
+         * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context
+         * {@link ods-widgets.directive:odsCatalogContext Catalog Context} or
+         * {@link ods-widgets.directive:odsDatasetContext Dataset Context} to display the filters of. Can also be a
          * list of contexts.
          * @param {string} [exclude=none] Optional: Name of parameters to not display, separated by commas. For example `q,rows,start`
          * @param {boolean} [clearAllButton=true] Optional: display a "clear all" button underneath the active filters' list.
-         * @param {boolean} [hideContextsLabels=false] Optional: if you are working with multiple contexts, the 
-         * context's label will be displayed within the filter. Set this option to true if you'd like not to display 
+         * @param {boolean} [hideContextsLabels=false] Optional: if you are working with multiple contexts, the
+         * context's label will be displayed within the filter. Set this option to true if you'd like not to display
          * those.
-         * @param {string} [mycontextLabel] Optional: if you are working with multiple contexts, the context's name 
+         * @param {string} [mycontextLabel] Optional: if you are working with multiple contexts, the context's name
          * (that is "mycontext") will be displayed within the filter. Use this option to specify a custom label.
          * @description
          * This widget displays a summary of all the active filters on a context: text search, refinements...
@@ -14183,7 +14183,7 @@ mod.directive('infiniteScroll', [
             '        <a class="odswidget-filter-summary__active-filter-link" ' +
             '           ng-click="removeRefinement(refinement)">' +
             '            <span class="odswidget-filter-summary__active-filter-label">{{ refinement.label }}<span ng-if="refinement.contextsLabel && !hideContextsLabels"> ({{ refinement.contextsLabel }})</span></span>' +
-            '            {{ refinement.value }}' +
+            '            {{ refinement.displayValue || refinement.value }}' +
             '        </a>' +
             '    </li>' +
             '    <li class="odswidget-filter-summary__clear-all" ng-show="clearAllButton && refinements.length > 0">' +
@@ -14231,7 +14231,16 @@ mod.directive('infiniteScroll', [
                             }
                         }
                     }
+                };
 
+                var getFirstGeoFieldLabel = function (context) {
+                    for (var i = 0; i < context.dataset.fields.length; i++) {
+                        var field = context.dataset.fields[i];
+                        if (field.type === 'geo_point_2d' || field.type === 'geo_shape') {
+                            return field.label;
+                        }
+                    }
+                    return '';
                 };
 
                 $scope.removeRefinement = function (refinement) {
@@ -14255,14 +14264,14 @@ mod.directive('infiniteScroll', [
                         }
                     });
                 };
-                
+
                 var refreshRefinements = function (contexts) {
                     var refinements = [];
-                    
-                    var addRefinement = function (context, label, value, parameter) {
+
+                    var addRefinement = function (context, label, value, parameter, displayValue) {
                         var inserted = false;
                         angular.forEach(refinements, function (refinement) {
-                            if (refinement.parameter == parameter 
+                            if (refinement.parameter == parameter
                                 && refinement.label == label
                                 && refinement.value == value) {
                                 refinement.contexts.push(context);
@@ -14273,22 +14282,30 @@ mod.directive('infiniteScroll', [
                             refinements.push({
                                 label: label,
                                 value: value,
+                                displayValue: displayValue,
                                 parameter: parameter,
                                 contexts: [context]
                             });
                         }
                     };
-                    
+
                     // build refinements list
-                    
+
                     angular.forEach(contexts, function (context) {
                         if (context && context.parameters && (context.type === 'catalog' || context.dataset)) {
                             if (isParameterActive(context, 'q')) {
                                 addRefinement(context, translate('Text search'), context.parameters['q'], 'q');
                             }
-                            
-                            if (isParameterActive(context, 'geofilter.polygon')) {
-                                addRefinement(context, translate('Drawn area on the map'), context.parameters['geofilter.polygon'], 'geofilter.polygon');
+
+                            var drawnAreaParameters = ['geofilter.distance', 'geofilter.polygon'];
+                            angular.forEach(drawnAreaParameters, function (parameter) {
+                                if (isParameterActive(context, parameter)) {
+                                    addRefinement(context, getFirstGeoFieldLabel(context), context.parameters[parameter], parameter, translate('Drawn area on the map'));
+                                }
+                            });
+
+                            if (context.type === 'catalog' && isParameterActive(context, 'q.geographic_area')) {
+                                addRefinement(context, translate('Geographic area'), context.parameters['q.geographic_area'], 'q.geographic_area', translate('Drawn area on the map'));
                             }
 
                             // handle facets
@@ -14305,7 +14322,7 @@ mod.directive('infiniteScroll', [
                             });
                         }
                     });
-                    
+
                     // build tags for refinements
                     angular.forEach(refinements, function (refinement) {
                         if (refinement.contexts.length < contexts.length) {
@@ -14316,7 +14333,7 @@ mod.directive('infiniteScroll', [
                                 .join(', ')
                         }
                     });
-                    
+
                     return refinements;
                 };
 
@@ -15081,8 +15098,13 @@ mod.directive('infiniteScroll', [
         var getTimeSerieMode = function(parameters) {
             var precision, periodic, timeSerieMode;
 
-            if(parameters.timescale && $.grep(parameters.queries, function(query){return query.sort;}).length === 0){
-                 timeSerieMode = parameters.timescale;
+            var timescale = parameters.timescale;
+            if (!timescale) {
+                timescale = parameters.queries[0].timescale || false;
+            }
+
+            if(timescale && $.grep(parameters.queries, function(query){return query.sort;}).length === 0){
+                 timeSerieMode = timescale;
                  var tokens = timeSerieMode.split(' ');
                  precision = tokens[0];
                  periodic = tokens.length == 2 ? tokens[1] : '';
@@ -15191,7 +15213,8 @@ mod.directive('infiniteScroll', [
                             headerFormat: '',
                             pointFormat: '<span style="color:{series.color}">{point.name}</span>: {point.value}</b>'
                         },
-                        layoutAlgorithm: 'squarified'
+                        layoutAlgorithm: 'squarified',
+                        colorByPoint: true
                     }
                 },
                 tooltip: {
@@ -15272,6 +15295,8 @@ mod.directive('infiniteScroll', [
                         return this.value;
                     }
                 };
+            } else {
+                options.xAxis.labels.useHTML = false;
             }
 
             if(parameters.singleAxis) {
@@ -15320,9 +15345,9 @@ mod.directive('infiniteScroll', [
             var datasetid = ChartHelper.getDatasetId({dataset: {datasetid: query.config.dataset}, domain: domain});
             var yLabel = ChartHelper.getYLabel(datasetid, serie);
             var serieColor;
-            if (!suppXValue && serie.type !== 'pie') {
+            if (!suppXValue && ['pie', 'treemap'].indexOf(serie.type) === -1) {
                 serieColor = colorScale.getUniqueColor(serie.color);
-            } else if ( serie.type === 'pie') {
+            } else if ( ['pie', 'treemap'].indexOf(serie.type) !== -1) {
                 if (!serie.extras) {
                     serie.extras = {};
                 }
@@ -15770,6 +15795,10 @@ mod.directive('infiniteScroll', [
                         var useUTC = false;
                         if (periodic && precision === "hour") {
                             useUTC = true;
+                        } else if (!periodic) {
+                            if (['year', 'month', 'day'].indexOf(precision) !== -1) {
+                                useUTC = true;
+                            }
                         }
 
                         Highcharts.setOptions({
@@ -21846,9 +21875,16 @@ mod.directive('infiniteScroll', [
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="cheeses" cheeses-domain="public.opendatasoft.com" cheeses-dataset="frenchcheese">
-         *              <ods-slideshow context="cheeses" image-field="image" style="height: 300px">
-         *                  Cheese name: {{ record.fields.cheese }}
+         *          <ods-dataset-context context="streetart"
+         *                               streetart-domain="https://data.opendatasoft.com"
+         *                               streetart-dataset="liste-fresques-urbaines-roubaix@ville-de-roubaix">
+         *              <ods-slideshow context="streetart"
+         *                             image-field="photo"
+         *                             title-fields="nom_graffeur"
+         *                             style="height: 300px">
+         *                  <strong>{{ record.fields.nom_graffeur }}</strong> <br>
+         *                  Location:
+         *                  <ods-geotooltip coords="record.fields.geo">{{ record.fields.adresse }}</ods-geotooltip>
          *              </ods-slideshow>
          *          </ods-dataset-context>
          *      </file>
@@ -22099,7 +22135,7 @@ mod.directive('infiniteScroll', [
                     if (nv) {
                         var i, field;
                         if (!titleFields) {
-                            for (i = 0; i< scope.context.dataset.fields.length; i++) {
+                            for (i = 0; i < scope.context.dataset.fields.length; i++) {
                                 field = scope.context.dataset.fields[i];
                                 if (field.type === 'text') {
                                     titleFields = [field.name];
@@ -22108,7 +22144,7 @@ mod.directive('infiniteScroll', [
                             }
                         }
                         if (!scope.imageField) {
-                            for (i = 0; i< scope.context.dataset.fields.length; i++) {
+                            for (i = 0; i < scope.context.dataset.fields.length; i++) {
                                 field = scope.context.dataset.fields[i];
                                 if (field.type === 'file') {
                                     scope.imageField = field.name;

@@ -81,6 +81,13 @@ module.exports = function(grunt) {
                 dest: 'dist/ods-widgets.js'
             }
         },
+        autoprefixer: {
+            options: {
+                browsers: ['> 1%', 'ie > 8']
+            },
+            "dist/ods-widgets.css": "dist/ods-widgets.css",
+            "dist/ods-widgets.min.css": "dist/ods-widgets.min.css"
+        },
 		// copies logo.png to be used in the doc website header
 		// must be run before 'ngdocs'
 		copy: {
@@ -107,7 +114,10 @@ module.exports = function(grunt) {
                     '../dist/ods-widgets.js',
                     '../docs-load-css.js'
                 ],
-                styles: ['../dist/ods-widgets.css'],
+                styles: [
+                    '../dist/ods-widgets.css',
+                    'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
+                ],
 				html5Mode: false,
 				image: 'assets/logo.png',
 				title: "ODS Widgets",
@@ -164,9 +174,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-ngdocs');
     grunt.loadNpmTasks('grunt-contrib-connect');
+    grunt.loadNpmTasks('grunt-autoprefixer');
 
     // Default task(s).
     grunt.registerTask('default', ['dist']);
-    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'copy:libs', 'ngdocs']);
+    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'autoprefixer', 'copy:libs', 'ngdocs']);
     grunt.registerTask('server', ['default', 'connect', 'watch']);
 };
