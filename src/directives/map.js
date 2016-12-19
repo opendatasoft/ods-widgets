@@ -266,7 +266,7 @@
             '    <div class="odswidget-map__loading" ng-show="loading">' +
             '        <ods-spinner></ods-spinner>' +
             '    </div>' +
-            '    <ods-map-display-control ng-if="displayControl" single-layer="displayControlSingleLayer" map-config="mapConfig"></ods-map-display-control>' +
+            '    <ods-map-display-control ng-if="displayControl && allContextsInitialized" single-layer="displayControlSingleLayer" map-config="mapConfig"></ods-map-display-control>' +
             '    <ods-map-search-box ng-if="searchBox"></ods-map-search-box>' +
             '    <ods-map-legend ng-if="displayLegend" map-config="mapConfig"></ods-map-legend>' +
             '    <div ng-transclude></div>' + // Can't find any better solution...
@@ -569,6 +569,10 @@
                             });
 
                             deferred.resolve();
+
+                            if (autoGeolocation && geolocateControl) {
+                                geolocateControl.locate();
+                            }
                         } else {
                             waitForVisibleContexts().then(function() {
                                 MapHelper.retrieveBounds(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, {geoOnly: true, skipExcludedFromRefit: true})).then(function (bounds) {
@@ -606,9 +610,16 @@
 
                         scope.map.on('moveend', function(e) {
                             // Whenever the map moves, we update the displayed data
-                            scope.$applyAsync(function() {
-                                onViewportMove(e.target);
-                            });
+                            if (scope.$applyAsync) {
+                                scope.$applyAsync(function () {
+                                    onViewportMove(e.target);
+                                });
+                            } else {
+                                // For the last UI that doesn't have Angular 1.4, and thefore doesn't have applyAsync yet
+                                $timeout(function() {
+                                    onViewportMove(e.target);
+                                });
+                            }
                         });
 
                         // Refresh events
@@ -619,6 +630,11 @@
                                 // if something else from outside changes the location, we react as well.
                                 refreshData(false, true);
                             }
+                        });
+
+                        scope.allContextsInitialized = false;
+                        waitForVisibleContexts().then(function() {
+                            scope.allContextsInitialized = true;
                         });
 
                         // INitialize watcher
@@ -989,7 +1005,7 @@
                     };
                 });
 
-                var waitForVisibleContexts = function() {
+                function waitForVisibleContexts() {
                     var deferred = $q.defer();
 
                     // Watches all the active contexts, and resolves once they are ready
@@ -1002,7 +1018,7 @@
                     });
 
                     return deferred.promise;
-                };
+                }
 
                 var syncGeofilterToDrawing = function() {
                     // Check if there are geofilters shared by everyone at init time, and if so, synchronize the
@@ -1148,6 +1164,8 @@
                 colorRanges: '@',
                 colorCategories: '=',
                 colorCategoriesOther: '@',
+                colorNumericRanges: '=',
+                colorGradient: '=',
                 colorByField: '@',
                 colorFunction: '@',
                 picto: '@',
@@ -1208,7 +1226,7 @@
                     };
                 } else if (scope.colorCategories) {
                     if (!scope.colorByField) {
-                        console.error('odsMapLayer: using colorCategories requires specifying a field to use, using using colorByField');
+                        console.error('odsMapLayer: using colorCategories requires specifying a field to use, using colorByField');
                     }
                     color = {
                         type: 'categories',
@@ -1218,6 +1236,20 @@
                     if (scope.colorCategoriesOther) {
                         color.otherCategories = scope.colorCategoriesOther;
                     }
+                } else if (scope.colorGradient) {
+                    color = {
+                        type: 'gradient',
+                        steps: scope.colorGradient
+                    };
+                } else if (scope.colorNumericRanges) {
+                    if (!scope.colorByField) {
+                        console.error('odsMapLayer: using colorNumericRanges requires specifying a field to use, using colorByField');
+                    }
+                    color = {
+                        type: 'choropleth',
+                        field: scope.colorByField,
+                        ranges: scope.colorNumericRanges
+                    };
                 } else if (scope.colorByField) {
                     color = {
                         type: 'field',

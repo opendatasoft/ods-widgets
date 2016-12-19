@@ -33,7 +33,24 @@
     overflow: hidden;
     text-overflow: ellipsis;
     box-sizing: content-box;
+    display: flex;
 }
+
+.odswidget-table__label {
+    flex: 1 1 auto;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    height: 1.4em;
+}
+
+.odswidget-table__sort-icons {
+    flex: 0 0 auto;
+    height: 1.4em;
+}
+
 .odswidget-table__cell-container__right-aligned {
     text-align: right;
 }
@@ -66,12 +83,8 @@
     text-align: right;
 }
 .odswidget-table__sort-icons {
-    position: relative;
-    display: inline-block;
     font-size: 0.8em;
     width: 1em;
-    vertical-align: middle;
-    height: 1.4em;
 }
 .odswidget-table__sort-icons.odswidget-table__sort-icons--active {
     height: 0.7em;
@@ -79,9 +92,14 @@
 .odswidget-table__sort-icons__up,
 .odswidget-table__sort-icons__down {
     display: block;
-    line-height: 0.7em;
-    opacity: 0.6;
+    height: 0.7em;
+    opacity: 0.5;
 }
+.odswidget-table__sort-icons__up--active,
+.odswidget-table__sort-icons__down--active {
+    opacity: 1;
+}
+
 .odswidget-table__sort-icons__up:hover,
 .odswidget-table__sort-icons__down:hover {
     opacity: 1;

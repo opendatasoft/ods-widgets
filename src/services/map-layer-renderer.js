@@ -108,6 +108,10 @@
                 } else if (layerConfig.display === 'categories') {
                     layerConfig._loading = true;
                     MapRenderingRaw.render(layerConfig, map, timeout).then(applyLayer);
+                } else if (layerConfig.display === 'choropleth') {
+                    // TODO: Handle depending if aggregation or not
+                    layerConfig._loading = true;
+                    MapRenderingRaw.render(layerConfig, map, timeout).then(applyLayer);
                 } else if (layerConfig.display === 'auto') {
                     layerConfig._loading = true;
                     // Auto-decide what to do depending on the number of items

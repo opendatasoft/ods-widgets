@@ -622,48 +622,7 @@
             return options;
         };
 
-        var buildDatePattern = function(object) {
-            var datePattern = '';
-            if (angular.isObject(object) && ('year' in object || 'month' in object || 'day' in object || 'hour' in object || 'minute' in object || 'weekday' in object)) {
-                if(! ('year' in object)){
-                    if('month' in object){
-                        datePattern = '%B';
-                    }
-                    if('day' in object){
-                        if('month' in object){
-                            datePattern = '%e %B';
-                        } else {
-                            datePattern = '%e';
-                        }
-                    }
-                    if('weekday' in object) {
-                        datePattern = '%a';
-                        if('hour' in object){
-                            datePattern += ' %Hh';
-                        }
-                    } else if ('hour' in object){
-                         datePattern = '%Hh';
-                    }
-                } else {
-                    if('day' in object){
-                        datePattern += ' %e';
-                    }
-                    if('month' in object){
-                        datePattern += ' %B';
-                    }
-                    datePattern += ' %Y';
-
-                    if('hour' in object){
-                        if('minute' in object){
-                             datePattern += ' %Hh%M';
-                        } else {
-                            datePattern +=' %Hh';
-                        }
-                    }
-                }
-            }
-            return datePattern;
-        };
+        var buildDatePattern = ODS.DateFieldUtils.datePatternBuilder('highcharts');
 
         var getContextualizedSeriesOptions = function(x, timeSerieMode) {
             var tooltip = {};
@@ -758,44 +717,7 @@
             return yAxis;
         };
 
-        var getDateFromXObject = function(x, minDate) {
-            var minYear = minDate ? minDate.getUTCFullYear() : 2000;
-            var minMonth = minDate ? minDate.getUTCMonth() : 0;
-            var minDay = minDate ? minDate.getUTCDate() : 1;
-            var minHour = minDate ? minDate.getUTCHours() : 0;
-            var minMinute = minDate ? minDate.getUTCMinutes() : 0;
-
-            if (angular.isObject(x) && ('year' in x || 'month' in x || 'day' in x || 'hour' in x || 'minute' in x || 'weekday' in x || 'yearday' in x)) {
-                // default to 2000 because it's a leap year
-                var date = new Date(Date.UTC(x.year || minYear, x.month-1 || 0, x.day || 1, x.hour || 0, x.minute || 0));
-                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
-                date.setUTCFullYear(x.year || minYear);
-                if (!('month' in x)) date.setUTCMonth(minMonth);
-                if (!('day' in x)) date.setUTCDate(minDay);
-                if (!('hour' in x)) date.setUTCHours(minHour);
-                if (!('minute' in x)) date.setUTCMinutes(minMinute);
-                if(!('year' in x)){
-                    if('weekday' in x){
-                        date.setUTCDate(date.getUTCDate() + 7 - date.getUTCDay() + x.weekday );
-                    }
-                    if('yearday' in x){
-                        date.setUTCDate(0 + x.yearday );
-                    }
-                }
-                if('day' in x){
-                    // handle bisextil years
-                    if(x.day == 29 && x.month == 2 && !x.year) {
-                        date.setUTCDate(28);
-                        date.setUTCMonth(1);
-                    }
-                } else {
-                    if('month' in x){
-                        date.setUTCDate(16);
-                    }
-                }
-                return date;
-            }
-        };
+        var getDateFromXObject = ODS.DateFieldUtils.getDateFromXObject;
 
         function getXValue(dateFormatFunction, datePattern, x, minDate, xAxisType) {
             var date = getDateFromXObject(x, minDate),

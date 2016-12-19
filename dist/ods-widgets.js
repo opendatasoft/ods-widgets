@@ -6910,7 +6910,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '1.0.7';
+    var version = '1.0.8';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -8239,6 +8239,80 @@ mod.directive('infiniteScroll', [
         };
     }]);
 }());;(function() {
+    "use strict";
+
+    var mod = angular.module('ods-widgets');
+
+    mod.service('I18n', ['translate', function(translate) {
+        return {
+            weekdays: {
+                shorthand: [
+                    translate('Sun'),
+                    translate('Mon'),
+                    translate('Tue'),
+                    translate('Wed'),
+                    translate('Thu'),
+                    translate('Fri'),
+                    translate('Sat')
+                ],
+                longhand: [
+                    translate('Sunday'),
+                    translate('Monday'),
+                    translate('Tuesday'),
+                    translate('Wednesday'),
+                    translate('Thursday'),
+                    translate('Friday'),
+                    translate('Saturday')
+                ]
+            },
+            months: {
+                shorthand: [
+                    translate('Jan'),
+                    translate('Feb'),
+                    translate('Mar'),
+                    translate('Apr'),
+                    translate('May'),
+                    translate('Jun'),
+                    translate('Jul'),
+                    translate('Aug'),
+                    translate('Sep'),
+                    translate('Oct'),
+                    translate('Nov'),
+                    translate('Dec')
+                ],
+                longhand: [
+                    translate('January'),
+                    translate('February'),
+                    translate('March'),
+                    translate('April'),
+                    translate('May'),
+                    translate('June'),
+                    translate('July'),
+                    translate('August'),
+                    translate('September'),
+                    translate('October'),
+                    translate('November'),
+                    translate('December')
+                ]
+            },
+
+            fr: {
+                timeFormat: 'HH:mm',
+                timeSeparators: [':'],
+                dateFormat: 'DD/MM/YYYY',
+                dateSeparators: ['/'],
+                firstDayOfWeek: 1,
+            },
+            en: {
+                timeFormat: 'hh:mm A',
+                timeSeparators: [':', ' '],
+                dateFormat: 'MM/DD/YYYY',
+                dateSeparators: ['/'],
+                firstDayOfWeek: 0,
+            }
+        };
+    }]);
+}());;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -8246,9 +8320,13 @@ mod.directive('infiniteScroll', [
     mod.factory('MapHelper', ['ODSWidgetsConfig', 'ODSAPI', '$q', function (ODSWidgetsConfig, ODSAPI, $q) {
         var locationAccuracy = 5;
         var locationDelimiter = ',';
+        var defaultMarkerColor = "#C32D1C";
+        var defaultRangeColors = ["#FC9272", "#A5211B"];
 
         return {
             WORLD_BOUNDS: [[-60, -180], [80, 180]],
+            DEFAULT_MARKER_COLOR: defaultMarkerColor,
+            DEFAULT_RANGE_COLORS: defaultRangeColors,
             retrieveBounds: function (contextList) {
                 var service = this;
                 /* Retrieves a bounding box that includes all the data visible from the context list */
@@ -8412,7 +8490,7 @@ mod.directive('infiniteScroll', [
                         }
                     }
 
-                    layer.color = layer.color || layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || "#C32D1C";
+                    layer.color = layer.color || layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || defaultMarkerColor;
                     layer.picto = layer.picto || layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
                     if (layer.marker) {
                         layer.size = layer.size || 4;
@@ -8469,6 +8547,9 @@ mod.directive('infiniteScroll', [
                 // A record may only be colored if there is a configured field to color it from
                 // Aggregation results may be colored from their values
                 var value, color;
+                if (angular.isUndefined(layerConfig.color)) {
+                    return "#C32D1C";
+                }
                 if (angular.isString(layerConfig.color)) {
                     return layerConfig.color;
                 } else if (layerConfig.color.type === 'range') {
@@ -8501,6 +8582,27 @@ mod.directive('infiniteScroll', [
                     } catch (err) {
                         return '#000000';
                     }
+                } else if (layerConfig.color.type === 'choropleth') {
+                    value = record && record.fields && record.fields[layerConfig.color.field];
+                    if (angular.isUndefined(value)) {
+                        return '#000000';
+                    }
+                    if (!angular.isNumber(value)) {
+                        // TODO: Handle using an "other values" option?
+                        console.warn(value, 'is not a numeric value to display in choropleth mode.');
+                        return '#000000';
+                    }
+                    var rangesUpperBounds = Object.keys(layerConfig.color.ranges)
+                            .map(function(b) { return parseFloat(b); })
+                            .sort(function(a, b) { return a - b; });
+                    var i = 0;
+                    for (i=0; i<rangesUpperBounds.length; i++) {
+                        if (value <= rangesUpperBounds[i]) {
+                            return layerConfig.color.ranges[rangesUpperBounds[i]];
+                        }
+                    }
+                    // If higher than the last option, use it anyway
+                    return layerConfig.color.ranges[rangesUpperBounds[rangesUpperBounds.length-1]];
                 } else {
                     // Scale is not supported for records (yet?)
                     console.error('Scale coloring is not supported for simple records');
@@ -8508,6 +8610,9 @@ mod.directive('infiniteScroll', [
                 }
             },
             getClusterColor: function(cluster, layerConfig) {
+                if (angular.isUndefined(layerConfig.color)) {
+                    return "#C32D1C";
+                }
                 if (angular.isString(layerConfig.color)) {
                     return layerConfig.color;
                 } else {
@@ -8516,6 +8621,9 @@ mod.directive('infiniteScroll', [
             },
             getColor: function(value, layerConfig, min, max, scaleSteps) {
                 scaleSteps = scaleSteps || 10;
+                if (angular.isUndefined(layerConfig.color)) {
+                    return "#C32D1C";
+                }
                 if (angular.isString(layerConfig.color)) {
                     if (angular.isDefined(min) && angular.isDefined(max)) {
                         return chroma.scale([chroma(layerConfig.color).brighten(50), layerConfig.color]).domain([min, max], Math.min(10, scaleSteps), layerConfig.colorFunction).out('hex')(value);
@@ -8967,6 +9075,10 @@ mod.directive('infiniteScroll', [
                 } else if (layerConfig.display === 'categories') {
                     layerConfig._loading = true;
                     MapRenderingRaw.render(layerConfig, map, timeout).then(applyLayer);
+                } else if (layerConfig.display === 'choropleth') {
+                    // TODO: Handle depending if aggregation or not
+                    layerConfig._loading = true;
+                    MapRenderingRaw.render(layerConfig, map, timeout).then(applyLayer);
                 } else if (layerConfig.display === 'auto') {
                     layerConfig._loading = true;
                     // Auto-decide what to do depending on the number of items
@@ -9302,7 +9414,7 @@ mod.directive('infiniteScroll', [
                     for (var i = 0; i < records.length; i++) {
                         var record = records[i];
                         if (record.count === 1 && layerConfig.display !== 'polygonforced') {
-                            MapLayerHelper.drawPoint(layerConfig, map, record.cluster_center, record, layerGroup)
+                            MapLayerHelper.drawPoint(layerConfig, map, record.cluster_center, record, layerGroup);
                             //layerGroup.addLayer(new L.Marker(record.cluster_center)); // Uncomment to debug pointer alignment
                         } else {
                             var clusterValue = MapLayerHelper.getClusterValue(record, layerConfig);
@@ -9343,21 +9455,10 @@ mod.directive('infiniteScroll', [
         return {
             render: function (layerConfig, map, timeout) {
                 var deferred = $q.defer();
-                var heatmapLayer = L.TileLayer.heatMap({
-                    zIndex: 10,
-                    radius: {
-                        absolute: false,
-                        value: 20
-                    },
-                    opacity: 0.8,
-                    gradient: {
-                        0.45: "rgb(0,0,255)",
-                        0.55: "rgb(0,255,255)",
-                        0.65: "rgb(0,255,0)",
-                        0.95: "yellow",
-                        1.0: "rgb(255,0,0)"
-                    }
-                });
+                var heatmapOptions = {};
+                if (angular.isObject(layerConfig.color) && layerConfig.color.type === 'gradient' && layerConfig.color.steps) {
+                    heatmapOptions.gradient = layerConfig.color.steps;
+                }
                 var parameters = angular.extend({}, layerConfig.context.parameters, {
                     'clustermode': 'heatmap',
                     'clusterdistance': 15,
@@ -9374,22 +9475,30 @@ mod.directive('infiniteScroll', [
                     // Display the clusters
                     var records = data.clusters;
 
-                    heatmapLayer.options.radius.value = Math.min((1 / data.clusters.length) * 4000 + 20, 50);
+                    //heatmapLayer.options.radius.value = Math.min((1 / data.clusters.length) * 4000 + 20, 50);
+
+                    heatmapOptions.radius = Math.min((1 / data.clusters.length) * 4000 + 20, 50);
+
+                    var min = MapLayerHelper.getClusterMin(data, layerConfig);
+                    var max = MapLayerHelper.getClusterMax(data, layerConfig);
 
                     var heatmapData = [];
                     for (var i = 0; i < records.length; i++) {
                         var record = records[i];
                         var clusterValue = MapLayerHelper.getClusterValue(record, layerConfig);
                         if (clusterValue !== null) {
-                            heatmapData.push({
-                                lat: record.cluster_center[0],
-                                lon: record.cluster_center[1],
-                                value: MapLayerHelper.getClusterValue(record, layerConfig) - MapLayerHelper.getClusterMin(data, layerConfig) + 1 // FIXME: the 1 should be proportional (and if the min is really 0 then it is false)
-                            });
+                            var ratio = ODS.CalculationUtils.getValueOnScale(clusterValue, min, max, layerConfig.sizeFunction);
+
+                            heatmapData.push([
+                                record.cluster_center[0],
+                                record.cluster_center[1],
+                                ratio
+                            ]);
                         }
                     }
+                    var heatmapLayer = null;
                     if (heatmapData.length > 0) {
-                        heatmapLayer.setData(heatmapData);
+                        heatmapLayer = L.heatLayer(heatmapData, heatmapOptions);
                     }
                     deferred.resolve(heatmapLayer);
                 });
@@ -9488,7 +9597,7 @@ mod.directive('infiniteScroll', [
                     for (var i = 0; i < data.length; i++) {
                         shape = data[i];
                         MapLayerHelper.drawShape(layerConfig, map, shape.geometry, null, layerGroup, shape.geo_digest);
-                    };
+                    }
                     deferred.resolve(layerGroup);
                 });
                 return deferred.promise;
@@ -9497,6 +9606,447 @@ mod.directive('infiniteScroll', [
     }]);
 }());
 ;(function() {
+    "use strict";
+
+    var mod = angular.module('ods-widgets');
+
+    mod.service('Timezones', [function() {
+        return [
+            'UTC',
+            'Africa/Abidjan',
+            'Africa/Accra',
+            'Africa/Addis_Ababa',
+            'Africa/Algiers',
+            'Africa/Asmara',
+            'Africa/Bamako',
+            'Africa/Bangui',
+            'Africa/Banjul',
+            'Africa/Bissau',
+            'Africa/Blantyre',
+            'Africa/Brazzaville',
+            'Africa/Bujumbura',
+            'Africa/Cairo',
+            'Africa/Casablanca',
+            'Africa/Ceuta',
+            'Africa/Conakry',
+            'Africa/Dakar',
+            'Africa/Dar_es_Salaam',
+            'Africa/Djibouti',
+            'Africa/Douala',
+            'Africa/El_Aaiun',
+            'Africa/Freetown',
+            'Africa/Gaborone',
+            'Africa/Harare',
+            'Africa/Johannesburg',
+            'Africa/Juba',
+            'Africa/Kampala',
+            'Africa/Khartoum',
+            'Africa/Kigali',
+            'Africa/Kinshasa',
+            'Africa/Lagos',
+            'Africa/Libreville',
+            'Africa/Lome',
+            'Africa/Luanda',
+            'Africa/Lubumbashi',
+            'Africa/Lusaka',
+            'Africa/Malabo',
+            'Africa/Maputo',
+            'Africa/Maseru',
+            'Africa/Mbabane',
+            'Africa/Mogadishu',
+            'Africa/Monrovia',
+            'Africa/Nairobi',
+            'Africa/Ndjamena',
+            'Africa/Niamey',
+            'Africa/Nouakchott',
+            'Africa/Ouagadougou',
+            'Africa/Porto-Novo',
+            'Africa/Sao_Tome',
+            'Africa/Tripoli',
+            'Africa/Tunis',
+            'Africa/Windhoek',
+            'America/Adak',
+            'America/Anchorage',
+            'America/Anguilla',
+            'America/Antigua',
+            'America/Araguaina',
+            'America/Argentina/Buenos_Aires',
+            'America/Argentina/Catamarca',
+            'America/Argentina/Cordoba',
+            'America/Argentina/Jujuy',
+            'America/Argentina/La_Rioja',
+            'America/Argentina/Mendoza',
+            'America/Argentina/Rio_Gallegos',
+            'America/Argentina/Salta',
+            'America/Argentina/San_Juan',
+            'America/Argentina/San_Luis',
+            'America/Argentina/Tucuman',
+            'America/Argentina/Ushuaia',
+            'America/Aruba',
+            'America/Asuncion',
+            'America/Atikokan',
+            'America/Bahia',
+            'America/Bahia_Banderas',
+            'America/Barbados',
+            'America/Belem',
+            'America/Belize',
+            'America/Blanc-Sablon',
+            'America/Boa_Vista',
+            'America/Bogota',
+            'America/Boise',
+            'America/Cambridge_Bay',
+            'America/Campo_Grande',
+            'America/Cancun',
+            'America/Caracas',
+            'America/Cayenne',
+            'America/Cayman',
+            'America/Chicago',
+            'America/Chihuahua',
+            'America/Costa_Rica',
+            'America/Creston',
+            'America/Cuiaba',
+            'America/Curacao',
+            'America/Danmarkshavn',
+            'America/Dawson',
+            'America/Dawson_Creek',
+            'America/Denver',
+            'America/Detroit',
+            'America/Dominica',
+            'America/Edmonton',
+            'America/Eirunepe',
+            'America/El_Salvador',
+            'America/Fortaleza',
+            'America/Glace_Bay',
+            'America/Godthab',
+            'America/Goose_Bay',
+            'America/Grand_Turk',
+            'America/Grenada',
+            'America/Guadeloupe',
+            'America/Guatemala',
+            'America/Guayaquil',
+            'America/Guyana',
+            'America/Halifax',
+            'America/Havana',
+            'America/Hermosillo',
+            'America/Indiana/Indianapolis',
+            'America/Indiana/Knox',
+            'America/Indiana/Marengo',
+            'America/Indiana/Petersburg',
+            'America/Indiana/Tell_City',
+            'America/Indiana/Vevay',
+            'America/Indiana/Vincennes',
+            'America/Indiana/Winamac',
+            'America/Inuvik',
+            'America/Iqaluit',
+            'America/Jamaica',
+            'America/Juneau',
+            'America/Kentucky/Louisville',
+            'America/Kentucky/Monticello',
+            'America/Kralendijk',
+            'America/La_Paz',
+            'America/Lima',
+            'America/Los_Angeles',
+            'America/Lower_Princes',
+            'America/Maceio',
+            'America/Managua',
+            'America/Manaus',
+            'America/Marigot',
+            'America/Martinique',
+            'America/Matamoros',
+            'America/Mazatlan',
+            'America/Menominee',
+            'America/Merida',
+            'America/Metlakatla',
+            'America/Mexico_City',
+            'America/Miquelon',
+            'America/Moncton',
+            'America/Monterrey',
+            'America/Montevideo',
+            'America/Montreal',
+            'America/Montserrat',
+            'America/Nassau',
+            'America/New_York',
+            'America/Nipigon',
+            'America/Nome',
+            'America/Noronha',
+            'America/North_Dakota/Beulah',
+            'America/North_Dakota/Center',
+            'America/North_Dakota/New_Salem',
+            'America/Ojinaga',
+            'America/Panama',
+            'America/Pangnirtung',
+            'America/Paramaribo',
+            'America/Phoenix',
+            'America/Port-au-Prince',
+            'America/Port_of_Spain',
+            'America/Porto_Velho',
+            'America/Puerto_Rico',
+            'America/Rainy_River',
+            'America/Rankin_Inlet',
+            'America/Recife',
+            'America/Regina',
+            'America/Resolute',
+            'America/Rio_Branco',
+            'America/Santa_Isabel',
+            'America/Santarem',
+            'America/Santiago',
+            'America/Santo_Domingo',
+            'America/Sao_Paulo',
+            'America/Scoresbysund',
+            'America/Shiprock',
+            'America/Sitka',
+            'America/St_Barthelemy',
+            'America/St_Johns',
+            'America/St_Kitts',
+            'America/St_Lucia',
+            'America/St_Thomas',
+            'America/St_Vincent',
+            'America/Swift_Current',
+            'America/Tegucigalpa',
+            'America/Thule',
+            'America/Thunder_Bay',
+            'America/Tijuana',
+            'America/Toronto',
+            'America/Tortola',
+            'America/Vancouver',
+            'America/Whitehorse',
+            'America/Winnipeg',
+            'America/Yakutat',
+            'America/Yellowknife',
+            'Antarctica/Casey',
+            'Antarctica/Davis',
+            'Antarctica/DumontDUrville',
+            'Antarctica/Macquarie',
+            'Antarctica/Mawson',
+            'Antarctica/McMurdo',
+            'Antarctica/Palmer',
+            'Antarctica/Rothera',
+            'Antarctica/South_Pole',
+            'Antarctica/Syowa',
+            'Antarctica/Vostok',
+            'Arctic/Longyearbyen',
+            'Asia/Aden',
+            'Asia/Almaty',
+            'Asia/Amman',
+            'Asia/Anadyr',
+            'Asia/Aqtau',
+            'Asia/Aqtobe',
+            'Asia/Ashgabat',
+            'Asia/Baghdad',
+            'Asia/Bahrain',
+            'Asia/Baku',
+            'Asia/Bangkok',
+            'Asia/Beirut',
+            'Asia/Bishkek',
+            'Asia/Brunei',
+            'Asia/Choibalsan',
+            'Asia/Chongqing',
+            'Asia/Colombo',
+            'Asia/Damascus',
+            'Asia/Dhaka',
+            'Asia/Dili',
+            'Asia/Dubai',
+            'Asia/Dushanbe',
+            'Asia/Gaza',
+            'Asia/Harbin',
+            'Asia/Hebron',
+            'Asia/Ho_Chi_Minh',
+            'Asia/Hong_Kong',
+            'Asia/Hovd',
+            'Asia/Irkutsk',
+            'Asia/Jakarta',
+            'Asia/Jayapura',
+            'Asia/Jerusalem',
+            'Asia/Kabul',
+            'Asia/Kamchatka',
+            'Asia/Karachi',
+            'Asia/Kashgar',
+            'Asia/Kathmandu',
+            'Asia/Khandyga',
+            'Asia/Kolkata',
+            'Asia/Krasnoyarsk',
+            'Asia/Kuala_Lumpur',
+            'Asia/Kuching',
+            'Asia/Kuwait',
+            'Asia/Macau',
+            'Asia/Magadan',
+            'Asia/Makassar',
+            'Asia/Manila',
+            'Asia/Muscat',
+            'Asia/Nicosia',
+            'Asia/Novokuznetsk',
+            'Asia/Novosibirsk',
+            'Asia/Omsk',
+            'Asia/Oral',
+            'Asia/Phnom_Penh',
+            'Asia/Pontianak',
+            'Asia/Pyongyang',
+            'Asia/Qatar',
+            'Asia/Qyzylorda',
+            'Asia/Rangoon',
+            'Asia/Riyadh',
+            'Asia/Sakhalin',
+            'Asia/Samarkand',
+            'Asia/Seoul',
+            'Asia/Shanghai',
+            'Asia/Singapore',
+            'Asia/Taipei',
+            'Asia/Tashkent',
+            'Asia/Tbilisi',
+            'Asia/Tehran',
+            'Asia/Thimphu',
+            'Asia/Tokyo',
+            'Asia/Ulaanbaatar',
+            'Asia/Urumqi',
+            'Asia/Ust-Nera',
+            'Asia/Vientiane',
+            'Asia/Vladivostok',
+            'Asia/Yakutsk',
+            'Asia/Yekaterinburg',
+            'Asia/Yerevan',
+            'Atlantic/Azores',
+            'Atlantic/Bermuda',
+            'Atlantic/Canary',
+            'Atlantic/Cape_Verde',
+            'Atlantic/Faroe',
+            'Atlantic/Madeira',
+            'Atlantic/Reykjavik',
+            'Atlantic/South_Georgia',
+            'Atlantic/St_Helena',
+            'Atlantic/Stanley',
+            'Australia/Adelaide',
+            'Australia/Brisbane',
+            'Australia/Broken_Hill',
+            'Australia/Currie',
+            'Australia/Darwin',
+            'Australia/Eucla',
+            'Australia/Hobart',
+            'Australia/Lindeman',
+            'Australia/Lord_Howe',
+            'Australia/Melbourne',
+            'Australia/Perth',
+            'Australia/Sydney',
+            'Canada/Atlantic',
+            'Canada/Central',
+            'Canada/Eastern',
+            'Canada/Mountain',
+            'Canada/Newfoundland',
+            'Canada/Pacific',
+            'Europe/Amsterdam',
+            'Europe/Andorra',
+            'Europe/Athens',
+            'Europe/Belgrade',
+            'Europe/Berlin',
+            'Europe/Bratislava',
+            'Europe/Brussels',
+            'Europe/Bucharest',
+            'Europe/Budapest',
+            'Europe/Busingen',
+            'Europe/Chisinau',
+            'Europe/Copenhagen',
+            'Europe/Dublin',
+            'Europe/Gibraltar',
+            'Europe/Guernsey',
+            'Europe/Helsinki',
+            'Europe/Isle_of_Man',
+            'Europe/Istanbul',
+            'Europe/Jersey',
+            'Europe/Kaliningrad',
+            'Europe/Kiev',
+            'Europe/Lisbon',
+            'Europe/Ljubljana',
+            'Europe/London',
+            'Europe/Luxembourg',
+            'Europe/Madrid',
+            'Europe/Malta',
+            'Europe/Mariehamn',
+            'Europe/Minsk',
+            'Europe/Monaco',
+            'Europe/Moscow',
+            'Europe/Oslo',
+            'Europe/Paris',
+            'Europe/Podgorica',
+            'Europe/Prague',
+            'Europe/Riga',
+            'Europe/Rome',
+            'Europe/Samara',
+            'Europe/San_Marino',
+            'Europe/Sarajevo',
+            'Europe/Simferopol',
+            'Europe/Skopje',
+            'Europe/Sofia',
+            'Europe/Stockholm',
+            'Europe/Tallinn',
+            'Europe/Tirane',
+            'Europe/Uzhgorod',
+            'Europe/Vaduz',
+            'Europe/Vatican',
+            'Europe/Vienna',
+            'Europe/Vilnius',
+            'Europe/Volgograd',
+            'Europe/Warsaw',
+            'Europe/Zagreb',
+            'Europe/Zaporozhye',
+            'Europe/Zurich',
+            'Indian/Antananarivo',
+            'Indian/Chagos',
+            'Indian/Christmas',
+            'Indian/Cocos',
+            'Indian/Comoro',
+            'Indian/Kerguelen',
+            'Indian/Mahe',
+            'Indian/Maldives',
+            'Indian/Mauritius',
+            'Indian/Mayotte',
+            'Indian/Reunion',
+            'Pacific/Apia',
+            'Pacific/Auckland',
+            'Pacific/Chatham',
+            'Pacific/Chuuk',
+            'Pacific/Easter',
+            'Pacific/Efate',
+            'Pacific/Enderbury',
+            'Pacific/Fakaofo',
+            'Pacific/Fiji',
+            'Pacific/Funafuti',
+            'Pacific/Galapagos',
+            'Pacific/Gambier',
+            'Pacific/Guadalcanal',
+            'Pacific/Guam',
+            'Pacific/Honolulu',
+            'Pacific/Johnston',
+            'Pacific/Kiritimati',
+            'Pacific/Kosrae',
+            'Pacific/Kwajalein',
+            'Pacific/Majuro',
+            'Pacific/Marquesas',
+            'Pacific/Midway',
+            'Pacific/Nauru',
+            'Pacific/Niue',
+            'Pacific/Norfolk',
+            'Pacific/Noumea',
+            'Pacific/Pago_Pago',
+            'Pacific/Palau',
+            'Pacific/Pitcairn',
+            'Pacific/Pohnpei',
+            'Pacific/Port_Moresby',
+            'Pacific/Rarotonga',
+            'Pacific/Saipan',
+            'Pacific/Tahiti',
+            'Pacific/Tarawa',
+            'Pacific/Tongatapu',
+            'Pacific/Wake',
+            'Pacific/Wallis',
+            'US/Alaska',
+            'US/Arizona',
+            'US/Central',
+            'US/Eastern',
+            'US/Hawaii',
+            'US/Mountain',
+            'US/Pacific'
+        ];
+    }]);
+}());;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -9544,9 +10094,10 @@ mod.directive('infiniteScroll', [
                         //"L.UtfGrid@libs/leaflet-utfgrid/leaflet.utfgrid.js",
                         "L.Draw@libs/leaflet-draw/leaflet.draw.js",
                         //"L.BundleTileLayer@libs/ods-bundletilelayer/bundletilelayer.js",
-                        "QuadTree@libs/leaflet-heatmap/QuadTree.js",
-                        "h337@libs/leaflet-heatmap/heatmap-backend.js",
-                        "L.TileLayer.HeatMap@libs/leaflet-heatmap/heatmap-leaflet.js"
+                        //"QuadTree@libs/leaflet-heatmap/QuadTree.js",
+                        //"h337@libs/leaflet-heatmap/heatmap-backend.js",
+                        //"L.TileLayer.HeatMap@libs/leaflet-heatmap/heatmap-leaflet.js"
+                        "L.HeatLayer@libs/leaflet-heat/leaflet-heat.js"
                     ]
                 ]
             },
@@ -10188,6 +10739,8 @@ mod.directive('infiniteScroll', [
                         return '<i class="odswidget-facet__value-icon fa fa-picture-o"></i> ' + translate('Image');
                     case 'api':
                         return '<i class="odswidget-facet__value-icon fa fa-cogs"></i> ' + translate('API');
+                    case 'custom_view':
+                        return '<i class="odswidget-facet__value-icon fa fa-tachometer"></i> ' + translate('Custom view');
                     default:
                         return value;
 
@@ -10211,7 +10764,8 @@ mod.directive('infiniteScroll', [
             }
         };
     }]);
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -11648,6 +12202,109 @@ mod.directive('infiniteScroll', [
                 }
                 return ratio;
             }
+        },
+        DateFieldUtils: {
+            datePatternBuilder: function (mode) {
+                var patterns = {
+                    highcharts: {
+                        'Hh': '%Hh', // '00h', '01h', ... '23h'
+                        'MMM': '%M', // 'Jan', 'Feb', ... 'Dec'
+                        'YYYY': '%Y', // '2011', '2012', '2013'...
+                        'MMMM': '%B', // 'January', 'February', ... 'December'
+                        'D': '%e', // '1', '2', ... '31',
+                        'ddd': '%a' // 'Sun', 'Mon', ... 'Sat'
+                    },
+                    moment: {
+                        'Hh': 'H[h]',
+                        'MMM': 'MMM',
+                        'YYYY': 'YYYY',
+                        'MMMM': 'MMMM',
+                        'D': 'D',
+                        'ddd': 'ddd'
+                    }
+                }[mode];
+                
+                return function (object) {
+                    var datePattern = '';
+                    if (angular.isObject(object) && ('year' in object || 'month' in object || 'day' in object || 'hour' in object || 'minute' in object || 'weekday' in object)) {
+                        if (!('year' in object)) {
+                            if ('month' in object) {
+                                datePattern = patterns['MMMM'];
+                            }
+                            if ('day' in object) {
+                                if ('month' in object) {
+                                    datePattern = patterns['D'] + ' ' + patterns['MMMM'];
+                                } else {
+                                    datePattern = patterns['D'];
+                                }
+                            }
+                            if ('weekday' in object) {
+                                datePattern = patterns['ddd'];
+                                if ('hour' in object) {
+                                    datePattern += ' ' + patterns['Hh'];
+                                }
+                            } else if ('hour' in object) {
+                                datePattern = patterns['Hh'];
+                            }
+                        } else {
+                            if ('day' in object) {
+                                datePattern += ' ' + patterns['D'];
+                            }
+                            if ('month' in object) {
+                                datePattern += ' ' + patterns['MMMM'];
+                            }
+                            datePattern += ' ' + patterns['YYYY'];
+
+                            if ('hour' in object) {
+                                if ('minute' in object) {
+                                    datePattern += ' ' + patterns['Hh'] + patterns['MMM'];
+                                } else {
+                                    datePattern += ' ' + patterns['Hh'];
+                                }
+                            }
+                        }
+                    }
+                    return datePattern;
+                }
+            },
+            getDateFromXObject: function (x, minDate) {
+                var minYear = minDate ? minDate.getUTCFullYear() : 2000;
+                var minMonth = minDate ? minDate.getUTCMonth() : 0;
+                var minDay = minDate ? minDate.getUTCDate() : 1;
+                var minHour = minDate ? minDate.getUTCHours() : 0;
+                var minMinute = minDate ? minDate.getUTCMinutes() : 0;
+
+                if (angular.isObject(x) && ('year' in x || 'month' in x || 'day' in x || 'hour' in x || 'minute' in x || 'weekday' in x || 'yearday' in x)) {
+                    // default to 2000 because it's a leap year
+                    var date = new Date(Date.UTC(x.year || minYear, x.month - 1 || 0, x.day || 1, x.hour || 0, x.minute || 0));
+                    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
+                    date.setUTCFullYear(x.year || minYear);
+                    if (!('month' in x)) date.setUTCMonth(minMonth);
+                    if (!('day' in x)) date.setUTCDate(minDay);
+                    if (!('hour' in x)) date.setUTCHours(minHour);
+                    if (!('minute' in x)) date.setUTCMinutes(minMinute);
+                    if (!('year' in x)) {
+                        if ('weekday' in x) {
+                            date.setUTCDate(date.getUTCDate() + 7 - date.getUTCDay() + x.weekday);
+                        }
+                        if ('yearday' in x) {
+                            date.setUTCDate(0 + x.yearday);
+                        }
+                    }
+                    if ('day' in x) {
+                        // handle bisextil years
+                        if (x.day == 29 && x.month == 2 && !x.year) {
+                            date.setUTCDate(28);
+                            date.setUTCMonth(1);
+                        }
+                    } else {
+                        if ('month' in x) {
+                            date.setUTCDate(16);
+                        }
+                    }
+                    return date;
+                }
+            }
         }
     };
 
@@ -12384,7 +13041,7 @@ mod.directive('infiniteScroll', [
 				}
 
 			}
-		}
+		};
 	});
 }());;(function () {
     'use strict';
@@ -12906,8 +13563,733 @@ mod.directive('infiniteScroll', [
                 };
 
             }]
-        }
+        };
     });
+})();
+;(function () {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('odsCrossTable', ['ODSAPI', '$q', '$filter', '$timeout', function (ODSAPI, $q, $filter, $timeout) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsCrossTable
+         * @scope
+         * @restrict E
+         *
+         * @param {DatasetContext} context Context {@link ods-widgets.directive:odsDatasetContext Dataset Context} from which data is
+         * extracted
+         * @param {string} rows Comma-separated list of field names which will be used for row headers' values
+         * @param {string} column Name of the field which will be used for column header's values
+         * @param {string} serieXxxLabel Label of the serie, which will be displayed as column header (Xxx being the
+         * name of the serie).
+         * @param {string} serieXxxFunc Function (SUM, AVG, COUNT etc...) used to aggregate the serie's analysis (Xxx
+         * being the name of the serie)
+         * @param {string} serieXxxExpr Name of the field used for the serie's analysis (Xxx being the name of the
+         * serie)
+         * @param {boolean} [repeatRowHeaders=false] Whether to repeat the row headers on each line or not.
+         * @param {boolean} [displayIntermediaryResults=false] Whether to display intermediary subtotals, subaverages
+         * etc...
+         * @param {integer} [numberPrecision=3] The number of decimals to display for number values.
+         *
+         * @description
+         * This widget create a cross table from a context.
+         * It supports multiple aggregations for a single column field and multiple row fields.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-dataset-context  context="averagewages"
+         *                                averagewages-dataset="oecd-average-wages@public-us">
+         *              <ods-cross-table context="averagewages"
+         *                               rows="location"
+         *                               column="time"
+         *                               serie-production-label="Average wages"
+         *                               serie-production-func="AVG"
+         *                               serie-production-expr="value"></ods-cross-table>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
+         */
+
+
+        /**
+         * CrossTable
+         *
+         * In order to illustrate each method, we'll consider a table containing columns A, B, C, D and E, each having
+         * two values A1-A2, B1-B2 etc.
+         * * A,B and C will be used as rowFields
+         * * D will be used as colField
+         * * E will be used to define two series, SUM_E and AVG_E
+         */
+        var CrossTable = function (rowFields, colField, series, schema, repeatRowHeaders, displayIntermediaryResults, numberPrecision) {
+
+            /**
+             * Array of field names which values will be used as row headers.
+             * @type {Array}
+             */
+            this.rowFields = rowFields;
+
+            /**
+             * Field name which values will be used as column headers.
+             * @type {string}
+             */
+            this.colField = colField;
+
+            /**
+             * Schema of fields used in rowFields or colFields, indexed by field name.
+             * @type {{}}
+             */
+            this.schema = schema;
+
+            /**
+             * Array of Serie objects
+             * @type {Array}
+             */
+            this.series = series;
+
+            /**
+             * Array of RowNumbersIndex where the index matches the depth.
+             * This allows to store one RowNumbersIndex for each intermediary analysis.
+             * @type {RowNumbersIndex[]}
+             */
+            this.rowNumbersIndexes = [];
+
+            /**
+             * Col numbers indexed by values extracted from the column field.
+             * @type {{}}
+             */
+            this.colNumbersIndex = {};
+
+            /**
+             * Array of array representing all cells in the table (headers included)
+             * each item of the array is either a cell object or a simple type (string or number)
+             * @type {Array}
+             */
+            this.table = [];
+
+            /**
+             * Whether to repeat row headers in case of multiple rowFields or not.
+             * @type {Boolean}
+             */
+            this.repeatRowHeaders = repeatRowHeaders;
+
+            /**
+             * Whether to display intermediary SUMs, AVGs, etc. or not
+             * @type {Boolean}
+             */
+            this.displayIntermediaryResults = displayIntermediaryResults;
+
+            /**
+             * List of rowField values indexed by the rowField's name
+             * @type {{}}
+             */
+            this._insertedRowHeaders = [];
+
+            /**
+             * Helper able to generate a label from an analysisValue
+             * @type {LabelBuilder}
+             */
+            this.labelBuilder = new LabelBuilder(this.schema, this.rowFields, this.colField);
+
+            /**
+             * Number of decimals use in formatting numbers
+             * @type {integer}
+             */
+            this.numberPrecision = numberPrecision;
+
+            this.setData = function (columnHeadersAnalysis, rowHeadersAnalyses, analyses) {
+                this.resetData();
+
+                this.buildColNumbersIndexes(columnHeadersAnalysis);
+                this.buildRowNumbersIndexes(rowHeadersAnalyses);
+
+                this.buildTableStructure(rowHeadersAnalyses);
+
+                this.buildTableColumnHeaders(columnHeadersAnalysis);
+                this.buildTableRowHeaders(rowHeadersAnalyses);
+                this.buildTableBody(analyses);
+            };
+
+            this.resetData = function () {
+                // colNumbersIndex
+                this.colNumbersIndex = {};
+
+                // rowNumbersIndexes
+                this.rowNumbersIndexes = [];
+                if (this.displayIntermediaryResults) {
+                    for (var i = 0; i < this.rowFields.length; i++) {
+                        this.rowNumbersIndexes.push(new RowNumbersIndex(this.rowFields, i + 1, this.labelBuilder));
+                    }
+                } else {
+                    this.rowNumbersIndexes.push(new RowNumbersIndex(this.rowFields, this.rowFields.length, this.labelBuilder));
+                }
+
+                // _insertedRowHeaders
+                this._insertedRowHeaders = rowFields.reduce(function (previous, current) {
+                    previous[current] = [];
+                    return previous
+                }, {});
+
+                // table
+                this.table = [];
+            };
+
+            this.buildColNumbersIndexes = function (colValues) {
+                for (var i = 0; i < colValues.length; i++) {
+                    var index = {};
+                    for (var j = 0; j < this.series.length; j++) {
+                        var serieName = this.series[j].name;
+                        index[serieName] = i * this.series.length + j;
+                    }
+                    this.colNumbersIndex[this.labelBuilder.buildLabel(colValues[i], this.colField)] = index;
+                }
+            };
+
+            this.buildRowNumbersIndexes = function (analyses) {
+                var analysisValues = analyses[analyses.length - 1];
+                var currentRowNumber = 0;
+                var rowNumbersIndex = this.rowNumbersIndexes[0];
+                for (var i = 0; i < analysisValues.length; i++) {
+                    var analysisValue = analysisValues[i];
+
+                    if (this.displayIntermediaryResults) {
+                        for (var j = 0; j < this.rowFields.length; j++) {
+                            rowNumbersIndex = this.rowNumbersIndexes[j];
+                            if (rowNumbersIndex.getRowNumber(analysisValue) === undefined) {
+                                rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber);
+                                currentRowNumber++;
+                            }
+                        }
+                    } else {
+                        if (rowNumbersIndex.getRowNumber(analysisValue) === undefined) {
+                            rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber);
+                            currentRowNumber++;
+                        }
+
+                    }
+                }
+            };
+
+            this.buildTableStructure = function (analyses) {
+                var i;
+
+                // Reserve space for table header
+                for (i = 0; i < Math.min(2, this.series.length); i++) {
+                    this.table.push([]);
+                }
+
+                // Reserve space for table data
+                var that = this;
+                var tableWidth = Object.keys(this.colNumbersIndex).length * this.series.length + this.rowFields.length;
+                var analysisValues;
+                if (this.displayIntermediaryResults) {
+                    for (i = 0; i < analyses.length; i++) {
+                        analysisValues = analyses[i];
+                        angular.forEach(analysisValues, function () {
+                            that.table.push(new Array(tableWidth));
+                        });
+                    }
+                } else {
+                    analysisValues = analyses[0];
+                    angular.forEach(analysisValues, function () {
+                        that.table.push(new Array(tableWidth));
+                    });
+                }
+            };
+
+
+            this.buildTableColumnHeaders = function (colValues) {
+                var that = this;
+                var row;
+
+                var nbSeries = this.series.length;
+
+                if (nbSeries > 1) {
+                    // first row
+                    row = [];
+                    angular.forEach(this.rowFields, function () {
+                        row.push(new Cell('', 'ods-cross-table__cell--header'))
+                    });
+                    angular.forEach(colValues, function (colValue) {
+                        row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField), 'ods-cross-table__cell--header', nbSeries));
+                    });
+                    this.table[0] = row;
+
+                    // second row
+                    row = [];
+                    angular.forEach(this.rowFields, function (fieldName) {
+                        row.push(new Cell(that.schema[fieldName].label, 'ods-cross-table__cell--header'))
+                    });
+                    var serieHeaders = [];
+                    angular.forEach(this.series, function (serie) {
+                        serieHeaders.push(new Cell(serie.label || serie.name, 'ods-cross-table__cell--header'))
+                    });
+                    angular.forEach(colValues, function () {
+                        row = row.concat(serieHeaders);
+                    });
+                    this.table[1] = row;
+                } else {
+                    row = [];
+                    angular.forEach(this.rowFields, function (fieldName) {
+                        row.push(new Cell(that.schema[fieldName].label, 'ods-cross-table__cell--header'))
+                    });
+                    angular.forEach(colValues, function (colValue) {
+                        row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField), 'ods-cross-table__cell--header'));
+                    });
+                    this.table[0] = row;
+                }
+            };
+
+            this.buildTableRowHeaders = function (analyses) {
+                var that = this;
+                angular.forEach(analyses, function (analysisValues, analysisIndex) {
+                    angular.forEach(analysisValues, function (analysisValue) {
+                        var rowNumber = that.getRowNumber(analysisValue, analysisIndex) + Math.min(2, that.series.length);
+                        var end = that.displayIntermediaryResults ? analysisIndex + 1 : that.rowFields.length;
+                        for (var i = 0; i < end; i++) {
+                            var fieldName = that.rowFields[i];
+                            var label = that.labelBuilder.buildLabel(analysisValue, fieldName);
+                            if (i === that.rowFields.length - 1 || that.repeatRowHeaders || that._insertedRowHeaders[fieldName].indexOf(label) === -1) {
+                                that.table[rowNumber][i] = new Cell(label, 0, 'ods-cross-table__cell--header');
+                                that._insertedRowHeaders[fieldName].push(label);
+                            }
+                        }
+                    });
+                });
+            };
+
+            this.buildTableBody = function (analyses) {
+                var that = this;
+                angular.forEach(analyses, function (analysisValues, analysisIndex) {
+                    angular.forEach(analysisValues, function (analysisValue) {
+                        angular.forEach(that.series, function (serie) {
+                            // row index is corrected by the number of col headers in the table
+                            var row = that.getRowNumber(analysisValue, analysisIndex) + Math.min(2, that.series.length);
+                            // col index is corrected by the number of row headers in the table
+                            var col = that.getColNumber(analysisValue, serie.name) + that.rowFields.length;
+                            that.table[row][col] = new Cell($filter('number')(analysisValue[serie.name], that.numberPrecision), 'ods-cross-table__cell--value');
+                        });
+                    });
+                });
+            };
+
+            this.getColNumber = function (analysisValue, serieName) {
+                return this.colNumbersIndex[this.labelBuilder.buildLabel(analysisValue, this.colField)][serieName];
+            };
+
+            this.getRowNumber = function (analysisValue, analysisIndex) {
+                var rowNumbersIndex = this.rowNumbersIndexes[analysisIndex];
+                return rowNumbersIndex.getRowNumber(analysisValue);
+            };
+
+            return this;
+        };
+
+        var LabelBuilder = function (schema, rowFields, colField) {
+            this.schema = schema;
+            this.rowFields = rowFields;
+            this.colField = colField;
+
+            this.formatXValue = function (xValue) {
+                if (angular.isObject(xValue)) {
+                    var datePattern = ODS.DateFieldUtils.datePatternBuilder('moment')(xValue);
+                    return moment(ODS.DateFieldUtils.getDateFromXObject(xValue)).format(datePattern);
+                }
+                return xValue;
+            };
+
+            this.buildLabel = function (analysisValue, field) {
+                if (angular.isObject(analysisValue.x) && field in analysisValue.x) {
+                    return this.formatXValue(analysisValue.x[field]);
+                }
+                return this.formatXValue(analysisValue.x);
+            };
+
+            return this;
+        };
+
+        /**
+         * Simple object storing serie properties.
+         *
+         * @param name
+         * @returns {Serie}
+         * @constructor
+         */
+        var Serie = function (name) {
+            this.name = name;
+            this.label = undefined;
+            this.func = undefined;
+            this.expr = undefined;
+
+            this.update = function (property, value) {
+                this[property] = value;
+            };
+
+            return this;
+        };
+
+        /**
+         * Representation of a cell's content.
+         *
+         * @param label
+         * @param classes
+         * @param colspan
+         * @returns {Cell}
+         * @constructor
+         */
+        var Cell = function (label, classes, colspan) {
+            this.label = label;
+            this.colspan = colspan || 0;
+            this.classes = classes || '';
+
+            return this;
+        };
+
+        /**
+         * Multi level object storing for each tuple of the first {depth} rowFields the corresponding rowNumber.
+         *
+         * Example of stored structure for rowFields = A,B,C and depth = 2 (row numbers are not relevant)
+         *   {
+         *     A1: {
+         *       B1: 1,
+         *       B2: 2
+         *     },
+         *     A2: {
+         *       B1: 3,
+         *       B2: 4
+         *     }
+         *   }
+         *
+         * Example of stored structure for rowFields = A,B,C and depth = 3 (row numbers are not relevant)
+         *   {
+         *     A1: {
+         *       B1: {
+         *         C1: 1,
+         *         C2: 2
+         *       },
+         *       B2: {
+         *         C1: 3,
+         *         C2: 4
+         *       }
+         *     },
+         *     A2: {
+         *       B1: {
+         *         C1: 5,
+         *         C2: 6
+         *       },
+         *       B2: {
+         *         C1: 7,
+         *         C2: 8
+         *       }
+         *     }
+         *   }
+         *
+         * @param rowFields List of field names
+         * @param depth Depth of the index (depth < rowFields.length)
+         * @param labelBuilder {LabelBuilder}
+         * @constructor
+         */
+        var RowNumbersIndex = function (rowFields, depth, labelBuilder) {
+            this.rowFields = rowFields;
+            this.depth = depth;
+            this.labelBuilder = labelBuilder;
+
+            this.rowNumbers = {};
+
+            this.getRowNumber = function (analysisValue) {
+                var rowNumber = this.rowNumbers;
+                for (var i = 0; i < this.depth; i++) {
+                    var rowField = this.rowFields[i];
+                    var label = this.labelBuilder.buildLabel(analysisValue, rowField);
+                    rowNumber = rowNumber[label];
+                    if (rowNumber === undefined) {
+                        return undefined;
+                    }
+                }
+                return rowNumber;
+            };
+
+            this.setRowNumber = function (analysisValue, rowNumber) {
+                for (var i = this.depth - 1; i >= 0; i--) {
+                    var rowField = this.rowFields[i];
+                    var label = this.labelBuilder.buildLabel(analysisValue, rowField);
+                    var tmp = {}; // necessary because we can't do rowNumber = {label: rowNumber}
+                    tmp[label] = rowNumber;
+                    rowNumber = tmp;
+                }
+                angular.merge(this.rowNumbers, rowNumber);
+            };
+
+            return this;
+        };
+
+        return {
+            restrict: 'E',
+            scope: {
+                context: '=',
+                column: '@',
+                rows: '@',
+                repeatRowHeaders: '=',
+                displayIntermediaryResults: '=',
+                numberPrecision: '='
+            },
+            template: '' +
+            '<div class="ods-cross-table">' +
+            '    <ods-spinner with-backdrop ng-show="loading"></ods-spinner>' +
+            '    <div class="ods-cross-table__frozen-header-wrapper">' +
+            '        <table class="ods-cross-table__frozen-header">' +
+            '            <tr ng-repeat="row in table | limitTo:nbFrozenRows track by $index" class="ods-cross-table__row">' +
+            '                <td ng-repeat="cell in row | limitTo:nbFrozenCols track by $index" ' +
+            '                    colspan="{{ cell.colspan }}" ' +
+            '                    class="ods-cross-table__cell {{ cell.classes }}">' +
+            '                    <div class="ods-cross-table__cell-content" ng-bind="cell.label || \'&nbsp;\'"></div>' +
+            '                </td>' +
+            '            </tr>' +
+            '        </table>' +
+            '    </div>' +
+            '    <div class="ods-cross-table__frozen-rows-wrapper">' +
+            '        <table class="ods-cross-table__frozen-rows">' +
+            '            <tr ng-repeat="row in table | limitTo:nbFrozenRows track by $index" class="ods-cross-table__row">' +
+            '                <td ng-repeat="cell in row | limitTo:row.length:nbFrozenCols track by $index" ' +
+            '                    colspan="{{ cell.colspan }}" ' +
+            '                    class="ods-cross-table__cell {{ cell.classes }}">' +
+            '                    <div class="ods-cross-table__cell-content" ng-bind="cell.label || \'&nbsp;\'"></div>' +
+            '                </td>' +
+            '            </tr>' +
+            '        </table>' +
+            '    </div>' +
+            '    <div class="ods-cross-table__frozen-cols-wrapper">' +
+            '        <table class="ods-cross-table__frozen-cols">' +
+            '            <tr ng-repeat="row in table | limitTo:table.length:nbFrozenRows track by $index" class="ods-cross-table__row">' +
+            '                <td ng-repeat="cell in row | limitTo:nbFrozenCols track by $index" ' +
+            '                    colspan="{{ cell.colspan }}" ' +
+            '                    class="ods-cross-table__cell {{ cell.classes }}">' +
+            '                    <div class="ods-cross-table__cell-content" ng-bind="cell.label || \'&nbsp;\'"></div>' +
+            '                </td>' +
+            '            </tr>' +
+            '        </table>' +
+            '    </div>' +
+            '    <div class="ods-cross-table__body-wrapper">' +
+            '        <table class="ods-cross-table__body">' +
+            '            <tr ng-repeat="row in table | limitTo:table.length:nbFrozenRows track by $index" class="ods-cross-table__row">' +
+            '                <td ng-repeat="cell in row | limitTo:row.length:nbFrozenCols track by $index" ' +
+            '                    colspan="{{ cell.colspan }}" ' +
+            '                    class="ods-cross-table__cell {{ cell.classes }}">' +
+            '                    <div class="ods-cross-table__cell-content" ng-bind="cell.label || \'&nbsp;\'"></div>' +
+            '                </td>' +
+            '            </tr>' +
+            '        </table>' +
+            '    </div>' +
+            '</div>',
+            link: function (scope, element, attrs) {
+                scope.table = [];
+                scope.nbFrozenRows = 0;
+                scope.nbFrozenCols = 0;
+                scope.loading = false;
+
+                var crossTable;
+                var rows = scope.rows.split(',');
+
+                var $element = $(element);
+                var $frozenHeaderWrapper = $element.find('.ods-cross-table__frozen-header-wrapper');
+                var $frozenHeaderTable = $element.find('.ods-cross-table__frozen-header');
+                var $frozenColsWrapper = $element.find('.ods-cross-table__frozen-cols-wrapper');
+                var $frozenColsTable = $element.find('.ods-cross-table__frozen-cols');
+                var $frozenRowsWrapper = $element.find('.ods-cross-table__frozen-rows-wrapper');
+                var $frozenRowsTable = $element.find('.ods-cross-table__frozen-rows');
+                var $bodyWrapper = $element.find('.ods-cross-table__body-wrapper');
+                var $bodyTable = $element.find('.ods-cross-table__body');
+
+                // init cross table
+
+                var buildSeries = function () {
+                    var series = {};
+                    angular.forEach(attrs, function (attributeValue, attributeName) {
+                        var regex = /serie([0-9A-Z][0-9a-z]*)(Label|Func|Expr)/g;
+                        var match = regex.exec(attributeName);
+                        if (match) {
+                            var name = match[1].toLowerCase();
+                            var serie = series[name] || new Serie(name);
+                            serie.update(match[2].toLowerCase(), attributeValue);
+                            series[name] = serie;
+                        }
+                    });
+                    return Object.keys(series).map(function (name) {
+                        return series[name]
+                    });
+                };
+
+                var buildFieldSchemas = function () {
+                    var schema = {};
+                    angular.forEach(scope.context.dataset.fields, function (field) {
+                        if (rows.indexOf(field.name) > -1 || field.name == scope.column) {
+                            schema[field.name] = field;
+                        }
+                    });
+                    return schema;
+                };
+
+                // fetch data
+
+                var buildSort = function (fieldNames) {
+                    if (!angular.isArray(fieldNames)) {
+                        fieldNames = [fieldNames];
+                    }
+                    return fieldNames.map(function (name) {
+                        return 'x.' + name
+                    }).join(',');
+                };
+
+                var reloadData = function () {
+                    scope.loading = true;
+                    var promises = [];
+                    // fetch values for column headers
+                    promises.push(ODSAPI.records.analyze(scope.context, angular.extend({}, scope.context.parameters, {
+                        'x': crossTable.colField,
+                        'y.serie1.func': 'COUNT',
+                        'sort': buildSort(crossTable.colField)
+                    })));
+
+                    var rowHeadersPromises = [];
+                    var seriesPromises = [];
+                    for (var i = scope.displayIntermediaryResults ? 0 : crossTable.rowFields.length - 1; i < crossTable.rowFields.length; i++) {
+                        var subfields = crossTable.rowFields.slice(0, i+1);
+                        var options;
+
+                        // fetch values for row headers
+                        options = angular.extend({}, scope.context.parameters, {
+                            'x': subfields,
+                            'y.serie1.func': 'COUNT',
+                            'sort': buildSort(subfields)
+                        });
+                        rowHeadersPromises.push(ODSAPI.records.analyze(scope.context, options));
+
+                        // fetch values for series
+                        options = angular.extend({}, scope.context.parameters, {
+                            'x': subfields.concat(crossTable.colField),
+                            'sort': buildSort(subfields.concat(crossTable.colField))
+                        });
+                        angular.forEach(crossTable.series, function (serie) {
+                            options['y.' + serie.name + '.expr'] = serie.expr;
+                            options['y.' + serie.name + '.func'] = serie.func;
+                        });
+                        seriesPromises.push(ODSAPI.records.analyze(scope.context, options));
+                    }
+
+                    promises = promises.concat(rowHeadersPromises).concat(seriesPromises);
+
+                    $q.all(promises).then(function (responses) {
+                        var columnHeadersAnalysis = responses[0].data;
+                        var rowHeadersAnalyses = responses.slice(1, (responses.length - 1)/2 + 1).map(function (item) {
+                            return item.data;
+                        });
+                        var analyses = responses.slice((responses.length-1)/2 + 1, responses.length).map(function (item) {
+                            return item.data;
+                        });
+                        crossTable.setData(columnHeadersAnalysis, rowHeadersAnalyses, analyses);
+                        scope.table = crossTable.table;
+                        scope.nbFrozenCols = crossTable.rowFields.length;
+                        scope.nbFrozenRows = Math.min(2, crossTable.series.length);
+
+                        $timeout(function () {
+                            // synchronise frozen cells width
+
+                            var synchronizeWidth = function ($bodyCell, $headerCellContent) {
+                                var width = Math.max($headerCellContent.outerWidth(), $bodyCell.outerWidth());
+                                $headerCellContent.css({width: width});
+                                $bodyCell.find('.ods-cross-table__cell-content').css({width: width});
+                            };
+
+                            var serieHeaderCells = $frozenRowsTable.find('tr:last-child .ods-cross-table__cell-content');
+                            $bodyTable.find('tr:first-child td').each(function (index) {
+                                synchronizeWidth($(this), $(serieHeaderCells[index]));
+                            });
+
+                            var headerCells = $frozenHeaderTable.find('tr:last-child .ods-cross-table__cell-content');
+                            $frozenColsTable.find('tr:first-child td').each(function (index) {
+                                synchronizeWidth($(this), $(headerCells[index]));
+                            });
+
+                            // synchronize header cells height
+
+                            headerCells = $frozenHeaderTable.find('td:first-child .ods-cross-table__cell-content');
+                            $frozenRowsTable.find('td:first-child').each(function (index) {
+                                $(headerCells[index]).css({height: $(this).height()});
+                            });
+
+                            // reposition sections
+
+                            var frozenColsWidth = $frozenColsWrapper.outerWidth();
+                            var frozenRowsHeight = $frozenRowsWrapper.outerHeight();
+
+                            $frozenHeaderWrapper.css({
+                                top: 0,
+                                left: 0,
+                                width: frozenColsWidth,
+                                height: frozenRowsHeight
+                            });
+                            $frozenRowsWrapper.css({
+                                top: 0,
+                                left: frozenColsWidth
+                            });
+                            $frozenColsWrapper.css({
+                                top: frozenRowsHeight,
+                                left: 0
+                            });
+                            $bodyWrapper.css({
+                                top: frozenRowsHeight,
+                                left: frozenColsWidth
+                            });
+
+
+                            // synchronise scroll
+                            $bodyWrapper.on('scroll', function () {
+                                $frozenColsTable.css({'margin-top': -$(this).scrollTop()});
+                                $frozenRowsTable.css({'margin-left': -$(this).scrollLeft()});
+                            });
+                            $frozenColsWrapper.on('wheel', function (event) {
+                                $bodyWrapper.scrollTop($bodyWrapper.scrollTop() + event.originalEvent.deltaY);
+                                event.preventDefault();
+                            });
+                            $frozenRowsWrapper.on('wheel', function (event) {
+                                $bodyWrapper.scrollLeft($bodyWrapper.scrollLeft() + event.originalEvent.deltaX);
+                                event.preventDefault();
+                            });
+
+                            // synchronise hover
+                            $bodyTable.find('tr').hover(
+                                function () {
+                                    $frozenColsTable.find('tr:nth-child(' + ($(this).index() + 1) + ')').addClass('ods-cross-table__row--hover');
+                                },
+                                function () {
+                                    $frozenColsTable.find('tr:nth-child(' + ($(this).index() + 1) + ')').removeClass('ods-cross-table__row--hover');
+                                });
+                            $frozenColsTable.find('tr').hover(
+                                function () {
+                                    $bodyTable.find('tr:nth-child(' + ($(this).index() + 1) + ')').addClass('ods-cross-table__row--hover');
+                                },
+                                function () {
+                                    $bodyTable.find('tr:nth-child(' + ($(this).index() + 1) + ')').removeClass('ods-cross-table__row--hover');
+                                });
+
+                            // hide spinner
+                            scope.loading = false;
+                        });
+                    });
+                };
+
+                scope.context.wait().then(function () {
+                    if (!angular.isDefined(scope.numberPrecision)) {
+                        scope.numberPrecision = 3;
+                    }
+                    crossTable = new CrossTable(rows, scope.column, buildSeries(), buildFieldSchemas(), scope.repeatRowHeaders === true, scope.displayIntermediaryResults === true, scope.numberPrecision);
+                    scope.$watch('context.parameters', reloadData);
+                });
+            }
+        }
+    }]);
 })();
 ;(function() {
     'use strict';
@@ -14523,7 +15905,7 @@ mod.directive('infiniteScroll', [
                     animationHelpers[scope.displayMode].setup();
                 });
             }
-        }
+        };
     }]);
 })();
 ;(function () {
@@ -14683,12 +16065,13 @@ mod.directive('infiniteScroll', [
              */
             // The container is shared between directives to avoid performance issues
             var container = angular.element('<div id="odswidget-geotooltip" class="odswidget" style="opacity: 0; transition: opacity 200ms ease-out; position: fixed; z-index: 40000; visibility: hidden;"></div>');
-            var map = null;
-            var layerGroup = null;
+            var map = null,
+                layerGroup = null;
 
             var displayTooltip = function(tippedElement, width, height, coords, geoJson, record) {
                 // Make the container the right size
-                var resized = false;
+                var resized = false,
+                    geoJsonLayer;
                 if (width !== container.css('width') || height !== container.css('height')) {
                     resized = true;
                 }
@@ -14742,13 +16125,13 @@ mod.directive('infiniteScroll', [
                     if (angular.isString(geoJson)) {
                         geoJson = angular.fromJson(geoJson);
                     }
-                    var geoJsonLayer = L.geoJson(geoJson);
+                    geoJsonLayer = L.geoJson(geoJson);
                     layerGroup.addLayer(geoJsonLayer);
                     bounds.extend(geoJsonLayer.getBounds());
                 }
 
                 if (record && angular.isDefined(record.geometry)) {
-                    var geoJsonLayer = L.geoJson(record.geometry);
+                    geoJsonLayer = L.geoJson(record.geometry);
                     layerGroup.addLayer(geoJsonLayer);
                     bounds.extend(geoJsonLayer.getBounds());
                 }
@@ -15443,48 +16826,7 @@ mod.directive('infiniteScroll', [
             return options;
         };
 
-        var buildDatePattern = function(object) {
-            var datePattern = '';
-            if (angular.isObject(object) && ('year' in object || 'month' in object || 'day' in object || 'hour' in object || 'minute' in object || 'weekday' in object)) {
-                if(! ('year' in object)){
-                    if('month' in object){
-                        datePattern = '%B';
-                    }
-                    if('day' in object){
-                        if('month' in object){
-                            datePattern = '%e %B';
-                        } else {
-                            datePattern = '%e';
-                        }
-                    }
-                    if('weekday' in object) {
-                        datePattern = '%a';
-                        if('hour' in object){
-                            datePattern += ' %Hh';
-                        }
-                    } else if ('hour' in object){
-                         datePattern = '%Hh';
-                    }
-                } else {
-                    if('day' in object){
-                        datePattern += ' %e';
-                    }
-                    if('month' in object){
-                        datePattern += ' %B';
-                    }
-                    datePattern += ' %Y';
-
-                    if('hour' in object){
-                        if('minute' in object){
-                             datePattern += ' %Hh%M';
-                        } else {
-                            datePattern +=' %Hh';
-                        }
-                    }
-                }
-            }
-            return datePattern;
-        };
+        var buildDatePattern = ODS.DateFieldUtils.datePatternBuilder('highcharts');
 
         var getContextualizedSeriesOptions = function(x, timeSerieMode) {
             var tooltip = {};
@@ -15579,44 +16921,7 @@ mod.directive('infiniteScroll', [
             return yAxis;
         };
 
-        var getDateFromXObject = function(x, minDate) {
-            var minYear = minDate ? minDate.getUTCFullYear() : 2000;
-            var minMonth = minDate ? minDate.getUTCMonth() : 0;
-            var minDay = minDate ? minDate.getUTCDate() : 1;
-            var minHour = minDate ? minDate.getUTCHours() : 0;
-            var minMinute = minDate ? minDate.getUTCMinutes() : 0;
-
-            if (angular.isObject(x) && ('year' in x || 'month' in x || 'day' in x || 'hour' in x || 'minute' in x || 'weekday' in x || 'yearday' in x)) {
-                // default to 2000 because it's a leap year
-                var date = new Date(Date.UTC(x.year || minYear, x.month-1 || 0, x.day || 1, x.hour || 0, x.minute || 0));
-                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#Two digit years
-                date.setUTCFullYear(x.year || minYear);
-                if (!('month' in x)) date.setUTCMonth(minMonth);
-                if (!('day' in x)) date.setUTCDate(minDay);
-                if (!('hour' in x)) date.setUTCHours(minHour);
-                if (!('minute' in x)) date.setUTCMinutes(minMinute);
-                if(!('year' in x)){
-                    if('weekday' in x){
-                        date.setUTCDate(date.getUTCDate() + 7 - date.getUTCDay() + x.weekday );
-                    }
-                    if('yearday' in x){
-                        date.setUTCDate(0 + x.yearday );
-                    }
-                }
-                if('day' in x){
-                    // handle bisextil years
-                    if(x.day == 29 && x.month == 2 && !x.year) {
-                        date.setUTCDate(28);
-                        date.setUTCMonth(1);
-                    }
-                } else {
-                    if('month' in x){
-                        date.setUTCDate(16);
-                    }
-                }
-                return date;
-            }
-        };
+        var getDateFromXObject = ODS.DateFieldUtils.getDateFromXObject;
 
         function getXValue(dateFormatFunction, datePattern, x, minDate, xAxisType) {
             var date = getDateFromXObject(x, minDate),
@@ -17302,7 +18607,6 @@ mod.directive('infiniteScroll', [
                     return group.description || stripTags(group.layers[0].context.dataset.metas.description);
                 };
                 $scope.toggleGroup = function(group) {
-                    console.log('singler layer', $scope.singleLayer);
                     if (!$scope.singleLayer) {
                         group.displayed = !group.displayed;
                     } else {
@@ -18413,7 +19717,7 @@ mod.directive('infiniteScroll', [
 
                     $scope.mapConfig.groups.forEach(function(group) {
                         group.layers.forEach(function(layer) {
-                            if (layer.caption && (angular.isString(layer.color) || layer.color.type !== 'field')) {
+                            if (layer.caption && (angular.isString(layer.color) || (layer.color.type !== 'field' && layer.color.type !== 'gradient' && layer.color.type !== 'choropleth'))) {
                                 layers.push(layer);
                             }
                         });
@@ -18660,7 +19964,7 @@ mod.directive('infiniteScroll', [
                     $q.all(searches).then(function(results) {
                         $scope.dataSearchWorking = false;
 
-                        $scope.dataSearchResults = $scope.dataSearchResults.filter(function(r) { return r.nhits > 0});
+                        $scope.dataSearchResults = $scope.dataSearchResults.filter(function(r) { return r.nhits > 0; });
 
                         $scope.datasetSearchDatasetsCount = Object.keys($scope.dataSearchResults).length;
 
@@ -19281,7 +20585,7 @@ mod.directive('infiniteScroll', [
             '    <div class="odswidget-map__loading" ng-show="loading">' +
             '        <ods-spinner></ods-spinner>' +
             '    </div>' +
-            '    <ods-map-display-control ng-if="displayControl" single-layer="displayControlSingleLayer" map-config="mapConfig"></ods-map-display-control>' +
+            '    <ods-map-display-control ng-if="displayControl && allContextsInitialized" single-layer="displayControlSingleLayer" map-config="mapConfig"></ods-map-display-control>' +
             '    <ods-map-search-box ng-if="searchBox"></ods-map-search-box>' +
             '    <ods-map-legend ng-if="displayLegend" map-config="mapConfig"></ods-map-legend>' +
             '    <div ng-transclude></div>' + // Can't find any better solution...
@@ -19584,6 +20888,10 @@ mod.directive('infiniteScroll', [
                             });
 
                             deferred.resolve();
+
+                            if (autoGeolocation && geolocateControl) {
+                                geolocateControl.locate();
+                            }
                         } else {
                             waitForVisibleContexts().then(function() {
                                 MapHelper.retrieveBounds(MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig, {geoOnly: true, skipExcludedFromRefit: true})).then(function (bounds) {
@@ -19621,9 +20929,16 @@ mod.directive('infiniteScroll', [
 
                         scope.map.on('moveend', function(e) {
                             // Whenever the map moves, we update the displayed data
-                            scope.$applyAsync(function() {
-                                onViewportMove(e.target);
-                            });
+                            if (scope.$applyAsync) {
+                                scope.$applyAsync(function () {
+                                    onViewportMove(e.target);
+                                });
+                            } else {
+                                // For the last UI that doesn't have Angular 1.4, and thefore doesn't have applyAsync yet
+                                $timeout(function() {
+                                    onViewportMove(e.target);
+                                });
+                            }
                         });
 
                         // Refresh events
@@ -19634,6 +20949,11 @@ mod.directive('infiniteScroll', [
                                 // if something else from outside changes the location, we react as well.
                                 refreshData(false, true);
                             }
+                        });
+
+                        scope.allContextsInitialized = false;
+                        waitForVisibleContexts().then(function() {
+                            scope.allContextsInitialized = true;
                         });
 
                         // INitialize watcher
@@ -20004,7 +21324,7 @@ mod.directive('infiniteScroll', [
                     };
                 });
 
-                var waitForVisibleContexts = function() {
+                function waitForVisibleContexts() {
                     var deferred = $q.defer();
 
                     // Watches all the active contexts, and resolves once they are ready
@@ -20017,7 +21337,7 @@ mod.directive('infiniteScroll', [
                     });
 
                     return deferred.promise;
-                };
+                }
 
                 var syncGeofilterToDrawing = function() {
                     // Check if there are geofilters shared by everyone at init time, and if so, synchronize the
@@ -20163,6 +21483,8 @@ mod.directive('infiniteScroll', [
                 colorRanges: '@',
                 colorCategories: '=',
                 colorCategoriesOther: '@',
+                colorNumericRanges: '=',
+                colorGradient: '=',
                 colorByField: '@',
                 colorFunction: '@',
                 picto: '@',
@@ -20223,7 +21545,7 @@ mod.directive('infiniteScroll', [
                     };
                 } else if (scope.colorCategories) {
                     if (!scope.colorByField) {
-                        console.error('odsMapLayer: using colorCategories requires specifying a field to use, using using colorByField');
+                        console.error('odsMapLayer: using colorCategories requires specifying a field to use, using colorByField');
                     }
                     color = {
                         type: 'categories',
@@ -20233,6 +21555,20 @@ mod.directive('infiniteScroll', [
                     if (scope.colorCategoriesOther) {
                         color.otherCategories = scope.colorCategoriesOther;
                     }
+                } else if (scope.colorGradient) {
+                    color = {
+                        type: 'gradient',
+                        steps: scope.colorGradient
+                    };
+                } else if (scope.colorNumericRanges) {
+                    if (!scope.colorByField) {
+                        console.error('odsMapLayer: using colorNumericRanges requires specifying a field to use, using colorByField');
+                    }
+                    color = {
+                        type: 'choropleth',
+                        field: scope.colorByField,
+                        ranges: scope.colorNumericRanges
+                    };
                 } else if (scope.colorByField) {
                     color = {
                         type: 'field',
@@ -21360,7 +22696,7 @@ mod.directive('infiniteScroll', [
                     }
                 });
             }
-        }
+        };
     }]);
 })();
 ;(function() {
@@ -22294,7 +23630,7 @@ mod.directive('infiniteScroll', [
 
                 return spinner;
             }
-        }
+        };
     }]);
 })();
 ;(function() {
@@ -22346,10 +23682,10 @@ mod.directive('infiniteScroll', [
                        '                 ng-click="toggleSort(field)"' +
                        '                 >' +
                        '                 <div class="odswidget-table__header-cell-container">' +
-                       '                     <span ng-bind="field.label"></span>' +
+                       '                     <div class="odswidget-table__label" ng-bind="field.label"></div>' +
                        '                     <div ng-class="{\'odswidget-table__sort-icons\': true, \'odswidget-table__sort-icons--active\': field.name == context.parameters.sort || \'-\'+field.name == context.parameters.sort}" ng-show="isFieldSortable(field)" title="sort" translate="title">' +
-                       '                         <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true" ng-hide="isAscendingSorted(field)"></i>' +
-                       '                         <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true" ng-hide="isDescendingSorted(field)"></i>' +
+                       '                         <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true" ng-class="{\'odswidget-table__sort-icons__up--active\': isDescendingSorted(field)}"></i>' +
+                       '                         <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true" ng-class="{\'odswidget-table__sort-icons__down--active\': isAscendingSorted(field)}"></i>' +
                        '                     </div>' +
                        '                 </div>' +
                        '             </th>' +
@@ -22494,7 +23830,7 @@ mod.directive('infiniteScroll', [
                             }
                         });
 
-                    };
+                    }
 
                     ODSAPI.records.search($scope.context, options, timeout.promise).
                         success(function(data, status, headers, config) {
@@ -23954,8 +25290,8 @@ mod.directive('infiniteScroll', [
 
                 scope.$watch('odsToggleModel[odsToggleKey]', function(nv) {
                     if (nv) {
-                        if ((angular.isArray(nv) && nv.indexOf(scope.odsToggleValue) >= 0)
-                            || (!angular.isArray(nv) && nv.split(',').indexOf(scope.odsToggleValue)>=0)) {
+                        if ((angular.isArray(nv) && nv.indexOf(scope.odsToggleValue) >= 0) ||
+                                (!angular.isArray(nv) && nv.split(',').indexOf(scope.odsToggleValue)>=0)) {
                             // Check
                             element.prop('checked', true);
                         } else if (angular.equals(nv, scope.odsToggleValue)) {
@@ -24044,7 +25380,11 @@ mod.directive('infiniteScroll', [
          * @param {number} [width=300] Forces the width of the Twitter timeline widget.
          * @param {number} [height=600] Forces the height of the Twitter timeline widget.
          * @description
-         * Integrates a Twitter "widget" using the widget ID provided by Twitter.
+         * Note: this twitter works with the former Twitter Widget system, which provided an ID, and was available until
+         * late 2016. Newly created Twitter Widgets are not supported, and can usually directly be integrated in pages
+         * by pasting the code given by Twitter.
+         *
+         * This widget integrates a Twitter "widget" using the widget ID provided by Twitter.
          *
          * @example
          *  <example module="ods-widgets">
@@ -24217,7 +25557,7 @@ mod.directive('infiniteScroll', [
                     compiledTemplate = $compile(template);
 
                     return compiledTemplate(newScope);
-                }
+                };
             }]
         };
     }]);

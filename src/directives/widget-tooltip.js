@@ -74,7 +74,7 @@
                     compiledTemplate = $compile(template);
 
                     return compiledTemplate(newScope);
-                }
+                };
             }]
         };
     }]);

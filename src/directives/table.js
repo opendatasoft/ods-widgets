@@ -47,10 +47,10 @@
                        '                 ng-click="toggleSort(field)"' +
                        '                 >' +
                        '                 <div class="odswidget-table__header-cell-container">' +
-                       '                     <span ng-bind="field.label"></span>' +
+                       '                     <div class="odswidget-table__label" ng-bind="field.label"></div>' +
                        '                     <div ng-class="{\'odswidget-table__sort-icons\': true, \'odswidget-table__sort-icons--active\': field.name == context.parameters.sort || \'-\'+field.name == context.parameters.sort}" ng-show="isFieldSortable(field)" title="sort" translate="title">' +
-                       '                         <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true" ng-hide="isAscendingSorted(field)"></i>' +
-                       '                         <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true" ng-hide="isDescendingSorted(field)"></i>' +
+                       '                         <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true" ng-class="{\'odswidget-table__sort-icons__up--active\': isDescendingSorted(field)}"></i>' +
+                       '                         <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true" ng-class="{\'odswidget-table__sort-icons__down--active\': isAscendingSorted(field)}"></i>' +
                        '                     </div>' +
                        '                 </div>' +
                        '             </th>' +
@@ -195,7 +195,7 @@
                             }
                         });
 
-                    };
+                    }
 
                     ODSAPI.records.search($scope.context, options, timeout.promise).
                         success(function(data, status, headers, config) {

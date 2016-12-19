@@ -18,7 +18,7 @@
                     for (var i = 0; i < data.length; i++) {
                         shape = data[i];
                         MapLayerHelper.drawShape(layerConfig, map, shape.geometry, null, layerGroup, shape.geo_digest);
-                    };
+                    }
                     deferred.resolve(layerGroup);
                 });
                 return deferred.promise;

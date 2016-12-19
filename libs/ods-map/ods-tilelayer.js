@@ -120,7 +120,7 @@ L.ODSTileLayer = L.TileLayer.extend({
             };
             L.TileLayer.prototype.initialize.call(this, stamenUrl, layerOptions);
         } else if (basemap.provider.startsWith('jawg.') || basemap.provider === 'mapquest') {
-            var jawgUrl = 'https://tile.jawg.io/';
+            var jawgUrl = 'https://tiles.jawg.io/';
 
             if (basemap.provider !== 'mapquest') {
                 var jawgMap = basemap.provider.substring(5);

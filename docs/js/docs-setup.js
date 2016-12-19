@@ -114,6 +114,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsCrossTable",
+      "shortName": "odsCrossTable",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget create a cross table from a context.",
+      "keywords": "aggregate aggregations analysis api average averagewages averagewages-dataset avg column comma-separated context count create cross data dataset decimals directive display displayed extracted field fields function header headers html intermediary label list location module multiple names number ods-widgets oecd-average-wages repeat row rows serie serie-production-expr serie-production-func serie-production-label seriexxxexpr seriexxxfunc seriexxxlabel single subaverages subtotals supports table time values wages widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsDatasetCard",
       "shortName": "odsDatasetCard",
       "type": "directive",
@@ -513,8 +522,8 @@ NG_DOCS={
       "shortName": "odsTwitterTimeline",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Integrates a Twitter &quot;widget&quot; using the widget ID provided by Twitter.",
-      "keywords": "api directive forces height html https identifier integrate integrates module ods-widgets provided timeline twitter widget widget-id widgetid width"
+      "shortDescription": "Note: this twitter works with the former Twitter Widget system, which provided an ID, and was available until",
+      "keywords": "api code created directive directly forces height html https identifier integrate integrated integrates late module newly note ods-widgets pasting provided supported system timeline twitter widget widget-id widgetid widgets width works"
     },
     {
       "section": "api",

@@ -152,6 +152,6 @@
                     animationHelpers[scope.displayMode].setup();
                 });
             }
-        }
+        };
     }]);
 })();

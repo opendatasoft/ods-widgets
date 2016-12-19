@@ -46,9 +46,10 @@
                         //"L.UtfGrid@libs/leaflet-utfgrid/leaflet.utfgrid.js",
                         "L.Draw@libs/leaflet-draw/leaflet.draw.js",
                         //"L.BundleTileLayer@libs/ods-bundletilelayer/bundletilelayer.js",
-                        "QuadTree@libs/leaflet-heatmap/QuadTree.js",
-                        "h337@libs/leaflet-heatmap/heatmap-backend.js",
-                        "L.TileLayer.HeatMap@libs/leaflet-heatmap/heatmap-leaflet.js"
+                        //"QuadTree@libs/leaflet-heatmap/QuadTree.js",
+                        //"h337@libs/leaflet-heatmap/heatmap-backend.js",
+                        //"L.TileLayer.HeatMap@libs/leaflet-heatmap/heatmap-leaflet.js"
+                        "L.HeatLayer@libs/leaflet-heat/leaflet-heat.js"
                     ]
                 ]
             },

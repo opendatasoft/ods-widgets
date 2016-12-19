@@ -9,6 +9,9 @@
                 // A record may only be colored if there is a configured field to color it from
                 // Aggregation results may be colored from their values
                 var value, color;
+                if (angular.isUndefined(layerConfig.color)) {
+                    return "#C32D1C";
+                }
                 if (angular.isString(layerConfig.color)) {
                     return layerConfig.color;
                 } else if (layerConfig.color.type === 'range') {
@@ -41,6 +44,27 @@
                     } catch (err) {
                         return '#000000';
                     }
+                } else if (layerConfig.color.type === 'choropleth') {
+                    value = record && record.fields && record.fields[layerConfig.color.field];
+                    if (angular.isUndefined(value)) {
+                        return '#000000';
+                    }
+                    if (!angular.isNumber(value)) {
+                        // TODO: Handle using an "other values" option?
+                        console.warn(value, 'is not a numeric value to display in choropleth mode.');
+                        return '#000000';
+                    }
+                    var rangesUpperBounds = Object.keys(layerConfig.color.ranges)
+                            .map(function(b) { return parseFloat(b); })
+                            .sort(function(a, b) { return a - b; });
+                    var i = 0;
+                    for (i=0; i<rangesUpperBounds.length; i++) {
+                        if (value <= rangesUpperBounds[i]) {
+                            return layerConfig.color.ranges[rangesUpperBounds[i]];
+                        }
+                    }
+                    // If higher than the last option, use it anyway
+                    return layerConfig.color.ranges[rangesUpperBounds[rangesUpperBounds.length-1]];
                 } else {
                     // Scale is not supported for records (yet?)
                     console.error('Scale coloring is not supported for simple records');
@@ -48,6 +72,9 @@
                 }
             },
             getClusterColor: function(cluster, layerConfig) {
+                if (angular.isUndefined(layerConfig.color)) {
+                    return "#C32D1C";
+                }
                 if (angular.isString(layerConfig.color)) {
                     return layerConfig.color;
                 } else {
@@ -56,6 +83,9 @@
             },
             getColor: function(value, layerConfig, min, max, scaleSteps) {
                 scaleSteps = scaleSteps || 10;
+                if (angular.isUndefined(layerConfig.color)) {
+                    return "#C32D1C";
+                }
                 if (angular.isString(layerConfig.color)) {
                     if (angular.isDefined(min) && angular.isDefined(max)) {
                         return chroma.scale([chroma(layerConfig.color).brighten(50), layerConfig.color]).domain([min, max], Math.min(10, scaleSteps), layerConfig.colorFunction).out('hex')(value);

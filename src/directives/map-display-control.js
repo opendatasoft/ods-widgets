@@ -30,7 +30,6 @@
                     return group.description || stripTags(group.layers[0].context.dataset.metas.description);
                 };
                 $scope.toggleGroup = function(group) {
-                    console.log('singler layer', $scope.singleLayer);
                     if (!$scope.singleLayer) {
                         group.displayed = !group.displayed;
                     } else {

@@ -218,7 +218,7 @@
                     $q.all(searches).then(function(results) {
                         $scope.dataSearchWorking = false;
 
-                        $scope.dataSearchResults = $scope.dataSearchResults.filter(function(r) { return r.nhits > 0});
+                        $scope.dataSearchResults = $scope.dataSearchResults.filter(function(r) { return r.nhits > 0; });
 
                         $scope.datasetSearchDatasetsCount = Object.keys($scope.dataSearchResults).length;
 

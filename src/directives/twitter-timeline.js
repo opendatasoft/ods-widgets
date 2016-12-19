@@ -13,7 +13,11 @@
          * @param {number} [width=300] Forces the width of the Twitter timeline widget.
          * @param {number} [height=600] Forces the height of the Twitter timeline widget.
          * @description
-         * Integrates a Twitter "widget" using the widget ID provided by Twitter.
+         * Note: this twitter works with the former Twitter Widget system, which provided an ID, and was available until
+         * late 2016. Newly created Twitter Widgets are not supported, and can usually directly be integrated in pages
+         * by pasting the code given by Twitter.
+         *
+         * This widget integrates a Twitter "widget" using the widget ID provided by Twitter.
          *
          * @example
          *  <example module="ods-widgets">

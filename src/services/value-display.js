@@ -20,6 +20,8 @@
                         return '<i class="odswidget-facet__value-icon fa fa-picture-o"></i> ' + translate('Image');
                     case 'api':
                         return '<i class="odswidget-facet__value-icon fa fa-cogs"></i> ' + translate('API');
+                    case 'custom_view':
+                        return '<i class="odswidget-facet__value-icon fa fa-tachometer"></i> ' + translate('Custom view');
                     default:
                         return value;
 

@@ -7,21 +7,10 @@
         return {
             render: function (layerConfig, map, timeout) {
                 var deferred = $q.defer();
-                var heatmapLayer = L.TileLayer.heatMap({
-                    zIndex: 10,
-                    radius: {
-                        absolute: false,
-                        value: 20
-                    },
-                    opacity: 0.8,
-                    gradient: {
-                        0.45: "rgb(0,0,255)",
-                        0.55: "rgb(0,255,255)",
-                        0.65: "rgb(0,255,0)",
-                        0.95: "yellow",
-                        1.0: "rgb(255,0,0)"
-                    }
-                });
+                var heatmapOptions = {};
+                if (angular.isObject(layerConfig.color) && layerConfig.color.type === 'gradient' && layerConfig.color.steps) {
+                    heatmapOptions.gradient = layerConfig.color.steps;
+                }
                 var parameters = angular.extend({}, layerConfig.context.parameters, {
                     'clustermode': 'heatmap',
                     'clusterdistance': 15,
@@ -38,22 +27,30 @@
                     // Display the clusters
                     var records = data.clusters;
 
-                    heatmapLayer.options.radius.value = Math.min((1 / data.clusters.length) * 4000 + 20, 50);
+                    //heatmapLayer.options.radius.value = Math.min((1 / data.clusters.length) * 4000 + 20, 50);
+
+                    heatmapOptions.radius = Math.min((1 / data.clusters.length) * 4000 + 20, 50);
+
+                    var min = MapLayerHelper.getClusterMin(data, layerConfig);
+                    var max = MapLayerHelper.getClusterMax(data, layerConfig);
 
                     var heatmapData = [];
                     for (var i = 0; i < records.length; i++) {
                         var record = records[i];
                         var clusterValue = MapLayerHelper.getClusterValue(record, layerConfig);
                         if (clusterValue !== null) {
-                            heatmapData.push({
-                                lat: record.cluster_center[0],
-                                lon: record.cluster_center[1],
-                                value: MapLayerHelper.getClusterValue(record, layerConfig) - MapLayerHelper.getClusterMin(data, layerConfig) + 1 // FIXME: the 1 should be proportional (and if the min is really 0 then it is false)
-                            });
+                            var ratio = ODS.CalculationUtils.getValueOnScale(clusterValue, min, max, layerConfig.sizeFunction);
+
+                            heatmapData.push([
+                                record.cluster_center[0],
+                                record.cluster_center[1],
+                                ratio
+                            ]);
                         }
                     }
+                    var heatmapLayer = null;
                     if (heatmapData.length > 0) {
-                        heatmapLayer.setData(heatmapData);
+                        heatmapLayer = L.heatLayer(heatmapData, heatmapOptions);
                     }
                     deferred.resolve(heatmapLayer);
                 });

@@ -6,9 +6,13 @@
     mod.factory('MapHelper', ['ODSWidgetsConfig', 'ODSAPI', '$q', function (ODSWidgetsConfig, ODSAPI, $q) {
         var locationAccuracy = 5;
         var locationDelimiter = ',';
+        var defaultMarkerColor = "#C32D1C";
+        var defaultRangeColors = ["#FC9272", "#A5211B"];
 
         return {
             WORLD_BOUNDS: [[-60, -180], [80, 180]],
+            DEFAULT_MARKER_COLOR: defaultMarkerColor,
+            DEFAULT_RANGE_COLORS: defaultRangeColors,
             retrieveBounds: function (contextList) {
                 var service = this;
                 /* Retrieves a bounding box that includes all the data visible from the context list */
@@ -172,7 +176,7 @@
                         }
                     }
 
-                    layer.color = layer.color || layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || "#C32D1C";
+                    layer.color = layer.color || layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || defaultMarkerColor;
                     layer.picto = layer.picto || layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
                     if (layer.marker) {
                         layer.size = layer.size || 4;

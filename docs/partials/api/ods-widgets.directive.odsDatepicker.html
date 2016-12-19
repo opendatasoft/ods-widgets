@@ -1,0 +1,51 @@
+<h1><code ng:non-bindable="">odsDatepicker</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">ods-widgets</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><p>This widget displays a field for the user to select a date</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-datepicker
+       ng-model="{Number}"
+       format="{string}"
+       separators="{Array}"
+       locale="{string}"
+       enable-time="{Boolean}"
+       placeholder="{string}"
+       is-disabled="{Boolean}"
+       is-readonly="{Boolean}"
+       disabled-dates="{Array}"
+       min-date="{Date}"
+       max-date="{Date}"&gt;
+&lt;/ods-datepicker&gt;</pre>
+<h3 id="usage_directive-info">Directive info</h3>
+<div class="directive-info"><ul><li>This directive creates new scope.</li>
+</ul>
+</div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>ngModel</td><td><a href="" class="label type-hint type-hint-number">Number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><p>The model this directive must use. It will be a javascript date</p>
+</div></td></tr><tr><td>format</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><p>Force the datepicker to use a custom format. Every moment.js formats can be used if the formatted value has always the same length. It must be used with &#39;separators&#39;</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>separators</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><p>An array of string representing the separators (or delimiters) in the specified format. It is used for caret manipulation</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>locale</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><p>Force a specific locale to be used</p>
+</div> <p><em>(default: 'en')</em></p></td></tr><tr><td>enableTime</td><td><a href="" class="label type-hint type-hint-boolean">Boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><p>Display the time picker for hours/minutes selection</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>placeholder</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><p>The input field placeholder to use. By default, it displays the date format.</p>
+</div> <p><em>(default: format)</em></p></td></tr><tr><td>isDisabled</td><td><a href="" class="label type-hint type-hint-boolean">Boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><p>Specify if this date picker is disabled</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>isReadonly</td><td><a href="" class="label type-hint type-hint-boolean">Boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><p>Specify if this date picker is readonly</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>disabledDates</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><p>An array of javascript date which will be disabled for selection</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>minDate</td><td><a href="" class="label type-hint type-hint-date">Date</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><p>The minimum date available for selection</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>maxDate</td><td><a href="" class="label type-hint type-hint-date">Date</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><p>The maximum date available for selection</p>
+</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsdatepicker-page"><h4 id="example_source">Source</h4>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-7" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html-7" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-7">
+     <ods-datepicker ng-model="date" locale="en" enable-time="true"></ods-datepicker>
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-7" ng-eval-javascript=""></div>
+</div></div>
+</div>

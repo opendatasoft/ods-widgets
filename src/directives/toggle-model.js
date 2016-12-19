@@ -109,8 +109,8 @@
 
                 scope.$watch('odsToggleModel[odsToggleKey]', function(nv) {
                     if (nv) {
-                        if ((angular.isArray(nv) && nv.indexOf(scope.odsToggleValue) >= 0)
-                            || (!angular.isArray(nv) && nv.split(',').indexOf(scope.odsToggleValue)>=0)) {
+                        if ((angular.isArray(nv) && nv.indexOf(scope.odsToggleValue) >= 0) ||
+                                (!angular.isArray(nv) && nv.split(',').indexOf(scope.odsToggleValue)>=0)) {
                             // Check
                             element.prop('checked', true);
                         } else if (angular.equals(nv, scope.odsToggleValue)) {

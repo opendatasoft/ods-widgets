@@ -46,12 +46,13 @@
              */
             // The container is shared between directives to avoid performance issues
             var container = angular.element('<div id="odswidget-geotooltip" class="odswidget" style="opacity: 0; transition: opacity 200ms ease-out; position: fixed; z-index: 40000; visibility: hidden;"></div>');
-            var map = null;
-            var layerGroup = null;
+            var map = null,
+                layerGroup = null;
 
             var displayTooltip = function(tippedElement, width, height, coords, geoJson, record) {
                 // Make the container the right size
-                var resized = false;
+                var resized = false,
+                    geoJsonLayer;
                 if (width !== container.css('width') || height !== container.css('height')) {
                     resized = true;
                 }
@@ -105,13 +106,13 @@
                     if (angular.isString(geoJson)) {
                         geoJson = angular.fromJson(geoJson);
                     }
-                    var geoJsonLayer = L.geoJson(geoJson);
+                    geoJsonLayer = L.geoJson(geoJson);
                     layerGroup.addLayer(geoJsonLayer);
                     bounds.extend(geoJsonLayer.getBounds());
                 }
 
                 if (record && angular.isDefined(record.geometry)) {
-                    var geoJsonLayer = L.geoJson(record.geometry);
+                    geoJsonLayer = L.geoJson(record.geometry);
                     layerGroup.addLayer(geoJsonLayer);
                     bounds.extend(geoJsonLayer.getBounds());
                 }

@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.0.8 - 2016-12-19
+### Added
+- `odsCrossTable`: new visualisation that allows a representation of datasets data in a pivot table like formatting
+- `odsMap`: new choropleth mode for map rendering 
+
+### Fixed
+- `odsTwitterTimeline`: deprecate the old Twitter widget system and promote the new Twitter widgets
+- `odsTable`: display sort icons even with long field names
+- `odsMap`: various fixes
+- some JS linting
+
 ## 1.0.7 - 2016-11-29
 ### Added
 - `odsFilterSummary`: proper support for drawn areas on maps

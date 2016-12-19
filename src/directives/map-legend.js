@@ -110,7 +110,7 @@
 
                     $scope.mapConfig.groups.forEach(function(group) {
                         group.layers.forEach(function(layer) {
-                            if (layer.caption && (angular.isString(layer.color) || layer.color.type !== 'field')) {
+                            if (layer.caption && (angular.isString(layer.color) || (layer.color.type !== 'field' && layer.color.type !== 'gradient' && layer.color.type !== 'choropleth'))) {
                                 layers.push(layer);
                             }
                         });
