@@ -44,8 +44,9 @@ etc...</p>
 <div class="tabbable"><div class="tab-pane" title="index.html">
 <pre class="prettyprint linenums" ng-set-text="index.html-6" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
 <script type="text/ng-template" id="index.html-6">
-    <ods-dataset-context  context="averagewages"
-                          averagewages-dataset="oecd-average-wages@public-us">
+    <ods-dataset-context context="averagewages"
+                         averagewages-domain="https://data.opendatasoft.com"
+                         averagewages-dataset="oecd-average-wages@public-us">
         <ods-cross-table context="averagewages"
                          rows="location"
                          column="time"

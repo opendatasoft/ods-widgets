@@ -32,8 +32,9 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context  context="averagewages"
-         *                                averagewages-dataset="oecd-average-wages@public-us">
+         *          <ods-dataset-context context="averagewages"
+         *                               averagewages-domain="https://data.opendatasoft.com"
+         *                               averagewages-dataset="oecd-average-wages@public-us">
          *              <ods-cross-table context="averagewages"
          *                               rows="location"
          *                               column="time"

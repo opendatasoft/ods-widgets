@@ -119,7 +119,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget create a cross table from a context.",
-      "keywords": "aggregate aggregations analysis api average averagewages averagewages-dataset avg column comma-separated context count create cross data dataset decimals directive display displayed extracted field fields function header headers html intermediary label list location module multiple names number ods-widgets oecd-average-wages repeat row rows serie serie-production-expr serie-production-func serie-production-label seriexxxexpr seriexxxfunc seriexxxlabel single subaverages subtotals supports table time values wages widget"
+      "keywords": "aggregate aggregations analysis api average averagewages averagewages-dataset averagewages-domain avg column comma-separated context count create cross data dataset decimals directive display displayed extracted field fields function header headers html https intermediary label list location module multiple names number ods-widgets oecd-average-wages opendatasoft repeat row rows serie serie-production-expr serie-production-func serie-production-label seriexxxexpr seriexxxfunc seriexxxlabel single subaverages subtotals supports table time values wages widget"
     },
     {
       "section": "api",

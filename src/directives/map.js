@@ -973,7 +973,7 @@
                                     var parts = nv.coordinates.split(',');
                                     var lat = parts[0],
                                         lng = parts[1],
-                                        radius = parts[2];
+                                        radius = parts[2] || 0;
                                     drawn = new L.Circle([lat, lng], radius, drawableStyle);
                                 }
 

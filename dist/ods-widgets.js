@@ -13600,8 +13600,9 @@ mod.directive('infiniteScroll', [
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context  context="averagewages"
-         *                                averagewages-dataset="oecd-average-wages@public-us">
+         *          <ods-dataset-context context="averagewages"
+         *                               averagewages-domain="https://data.opendatasoft.com"
+         *                               averagewages-dataset="oecd-average-wages@public-us">
          *              <ods-cross-table context="averagewages"
          *                               rows="location"
          *                               column="time"
@@ -21292,7 +21293,7 @@ mod.directive('infiniteScroll', [
                                     var parts = nv.coordinates.split(',');
                                     var lat = parts[0],
                                         lng = parts[1],
-                                        radius = parts[2];
+                                        radius = parts[2] || 0;
                                     drawn = new L.Circle([lat, lng], radius, drawableStyle);
                                 }
 
