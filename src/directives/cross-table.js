@@ -56,7 +56,7 @@
          * * D will be used as colField
          * * E will be used to define two series, SUM_E and AVG_E
          */
-        var CrossTable = function (rowFields, colField, series, schema, repeatRowHeaders, displayIntermediaryResults, numberPrecision) {
+        var CrossTable = function (rowFields, colField, series, schema, dataset, repeatRowHeaders, displayIntermediaryResults, numberPrecision) {
 
             /**
              * Array of field names which values will be used as row headers.
@@ -75,6 +75,12 @@
              * @type {{}}
              */
             this.schema = schema;
+
+            /**
+             * Dataset related to the given schema (useful for helpers)
+             * @type {{}}
+             */
+            this.dataset = dataset;
 
             /**
              * Array of Serie objects
@@ -124,7 +130,7 @@
              * Helper able to generate a label from an analysisValue
              * @type {LabelBuilder}
              */
-            this.labelBuilder = new LabelBuilder(this.schema, this.rowFields, this.colField);
+            this.labelBuilder = new LabelBuilder(this.dataset, this.schema, this.rowFields, this.colField);
 
             /**
              * Number of decimals use in formatting numbers
@@ -135,14 +141,14 @@
             this.setData = function (columnHeadersAnalysis, rowHeadersAnalyses, analyses) {
                 this.resetData();
 
-                this.buildColNumbersIndexes(columnHeadersAnalysis);
-                this.buildRowNumbersIndexes(rowHeadersAnalyses);
+                this.buildColNumbersIndexes(columnHeadersAnalysis, false);
+                this.buildRowNumbersIndexes(rowHeadersAnalyses, this.rowFields.length > 1);
 
                 this.buildTableStructure(rowHeadersAnalyses);
 
-                this.buildTableColumnHeaders(columnHeadersAnalysis);
-                this.buildTableRowHeaders(rowHeadersAnalyses);
-                this.buildTableBody(analyses);
+                this.buildTableColumnHeaders(columnHeadersAnalysis, false);
+                this.buildTableRowHeaders(rowHeadersAnalyses, this.rowFields.length > 1);
+                this.buildTableBody(analyses, true);
             };
 
             this.resetData = function () {
@@ -169,18 +175,18 @@
                 this.table = [];
             };
 
-            this.buildColNumbersIndexes = function (colValues) {
+            this.buildColNumbersIndexes = function (colValues, isMultiXAnalysis) {
                 for (var i = 0; i < colValues.length; i++) {
                     var index = {};
                     for (var j = 0; j < this.series.length; j++) {
                         var serieName = this.series[j].name;
                         index[serieName] = i * this.series.length + j;
                     }
-                    this.colNumbersIndex[this.labelBuilder.buildLabel(colValues[i], this.colField)] = index;
+                    this.colNumbersIndex[this.labelBuilder.buildLabel(colValues[i], this.colField, isMultiXAnalysis)] = index;
                 }
             };
 
-            this.buildRowNumbersIndexes = function (analyses) {
+            this.buildRowNumbersIndexes = function (analyses, isMultiXAnalysis) {
                 var analysisValues = analyses[analyses.length - 1];
                 var currentRowNumber = 0;
                 var rowNumbersIndex = this.rowNumbersIndexes[0];
@@ -190,14 +196,14 @@
                     if (this.displayIntermediaryResults) {
                         for (var j = 0; j < this.rowFields.length; j++) {
                             rowNumbersIndex = this.rowNumbersIndexes[j];
-                            if (rowNumbersIndex.getRowNumber(analysisValue) === undefined) {
-                                rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber);
+                            if (rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis) === undefined) {
+                                rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber, isMultiXAnalysis);
                                 currentRowNumber++;
                             }
                         }
                     } else {
-                        if (rowNumbersIndex.getRowNumber(analysisValue) === undefined) {
-                            rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber);
+                        if (rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis) === undefined) {
+                            rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber, isMultiXAnalysis);
                             currentRowNumber++;
                         }
 
@@ -233,7 +239,7 @@
             };
 
 
-            this.buildTableColumnHeaders = function (colValues) {
+            this.buildTableColumnHeaders = function (colValues, isMultiXAnalysis) {
                 var that = this;
                 var row;
 
@@ -246,7 +252,7 @@
                         row.push(new Cell('', 'ods-cross-table__cell--header'))
                     });
                     angular.forEach(colValues, function (colValue) {
-                        row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField), 'ods-cross-table__cell--header', nbSeries));
+                        row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField, isMultiXAnalysis), 'ods-cross-table__cell--header', nbSeries));
                     });
                     this.table[0] = row;
 
@@ -269,21 +275,21 @@
                         row.push(new Cell(that.schema[fieldName].label, 'ods-cross-table__cell--header'))
                     });
                     angular.forEach(colValues, function (colValue) {
-                        row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField), 'ods-cross-table__cell--header'));
+                        row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField, isMultiXAnalysis), 'ods-cross-table__cell--header'));
                     });
                     this.table[0] = row;
                 }
             };
 
-            this.buildTableRowHeaders = function (analyses) {
+            this.buildTableRowHeaders = function (analyses, isMultiXAnalysis) {
                 var that = this;
                 angular.forEach(analyses, function (analysisValues, analysisIndex) {
                     angular.forEach(analysisValues, function (analysisValue) {
-                        var rowNumber = that.getRowNumber(analysisValue, analysisIndex) + Math.min(2, that.series.length);
+                        var rowNumber = that.getRowNumber(analysisValue, analysisIndex, isMultiXAnalysis) + Math.min(2, that.series.length);
                         var end = that.displayIntermediaryResults ? analysisIndex + 1 : that.rowFields.length;
                         for (var i = 0; i < end; i++) {
                             var fieldName = that.rowFields[i];
-                            var label = that.labelBuilder.buildLabel(analysisValue, fieldName);
+                            var label = that.labelBuilder.buildLabel(analysisValue, fieldName, isMultiXAnalysis);
                             if (i === that.rowFields.length - 1 || that.repeatRowHeaders || that._insertedRowHeaders[fieldName].indexOf(label) === -1) {
                                 that.table[rowNumber][i] = new Cell(label, 0, 'ods-cross-table__cell--header');
                                 that._insertedRowHeaders[fieldName].push(label);
@@ -293,34 +299,35 @@
                 });
             };
 
-            this.buildTableBody = function (analyses) {
+            this.buildTableBody = function (analyses, isMultiXAnalysis) {
                 var that = this;
                 angular.forEach(analyses, function (analysisValues, analysisIndex) {
                     angular.forEach(analysisValues, function (analysisValue) {
                         angular.forEach(that.series, function (serie) {
                             // row index is corrected by the number of col headers in the table
-                            var row = that.getRowNumber(analysisValue, analysisIndex) + Math.min(2, that.series.length);
+                            var row = that.getRowNumber(analysisValue, analysisIndex, isMultiXAnalysis) + Math.min(2, that.series.length);
                             // col index is corrected by the number of row headers in the table
-                            var col = that.getColNumber(analysisValue, serie.name) + that.rowFields.length;
+                            var col = that.getColNumber(analysisValue, serie.name, isMultiXAnalysis) + that.rowFields.length;
                             that.table[row][col] = new Cell($filter('number')(analysisValue[serie.name], that.numberPrecision), 'ods-cross-table__cell--value');
                         });
                     });
                 });
             };
 
-            this.getColNumber = function (analysisValue, serieName) {
-                return this.colNumbersIndex[this.labelBuilder.buildLabel(analysisValue, this.colField)][serieName];
+            this.getColNumber = function (analysisValue, serieName, isMultiXAnalysis) {
+                return this.colNumbersIndex[this.labelBuilder.buildLabel(analysisValue, this.colField, isMultiXAnalysis)][serieName];
             };
 
-            this.getRowNumber = function (analysisValue, analysisIndex) {
+            this.getRowNumber = function (analysisValue, analysisIndex, isMultiXAnalysis) {
                 var rowNumbersIndex = this.rowNumbersIndexes[analysisIndex];
-                return rowNumbersIndex.getRowNumber(analysisValue);
+                return rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis);
             };
 
             return this;
         };
 
-        var LabelBuilder = function (schema, rowFields, colField) {
+        var LabelBuilder = function (dataset, schema, rowFields, colField) {
+            this.dataset = dataset;
             this.schema = schema;
             this.rowFields = rowFields;
             this.colField = colField;
@@ -333,10 +340,11 @@
                 return xValue;
             };
 
-            this.buildLabel = function (analysisValue, field) {
-                if (angular.isObject(analysisValue.x) && field in analysisValue.x) {
+            this.buildLabel = function (analysisValue, field, isMultiXAnalysis) {
+                if (isMultiXAnalysis) {
                     return this.formatXValue(analysisValue.x[field]);
                 }
+
                 return this.formatXValue(analysisValue.x);
             };
 
@@ -431,11 +439,11 @@
 
             this.rowNumbers = {};
 
-            this.getRowNumber = function (analysisValue) {
+            this.getRowNumber = function (analysisValue, isMultiXAnalysis) {
                 var rowNumber = this.rowNumbers;
                 for (var i = 0; i < this.depth; i++) {
                     var rowField = this.rowFields[i];
-                    var label = this.labelBuilder.buildLabel(analysisValue, rowField);
+                    var label = this.labelBuilder.buildLabel(analysisValue, rowField, isMultiXAnalysis);
                     rowNumber = rowNumber[label];
                     if (rowNumber === undefined) {
                         return undefined;
@@ -444,10 +452,10 @@
                 return rowNumber;
             };
 
-            this.setRowNumber = function (analysisValue, rowNumber) {
+            this.setRowNumber = function (analysisValue, rowNumber, isMultiXAnalysis) {
                 for (var i = this.depth - 1; i >= 0; i--) {
                     var rowField = this.rowFields[i];
-                    var label = this.labelBuilder.buildLabel(analysisValue, rowField);
+                    var label = this.labelBuilder.buildLabel(analysisValue, rowField, isMultiXAnalysis);
                     var tmp = {}; // necessary because we can't do rowNumber = {label: rowNumber}
                     tmp[label] = rowNumber;
                     rowNumber = tmp;
@@ -566,6 +574,21 @@
 
                 // fetch data
 
+                var buildX = function (fieldNames) {
+                    fieldNames = angular.isArray(fieldNames) ? fieldNames : [fieldNames];
+                    var xs = [];
+                    angular.forEach(fieldNames, function (fieldName) {
+                        var fieldSchema = scope.context.dataset.getField(fieldName);
+                        if (['date', 'datetime'].indexOf(fieldSchema.type) > -1) {
+                            var timescale = scope.context.dataset.getFieldAnnotation(fieldSchema, 'timeserie_precision').args[0];
+                            xs = xs.concat(ODS.DateFieldUtils.getTimescaleX(fieldName, timescale))
+                        } else {
+                            xs.push(fieldName);
+                        }
+                    });
+                    return xs;
+                };
+
                 var buildSort = function (fieldNames) {
                     if (!angular.isArray(fieldNames)) {
                         fieldNames = [fieldNames];
@@ -578,31 +601,37 @@
                 var reloadData = function () {
                     scope.loading = true;
                     var promises = [];
+
                     // fetch values for column headers
-                    promises.push(ODSAPI.records.analyze(scope.context, angular.extend({}, scope.context.parameters, {
-                        'x': crossTable.colField,
+                    var columnXs = buildX(crossTable.colField);
+                    var columnHeadersParams = {
+                        'x': columnXs,
                         'y.serie1.func': 'COUNT',
-                        'sort': buildSort(crossTable.colField)
-                    })));
+                        'sort': buildSort(columnXs)
+                    };
+
+                    promises.push(ODSAPI.records.analyze(scope.context, angular.extend({}, scope.context.parameters, columnHeadersParams)));
 
                     var rowHeadersPromises = [];
                     var seriesPromises = [];
                     for (var i = scope.displayIntermediaryResults ? 0 : crossTable.rowFields.length - 1; i < crossTable.rowFields.length; i++) {
                         var subfields = crossTable.rowFields.slice(0, i+1);
-                        var options;
+                        var options, xs;
 
                         // fetch values for row headers
+                        xs = buildX(subfields);
                         options = angular.extend({}, scope.context.parameters, {
-                            'x': subfields,
+                            'x': xs,
                             'y.serie1.func': 'COUNT',
-                            'sort': buildSort(subfields)
+                            'sort': buildSort(xs)
                         });
                         rowHeadersPromises.push(ODSAPI.records.analyze(scope.context, options));
 
                         // fetch values for series
+                        xs = buildX(subfields.concat(crossTable.colField));
                         options = angular.extend({}, scope.context.parameters, {
-                            'x': subfields.concat(crossTable.colField),
-                            'sort': buildSort(subfields.concat(crossTable.colField))
+                            'x': xs,
+                            'sort': buildSort(xs)
                         });
                         angular.forEach(crossTable.series, function (serie) {
                             options['y.' + serie.name + '.expr'] = serie.expr;
@@ -717,7 +746,15 @@
                     if (!angular.isDefined(scope.numberPrecision)) {
                         scope.numberPrecision = 3;
                     }
-                    crossTable = new CrossTable(rows, scope.column, buildSeries(), buildFieldSchemas(), scope.repeatRowHeaders === true, scope.displayIntermediaryResults === true, scope.numberPrecision);
+                    crossTable = new CrossTable(
+                        rows,
+                        scope.column,
+                        buildSeries(),
+                        buildFieldSchemas(),
+                        scope.context.dataset,
+                        scope.repeatRowHeaders === true,
+                        scope.displayIntermediaryResults === true,
+                        scope.numberPrecision);
                     scope.$watch('context.parameters', reloadData);
                 });
             }

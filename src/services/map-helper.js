@@ -136,6 +136,8 @@
                     if (display === 'raw') {
                         display = 'none';
                     }
+                    // Also converts the size to an int, if it was a string
+                    config.size = Math.min(config.size, 10);
                     // FIXME: This is not clear which is what between this and setLayerDisplaySettingsFromDefault()
                     var layer = {
                         "context": null,
@@ -146,7 +148,7 @@
                         "func": config['function'] || (config.expression ? "AVG" : "COUNT"), // If there is a field, default to the average
                         "expr": config.expression || null,
                         "marker": null,
-                        "size": null,
+                        "size": config.size || null,
                         "tooltipTemplate": template,
                         "localKey": config.localKey || null,
                         "remoteKey": config.remoteKey || null,
@@ -159,7 +161,12 @@
                         "borderColor": config.borderColor,
                         "excludeFromRefit": config.excludeFromRefit,
                         "caption": angular.isDefined(config.caption) ? config.caption : false,
-                        "captionTitle": config.captionTitle || null
+                        "captionTitle": config.captionTitle || null,
+                        "showZoomMin": config.showZoomMin || null,
+                        "showZoomMax": config.showZoomMax || null,
+                        "minSize": config.minSize || null,
+                        "maxSize": config.maxSize || null,
+                        "sizeFunction": config.sizeFunction || null
                     };
                     this.createLayerId(layer);
                     return layer;

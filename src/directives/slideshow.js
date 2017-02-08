@@ -58,7 +58,7 @@
             '        <button class="ods-slideshow__previous-button"' +
             '                ng-click="loadPreviousImage()"' +
             '                ng-disabled="currentIndex <= 1"' +
-            '                aria-label="Load previous image"' +
+            '                aria-label="View previous image"' +
             '                translate="aria-label">' +
             '            <i class="fa fa-angle-left ods-slideshow__previous-icon" aria-hidden="true"></i>' +
             '        </button>' +
@@ -107,15 +107,15 @@
             '        </div>' +
             '        <button class="ods-slideshow__next-button"' +
             '                ng-click="loadNextImage()"' +
-            '                aria-label="Load next image"' +
+            '                aria-label="View next image"' +
             '                translate="aria-label"' +
             '                ng-disabled="currentIndex >= lastIndex">' +
             '            <i class="fa fa-angle-right ods-slideshow__next-icon" aria-hidden="true"></i>' +
             '        </button>' +
             '    </div>' +
             '    <div class="ods-slideshow__image-legend">' +
-            '        <div class="ods-slideshow__image-index">{{ currentIndex }}&nbsp;/{{ lastIndex }}</div>' +
-            '        <div class="ods-slideshow__image-title" ng-bind="imageTitle"></div>' +
+            '        <div class="ods-slideshow__image-index">{{ currentIndex|number:0 }}/{{ lastIndex|number:0 }}</div>' +
+            '        <div class="ods-slideshow__image-title" title="{{ imageTitle }}" ng-bind="imageTitle"></div>' +
             '        <div class="ods-slideshow__toggles">' +
             '            <button class="ods-slideshow__tooltip-toggle"' +
             '                    aria-label="Toggle tooltip"' +
@@ -180,9 +180,12 @@
                                 scope.currentIndex = response.nhits;
                                 scope.lastIndex = response.nhits;
                                 $timeout(function () {
-                                    $imageIndex.css({width: $imageIndex.outerWidth()});
-                                    scope.lastIndex = response.nhits;
-                                    scope.currentIndex = index;
+                                    $imageIndex.css({width: 'auto'});
+                                    $timeout(function () {
+                                        $imageIndex.css({width: $imageIndex.outerWidth()});
+                                        scope.lastIndex = response.nhits;
+                                        scope.currentIndex = index;
+                                    });
                                 });
                             } else {
                                 scope.lastIndex = response.nhits;
@@ -201,9 +204,14 @@
                                 }
                                 // Legend
                                 if (titleFields.length) {
-                                    scope.imageTitle = titleFields.map(function (field) {
-                                        return record.fields[field];
-                                    }).join(', ');
+                                    scope.imageTitle = titleFields
+                                        .filter(function (field) {
+                                            return record.fields[field];
+                                        })
+                                        .map(function (field) {
+                                            return record.fields[field];
+                                        })
+                                        .join(', ');
                                 }
                                 // save into scope for the tooltip
                                 scope.record = record;
@@ -302,6 +310,14 @@
                         }
                         loadImage(1);
                         unwatch();
+
+                        scope.$watch('context.parameters', function (nv, ov) {
+                            if (!angular.equals(nv, ov)) {
+                                scope.currentIndex = 0;
+                                scope.lastIndex = 0;
+                                loadImage(1);
+                            }
+                        }, true);
                     }
                 }, true);
             }

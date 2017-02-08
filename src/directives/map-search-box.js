@@ -17,7 +17,7 @@
             '              ng-change="runQuery(userQuery)" ' +
             '              ng-keydown="handleKeyDown($event)">' +
             '       <button type="button" class="odswidget-map-search-box__box-cancel" ng-click="resetSearch()" ng-show="userQuery || dataSearchActive">' +
-            '           <i class="odsui-delete_light"></i>' +
+            '           <i class="fa fa-times odswidget-map-search-box__close-search-icon"></i>' +
             '       </button>' +
             '   </div>' +
             '   <ul class="odswidget-map-search-box__suggestions" ng-if="!dataSearchActive && userQuery">' +
@@ -53,7 +53,7 @@
             '               ods-tooltip' +
             '               ods-tooltip-template="getResultPreviewTemplate(selectedResult.context.dataset, record)"' +
             '               ng-click="moveToDataRecord(selectedResult.context.dataset, record)">' +
-            '               <i class="odsui-marker_size_max odswidget-map-search-box__data-search__result-icon"></i>' +
+            '               <i class="fa fa-map-marker odswidget-map-search-box__data-search__result-icon"></i>' +
             '               <span class="odswidget-map-search-box__data-search__result-empty" ng-if="getResultTitle(selectedResult.context.dataset, record) === null" translate>Empty</span>' +
             '               <span ng-if="getResultTitle(selectedResult.context.dataset, record) !== null">{{getResultTitle(selectedResult.context.dataset, record)}}</span>' +
             '           </li>' +
@@ -73,13 +73,13 @@
             '                       ng-click="previousResultPage()" ' +
             '                       ng-disabled="currentResultsStartIndex === 0"' +
             '                       class="odswidget-map-search-box__data-search__pagination-button">' +
-            '                   <i class="odsui-left"></i>' +
+            '                   <i class="fa fa-chevron-left"></i>' +
             '               </button>' +
             '               <button type="button" ' +
             '                       ng-click="nextResultPage()" ' +
             '                       ng-disabled="currentResultsStartIndex+10 >= selectedResult.nhits"' +
             '                       class="odswidget-map-search-box__data-search__pagination-button">' +
-            '                   <i class="odsui-right"></i>' +
+            '                   <i class="fa fa-chevron-right"></i>' +
             '               </button>' +
             '           </div>' +
             '       </div>' +
@@ -273,7 +273,7 @@
                     } else if (suggestion._tags.indexOf('aeroway') >= 0) {
                         return 'fa fa-plane';
                     } else {
-                        return 'odsui-marker_size_max';
+                        return 'fa fa-map-marker';
                     }
                 };
 

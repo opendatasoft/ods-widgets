@@ -165,14 +165,31 @@
             compile: function(tElement) {
                 var childrenCount = tElement.children().length;
                 return function(scope, element) {
+                    var unwatchContext, delayedInit;
+
+                    delayedInit = function() {
+                        var unwatchContext = scope.$watch('context', function() {
+                            if (scope.context) {
+                                if (scope.context.type === 'dataset') {
+                                    scope.context.wait().then(function () {
+                                        scope.init();
+                                    });
+                                } else {
+                                    scope.init();
+                                }
+                                unwatchContext();
+                            }
+                        });
+                    };
+
                     if (scope.facetsConfig) {
                         buildFacetTagsHTML(scope, element, scope.facetsConfig);
-                        scope.init();
+                        delayedInit();
                     } else if (childrenCount === 0) {
                         // By default, we add all the available facets
                         var facets;
 
-                        var unwatchContext = scope.$watch('context', function() {
+                        unwatchContext = scope.$watch('context', function() {
                             if (scope.context) {
                                 unwatchContext();
                                 if (scope.context.type === 'catalog') {
@@ -211,7 +228,7 @@
                     } else {
                     // We're starting the queries from here because at that time we are sure the children (odsFacets tags)
                     // are ready and have registered themselves.
-                        scope.init();
+                        delayedInit();
                     }
                 };
             },
@@ -329,14 +346,14 @@
                             var checkMappingType = function (originalContext, secondaryContext) {
                                 angular.forEach(originalContext.dataset.fields, function (originalField) {
                                     angular.forEach(secondaryContext.dataset.fields, function (secondaryField) {
-                                        if (originalField.name === name
-                                            && secondaryField.name === contextFacetName
-                                            && originalField.type != secondaryField.type) {
+                                        if (originalField.name === name &&
+                                            secondaryField.name === contextFacetName &&
+                                            originalField.type != secondaryField.type) {
                                             console.warn(
                                                 'Error: mapping ' +
                                                 originalContext.name + '\'s ' + '"' + originalField.name + '" (type ' + originalField.type + ') on ' +
                                                 secondaryContext.name + '\'s ' + '"' + secondaryField.name + '" (type ' + secondaryField.type + ').'
-                                            )
+                                            );
                                         }
                                     });
                                 });
@@ -385,7 +402,7 @@
                 refineAlso: '=?'
             },
             template: function(tElement) {
-                tElement.data('facet-template', tElement.html());
+                tElement.data('facet-template', tElement.html().trim());
                 return '' +
                     '<div ng-class="{\'odswidget\': true, \'odswidget-facet\': true, \'odswidget-facet--disjunctive\': isDisjunctive()}">' +
                     '    <h3 class="odswidget-facet__facet-title" ' +

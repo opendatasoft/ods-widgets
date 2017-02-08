@@ -39,6 +39,19 @@ which will accordingly refine the context.</p>
         &lt;ods-map-layer context="mycontext2" display="heatmap" show-if="showHeatmap"&gt;&lt;/ods-map-layer&gt;
     &lt;/ods-map&gt;
 </pre>
+<p>You can also configure layers to only be visible between certain zoom levels, using <code>showZoomMin</code>,
+<code>showZoomMax</code>, or both.</p>
+<pre class="prettyprint linenums">
+    &lt;!-- In this example I want to show only one layer at a time, but change it as the user zooms in the map. --&gt;
+    &lt;ods-map&gt;
+        &lt;!-- This layer is only visible up to zoom 8 --&gt;
+        &lt;ods-map-layer context="mycontext1" show-zoom-max="8"&gt;&lt;/ods-map-layer&gt;
+        &lt;!-- This layer appears between zoom 9 and 14 --&gt;
+        &lt;ods-map-layer context="mycontext2" show-zoom-min="9" show-zoom-max="14"&gt;&lt;/ods-map-layer&gt;
+        &lt;!-- This layer is visible starting at zoom 15 --&gt;
+        &lt;ods-map-layer context="mycontext3" show-zoom-min="15"&gt;&lt;/ods-map-layer&gt;
+    &lt;/ods-map&gt;
+</pre>
 <p>Several display modes are available, under two categories: visualization of the data itself (each point is a record),
 and visualization of an aggregation of data (each point is the result of an aggregation function).</p>
 <ul>

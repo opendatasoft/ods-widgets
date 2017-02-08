@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.0.9 - 2017-02-08
+### Added
+- `odsCharts`: support for boxplot charts
+- `odsMap`: new showZoomMin and showZoomMax parameters on layers, to configure the zoom levels where the layer is visible
+- `odsMap`: new parameters to configure clusters' min and max sizes, and markers' size
+
+### Fixed
+- `odsFacets`: fixed behavior on multi-valued facets if the separator is not "/"
+- `odsSlideshow`: various visual improvements, especially with empty or very long descriptions
+- `odsCrosstable`: fixed various bugs when used on a date or datetime field
+- `odsMap`: when drawing a filter zone, tooltips are now displayed when drawing or editing, and labels are more intuitive
+- `odsMap`: fixed missing icons in the search box
+
 ## 1.0.8 - 2016-12-19
 ### Added
 - `odsCrossTable`: new visualisation that allows a representation of datasets data in a pivot table like formatting

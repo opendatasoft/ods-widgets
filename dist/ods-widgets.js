@@ -6910,7 +6910,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '1.0.8';
+    var version = '1.0.9';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -7337,6 +7337,7 @@ mod.directive('infiniteScroll', [
                 {label: translate('Spiderweb chart'), type: 'spiderweb', group: translate('Pie charts')},
                 {label: translate('Polar chart'), type: 'polar', group: translate('Pie charts')},
                 {label: translate('Funnel chart'), type: 'funnel', group: translate('Pyramid charts')},
+                {label: translate('Boxplot'), type: 'boxplot', group: translate('Boxplot charts')}
             ],
             timeserie_precision_tab = [
                 "year",
@@ -7731,6 +7732,7 @@ mod.directive('infiniteScroll', [
                 }
             },
             setSerieDefaultValues: function(datasetid, chart, xAxis, conservative) {
+                var i, subsets;
                 // Compute default labels
                 // Enveloppe
                 if (typeof xAxis === "undefined") {
@@ -7775,9 +7777,10 @@ mod.directive('infiniteScroll', [
                     }
                 }
 
-                if(chart.type && this.isRangeChart(chart.type)){
+                if(chart.type && this.isRangeChart(chart.type)) {
                     chart.func = 'COUNT';
-                    if(!chart.charts){
+                    subsets = [5, 95];
+                    if (!chart.charts) {
                         chart.charts = [
                             {
                                 func: 'MIN',
@@ -7789,26 +7792,70 @@ mod.directive('infiniteScroll', [
                             }
                         ];
                     }
-                    if (typeof chart.charts[0].yAxis === "undefined" || chart.charts[0].yAxis === "") {
-                        chart.charts[0].yAxis = chart.charts[0].expr || chart.yAxis;
-                        delete chart.charts[0].expr;
-                    }
-                    if (typeof chart.charts[1].yAxis === "undefined" || chart.charts[1].yAxis === "") {
-                        chart.charts[1].yAxis =  chart.charts[1].expr || chart.yAxis;
-                        delete chart.charts[1].expr;
-                    }
-                    if(chart.charts[0].func === 'QUANTILES' && (chart.charts[0].subsets === "" || typeof chart.charts[0].subsets === "undefined")){
-                        chart.charts[0].subsets = 5;
-                    }
-                    if(chart.charts[1].func === 'QUANTILES' && (chart.charts[1].subsets === "" || typeof chart.charts[1].subsets === "undefined")){
-                        chart.charts[1].subsets = 95;
+                    if (chart.charts.length === 5) {
+                        chart.charts[1] = angular.copy(chart.charts[4]);
+                        chart.charts.splice(2, 3);
                     }
 
-                    if (chart.charts[0].func !== 'QUANTILES' && chart.charts[0].subsets) {
-                        delete chart.charts[0].subsets;
+                    for (i = 0; i < 2; i++) {
+                        if (typeof chart.charts[i].yAxis === "undefined" || chart.charts[i].yAxis === "") {
+                            chart.charts[i].yAxis = chart.charts[i].expr || chart.yAxis;
+                            delete chart.charts[i].expr;
+                        }
+
+                        if (chart.charts[i].func === 'QUANTILES' && (chart.charts[i].subsets === "" || typeof chart.charts[i].subsets === "undefined")) {
+                            chart.charts[i].subsets = subsets[i];
+                        }
+
+                        if (chart.charts[i].func !== 'QUANTILES' && chart.charts[i].subsets) {
+                            delete chart.charts[i].subsets;
+                        }
                     }
-                    if (chart.charts[1].func !== 'QUANTILES' && chart.charts[1].subsets) {
-                        delete chart.charts[1].subsets;
+                } else if (chart.type && chart.type === 'boxplot') {
+                    chart.func = 'COUNT';
+                    subsets = [1, 25, 50, 75, 100];
+                    if (!chart.charts) {
+                        chart.charts = [];
+                    }
+                    if (chart.charts.length === 2) {
+                        chart.charts[4] = angular.copy(chart.charts[1]);
+                        chart.charts[1] = undefined;
+                    }
+
+                    if (typeof chart.charts[0] === "undefined") {
+                        chart.charts[0] = {
+                            func: 'MIN',
+                            yAxis: chart.yAxis
+                        };
+                    }
+                    for (i = 1; i < 4; i++) {
+                        if (typeof chart.charts[i] === "undefined") {
+                            chart.charts[i] = {
+                                func: 'QUANTILES',
+                                yAxis: chart.yAxis,
+                                subsets: subsets[i]
+                            };
+                        }
+                    }
+                    if (typeof chart.charts[4] === "undefined") {
+                        chart.charts[4] = {
+                            func: 'MAX',
+                            yAxis: chart.yAxis
+                        };
+                    }
+                    for (i = 0; i < 5; i++) {
+                        if (typeof chart.charts[i].yAxis === "undefined" || chart.charts[i].yAxis === "") {
+                            chart.charts[i].yAxis = chart.charts[i].expr || chart.charts[i].yAxis || chart.yAxis;
+                            delete chart.charts[i].expr;
+                        }
+
+                        if (chart.charts[i].func === 'QUANTILES' && (chart.charts[i].subsets === "" || typeof chart.charts[i].subsets === "undefined")) {
+                            chart.charts[i].subsets = subsets[i];
+                        }
+
+                        if (chart.charts[i].func !== 'QUANTILES' && chart.charts[i].subsets) {
+                            delete chart.charts[i].subsets;
+                        }
                     }
                 } else {
                     if(chart.charts){
@@ -7860,6 +7907,8 @@ mod.directive('infiniteScroll', [
                 } else {
                     if (this.isRangeChart(chart.type)) {
                         return this.getYLabel(datasetid, chart.charts[0]) + " / " + this.getYLabel(datasetid, chart.charts[1]);
+                    } else if (chart.type === 'boxplot') {
+                        return translate('Boxplot');
                     } else {
                         var funcLabel = AggregationHelper.getFunctionLabel(chart.func);
                         var nameY = chart.yAxis || chart.expr;
@@ -7898,13 +7947,25 @@ mod.directive('infiniteScroll', [
             },
             getFieldUnit: function(datasetid, fieldName) {
                 var field = this.getField(datasetid, fieldName);
-                if (field.annotations) {
+                if (field && field.annotations) {
                     for (var i = 0; i < field.annotations.length; i++) {
                         if (field.annotations[i].name === "unit") {
                             return field.annotations[i].args[0];
                         }
                     }
                     return field.annotations.unit;
+                }
+                return false;
+            },
+            getDecimals: function(datasetid, fieldName) {
+                var field = this.getField(datasetid, fieldName);
+                if (field && field.annotations) {
+                    for (var i = 0; i < field.annotations.length; i++) {
+                        if (field.annotations[i].name === "decimals") {
+                            return field.annotations[i].args[0];
+                        }
+                    }
+                    return false;
                 }
                 return false;
             },
@@ -8243,56 +8304,56 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.service('I18n', ['translate', function(translate) {
+    mod.service('I18n', ['translate', function(translate_time) {
         return {
             weekdays: {
                 shorthand: [
-                    translate('Sun'),
-                    translate('Mon'),
-                    translate('Tue'),
-                    translate('Wed'),
-                    translate('Thu'),
-                    translate('Fri'),
-                    translate('Sat')
+                    translate_time('Sun'),
+                    translate_time('Mon'),
+                    translate_time('Tue'),
+                    translate_time('Wed'),
+                    translate_time('Thu'),
+                    translate_time('Fri'),
+                    translate_time('Sat')
                 ],
                 longhand: [
-                    translate('Sunday'),
-                    translate('Monday'),
-                    translate('Tuesday'),
-                    translate('Wednesday'),
-                    translate('Thursday'),
-                    translate('Friday'),
-                    translate('Saturday')
+                    translate_time('Sunday'),
+                    translate_time('Monday'),
+                    translate_time('Tuesday'),
+                    translate_time('Wednesday'),
+                    translate_time('Thursday'),
+                    translate_time('Friday'),
+                    translate_time('Saturday')
                 ]
             },
             months: {
                 shorthand: [
-                    translate('Jan'),
-                    translate('Feb'),
-                    translate('Mar'),
-                    translate('Apr'),
-                    translate('May'),
-                    translate('Jun'),
-                    translate('Jul'),
-                    translate('Aug'),
-                    translate('Sep'),
-                    translate('Oct'),
-                    translate('Nov'),
-                    translate('Dec')
+                    translate_time('Jan'),
+                    translate_time('Feb'),
+                    translate_time('Mar'),
+                    translate_time('Apr'),
+                    translate_time('May'),
+                    translate_time('Jun'),
+                    translate_time('Jul'),
+                    translate_time('Aug'),
+                    translate_time('Sep'),
+                    translate_time('Oct'),
+                    translate_time('Nov'),
+                    translate_time('Dec')
                 ],
                 longhand: [
-                    translate('January'),
-                    translate('February'),
-                    translate('March'),
-                    translate('April'),
-                    translate('May'),
-                    translate('June'),
-                    translate('July'),
-                    translate('August'),
-                    translate('September'),
-                    translate('October'),
-                    translate('November'),
-                    translate('December')
+                    translate_time('January'),
+                    translate_time('February'),
+                    translate_time('March'),
+                    translate_time('April'),
+                    translate_time('May'),
+                    translate_time('June'),
+                    translate_time('July'),
+                    translate_time('August'),
+                    translate_time('September'),
+                    translate_time('October'),
+                    translate_time('November'),
+                    translate_time('December')
                 ]
             },
 
@@ -8301,14 +8362,14 @@ mod.directive('infiniteScroll', [
                 timeSeparators: [':'],
                 dateFormat: 'DD/MM/YYYY',
                 dateSeparators: ['/'],
-                firstDayOfWeek: 1,
+                firstDayOfWeek: 1
             },
             en: {
                 timeFormat: 'hh:mm A',
                 timeSeparators: [':', ' '],
                 dateFormat: 'MM/DD/YYYY',
                 dateSeparators: ['/'],
-                firstDayOfWeek: 0,
+                firstDayOfWeek: 0
             }
         };
     }]);
@@ -8450,6 +8511,8 @@ mod.directive('infiniteScroll', [
                     if (display === 'raw') {
                         display = 'none';
                     }
+                    // Also converts the size to an int, if it was a string
+                    config.size = Math.min(config.size, 10);
                     // FIXME: This is not clear which is what between this and setLayerDisplaySettingsFromDefault()
                     var layer = {
                         "context": null,
@@ -8460,7 +8523,7 @@ mod.directive('infiniteScroll', [
                         "func": config['function'] || (config.expression ? "AVG" : "COUNT"), // If there is a field, default to the average
                         "expr": config.expression || null,
                         "marker": null,
-                        "size": null,
+                        "size": config.size || null,
                         "tooltipTemplate": template,
                         "localKey": config.localKey || null,
                         "remoteKey": config.remoteKey || null,
@@ -8473,7 +8536,12 @@ mod.directive('infiniteScroll', [
                         "borderColor": config.borderColor,
                         "excludeFromRefit": config.excludeFromRefit,
                         "caption": angular.isDefined(config.caption) ? config.caption : false,
-                        "captionTitle": config.captionTitle || null
+                        "captionTitle": config.captionTitle || null,
+                        "showZoomMin": config.showZoomMin || null,
+                        "showZoomMax": config.showZoomMax || null,
+                        "minSize": config.minSize || null,
+                        "maxSize": config.maxSize || null,
+                        "sizeFunction": config.sizeFunction || null
                     };
                     this.createLayerId(layer);
                     return layer;
@@ -10114,11 +10182,29 @@ mod.directive('infiniteScroll', [
                     'ar': {
                         'js': ['libs/fullcalendar/lang/ar.js']
                     },
+                    'ca': {
+                        'js': ['libs/fullcalendar/lang/ca.js']
+                    },
+                    'de': {
+                        'js': ['libs/fullcalendar/lang/de.js']
+                    },
+                    'es': {
+                        'js': ['libs/fullcalendar/lang/es.js']
+                    },
+                    'eu': {
+                        'js': ['libs/fullcalendar/lang/eu.js']
+                    },
                     'fr': {
                         'js': ['libs/fullcalendar/lang/fr.js']
                     },
+                    'it': {
+                        'js': ['libs/fullcalendar/lang/it.js']
+                    },
                     'nl': {
                         'js': ['libs/fullcalendar/lang/nl.js']
+                    },
+                    'pt': {
+                        'js': ['libs/fullcalendar/lang/pt.js']
                     }
                 }
             },
@@ -11690,6 +11776,14 @@ mod.directive('infiniteScroll', [
         Context: {
             toggleRefine: function(context, facetName, path, replace) {
                 var refineKey = 'refine.'+facetName;
+                var refineSeparator = '/';
+                if (context.dataset) {
+                    var field = context.dataset.getField(facetName);
+                    var annotation = context.dataset.getFieldAnnotation(field, "hierarchical");
+                    if (typeof annotation !== "undefined") {
+                        refineSeparator = annotation.args[0] || refineSeparator;
+                    }
+                }
                 if (angular.isDefined(context.parameters[refineKey])) {
                     // There is at least one refine already
                     var refines = angular.copy(context.parameters[refineKey]);
@@ -11703,10 +11797,10 @@ mod.directive('infiniteScroll', [
                     } else {
                         // Activate
                         angular.forEach(refines, function(refine, idx) {
-                            if (path.startsWith(refine+'/')) {
+                            if (path.startsWith(refine + refineSeparator)) {
                                 // This already active refine is less precise than the new one, we remove it
                                 refines.splice(idx, 1);
-                            } else if (refine.startsWith(path+'/')) {
+                            } else if (refine.startsWith(path + refineSeparator)) {
                                 // This already active refine is more precise than the new one, we remove it
                                 refines.splice(idx, 1);
                             }
@@ -12006,15 +12100,19 @@ mod.directive('infiniteScroll', [
         Dataset: function(dataset) {
             var types, facetsCount, filtersDescription;
 
-            var isFieldAnnotated = function(field, annotationName) {
+            var getFieldAnnotation = function(field, annotationName) {
+                var i = 0;
                 if (field.annotations) {
-                    for (var i=0; i<field.annotations.length; i++) {
+                    for (; i < field.annotations.length; i++) {
                         if (field.annotations[i].name === annotationName) {
-                            return true;
+                            return field.annotations[i];
                         }
                     }
                 }
-                return false;
+            };
+
+            var isFieldAnnotated = function(field, annotationName) {
+                return typeof getFieldAnnotation(field, annotationName) !== "undefined";
             };
 
             var iterateFields = function(fields) {
@@ -12046,7 +12144,6 @@ mod.directive('infiniteScroll', [
                 fields: dataset.fields,
                 extra_metas: dataset.extra_metas,
                 interop_metas: dataset.interop_metas,
-                billing_plans: dataset.billing_plans,
                 setFields: function(fields) {
                     this.fields = fields;
                     iterateFields(this.fields);
@@ -12164,6 +12261,9 @@ mod.directive('infiniteScroll', [
                 },
                 isFieldAnnotated: function(field, annotationName) {
                     return isFieldAnnotated(field, annotationName);
+                },
+                getFieldAnnotation: function(field, annotationName) {
+                    return getFieldAnnotation(field, annotationName);
                 }
             };
         },
@@ -12304,6 +12404,45 @@ mod.directive('infiniteScroll', [
                     }
                     return date;
                 }
+            },
+            getTimescaleProperties: function (timescale) {
+                var details = {
+                    'year': ['year'],
+                    'month': ['year', 'month'],
+                    'day': ['year', 'month', 'day'],
+                    'hour': ['year', 'month', 'day', 'hour'],
+                    'minute': ['year', 'month', 'day', 'hour', 'minute'],
+                    'month month': ['month'],
+                    'day day': ['day'],
+                    'day weekday': ['weekday'],
+                    'hour weekday': ['weekday', 'hour'],
+                    'day month': ['yearday'],
+                    'hour hour': ['hour']
+                };
+                if (timescale in details) {
+                    return details[timescale];
+                }
+                return null;
+                
+            },
+            getTimescaleX: function(x, timescale) {
+                /**
+                 * Build timescale x array.
+                 * E.g. for x='start_time' and timescale='day': ['start.year', 'start.month', 'start.day']
+                 */
+                var xs = [];
+                var properties = ODS.DateFieldUtils.getTimescaleProperties(timescale);
+                if (properties) {
+                    angular.forEach(properties, function (property) {
+                        xs.push(x + '.' + property);
+                    });
+                } else {
+                    xs.push(x);
+                }
+                return xs;
+            },
+            getTimescaleSort: function (xs) {
+                return xs.map(function(item) { return 'x.' + item; }).join(",");
             }
         }
     };
@@ -13624,7 +13763,7 @@ mod.directive('infiniteScroll', [
          * * D will be used as colField
          * * E will be used to define two series, SUM_E and AVG_E
          */
-        var CrossTable = function (rowFields, colField, series, schema, repeatRowHeaders, displayIntermediaryResults, numberPrecision) {
+        var CrossTable = function (rowFields, colField, series, schema, dataset, repeatRowHeaders, displayIntermediaryResults, numberPrecision) {
 
             /**
              * Array of field names which values will be used as row headers.
@@ -13643,6 +13782,12 @@ mod.directive('infiniteScroll', [
              * @type {{}}
              */
             this.schema = schema;
+
+            /**
+             * Dataset related to the given schema (useful for helpers)
+             * @type {{}}
+             */
+            this.dataset = dataset;
 
             /**
              * Array of Serie objects
@@ -13692,7 +13837,7 @@ mod.directive('infiniteScroll', [
              * Helper able to generate a label from an analysisValue
              * @type {LabelBuilder}
              */
-            this.labelBuilder = new LabelBuilder(this.schema, this.rowFields, this.colField);
+            this.labelBuilder = new LabelBuilder(this.dataset, this.schema, this.rowFields, this.colField);
 
             /**
              * Number of decimals use in formatting numbers
@@ -13703,14 +13848,14 @@ mod.directive('infiniteScroll', [
             this.setData = function (columnHeadersAnalysis, rowHeadersAnalyses, analyses) {
                 this.resetData();
 
-                this.buildColNumbersIndexes(columnHeadersAnalysis);
-                this.buildRowNumbersIndexes(rowHeadersAnalyses);
+                this.buildColNumbersIndexes(columnHeadersAnalysis, false);
+                this.buildRowNumbersIndexes(rowHeadersAnalyses, this.rowFields.length > 1);
 
                 this.buildTableStructure(rowHeadersAnalyses);
 
-                this.buildTableColumnHeaders(columnHeadersAnalysis);
-                this.buildTableRowHeaders(rowHeadersAnalyses);
-                this.buildTableBody(analyses);
+                this.buildTableColumnHeaders(columnHeadersAnalysis, false);
+                this.buildTableRowHeaders(rowHeadersAnalyses, this.rowFields.length > 1);
+                this.buildTableBody(analyses, true);
             };
 
             this.resetData = function () {
@@ -13737,18 +13882,18 @@ mod.directive('infiniteScroll', [
                 this.table = [];
             };
 
-            this.buildColNumbersIndexes = function (colValues) {
+            this.buildColNumbersIndexes = function (colValues, isMultiXAnalysis) {
                 for (var i = 0; i < colValues.length; i++) {
                     var index = {};
                     for (var j = 0; j < this.series.length; j++) {
                         var serieName = this.series[j].name;
                         index[serieName] = i * this.series.length + j;
                     }
-                    this.colNumbersIndex[this.labelBuilder.buildLabel(colValues[i], this.colField)] = index;
+                    this.colNumbersIndex[this.labelBuilder.buildLabel(colValues[i], this.colField, isMultiXAnalysis)] = index;
                 }
             };
 
-            this.buildRowNumbersIndexes = function (analyses) {
+            this.buildRowNumbersIndexes = function (analyses, isMultiXAnalysis) {
                 var analysisValues = analyses[analyses.length - 1];
                 var currentRowNumber = 0;
                 var rowNumbersIndex = this.rowNumbersIndexes[0];
@@ -13758,14 +13903,14 @@ mod.directive('infiniteScroll', [
                     if (this.displayIntermediaryResults) {
                         for (var j = 0; j < this.rowFields.length; j++) {
                             rowNumbersIndex = this.rowNumbersIndexes[j];
-                            if (rowNumbersIndex.getRowNumber(analysisValue) === undefined) {
-                                rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber);
+                            if (rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis) === undefined) {
+                                rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber, isMultiXAnalysis);
                                 currentRowNumber++;
                             }
                         }
                     } else {
-                        if (rowNumbersIndex.getRowNumber(analysisValue) === undefined) {
-                            rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber);
+                        if (rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis) === undefined) {
+                            rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber, isMultiXAnalysis);
                             currentRowNumber++;
                         }
 
@@ -13801,7 +13946,7 @@ mod.directive('infiniteScroll', [
             };
 
 
-            this.buildTableColumnHeaders = function (colValues) {
+            this.buildTableColumnHeaders = function (colValues, isMultiXAnalysis) {
                 var that = this;
                 var row;
 
@@ -13814,7 +13959,7 @@ mod.directive('infiniteScroll', [
                         row.push(new Cell('', 'ods-cross-table__cell--header'))
                     });
                     angular.forEach(colValues, function (colValue) {
-                        row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField), 'ods-cross-table__cell--header', nbSeries));
+                        row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField, isMultiXAnalysis), 'ods-cross-table__cell--header', nbSeries));
                     });
                     this.table[0] = row;
 
@@ -13837,21 +13982,21 @@ mod.directive('infiniteScroll', [
                         row.push(new Cell(that.schema[fieldName].label, 'ods-cross-table__cell--header'))
                     });
                     angular.forEach(colValues, function (colValue) {
-                        row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField), 'ods-cross-table__cell--header'));
+                        row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField, isMultiXAnalysis), 'ods-cross-table__cell--header'));
                     });
                     this.table[0] = row;
                 }
             };
 
-            this.buildTableRowHeaders = function (analyses) {
+            this.buildTableRowHeaders = function (analyses, isMultiXAnalysis) {
                 var that = this;
                 angular.forEach(analyses, function (analysisValues, analysisIndex) {
                     angular.forEach(analysisValues, function (analysisValue) {
-                        var rowNumber = that.getRowNumber(analysisValue, analysisIndex) + Math.min(2, that.series.length);
+                        var rowNumber = that.getRowNumber(analysisValue, analysisIndex, isMultiXAnalysis) + Math.min(2, that.series.length);
                         var end = that.displayIntermediaryResults ? analysisIndex + 1 : that.rowFields.length;
                         for (var i = 0; i < end; i++) {
                             var fieldName = that.rowFields[i];
-                            var label = that.labelBuilder.buildLabel(analysisValue, fieldName);
+                            var label = that.labelBuilder.buildLabel(analysisValue, fieldName, isMultiXAnalysis);
                             if (i === that.rowFields.length - 1 || that.repeatRowHeaders || that._insertedRowHeaders[fieldName].indexOf(label) === -1) {
                                 that.table[rowNumber][i] = new Cell(label, 0, 'ods-cross-table__cell--header');
                                 that._insertedRowHeaders[fieldName].push(label);
@@ -13861,34 +14006,35 @@ mod.directive('infiniteScroll', [
                 });
             };
 
-            this.buildTableBody = function (analyses) {
+            this.buildTableBody = function (analyses, isMultiXAnalysis) {
                 var that = this;
                 angular.forEach(analyses, function (analysisValues, analysisIndex) {
                     angular.forEach(analysisValues, function (analysisValue) {
                         angular.forEach(that.series, function (serie) {
                             // row index is corrected by the number of col headers in the table
-                            var row = that.getRowNumber(analysisValue, analysisIndex) + Math.min(2, that.series.length);
+                            var row = that.getRowNumber(analysisValue, analysisIndex, isMultiXAnalysis) + Math.min(2, that.series.length);
                             // col index is corrected by the number of row headers in the table
-                            var col = that.getColNumber(analysisValue, serie.name) + that.rowFields.length;
+                            var col = that.getColNumber(analysisValue, serie.name, isMultiXAnalysis) + that.rowFields.length;
                             that.table[row][col] = new Cell($filter('number')(analysisValue[serie.name], that.numberPrecision), 'ods-cross-table__cell--value');
                         });
                     });
                 });
             };
 
-            this.getColNumber = function (analysisValue, serieName) {
-                return this.colNumbersIndex[this.labelBuilder.buildLabel(analysisValue, this.colField)][serieName];
+            this.getColNumber = function (analysisValue, serieName, isMultiXAnalysis) {
+                return this.colNumbersIndex[this.labelBuilder.buildLabel(analysisValue, this.colField, isMultiXAnalysis)][serieName];
             };
 
-            this.getRowNumber = function (analysisValue, analysisIndex) {
+            this.getRowNumber = function (analysisValue, analysisIndex, isMultiXAnalysis) {
                 var rowNumbersIndex = this.rowNumbersIndexes[analysisIndex];
-                return rowNumbersIndex.getRowNumber(analysisValue);
+                return rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis);
             };
 
             return this;
         };
 
-        var LabelBuilder = function (schema, rowFields, colField) {
+        var LabelBuilder = function (dataset, schema, rowFields, colField) {
+            this.dataset = dataset;
             this.schema = schema;
             this.rowFields = rowFields;
             this.colField = colField;
@@ -13901,10 +14047,11 @@ mod.directive('infiniteScroll', [
                 return xValue;
             };
 
-            this.buildLabel = function (analysisValue, field) {
-                if (angular.isObject(analysisValue.x) && field in analysisValue.x) {
+            this.buildLabel = function (analysisValue, field, isMultiXAnalysis) {
+                if (isMultiXAnalysis) {
                     return this.formatXValue(analysisValue.x[field]);
                 }
+
                 return this.formatXValue(analysisValue.x);
             };
 
@@ -13999,11 +14146,11 @@ mod.directive('infiniteScroll', [
 
             this.rowNumbers = {};
 
-            this.getRowNumber = function (analysisValue) {
+            this.getRowNumber = function (analysisValue, isMultiXAnalysis) {
                 var rowNumber = this.rowNumbers;
                 for (var i = 0; i < this.depth; i++) {
                     var rowField = this.rowFields[i];
-                    var label = this.labelBuilder.buildLabel(analysisValue, rowField);
+                    var label = this.labelBuilder.buildLabel(analysisValue, rowField, isMultiXAnalysis);
                     rowNumber = rowNumber[label];
                     if (rowNumber === undefined) {
                         return undefined;
@@ -14012,10 +14159,10 @@ mod.directive('infiniteScroll', [
                 return rowNumber;
             };
 
-            this.setRowNumber = function (analysisValue, rowNumber) {
+            this.setRowNumber = function (analysisValue, rowNumber, isMultiXAnalysis) {
                 for (var i = this.depth - 1; i >= 0; i--) {
                     var rowField = this.rowFields[i];
-                    var label = this.labelBuilder.buildLabel(analysisValue, rowField);
+                    var label = this.labelBuilder.buildLabel(analysisValue, rowField, isMultiXAnalysis);
                     var tmp = {}; // necessary because we can't do rowNumber = {label: rowNumber}
                     tmp[label] = rowNumber;
                     rowNumber = tmp;
@@ -14134,6 +14281,21 @@ mod.directive('infiniteScroll', [
 
                 // fetch data
 
+                var buildX = function (fieldNames) {
+                    fieldNames = angular.isArray(fieldNames) ? fieldNames : [fieldNames];
+                    var xs = [];
+                    angular.forEach(fieldNames, function (fieldName) {
+                        var fieldSchema = scope.context.dataset.getField(fieldName);
+                        if (['date', 'datetime'].indexOf(fieldSchema.type) > -1) {
+                            var timescale = scope.context.dataset.getFieldAnnotation(fieldSchema, 'timeserie_precision').args[0];
+                            xs = xs.concat(ODS.DateFieldUtils.getTimescaleX(fieldName, timescale))
+                        } else {
+                            xs.push(fieldName);
+                        }
+                    });
+                    return xs;
+                };
+
                 var buildSort = function (fieldNames) {
                     if (!angular.isArray(fieldNames)) {
                         fieldNames = [fieldNames];
@@ -14146,31 +14308,37 @@ mod.directive('infiniteScroll', [
                 var reloadData = function () {
                     scope.loading = true;
                     var promises = [];
+
                     // fetch values for column headers
-                    promises.push(ODSAPI.records.analyze(scope.context, angular.extend({}, scope.context.parameters, {
-                        'x': crossTable.colField,
+                    var columnXs = buildX(crossTable.colField);
+                    var columnHeadersParams = {
+                        'x': columnXs,
                         'y.serie1.func': 'COUNT',
-                        'sort': buildSort(crossTable.colField)
-                    })));
+                        'sort': buildSort(columnXs)
+                    };
+
+                    promises.push(ODSAPI.records.analyze(scope.context, angular.extend({}, scope.context.parameters, columnHeadersParams)));
 
                     var rowHeadersPromises = [];
                     var seriesPromises = [];
                     for (var i = scope.displayIntermediaryResults ? 0 : crossTable.rowFields.length - 1; i < crossTable.rowFields.length; i++) {
                         var subfields = crossTable.rowFields.slice(0, i+1);
-                        var options;
+                        var options, xs;
 
                         // fetch values for row headers
+                        xs = buildX(subfields);
                         options = angular.extend({}, scope.context.parameters, {
-                            'x': subfields,
+                            'x': xs,
                             'y.serie1.func': 'COUNT',
-                            'sort': buildSort(subfields)
+                            'sort': buildSort(xs)
                         });
                         rowHeadersPromises.push(ODSAPI.records.analyze(scope.context, options));
 
                         // fetch values for series
+                        xs = buildX(subfields.concat(crossTable.colField));
                         options = angular.extend({}, scope.context.parameters, {
-                            'x': subfields.concat(crossTable.colField),
-                            'sort': buildSort(subfields.concat(crossTable.colField))
+                            'x': xs,
+                            'sort': buildSort(xs)
                         });
                         angular.forEach(crossTable.series, function (serie) {
                             options['y.' + serie.name + '.expr'] = serie.expr;
@@ -14285,7 +14453,15 @@ mod.directive('infiniteScroll', [
                     if (!angular.isDefined(scope.numberPrecision)) {
                         scope.numberPrecision = 3;
                     }
-                    crossTable = new CrossTable(rows, scope.column, buildSeries(), buildFieldSchemas(), scope.repeatRowHeaders === true, scope.displayIntermediaryResults === true, scope.numberPrecision);
+                    crossTable = new CrossTable(
+                        rows,
+                        scope.column,
+                        buildSeries(),
+                        buildFieldSchemas(),
+                        scope.context.dataset,
+                        scope.repeatRowHeaders === true,
+                        scope.displayIntermediaryResults === true,
+                        scope.numberPrecision);
                     scope.$watch('context.parameters', reloadData);
                 });
             }
@@ -15120,14 +15296,31 @@ mod.directive('infiniteScroll', [
             compile: function(tElement) {
                 var childrenCount = tElement.children().length;
                 return function(scope, element) {
+                    var unwatchContext, delayedInit;
+
+                    delayedInit = function() {
+                        var unwatchContext = scope.$watch('context', function() {
+                            if (scope.context) {
+                                if (scope.context.type === 'dataset') {
+                                    scope.context.wait().then(function () {
+                                        scope.init();
+                                    });
+                                } else {
+                                    scope.init();
+                                }
+                                unwatchContext();
+                            }
+                        });
+                    };
+
                     if (scope.facetsConfig) {
                         buildFacetTagsHTML(scope, element, scope.facetsConfig);
-                        scope.init();
+                        delayedInit();
                     } else if (childrenCount === 0) {
                         // By default, we add all the available facets
                         var facets;
 
-                        var unwatchContext = scope.$watch('context', function() {
+                        unwatchContext = scope.$watch('context', function() {
                             if (scope.context) {
                                 unwatchContext();
                                 if (scope.context.type === 'catalog') {
@@ -15166,7 +15359,7 @@ mod.directive('infiniteScroll', [
                     } else {
                     // We're starting the queries from here because at that time we are sure the children (odsFacets tags)
                     // are ready and have registered themselves.
-                        scope.init();
+                        delayedInit();
                     }
                 };
             },
@@ -15284,14 +15477,14 @@ mod.directive('infiniteScroll', [
                             var checkMappingType = function (originalContext, secondaryContext) {
                                 angular.forEach(originalContext.dataset.fields, function (originalField) {
                                     angular.forEach(secondaryContext.dataset.fields, function (secondaryField) {
-                                        if (originalField.name === name
-                                            && secondaryField.name === contextFacetName
-                                            && originalField.type != secondaryField.type) {
+                                        if (originalField.name === name &&
+                                            secondaryField.name === contextFacetName &&
+                                            originalField.type != secondaryField.type) {
                                             console.warn(
                                                 'Error: mapping ' +
                                                 originalContext.name + '\'s ' + '"' + originalField.name + '" (type ' + originalField.type + ') on ' +
                                                 secondaryContext.name + '\'s ' + '"' + secondaryField.name + '" (type ' + secondaryField.type + ').'
-                                            )
+                                            );
                                         }
                                     });
                                 });
@@ -15340,7 +15533,7 @@ mod.directive('infiniteScroll', [
                 refineAlso: '=?'
             },
             template: function(tElement) {
-                tElement.data('facet-template', tElement.html());
+                tElement.data('facet-template', tElement.html().trim());
                 return '' +
                     '<div ng-class="{\'odswidget\': true, \'odswidget-facet\': true, \'odswidget-facet--disjunctive\': isDisjunctive()}">' +
                     '    <h3 class="odswidget-facet__facet-title" ' +
@@ -16208,47 +16401,13 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
+    var functionUsesField = function(func) {
+        return ['COUNT', 'CONSTANT'].indexOf(func) === -1;
+    }
+
     mod.factory("requestData", ['ODSAPI', '$q', 'ChartHelper', 'AggregationHelper', function(ODSAPI, $q, ChartHelper, AggregationHelper) {
-        var buildTimescaleX = function(x, timescale) {
-            var xs = [];
-            if (timescale == 'year') {
-                xs.push(x + '.year');
-            } else if (timescale == 'month') {
-                xs.push(x + '.year');
-                xs.push(x + '.month');
-            } else if (timescale == 'day') {
-                xs.push(x + '.year');
-                xs.push(x + '.month');
-                xs.push(x + '.day');
-            } else if (timescale == 'hour') {
-                xs.push(x + '.year');
-                xs.push(x + '.month');
-                xs.push(x + '.day');
-                xs.push(x + '.hour');
-            } else if (timescale == 'minute') {
-                xs.push(x + '.year');
-                xs.push(x + '.month');
-                xs.push(x + '.day');
-                xs.push(x + '.hour');
-                xs.push(x + '.minute');
-            } else if (timescale == 'month month') {
-                xs.push(x + '.month');
-            } else if (timescale == 'day day') {
-                xs.push(x + '.day');
-            } else if (timescale == 'day weekday') {
-                xs.push(x + '.weekday');
-            } else if (timescale == 'hour weekday') {
-                xs.push(x + '.weekday');
-                xs.push(x + '.hour');
-            } else if (timescale == 'day month') {
-                xs.push(x + '.yearday');
-            } else if (timescale == 'hour hour') {
-                xs.push(x + '.hour');
-            } else {
-                xs.push(x);
-            }
-            return xs;
-        };
+        var buildTimescaleX = ODS.DateFieldUtils.getTimescaleX;
+        
         var buildSearchOptions = function(query, timeSerieMode, precision, periodic) {
             var i, breakdown,
                 xs,
@@ -16272,7 +16431,7 @@ mod.directive('infiniteScroll', [
                 }
             }
             if (timeSerieMode || query.seriesBreakdown) {
-                search_options.sort = search_options.x.map(function(item) { return 'x.' + item; }).join(",");
+                search_options.sort = ODS.DateFieldUtils.getTimescaleSort(search_options.x);
             }
 
             // if (timeSerieMode){
@@ -16355,23 +16514,35 @@ mod.directive('infiniteScroll', [
         };
 
         var addSeriesToSearchOptions = function(search_options, serie, serie_name) {
-            if(serie.type && ChartHelper.isRangeChart(serie.type)) {
-                if(search_options.sort ===  'y.' + serie_name) {
+            var i,
+                allQuantiles = true,
+                temp_serie;
+            if(serie.type && (ChartHelper.isRangeChart(serie.type) || serie.type === 'boxplot')) {
+                if (search_options.sort === 'y.' + serie_name) {
                     // cannot sort on range
                     search_options.sort = '';
                 }
                 // when trying to compute 2 quantiles on the same serie, optimize the call
-                if (serie.charts[0].func === 'QUANTILES' && serie.charts[1].func === 'QUANTILES' && serie.charts[0].yAxis === serie.charts[1].yAxis) {
-                    var temp_serie = angular.copy(serie.charts[0]);
-                    temp_serie.subsets = serie.charts[0].subsets + "," + serie.charts[1].subsets;
+
+                if (serie.charts[0].func === 'QUANTILES') {
+                    temp_serie = angular.copy(serie.charts[0]);
+                    for (i = 1; i < serie.charts.length; i++) {
+                        if (serie.charts[i].func !== 'QUANTILES' || serie.charts[i - 1].yAxis !== serie.charts[i].yAxis) {
+                            allQuantiles = false;
+                        } else {
+                            temp_serie.subsets = temp_serie.subsets + "," + serie.charts[i].subsets;
+                        }
+                    }
+                } else {
+                    allQuantiles = false;
+                }
+                if (allQuantiles) {
                     addSeriesToSearchOptions(search_options, temp_serie, serie_name);
                 } else {
-                    if (angular.isDefined(serie.multiplier)) {
-                        serie.charts[0].multiplier = serie.multiplier;
-                        serie.charts[1].multiplier = serie.multiplier;
+                    for (i = 0; i < serie.charts.length; i++) {
+                        serie.charts[i].multiplier = serie.multiplier;
+                        addSeriesToSearchOptions(search_options, serie.charts[i], serie_name + '-range-' + i);
                     }
-                    addSeriesToSearchOptions(search_options, serie.charts[0], serie_name + 'min');
-                    addSeriesToSearchOptions(search_options, serie.charts[1], serie_name + 'max');
                 }
             } else {
                 angular.extend(search_options, generateSerieOptions(serie, serie_name));
@@ -16469,6 +16640,7 @@ mod.directive('infiniteScroll', [
         //         ...
         //     ]
         // }
+        var translate_time = translate;
         var getDatasetUniqueId = function(dataset_id, domain) {
             var uniqueid;
             if (domain) {
@@ -16577,6 +16749,16 @@ mod.directive('infiniteScroll', [
                             pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
                         }
                     },
+                    boxplot: {
+                        tooltip: {
+                            pointFormat: '<span style="color:{series.color}">{series.name}</span>:<br>' +
+                                            translate('Maximum:') + ' {point.high}<br>' +
+                                            translate('Upper quartile:') + ' {point.q3}<br>' +
+                                            translate('Median:') + ' {point.median}<br>' +
+                                            translate('Lower quartile:') + ' {point.q1}<br>' +
+                                            translate('Minimum:') + ' {point.low}<br>'
+                        }
+                    },
                     arearange: {
                         tooltip: {
                             pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
@@ -16616,9 +16798,7 @@ mod.directive('infiniteScroll', [
                         // build the values
                         angular.forEach(items, function (item) {
                             series = item.series;
-                            var value = (series.tooltipFormatter && series.tooltipFormatter(item)) || item.point.tooltipFormatter(series.tooltipOptions.pointFormat);
-                            value = value.replace(/(\.|,)00</g, '<');
-                            value = value.replace(/(\.|,)00 /g, ' ');
+                            var value = (series.tooltipOptions.pointFormatter && series.tooltipOptions.pointFormatter.bind(item.point)()) || item.point.tooltipFormatter(series.tooltipOptions.pointFormat);
                             s.push(value);
                         });
                         // footer
@@ -16786,28 +16966,104 @@ mod.directive('infiniteScroll', [
                 options.neckHeight = '25%';
             }
 
+            var unit = false,
+                decimals = false;
+            if (functionUsesField(serie.func)) {
+                unit = ChartHelper.getFieldUnit(datasetid, serie.yAxis);
+                decimals = ChartHelper.getDecimals(datasetid, serie.yAxis);
+            }
+
             if (serie.displayValues) {
                 options.dataLabels.enabled = true;
                 options.dataLabels.color = 'black';
                 if (serie.type !== 'treemap') {
                     options.dataLabels.formatter = function() {
-                        var label = Highcharts.numberFormat(this.point.y, 2);
-                        return label.replace(/[,\.]00$/, '');
+                        var label;
+                        if (decimals) {
+                            label = Highcharts.numberFormat(this.point.y, decimals);
+                        } else {
+                            label = Highcharts.numberFormat(this.point.y).replace(/([,.][0-9]*?)0+$/, '$1').replace(/[,.]$/, '');
+                        }
+                        return label;
                     };
                 }
             }
-            if (serie.displayUnits && serie.func !== 'COUNT') {
-                var unit = ChartHelper.getFieldUnit(datasetid, serie.yAxis);
-                if (unit) {
-                    options.tooltip.valueSuffix = ' ' + unit;
-                    if (serie.displayValues && serie.type !== 'treemap') {
-                        var _formatter = options.dataLabels.formatter;
-                        options.dataLabels.formatter = function() {
+
+            if (serie.displayUnits && unit) {
+                options.tooltip.valueSuffix = ' ' + unit;
+                if (serie.displayValues && serie.type !== 'treemap') {
+                    var _formatter = options.dataLabels.formatter;
+                    options.dataLabels.formatter = function() {
+                        if (unit === "$") {
+                            return unit + _formatter.bind(this)(this.point.y);
+                        } else {
                             return _formatter.bind(this)(this.point.y) + ' ' + unit;
-                        };
-                    }
+                        }
+                    };
                 }
             }
+
+            function formatValue(value, decimals, unit) {
+                if (decimals !== false) {
+                    value = Highcharts.numberFormat(value, decimals);
+                } else if (angular.isNumber(value)) {
+                    value = Highcharts.numberFormat(value).replace(/([,.][0-9]*?)0+$/, '$1').replace(/[,.]$/, '');
+                }
+
+                if (unit) {
+                    if (unit === '$') {
+                        value = unit + value;
+                    } else {
+                        value = value + ' ' + unit;
+                    }
+                }
+                return value;
+            }
+
+            function getTooltipFormatterFunction(functionName) {
+                var formatterFunction;
+                if (functionName === 'treemap') {
+                    formatterFunction = function areaTooltip() {
+                        var formattedValue = formatValue(this.value, decimals, serie.displayUnits ? unit : false);
+
+                        return '<span style="color:' + this.series.color + '">' + this.series.name + '</span>: <b>' + formattedValue + '</b>';
+                    };
+                } else if (functionName === 'arearange' || functionName === 'areasplinerange' || functionName === 'columnrange') {
+                    formatterFunction = function areaTooltip() {
+                        var formattedLow = formatValue(this.low, decimals, serie.displayUnits ? unit : false);
+                        var formattedHigh = formatValue(this.high, decimals, serie.displayUnits ? unit : false);
+
+                        return '<span style="color:' + this.series.color + '">' + this.series.name + '</span>: <b>' + formattedLow + ' - ' + formattedHigh + '</b>';
+                    };
+                } else if (functionName === 'pie') {
+                    formatterFunction = function singleValueTooltip() {
+                        var formattedValue = formatValue(this.y, decimals, serie.displayUnits ? unit : false);
+
+                        return '<span style="color:' + this.series.color + '">' + this.series.name + '</span>: <b>' + formattedValue + ' (' + Highcharts.numberFormat(this.percentage, 1) + '%)</b>';
+                    };
+                } else if (functionName === 'boxplot') {
+                    formatterFunction = function boxTooltip() {
+                        var _format = function(value) {
+                            return formatValue(value, decimals, serie.displayUnits ? unit : false);
+                        };
+                        return '<span style="color:' + this.series.color + '">' + this.series.name + '</span>: <b><br>' +
+                                translate('Maximum:') + ' ' + _format(this.high) + '<br>' +
+                                translate('Upper quartile:') + ' ' + _format(this.q3) + '<br>' +
+                                translate('Median:') + ' ' + _format(this.median) + '<br>' +
+                                translate('Lower quartile:') + ' ' + _format(this.q1) + '<br>' +
+                                translate('Minimum:') + ' ' + _format(this.low) + '<br>';
+                    };
+                } else {
+                    formatterFunction = function singleValueTooltip() {
+                        var formattedValue = formatValue(this.y, decimals, serie.displayUnits ? unit : false);
+
+                        return '<span style="color:' + this.series.color + '">' + this.series.name + '</span>: <b>' + formattedValue + '</b>';
+                    };
+                }
+                return formatterFunction;
+            }
+
+            options.tooltip.pointFormatter = getTooltipFormatterFunction(serie.type);
 
             if (serie.refineOnClickCtrl) {
                 options.point = {
@@ -17026,27 +17282,27 @@ mod.directive('infiniteScroll', [
                                 // FIXME should compute a proper date
                                 case 'month':
                                     return [
-                                    translate('Jan'),
-                                    translate('Feb'),
-                                    translate('Mar'),
-                                    translate('Apr'),
-                                    translate('May'),
-                                    translate('Jun'),
-                                    translate('Jul'),
-                                    translate('Aug'),
-                                    translate('Sep'),
-                                    translate('Oct'),
-                                    translate('Nov'),
-                                    translate('Dec')][value.month - 1];
+                                    translate_time('Jan'),
+                                    translate_time('Feb'),
+                                    translate_time('Mar'),
+                                    translate_time('Apr'),
+                                    translate_time('May'),
+                                    translate_time('Jun'),
+                                    translate_time('Jul'),
+                                    translate_time('Aug'),
+                                    translate_time('Sep'),
+                                    translate_time('Oct'),
+                                    translate_time('Nov'),
+                                    translate_time('Dec')][value.month - 1];
                                 case 'weekday':
                                     return [
-                                    translate('Monday'),
-                                    translate('Tuesday'),
-                                    translate('Wednesday'),
-                                    translate('Thursday'),
-                                    translate('Friday'),
-                                    translate('Saturday'),
-                                    translate('Sunday')][value.weekday];
+                                    translate_time('Monday'),
+                                    translate_time('Tuesday'),
+                                    translate_time('Wednesday'),
+                                    translate_time('Thursday'),
+                                    translate_time('Friday'),
+                                    translate_time('Saturday'),
+                                    translate_time('Sunday')][value.weekday];
                                 case 'day':
                                     return value.day;
                                 default:
@@ -17152,24 +17408,27 @@ mod.directive('infiniteScroll', [
 
 
                         function pushValues(serie, categoryIndex, scale, valueX, valueY, color, thresholds) {
-                            var min, max, i;
+                            var i, j, data, nullify = false;
                             if (options.xAxis.type === 'datetime' || options.xAxis.type === 'linear') {
                                 if (typeof valueY === 'object') {
-                                    min = valueY[0];
-                                    max = valueY[1];
-                                    if (scale === 'logarithmic' && (min <= 0 || max <= 0)) {
-                                        serie.data.push([
-                                            valueX,
-                                            null,
-                                            null
-                                        ]);
-                                    } else {
-                                        serie.data.push([
-                                            valueX,
-                                            min,
-                                            max
-                                        ]);
+                                    data = [valueX];
+                                    if (scale === 'logarithmic') {
+                                        for (j = 0; j < valueY.length; j++) {
+                                            if (valueY[j] <= 0) {
+                                                nullify = true;
+                                            }
+                                        }
                                     }
+                                    if (nullify) {
+                                        for (j = 0; j < valueY.length; j++) {
+                                            data.push(null);
+                                        }
+                                    } else {
+                                        for (j = 0; j < valueY.length; j++) {
+                                            data.push(valueY[j]);
+                                        }
+                                    }
+                                    serie.data.push(data);
                                 } else if (['pie', 'funnel'].indexOf(serie.type) !== -1) {
                                     if (options.xAxis.type === 'datetime') {
                                         serie.data.push({
@@ -17233,13 +17492,24 @@ mod.directive('infiniteScroll', [
                                     };
                                 } else {
                                     if (typeof valueY === 'object') {
-                                        min = valueY[0];
-                                        max = valueY[1];
-                                        if (scale === 'logarithmic' && (min <= 0 || max <= 0)) {
-                                            serie.data[categoryIndex] = [null, null];
-                                        } else {
-                                            serie.data[categoryIndex] = [min, max];
+                                        data = [];
+                                        if (scale === 'logarithmic') {
+                                            for (j = 0; j < valueY.length; j++) {
+                                                if (valueY[j] <= 0) {
+                                                    nullify = true;
+                                                }
+                                            }
                                         }
+                                        if (nullify) {
+                                            for (j = 0; j < valueY.length; j++) {
+                                                data.push(null);
+                                            }
+                                        } else {
+                                            for (j = 0; j < valueY.length; j++) {
+                                                data.push(valueY[j]);
+                                            }
+                                        }
+                                        serie.data[categoryIndex] = data;
                                     } else {
                                         if (scale === 'logarithmic' && valueY <= 0) {
                                             serie.data[categoryIndex] = null;
@@ -17408,23 +17678,33 @@ mod.directive('infiniteScroll', [
                                     j = 0;
                                     // iterate on all entries in the row...
                                     angular.forEach(row, function(rawValueY, keyY) {
-                                        var valueY;
-                                        var serie_name;
+                                        var i,
+                                            valueY,
+                                            serie_name,
+                                            rangeserie = false,
+                                            matches;
                                         // ...and avoid the x entry
                                         if (keyY !== "x") {
-                                            if (keyY.endsWith('min')) {
-                                                return;
-                                            } else if (keyY.endsWith('max')) {
-                                                serie_name = keyY.replace('max', '');
+                                            matches = keyY.match(/-range-([0-9])$/);
+                                            if (matches && matches.length === 2) {
+                                                serie_name = keyY.replace(/-range-[0-9]$/, '');
+                                                rangeserie = true;
+                                                if (matches[1] !== "0") return;
                                             } else {
                                                 serie_name = keyY;
                                             }
 
                                             var serie = charts[serie_name];
-                                            if (keyY.endsWith('max')) {
-                                                valueY = [getValidYValue(row[keyY.replace('max', 'min')], serie.charts[0]), getValidYValue(rawValueY, serie.charts[1])];
+                                            if (rangeserie) {
+                                                valueY = [];
+                                                for (i = 0; i < serie.charts.length; i++) {
+                                                    valueY.push(getValidYValue(row[serie_name + '-range-' + i], serie.charts[i]));
+                                                }
                                             } else if (serie.charts) {
-                                                valueY = [getValidYValue(rawValueY, serie.charts[0]), getValidYValue(rawValueY, serie.charts[1])];
+                                                valueY = [];
+                                                for (i = 0; i < serie.charts.length; i++) {
+                                                    valueY.push(getValidYValue(rawValueY, serie.charts[i]));
+                                                }
                                             } else {
                                                 valueY = getValidYValue(rawValueY, serie);
                                             }
@@ -18599,13 +18879,9 @@ mod.directive('infiniteScroll', [
                 mapConfig: '=',
                 singleLayer: '='
             },
-            controller: ['$scope', function ($scope) {
-                var stripTags = function (text) {
-                    // FIXME: Implement
-                    return text;
-                };
+            controller: ['$scope', 'shortSummaryFilter', function ($scope, shortSummaryFilter) {
                 $scope.getGroupDescription = function(group) {
-                    return group.description || stripTags(group.layers[0].context.dataset.metas.description);
+                    return group.description || shortSummaryFilter(group.layers[0].context.dataset.metas.description, 200);
                 };
                 $scope.toggleGroup = function(group) {
                     if (!$scope.singleLayer) {
@@ -19764,7 +20040,7 @@ mod.directive('infiniteScroll', [
             '              ng-change="runQuery(userQuery)" ' +
             '              ng-keydown="handleKeyDown($event)">' +
             '       <button type="button" class="odswidget-map-search-box__box-cancel" ng-click="resetSearch()" ng-show="userQuery || dataSearchActive">' +
-            '           <i class="odsui-delete_light"></i>' +
+            '           <i class="fa fa-times odswidget-map-search-box__close-search-icon"></i>' +
             '       </button>' +
             '   </div>' +
             '   <ul class="odswidget-map-search-box__suggestions" ng-if="!dataSearchActive && userQuery">' +
@@ -19800,7 +20076,7 @@ mod.directive('infiniteScroll', [
             '               ods-tooltip' +
             '               ods-tooltip-template="getResultPreviewTemplate(selectedResult.context.dataset, record)"' +
             '               ng-click="moveToDataRecord(selectedResult.context.dataset, record)">' +
-            '               <i class="odsui-marker_size_max odswidget-map-search-box__data-search__result-icon"></i>' +
+            '               <i class="fa fa-map-marker odswidget-map-search-box__data-search__result-icon"></i>' +
             '               <span class="odswidget-map-search-box__data-search__result-empty" ng-if="getResultTitle(selectedResult.context.dataset, record) === null" translate>Empty</span>' +
             '               <span ng-if="getResultTitle(selectedResult.context.dataset, record) !== null">{{getResultTitle(selectedResult.context.dataset, record)}}</span>' +
             '           </li>' +
@@ -19820,13 +20096,13 @@ mod.directive('infiniteScroll', [
             '                       ng-click="previousResultPage()" ' +
             '                       ng-disabled="currentResultsStartIndex === 0"' +
             '                       class="odswidget-map-search-box__data-search__pagination-button">' +
-            '                   <i class="odsui-left"></i>' +
+            '                   <i class="fa fa-chevron-left"></i>' +
             '               </button>' +
             '               <button type="button" ' +
             '                       ng-click="nextResultPage()" ' +
             '                       ng-disabled="currentResultsStartIndex+10 >= selectedResult.nhits"' +
             '                       class="odswidget-map-search-box__data-search__pagination-button">' +
-            '                   <i class="odsui-right"></i>' +
+            '                   <i class="fa fa-chevron-right"></i>' +
             '               </button>' +
             '           </div>' +
             '       </div>' +
@@ -20020,7 +20296,7 @@ mod.directive('infiniteScroll', [
                     } else if (suggestion._tags.indexOf('aeroway') >= 0) {
                         return 'fa fa-plane';
                     } else {
-                        return 'odsui-marker_size_max';
+                        return 'fa fa-map-marker';
                     }
                 };
 
@@ -20439,6 +20715,21 @@ mod.directive('infiniteScroll', [
          *     </ods-map>
          * </pre>
          *
+         * You can also configure layers to only be visible between certain zoom levels, using `showZoomMin`,
+         * `showZoomMax`, or both.
+         *
+         * <pre>
+         *     <!-- In this example I want to show only one layer at a time, but change it as the user zooms in the map. -->
+         *     <ods-map>
+         *         <!-- This layer is only visible up to zoom 8 -->
+         *         <ods-map-layer context="mycontext1" show-zoom-max="8"></ods-map-layer>
+         *         <!-- This layer appears between zoom 9 and 14 -->
+         *         <ods-map-layer context="mycontext2" show-zoom-min="9" show-zoom-max="14"></ods-map-layer>
+         *         <!-- This layer is visible starting at zoom 15 -->
+         *         <ods-map-layer context="mycontext3" show-zoom-min="15"></ods-map-layer>
+         *     </ods-map>
+         * </pre>
+         *
          * Several display modes are available, under two categories: visualization of the data itself (each point is a record),
          * and visualization of an aggregation of data (each point is the result of an aggregation function).
          *
@@ -20852,12 +21143,64 @@ mod.directive('infiniteScroll', [
                         };
                         L.drawLocal.edit.toolbar.actions = {
                             save: {
-                                title: translate('Save changes.'),
-                                text: translate('Save')
+                                title: translate('Apply'),
+                                text: translate('Apply')
                             },
                             cancel: {
                                 title: translate('Cancel editing, discards all changes.'),
                                 text: translate('Cancel')
+                            }
+                        };
+                        L.drawLocal.draw.handlers = {
+                            circle: {
+                                tooltip: {
+                                    start: translate('Click and drag to draw circle')
+                                },
+                                radius: translate('Radius')
+                            },
+                            marker: {
+                                tooltip: {
+                                    start: translate('Click map to place marker')
+                                }
+                            },
+                            polygon: {
+                                tooltip: {
+                                    start: translate('Click to start drawing shape'),
+                                    cont: translate('Click to continue drawing shape'),
+                                    end: translate('Click first point to close this shape')
+                                }
+                            },
+                            polyline: {
+                                error: '<strong>' + translate('Error:') + '</strong> ' + translate('shape edges cannot cross!'),
+                                tooltip: {
+                                    start: translate('Click to start drawing line'),
+                                    cont: translate('Click to continue drawing line'),
+                                    end: translate('Click last point to finish line')
+                                }
+                            },
+                            rectangle: {
+                                tooltip: {
+                                    start: translate('Click and drag to draw rectangle')
+                                }
+                            },
+                            simpleshape: {
+                                tooltip: {
+                                    end: translate('Release mouse to finish drawing')
+                                }
+                            }
+                        }
+                        L.drawLocal.edit.handlers = {
+                            edit: {
+                                tooltip: {
+                                    text: translate('Drag handles to edit shape, then apply') +
+                                        '<br>' +
+                                        '<em>' + translate('Click cancel to undo changes') + '</em>'
+                                }
+                            },
+                            remove: {
+                                tooltip: {
+                                    text: translate('Click on a shape to delete it, then apply')
+                                }
                             }
                         };
 
@@ -20867,9 +21210,15 @@ mod.directive('infiniteScroll', [
                             },
                             draw: {
                                 polyline: false,
-                                marker: false
+                                marker: false,
+                                circle: {
+                                    showRadius: true,
+                                    metric: true,
+                                    feet: false
+                                }
                             }
                         });
+                        map.options.drawControlTooltips = true;
                         map.addControl(drawControl);
                     }
 
@@ -21113,6 +21462,13 @@ mod.directive('infiniteScroll', [
                                     return;
                                 }
                                 angular.forEach(layerGroup.layers, function(layer) {
+                                    if (layer.showZoomMin && layer.showZoomMin > scope.map.getZoom()) {
+                                        return;
+                                    }
+                                    if (layer.showZoomMax && layer.showZoomMax < scope.map.getZoom()) {
+                                        return;
+                                    }
+
                                     // Depending on the layer config, we can opt for various representations
 
                                     // Tiles: call a method on the existing layer
@@ -21477,6 +21833,8 @@ mod.directive('infiniteScroll', [
             scope: {
                 context: '=',
                 showIf: '=',
+                showZoomMin: '@',
+                showZoomMax: '@',
                 color: '@',
                 borderColor: '@',
                 opacity: '@',
@@ -21488,6 +21846,11 @@ mod.directive('infiniteScroll', [
                 colorGradient: '=',
                 colorByField: '@',
                 colorFunction: '@',
+                size: '@',
+                sizeMin: '@',
+                sizeMax: '@',
+                sizeFunction: '@',
+
                 picto: '@',
                 showMarker: '@',
                 display: '@',
@@ -21593,7 +21956,13 @@ mod.directive('infiniteScroll', [
                     'hoverField': scope.hoverField,
                     'excludeFromRefit': scope.excludeFromRefit,
                     'caption': !!scope.caption,
-                    'captionTitle': scope.captionTitle
+                    'captionTitle': scope.captionTitle,
+                    'showZoomMin': scope.showZoomMin,
+                    'showZoomMax': scope.showZoomMax,
+                    'size': scope.size,
+                    'minSize': scope.sizeMin,
+                    'maxSize': scope.sizeMax,
+                    'sizeFunction': scope.sizeFunction
                 };
                 var layer = MapHelper.MapConfiguration.createLayerConfiguration(customTemplate, config);
                 var layerGroup;
@@ -21679,7 +22048,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsMediaGallery', ['$timeout', function($timeout) {
+    mod.directive('odsMediaGallery', ['$timeout', '$q', 'ODSAPI', function($timeout, $q, ODSAPI) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsMediaGallery
@@ -21773,6 +22142,7 @@ mod.directive('infiniteScroll', [
                                 '                <div style="overflow: hidden" ng-style="{width: image.width, height: image.height, marginTop: image.marginTop, marginBottom: image.marginBottom, marginRight: image.marginRight, marginLeft: image.marginLeft }">' +
                                 '                    <ods-record-image record="image.record" field="{{ image.fieldname }}" domain-url="{{context.domainUrl}}"></ods-record-image>' +
                                 '                    <div ng-if="getRecordTitle(image.record)" class="odswidget-media-gallery__media-container__title-container">{{ getRecordTitle(image.record) }}</div>' +
+                                '                    <ods-spinner ng-show="image.fetching" class="ods-media-gallery__image-spinner-overlay"></ods-spinner>' +
                                 '                </div>' +
                                 '            </div>' +
                                 '        </div>' +
@@ -21784,7 +22154,7 @@ mod.directive('infiniteScroll', [
                                 ' <div class="odswidget-overlay" ng-if="fetching && !records"><ods-spinner></ods-spinner></div>' +
                                 '</div>',
             require: ['odsMediaGallery', '?odsWidgetTooltip', '?odsAutoResize', '?refineOnClick'],
-            controller: ['$scope', '$element', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$q', function($scope, $element, $window, ODSAPI, DebugLogger, $filter, $http, $q) {
+            controller: ['$scope', '$element', '$window', 'DebugLogger', '$filter', function($scope, $element, $window, DebugLogger, $filter) {
                 // Infinite scroll parameters
                 $scope.page = 0;
                 $scope.resultsPerPage = 40;
@@ -21824,12 +22194,15 @@ mod.directive('infiniteScroll', [
                         $scope.page++;
                         start = $scope.page * $scope.resultsPerPage;
                     }
-                    jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {start: start});
+                    angular.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {start: start});
 
-                    // Retrieve only the displayed fields
-                    if ($scope.displayedFieldsArray &&
-                        $scope.context.dataset.fields.length > $scope.displayedFieldsArray.length) {
-                        jQuery.extend(options, {fields: $scope.displayedFieldsArray.join(',')});
+                    // Retrieve only the fields needed on image listing, not all fields
+                    var fetchedFields = $scope.imageFields || [];
+                    if ($scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.image_title) {
+                        fetchedFields = fetchedFields.concat($scope.context.dataset.extra_metas.visualization.image_title);
+                    }
+                    if (fetchedFields.length > 0) {
+                        angular.extend(options, {fields: fetchedFields.join(',')});
                     }
 
                     var timeout = $q.defer();
@@ -21875,7 +22248,9 @@ mod.directive('infiniteScroll', [
                                             'index': $scope.images.length,
                                             'placeholder': placeholder,
                                             'realwidth': image.width,
-                                            'realheight': image.height
+                                            'realheight': image.height,
+                                            'allFieldsInitialized': false,
+                                            'fetching': false
                                         });
                                     }
                                 }
@@ -21982,6 +22357,10 @@ mod.directive('infiniteScroll', [
                     };
                 }
 
+                if (angular.isString(scope.displayedFields)) {
+                    scope.displayedFields = scope.displayedFields.split(',');
+                }
+
                 scope.context.wait().then(function () {
                     controller.getDefaultsFromContext();
                     controller.watchContext();
@@ -22021,32 +22400,52 @@ mod.directive('infiniteScroll', [
                 var detailsScope, displayedImage;
                 detailsContainer = detailsContainer.remove();
                 scope.onClick = function($event, image, line) {
+                    var loadPromise;
 
-                    if (refineOnClickCtrl !== null) {
-                        refineOnClickCtrl.refineOnRecord(image.record);
-                    } else if (customTooltipCtrl !== null) {
-                        if (detailsScope) {
-                            detailsScope.$destroy();
-                        }
-                        if (displayedImage) {
-                            displayedImage.selected = false;
-                        }
-                        if (displayedImage === image) {
-                            displayedImage = null;
-                            detailsContainer = detailsContainer.remove();
-                            return;
-                        } else {
-                            displayedImage = image;
-                        }
+                    // Fetch all fields only on the first time
+                    if (image.allFieldsInitialized) {
+                        loadPromise = $q.resolve();
+                    } else {
+                        var options = {
+                            q: ['recordid=' + image.record.recordid]
+                        };
+                        jQuery.extend(options, scope.context.parameters);
 
-                        image.selected = true;
-                        detailsContainer.html(customTooltipCtrl.render(image.record, {
-                            'image': angular.copy(image),
-                            'getRecordTitle': scope.getRecordTitle
-                        }, image.fieldname));
-                        detailsContainer = detailsContainer.remove();
-                        detailsContainer.insertAfter(angular.element($event.currentTarget).parent('.odswidget-media-gallery__media-line'));
+                        image.fetching = true;
+                        loadPromise = ODSAPI.records.search(scope.context, options, $q.defer()).success(function (data, status, headers, config) {
+                            image.record = data.records[0];
+                            image.allFieldsInitialized = true;
+                            image.fetching = false;
+                        });
                     }
+
+                    loadPromise.then(function () {
+                        if (refineOnClickCtrl !== null) {
+                            refineOnClickCtrl.refineOnRecord(image.record);
+                        } else if (customTooltipCtrl !== null) {
+                            if (detailsScope) {
+                                detailsScope.$destroy();
+                            }
+                            if (displayedImage) {
+                                displayedImage.selected = false;
+                            }
+                            if (displayedImage === image) {
+                                displayedImage = null;
+                                detailsContainer = detailsContainer.remove();
+                                return;
+                            } else {
+                                displayedImage = image;
+                            }
+
+                            image.selected = true;
+                            detailsContainer.html(customTooltipCtrl.render(image.record, {
+                                'image': angular.copy(image),
+                                'getRecordTitle': scope.getRecordTitle
+                            }, image.fieldname));
+                            detailsContainer = detailsContainer.remove();
+                            detailsContainer.insertAfter(angular.element($event.currentTarget).parent('.odswidget-media-gallery__media-line'));
+                        }
+                    });
                 };
 
                 scope.lines = [];
@@ -22054,7 +22453,7 @@ mod.directive('infiniteScroll', [
                 scope.layout.resetImages();
 
                 scope.renderImages = function() {
-                    var i, width, height, image;
+                    var i, image;
                     for (i = scope.nextImage; i < scope.images.length; i++) {
                         image = scope.images[i];
                         scope.layout.addImage(image, scope.images.length);
@@ -23247,7 +23646,7 @@ mod.directive('infiniteScroll', [
             '        <button class="ods-slideshow__previous-button"' +
             '                ng-click="loadPreviousImage()"' +
             '                ng-disabled="currentIndex <= 1"' +
-            '                aria-label="Load previous image"' +
+            '                aria-label="View previous image"' +
             '                translate="aria-label">' +
             '            <i class="fa fa-angle-left ods-slideshow__previous-icon" aria-hidden="true"></i>' +
             '        </button>' +
@@ -23296,15 +23695,15 @@ mod.directive('infiniteScroll', [
             '        </div>' +
             '        <button class="ods-slideshow__next-button"' +
             '                ng-click="loadNextImage()"' +
-            '                aria-label="Load next image"' +
+            '                aria-label="View next image"' +
             '                translate="aria-label"' +
             '                ng-disabled="currentIndex >= lastIndex">' +
             '            <i class="fa fa-angle-right ods-slideshow__next-icon" aria-hidden="true"></i>' +
             '        </button>' +
             '    </div>' +
             '    <div class="ods-slideshow__image-legend">' +
-            '        <div class="ods-slideshow__image-index">{{ currentIndex }}&nbsp;/{{ lastIndex }}</div>' +
-            '        <div class="ods-slideshow__image-title" ng-bind="imageTitle"></div>' +
+            '        <div class="ods-slideshow__image-index">{{ currentIndex|number:0 }}/{{ lastIndex|number:0 }}</div>' +
+            '        <div class="ods-slideshow__image-title" title="{{ imageTitle }}" ng-bind="imageTitle"></div>' +
             '        <div class="ods-slideshow__toggles">' +
             '            <button class="ods-slideshow__tooltip-toggle"' +
             '                    aria-label="Toggle tooltip"' +
@@ -23369,9 +23768,12 @@ mod.directive('infiniteScroll', [
                                 scope.currentIndex = response.nhits;
                                 scope.lastIndex = response.nhits;
                                 $timeout(function () {
-                                    $imageIndex.css({width: $imageIndex.outerWidth()});
-                                    scope.lastIndex = response.nhits;
-                                    scope.currentIndex = index;
+                                    $imageIndex.css({width: 'auto'});
+                                    $timeout(function () {
+                                        $imageIndex.css({width: $imageIndex.outerWidth()});
+                                        scope.lastIndex = response.nhits;
+                                        scope.currentIndex = index;
+                                    });
                                 });
                             } else {
                                 scope.lastIndex = response.nhits;
@@ -23390,9 +23792,14 @@ mod.directive('infiniteScroll', [
                                 }
                                 // Legend
                                 if (titleFields.length) {
-                                    scope.imageTitle = titleFields.map(function (field) {
-                                        return record.fields[field];
-                                    }).join(', ');
+                                    scope.imageTitle = titleFields
+                                        .filter(function (field) {
+                                            return record.fields[field];
+                                        })
+                                        .map(function (field) {
+                                            return record.fields[field];
+                                        })
+                                        .join(', ');
                                 }
                                 // save into scope for the tooltip
                                 scope.record = record;
@@ -23491,6 +23898,14 @@ mod.directive('infiniteScroll', [
                         }
                         loadImage(1);
                         unwatch();
+
+                        scope.$watch('context.parameters', function (nv, ov) {
+                            if (!angular.equals(nv, ov)) {
+                                scope.currentIndex = 0;
+                                scope.lastIndex = 0;
+                                loadImage(1);
+                            }
+                        }, true);
                     }
                 }, true);
             }

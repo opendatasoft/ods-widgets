@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsMediaGallery', ['$timeout', function($timeout) {
+    mod.directive('odsMediaGallery', ['$timeout', '$q', 'ODSAPI', function($timeout, $q, ODSAPI) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsMediaGallery
@@ -97,6 +97,7 @@
                                 '                <div style="overflow: hidden" ng-style="{width: image.width, height: image.height, marginTop: image.marginTop, marginBottom: image.marginBottom, marginRight: image.marginRight, marginLeft: image.marginLeft }">' +
                                 '                    <ods-record-image record="image.record" field="{{ image.fieldname }}" domain-url="{{context.domainUrl}}"></ods-record-image>' +
                                 '                    <div ng-if="getRecordTitle(image.record)" class="odswidget-media-gallery__media-container__title-container">{{ getRecordTitle(image.record) }}</div>' +
+                                '                    <ods-spinner ng-show="image.fetching" class="ods-media-gallery__image-spinner-overlay"></ods-spinner>' +
                                 '                </div>' +
                                 '            </div>' +
                                 '        </div>' +
@@ -108,7 +109,7 @@
                                 ' <div class="odswidget-overlay" ng-if="fetching && !records"><ods-spinner></ods-spinner></div>' +
                                 '</div>',
             require: ['odsMediaGallery', '?odsWidgetTooltip', '?odsAutoResize', '?refineOnClick'],
-            controller: ['$scope', '$element', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$q', function($scope, $element, $window, ODSAPI, DebugLogger, $filter, $http, $q) {
+            controller: ['$scope', '$element', '$window', 'DebugLogger', '$filter', function($scope, $element, $window, DebugLogger, $filter) {
                 // Infinite scroll parameters
                 $scope.page = 0;
                 $scope.resultsPerPage = 40;
@@ -148,12 +149,15 @@
                         $scope.page++;
                         start = $scope.page * $scope.resultsPerPage;
                     }
-                    jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {start: start});
+                    angular.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {start: start});
 
-                    // Retrieve only the displayed fields
-                    if ($scope.displayedFieldsArray &&
-                        $scope.context.dataset.fields.length > $scope.displayedFieldsArray.length) {
-                        jQuery.extend(options, {fields: $scope.displayedFieldsArray.join(',')});
+                    // Retrieve only the fields needed on image listing, not all fields
+                    var fetchedFields = $scope.imageFields || [];
+                    if ($scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.image_title) {
+                        fetchedFields = fetchedFields.concat($scope.context.dataset.extra_metas.visualization.image_title);
+                    }
+                    if (fetchedFields.length > 0) {
+                        angular.extend(options, {fields: fetchedFields.join(',')});
                     }
 
                     var timeout = $q.defer();
@@ -199,7 +203,9 @@
                                             'index': $scope.images.length,
                                             'placeholder': placeholder,
                                             'realwidth': image.width,
-                                            'realheight': image.height
+                                            'realheight': image.height,
+                                            'allFieldsInitialized': false,
+                                            'fetching': false
                                         });
                                     }
                                 }
@@ -306,6 +312,10 @@
                     };
                 }
 
+                if (angular.isString(scope.displayedFields)) {
+                    scope.displayedFields = scope.displayedFields.split(',');
+                }
+
                 scope.context.wait().then(function () {
                     controller.getDefaultsFromContext();
                     controller.watchContext();
@@ -345,32 +355,52 @@
                 var detailsScope, displayedImage;
                 detailsContainer = detailsContainer.remove();
                 scope.onClick = function($event, image, line) {
+                    var loadPromise;
 
-                    if (refineOnClickCtrl !== null) {
-                        refineOnClickCtrl.refineOnRecord(image.record);
-                    } else if (customTooltipCtrl !== null) {
-                        if (detailsScope) {
-                            detailsScope.$destroy();
-                        }
-                        if (displayedImage) {
-                            displayedImage.selected = false;
-                        }
-                        if (displayedImage === image) {
-                            displayedImage = null;
-                            detailsContainer = detailsContainer.remove();
-                            return;
-                        } else {
-                            displayedImage = image;
-                        }
+                    // Fetch all fields only on the first time
+                    if (image.allFieldsInitialized) {
+                        loadPromise = $q.resolve();
+                    } else {
+                        var options = {
+                            q: ['recordid=' + image.record.recordid]
+                        };
+                        jQuery.extend(options, scope.context.parameters);
 
-                        image.selected = true;
-                        detailsContainer.html(customTooltipCtrl.render(image.record, {
-                            'image': angular.copy(image),
-                            'getRecordTitle': scope.getRecordTitle
-                        }, image.fieldname));
-                        detailsContainer = detailsContainer.remove();
-                        detailsContainer.insertAfter(angular.element($event.currentTarget).parent('.odswidget-media-gallery__media-line'));
+                        image.fetching = true;
+                        loadPromise = ODSAPI.records.search(scope.context, options, $q.defer()).success(function (data, status, headers, config) {
+                            image.record = data.records[0];
+                            image.allFieldsInitialized = true;
+                            image.fetching = false;
+                        });
                     }
+
+                    loadPromise.then(function () {
+                        if (refineOnClickCtrl !== null) {
+                            refineOnClickCtrl.refineOnRecord(image.record);
+                        } else if (customTooltipCtrl !== null) {
+                            if (detailsScope) {
+                                detailsScope.$destroy();
+                            }
+                            if (displayedImage) {
+                                displayedImage.selected = false;
+                            }
+                            if (displayedImage === image) {
+                                displayedImage = null;
+                                detailsContainer = detailsContainer.remove();
+                                return;
+                            } else {
+                                displayedImage = image;
+                            }
+
+                            image.selected = true;
+                            detailsContainer.html(customTooltipCtrl.render(image.record, {
+                                'image': angular.copy(image),
+                                'getRecordTitle': scope.getRecordTitle
+                            }, image.fieldname));
+                            detailsContainer = detailsContainer.remove();
+                            detailsContainer.insertAfter(angular.element($event.currentTarget).parent('.odswidget-media-gallery__media-line'));
+                        }
+                    });
                 };
 
                 scope.lines = [];
@@ -378,7 +408,7 @@
                 scope.layout.resetImages();
 
                 scope.renderImages = function() {
-                    var i, width, height, image;
+                    var i, image;
                     for (i = scope.nextImage; i < scope.images.length; i++) {
                         image = scope.images[i];
                         scope.layout.addImage(image, scope.images.length);

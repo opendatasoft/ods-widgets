@@ -119,6 +119,21 @@
          *     </ods-map>
          * </pre>
          *
+         * You can also configure layers to only be visible between certain zoom levels, using `showZoomMin`,
+         * `showZoomMax`, or both.
+         *
+         * <pre>
+         *     <!-- In this example I want to show only one layer at a time, but change it as the user zooms in the map. -->
+         *     <ods-map>
+         *         <!-- This layer is only visible up to zoom 8 -->
+         *         <ods-map-layer context="mycontext1" show-zoom-max="8"></ods-map-layer>
+         *         <!-- This layer appears between zoom 9 and 14 -->
+         *         <ods-map-layer context="mycontext2" show-zoom-min="9" show-zoom-max="14"></ods-map-layer>
+         *         <!-- This layer is visible starting at zoom 15 -->
+         *         <ods-map-layer context="mycontext3" show-zoom-min="15"></ods-map-layer>
+         *     </ods-map>
+         * </pre>
+         *
          * Several display modes are available, under two categories: visualization of the data itself (each point is a record),
          * and visualization of an aggregation of data (each point is the result of an aggregation function).
          *
@@ -532,12 +547,64 @@
                         };
                         L.drawLocal.edit.toolbar.actions = {
                             save: {
-                                title: translate('Save changes.'),
-                                text: translate('Save')
+                                title: translate('Apply'),
+                                text: translate('Apply')
                             },
                             cancel: {
                                 title: translate('Cancel editing, discards all changes.'),
                                 text: translate('Cancel')
+                            }
+                        };
+                        L.drawLocal.draw.handlers = {
+                            circle: {
+                                tooltip: {
+                                    start: translate('Click and drag to draw circle')
+                                },
+                                radius: translate('Radius')
+                            },
+                            marker: {
+                                tooltip: {
+                                    start: translate('Click map to place marker')
+                                }
+                            },
+                            polygon: {
+                                tooltip: {
+                                    start: translate('Click to start drawing shape'),
+                                    cont: translate('Click to continue drawing shape'),
+                                    end: translate('Click first point to close this shape')
+                                }
+                            },
+                            polyline: {
+                                error: '<strong>' + translate('Error:') + '</strong> ' + translate('shape edges cannot cross!'),
+                                tooltip: {
+                                    start: translate('Click to start drawing line'),
+                                    cont: translate('Click to continue drawing line'),
+                                    end: translate('Click last point to finish line')
+                                }
+                            },
+                            rectangle: {
+                                tooltip: {
+                                    start: translate('Click and drag to draw rectangle')
+                                }
+                            },
+                            simpleshape: {
+                                tooltip: {
+                                    end: translate('Release mouse to finish drawing')
+                                }
+                            }
+                        }
+                        L.drawLocal.edit.handlers = {
+                            edit: {
+                                tooltip: {
+                                    text: translate('Drag handles to edit shape, then apply') +
+                                        '<br>' +
+                                        '<em>' + translate('Click cancel to undo changes') + '</em>'
+                                }
+                            },
+                            remove: {
+                                tooltip: {
+                                    text: translate('Click on a shape to delete it, then apply')
+                                }
                             }
                         };
 
@@ -547,9 +614,15 @@
                             },
                             draw: {
                                 polyline: false,
-                                marker: false
+                                marker: false,
+                                circle: {
+                                    showRadius: true,
+                                    metric: true,
+                                    feet: false
+                                }
                             }
                         });
+                        map.options.drawControlTooltips = true;
                         map.addControl(drawControl);
                     }
 
@@ -793,6 +866,13 @@
                                     return;
                                 }
                                 angular.forEach(layerGroup.layers, function(layer) {
+                                    if (layer.showZoomMin && layer.showZoomMin > scope.map.getZoom()) {
+                                        return;
+                                    }
+                                    if (layer.showZoomMax && layer.showZoomMax < scope.map.getZoom()) {
+                                        return;
+                                    }
+
                                     // Depending on the layer config, we can opt for various representations
 
                                     // Tiles: call a method on the existing layer
@@ -1157,6 +1237,8 @@
             scope: {
                 context: '=',
                 showIf: '=',
+                showZoomMin: '@',
+                showZoomMax: '@',
                 color: '@',
                 borderColor: '@',
                 opacity: '@',
@@ -1168,6 +1250,11 @@
                 colorGradient: '=',
                 colorByField: '@',
                 colorFunction: '@',
+                size: '@',
+                sizeMin: '@',
+                sizeMax: '@',
+                sizeFunction: '@',
+
                 picto: '@',
                 showMarker: '@',
                 display: '@',
@@ -1273,7 +1360,13 @@
                     'hoverField': scope.hoverField,
                     'excludeFromRefit': scope.excludeFromRefit,
                     'caption': !!scope.caption,
-                    'captionTitle': scope.captionTitle
+                    'captionTitle': scope.captionTitle,
+                    'showZoomMin': scope.showZoomMin,
+                    'showZoomMax': scope.showZoomMax,
+                    'size': scope.size,
+                    'minSize': scope.sizeMin,
+                    'maxSize': scope.sizeMax,
+                    'sizeFunction': scope.sizeFunction
                 };
                 var layer = MapHelper.MapConfiguration.createLayerConfiguration(customTemplate, config);
                 var layerGroup;

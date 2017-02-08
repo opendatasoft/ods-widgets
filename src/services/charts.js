@@ -103,6 +103,7 @@
                 {label: translate('Spiderweb chart'), type: 'spiderweb', group: translate('Pie charts')},
                 {label: translate('Polar chart'), type: 'polar', group: translate('Pie charts')},
                 {label: translate('Funnel chart'), type: 'funnel', group: translate('Pyramid charts')},
+                {label: translate('Boxplot'), type: 'boxplot', group: translate('Boxplot charts')}
             ],
             timeserie_precision_tab = [
                 "year",
@@ -497,6 +498,7 @@
                 }
             },
             setSerieDefaultValues: function(datasetid, chart, xAxis, conservative) {
+                var i, subsets;
                 // Compute default labels
                 // Enveloppe
                 if (typeof xAxis === "undefined") {
@@ -541,9 +543,10 @@
                     }
                 }
 
-                if(chart.type && this.isRangeChart(chart.type)){
+                if(chart.type && this.isRangeChart(chart.type)) {
                     chart.func = 'COUNT';
-                    if(!chart.charts){
+                    subsets = [5, 95];
+                    if (!chart.charts) {
                         chart.charts = [
                             {
                                 func: 'MIN',
@@ -555,26 +558,70 @@
                             }
                         ];
                     }
-                    if (typeof chart.charts[0].yAxis === "undefined" || chart.charts[0].yAxis === "") {
-                        chart.charts[0].yAxis = chart.charts[0].expr || chart.yAxis;
-                        delete chart.charts[0].expr;
-                    }
-                    if (typeof chart.charts[1].yAxis === "undefined" || chart.charts[1].yAxis === "") {
-                        chart.charts[1].yAxis =  chart.charts[1].expr || chart.yAxis;
-                        delete chart.charts[1].expr;
-                    }
-                    if(chart.charts[0].func === 'QUANTILES' && (chart.charts[0].subsets === "" || typeof chart.charts[0].subsets === "undefined")){
-                        chart.charts[0].subsets = 5;
-                    }
-                    if(chart.charts[1].func === 'QUANTILES' && (chart.charts[1].subsets === "" || typeof chart.charts[1].subsets === "undefined")){
-                        chart.charts[1].subsets = 95;
+                    if (chart.charts.length === 5) {
+                        chart.charts[1] = angular.copy(chart.charts[4]);
+                        chart.charts.splice(2, 3);
                     }
 
-                    if (chart.charts[0].func !== 'QUANTILES' && chart.charts[0].subsets) {
-                        delete chart.charts[0].subsets;
+                    for (i = 0; i < 2; i++) {
+                        if (typeof chart.charts[i].yAxis === "undefined" || chart.charts[i].yAxis === "") {
+                            chart.charts[i].yAxis = chart.charts[i].expr || chart.yAxis;
+                            delete chart.charts[i].expr;
+                        }
+
+                        if (chart.charts[i].func === 'QUANTILES' && (chart.charts[i].subsets === "" || typeof chart.charts[i].subsets === "undefined")) {
+                            chart.charts[i].subsets = subsets[i];
+                        }
+
+                        if (chart.charts[i].func !== 'QUANTILES' && chart.charts[i].subsets) {
+                            delete chart.charts[i].subsets;
+                        }
                     }
-                    if (chart.charts[1].func !== 'QUANTILES' && chart.charts[1].subsets) {
-                        delete chart.charts[1].subsets;
+                } else if (chart.type && chart.type === 'boxplot') {
+                    chart.func = 'COUNT';
+                    subsets = [1, 25, 50, 75, 100];
+                    if (!chart.charts) {
+                        chart.charts = [];
+                    }
+                    if (chart.charts.length === 2) {
+                        chart.charts[4] = angular.copy(chart.charts[1]);
+                        chart.charts[1] = undefined;
+                    }
+
+                    if (typeof chart.charts[0] === "undefined") {
+                        chart.charts[0] = {
+                            func: 'MIN',
+                            yAxis: chart.yAxis
+                        };
+                    }
+                    for (i = 1; i < 4; i++) {
+                        if (typeof chart.charts[i] === "undefined") {
+                            chart.charts[i] = {
+                                func: 'QUANTILES',
+                                yAxis: chart.yAxis,
+                                subsets: subsets[i]
+                            };
+                        }
+                    }
+                    if (typeof chart.charts[4] === "undefined") {
+                        chart.charts[4] = {
+                            func: 'MAX',
+                            yAxis: chart.yAxis
+                        };
+                    }
+                    for (i = 0; i < 5; i++) {
+                        if (typeof chart.charts[i].yAxis === "undefined" || chart.charts[i].yAxis === "") {
+                            chart.charts[i].yAxis = chart.charts[i].expr || chart.charts[i].yAxis || chart.yAxis;
+                            delete chart.charts[i].expr;
+                        }
+
+                        if (chart.charts[i].func === 'QUANTILES' && (chart.charts[i].subsets === "" || typeof chart.charts[i].subsets === "undefined")) {
+                            chart.charts[i].subsets = subsets[i];
+                        }
+
+                        if (chart.charts[i].func !== 'QUANTILES' && chart.charts[i].subsets) {
+                            delete chart.charts[i].subsets;
+                        }
                     }
                 } else {
                     if(chart.charts){
@@ -626,6 +673,8 @@
                 } else {
                     if (this.isRangeChart(chart.type)) {
                         return this.getYLabel(datasetid, chart.charts[0]) + " / " + this.getYLabel(datasetid, chart.charts[1]);
+                    } else if (chart.type === 'boxplot') {
+                        return translate('Boxplot');
                     } else {
                         var funcLabel = AggregationHelper.getFunctionLabel(chart.func);
                         var nameY = chart.yAxis || chart.expr;
@@ -664,13 +713,25 @@
             },
             getFieldUnit: function(datasetid, fieldName) {
                 var field = this.getField(datasetid, fieldName);
-                if (field.annotations) {
+                if (field && field.annotations) {
                     for (var i = 0; i < field.annotations.length; i++) {
                         if (field.annotations[i].name === "unit") {
                             return field.annotations[i].args[0];
                         }
                     }
                     return field.annotations.unit;
+                }
+                return false;
+            },
+            getDecimals: function(datasetid, fieldName) {
+                var field = this.getField(datasetid, fieldName);
+                if (field && field.annotations) {
+                    for (var i = 0; i < field.annotations.length; i++) {
+                        if (field.annotations[i].name === "decimals") {
+                            return field.annotations[i].args[0];
+                        }
+                    }
+                    return false;
                 }
                 return false;
             },

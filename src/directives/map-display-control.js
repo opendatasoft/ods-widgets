@@ -21,13 +21,9 @@
                 mapConfig: '=',
                 singleLayer: '='
             },
-            controller: ['$scope', function ($scope) {
-                var stripTags = function (text) {
-                    // FIXME: Implement
-                    return text;
-                };
+            controller: ['$scope', 'shortSummaryFilter', function ($scope, shortSummaryFilter) {
                 $scope.getGroupDescription = function(group) {
-                    return group.description || stripTags(group.layers[0].context.dataset.metas.description);
+                    return group.description || shortSummaryFilter(group.layers[0].context.dataset.metas.description, 200);
                 };
                 $scope.toggleGroup = function(group) {
                     if (!$scope.singleLayer) {

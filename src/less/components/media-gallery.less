@@ -13,7 +13,6 @@
 
 .odswidget-media-gallery__media-container {
     position: relative;
-    /*overflow: hidden;*/
     div {
         position: relative;
         background-color: @color-lightestgrey;
@@ -117,4 +116,14 @@
 .ods-media-gallery__tooltip__fields {
     float: right;
     width: 49%;
+    overflow-wrap: break-word;
+}
+
+.ods-media-gallery__image-spinner-overlay {
+    position: absolute;
+    top: 48%;
+    left: 48%;
+    right: 0;
+    bottom: 0;
+    font-size: 2rem;
 }

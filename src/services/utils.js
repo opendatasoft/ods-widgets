@@ -66,11 +66,29 @@
                     'ar': {
                         'js': ['libs/fullcalendar/lang/ar.js']
                     },
+                    'ca': {
+                        'js': ['libs/fullcalendar/lang/ca.js']
+                    },
+                    'de': {
+                        'js': ['libs/fullcalendar/lang/de.js']
+                    },
+                    'es': {
+                        'js': ['libs/fullcalendar/lang/es.js']
+                    },
+                    'eu': {
+                        'js': ['libs/fullcalendar/lang/eu.js']
+                    },
                     'fr': {
                         'js': ['libs/fullcalendar/lang/fr.js']
                     },
+                    'it': {
+                        'js': ['libs/fullcalendar/lang/it.js']
+                    },
                     'nl': {
                         'js': ['libs/fullcalendar/lang/nl.js']
+                    },
+                    'pt': {
+                        'js': ['libs/fullcalendar/lang/pt.js']
                     }
                 }
             },

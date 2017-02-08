@@ -91,6 +91,14 @@
         Context: {
             toggleRefine: function(context, facetName, path, replace) {
                 var refineKey = 'refine.'+facetName;
+                var refineSeparator = '/';
+                if (context.dataset) {
+                    var field = context.dataset.getField(facetName);
+                    var annotation = context.dataset.getFieldAnnotation(field, "hierarchical");
+                    if (typeof annotation !== "undefined") {
+                        refineSeparator = annotation.args[0] || refineSeparator;
+                    }
+                }
                 if (angular.isDefined(context.parameters[refineKey])) {
                     // There is at least one refine already
                     var refines = angular.copy(context.parameters[refineKey]);
@@ -104,10 +112,10 @@
                     } else {
                         // Activate
                         angular.forEach(refines, function(refine, idx) {
-                            if (path.startsWith(refine+'/')) {
+                            if (path.startsWith(refine + refineSeparator)) {
                                 // This already active refine is less precise than the new one, we remove it
                                 refines.splice(idx, 1);
-                            } else if (refine.startsWith(path+'/')) {
+                            } else if (refine.startsWith(path + refineSeparator)) {
                                 // This already active refine is more precise than the new one, we remove it
                                 refines.splice(idx, 1);
                             }
@@ -407,15 +415,19 @@
         Dataset: function(dataset) {
             var types, facetsCount, filtersDescription;
 
-            var isFieldAnnotated = function(field, annotationName) {
+            var getFieldAnnotation = function(field, annotationName) {
+                var i = 0;
                 if (field.annotations) {
-                    for (var i=0; i<field.annotations.length; i++) {
+                    for (; i < field.annotations.length; i++) {
                         if (field.annotations[i].name === annotationName) {
-                            return true;
+                            return field.annotations[i];
                         }
                     }
                 }
-                return false;
+            };
+
+            var isFieldAnnotated = function(field, annotationName) {
+                return typeof getFieldAnnotation(field, annotationName) !== "undefined";
             };
 
             var iterateFields = function(fields) {
@@ -447,7 +459,6 @@
                 fields: dataset.fields,
                 extra_metas: dataset.extra_metas,
                 interop_metas: dataset.interop_metas,
-                billing_plans: dataset.billing_plans,
                 setFields: function(fields) {
                     this.fields = fields;
                     iterateFields(this.fields);
@@ -565,6 +576,9 @@
                 },
                 isFieldAnnotated: function(field, annotationName) {
                     return isFieldAnnotated(field, annotationName);
+                },
+                getFieldAnnotation: function(field, annotationName) {
+                    return getFieldAnnotation(field, annotationName);
                 }
             };
         },
@@ -705,6 +719,45 @@
                     }
                     return date;
                 }
+            },
+            getTimescaleProperties: function (timescale) {
+                var details = {
+                    'year': ['year'],
+                    'month': ['year', 'month'],
+                    'day': ['year', 'month', 'day'],
+                    'hour': ['year', 'month', 'day', 'hour'],
+                    'minute': ['year', 'month', 'day', 'hour', 'minute'],
+                    'month month': ['month'],
+                    'day day': ['day'],
+                    'day weekday': ['weekday'],
+                    'hour weekday': ['weekday', 'hour'],
+                    'day month': ['yearday'],
+                    'hour hour': ['hour']
+                };
+                if (timescale in details) {
+                    return details[timescale];
+                }
+                return null;
+                
+            },
+            getTimescaleX: function(x, timescale) {
+                /**
+                 * Build timescale x array.
+                 * E.g. for x='start_time' and timescale='day': ['start.year', 'start.month', 'start.day']
+                 */
+                var xs = [];
+                var properties = ODS.DateFieldUtils.getTimescaleProperties(timescale);
+                if (properties) {
+                    angular.forEach(properties, function (property) {
+                        xs.push(x + '.' + property);
+                    });
+                } else {
+                    xs.push(x);
+                }
+                return xs;
+            },
+            getTimescaleSort: function (xs) {
+                return xs.map(function(item) { return 'x.' + item; }).join(",");
             }
         }
     };

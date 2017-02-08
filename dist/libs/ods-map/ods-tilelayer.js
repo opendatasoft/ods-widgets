@@ -141,7 +141,7 @@ L.ODSTileLayer = L.TileLayer.extend({
                 }
             }
 
-            attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/wp-content/uploads/2016/06/favicon.png" width="16" height="16"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
+            attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/images/favicon.png" width="16" height="16"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
             
             layerOptions = {
