@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsFilterSummary', function () {
+    mod.directive('odsFilterSummary', ['odsTimerangeParser', 'odsTimescaleParser', function (odsTimerangeParser, odsTimescaleParser) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsFilterSummary
@@ -75,12 +75,7 @@
                         }
                         return translate(ODS.StringUtils.capitalize(facetGroupName));
                     } else {
-                        for (var i = 0; i < context.dataset.fields.length; i++) {
-                            var field = context.dataset.fields[i];
-                            if (field.name == facetGroupName) {
-                                return field.label;
-                            }
-                        }
+                        return context.dataset.getFieldLabel(facetGroupName);
                     }
                 };
 
@@ -104,7 +99,7 @@
                                 valueList = [valueList];
                             }
                             for (var i = 0; i < valueList.length; i++) {
-                                if (valueList[i] == refinement.value) {
+                                if (valueList[i] === refinement.value) {
                                     valueList.splice(i, 1);
                                     if (valueList.length === 0) {
                                         delete context.parameters[refinement.parameter];
@@ -122,9 +117,9 @@
                     var addRefinement = function (context, label, value, parameter, displayValue) {
                         var inserted = false;
                         angular.forEach(refinements, function (refinement) {
-                            if (refinement.parameter == parameter
-                                && refinement.label == label
-                                && refinement.value == value) {
+                            if (refinement.parameter === parameter
+                                && refinement.label === label
+                                && refinement.value === value) {
                                 refinement.contexts.push(context);
                                 inserted = true;
                             }
@@ -157,6 +152,25 @@
 
                             if (context.type === 'catalog' && isParameterActive(context, 'q.geographic_area')) {
                                 addRefinement(context, translate('Geographic area'), context.parameters['q.geographic_area'], 'q.geographic_area', translate('Drawn area on the map'));
+                            }
+
+                            if (isParameterActive(context, 'q.timerange')) {
+                                var timerange = odsTimerangeParser(context.parameters['q.timerange']);
+                                var timerangeDisplayValue = translate('Between {from} and {to}');
+                                timerangeDisplayValue = format_string(timerangeDisplayValue, {
+                                    from: moment(timerange.from).format('LLL'),
+                                    to: moment(timerange.to).format('LLL')
+                                });
+                                addRefinement(context, context.dataset.getFieldLabel(timerange.field), context.parameters['q.timerange'], 'q.timerange', timerangeDisplayValue);
+                            }
+
+                            if (isParameterActive(context, 'q.timescale')) {
+                                var timescale = odsTimescaleParser(context.parameters['q.timescale']);
+                                addRefinement(context, context.dataset.getFieldLabel(timescale.field), context.parameters['q.timescale'], 'q.timescale', timescale.scaleLabel);
+                            }
+
+                            if (isParameterActive(context, 'q.mapfilter')) {
+                                addRefinement(context, translate('Map filter'), context.parameters['q.mapfilter'], 'q.mapfilter');
                             }
 
                             // handle facets
@@ -193,5 +207,5 @@
                 }, true);
             }]
         };
-    });
+    }]);
 }());

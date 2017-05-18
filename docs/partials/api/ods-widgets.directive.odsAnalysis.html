@@ -44,10 +44,10 @@ It can be used with AngularJS&#39;s ngRepeat to simply build a table of analysis
                         ods-analysis-context="tree"
                         ods-analysis-max="10"
                         ods-analysis-x="espece"
-                        ods-analysis-sort="circonference"
-                        ods-analysis-serie-hauteur="AVG(hauteur)"
+                        ods-analysis-sort="circonferenceencm"
+                        ods-analysis-serie-hauteur="AVG(hauteurenm)"
                         ods-analysis-serie-hauteur-cumulative="false"
-                        ods-analysis-serie-circonference="AVG(circonf)"
+                        ods-analysis-serie-circonference="AVG(circonferenceencm)"
                 >
                     <td>{{ result.x }}</td>
                     <td>{{ result.hauteur|number:2 }}</td>
@@ -55,7 +55,7 @@ It can be used with AngularJS&#39;s ngRepeat to simply build a table of analysis
                 </tr>
             </tbody>
         </table>
-    </ods-catalog-context>
+    </ods-dataset-context>
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>

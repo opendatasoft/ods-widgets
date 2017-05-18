@@ -19,9 +19,9 @@
          * * {@link ods-widgets.directive:odsChart odsChart}
          * * {@link ods-widgets.directive:odsChartSerie odsChartSerie}
          *
-         * In order for a widget to support refineOnClick, it must accept within it link function an optional
-         * refineOnClickCtrl that exposes a method refineOnClickCtrl.refineContext(record) that must be called for
-         * each relevant click.
+         * When clicking on an item, the contexts will be refined (using the values in the configured fields). By default, if you click
+         * on more than one items, the refinements will add up, which can be useful in situations with multiples values.
+         * If you'd prefer the refinement to be replaced each time you click, you can use `refineOnClickReplaceRefine`.
          *
          * @example
          *  <example module="ods-widgets">
@@ -38,12 +38,19 @@
          *      <file name="index.html">
          *          <my-directive refine-on-click
          *                        refine-on-click-context="mycontext, mycontext2"
+         *                        refine-on-click-mycontext-replace-refine="true"
          *                        refine-on-click-mycontext-record-field="field1"
          *                        refine-on-click-mycontext-context-field="field2"
          *                        refine-on-click-mycontext2-record-field="field3"
          *                        refine-on-click-mycontext2-context-field="field4"></my-directive>
          *      </file>
          *  </example>
+         */
+        /*
+         * DEV NOTES:
+         * In order for a widget to support refineOnClick, it must accept within it link function an optional
+         * refineOnClickCtrl that exposes a method refineOnClickCtrl.refineContext(record) that must be called for
+         * each relevant click.
          */
         return {
             restrict: 'A',
@@ -54,13 +61,13 @@
 
                 this.refineOnRecord = function (record) {
                     angular.forEach(refineConfigurations, function (refineConf) {
-                        refineConf.context.toggleRefine(refineConf.contextField, record.fields[refineConf.recordField]);
+                        refineConf.context.toggleRefine(refineConf.contextField, record.fields[refineConf.recordField], refineConf.replaceRefine);
                     });
                 };
 
                 this.refineOnValue = function (value) {
                     angular.forEach(refineConfigurations, function (refineConf) {
-                        refineConf.context.toggleRefine(refineConf.contextField, value);
+                        refineConf.context.toggleRefine(refineConf.contextField, value, refineConf.replaceRefine);
                     });
                 };
 
@@ -89,7 +96,8 @@
                             refineConfigurations.push({
                                 context: context,
                                 recordField: $attrs[attributeName + 'RecordField'] || $attrs['refineOnClickRecordField'],
-                                contextField: $attrs[attributeName + 'ContextField'] || $attrs['refineOnClickContextField']
+                                contextField: $attrs[attributeName + 'ContextField'] || $attrs['refineOnClickContextField'],
+                                replaceRefine: $attrs[attributeName + 'ReplaceRefine'] === 'true' || $attrs['refineOnClickReplaceRefine'] === 'true'
                             });
                             unwatchRefineOnClick();
                         });

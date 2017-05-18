@@ -11,6 +11,8 @@
                 var parameters = angular.extend({}, layerConfig.context.parameters, {
                     'rows': 1000,
                     'format': 'json',
+                    'geo_simplify': true,
+                    'geo_simplify_zoom': map.getZoom(),
                     'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
                 });
                 // Which fields holds the geometry?
@@ -40,7 +42,7 @@
                             if (record.fields[shapeField]) {
                                 geoJSON = record.fields[shapeField];
                                 if (geoJSON.type === 'Point' && angular.isDefined(record.geometry)) {
-                                    // Due to a problem with how we handke precisions, we query a point with a lower precision than
+                                    // Due to a problem with how we handle precisions, we query a point with a lower precision than
                                     // the geoJSON, so we need to use the geometry field instead.
                                     geoJSON = record.geometry;
                                 }

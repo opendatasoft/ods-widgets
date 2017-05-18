@@ -3,6 +3,9 @@
 
     var mod = angular.module('ods-widgets');
 
+    var schemaCache = {};
+    var loadingSchemas = {};
+
     mod.factory('ContextHelper', ['ODSAPI', '$q', function (ODSAPI, $q) {
         return {
             getDatasetContext: function(contextName, domainId, datasetId, contextParameters, source, apikey, schema) {
@@ -30,6 +33,9 @@
                             var that = this;
                             return filters.filter(function (filter) {
                                 return (filter == 'q' && that.parameters.q && that.parameters.q.length > 0)
+                                    || filter == 'q.timerange'
+                                    || filter == 'q.timescale'
+                                    || filter == 'q.mapfilter'
                                     || filter == 'geofilter.polygon'
                                     || filter == 'geofilter.distance'
                                     || filter.indexOf('refine.') === 0
@@ -52,17 +58,34 @@
                     context.dataset = new ODS.Dataset(schema);
                     deferred.resolve(context.dataset);
                 } else {
-                    ODSAPI.datasets.get(context, datasetId, {
-                        extrametas: true,
-                        interopmetas: true,
-                        source: (contextParameters && contextParameters.source) || source || ""
-                    }).
-                        success(function (data) {
+                    var sourceParameter = (contextParameters && contextParameters.source) || source || "";
+                    var cacheKey = (context.domain || "") + '.' + sourceParameter + '.' + datasetId + '.' + (apikey || "");
+                    if (angular.isDefined(schemaCache[cacheKey])) {
+                        // The schema is already available
+                        context.dataset = new ODS.Dataset(schemaCache[cacheKey]);
+                        deferred.resolve(context.dataset);
+                    } else if (angular.isDefined(loadingSchemas[cacheKey])) {
+                        // Someone is fetching the schema already, let's use their request
+                        loadingSchemas[cacheKey].then(function(response) {
+                            context.dataset = new ODS.Dataset(response.data);
+                            deferred.resolve(context.dataset);
+                        });
+                    } else {
+                        // We need to fetch it entirely
+                        loadingSchemas[cacheKey] =
+                            ODSAPI.datasets.get(context, datasetId, {
+                                extrametas: true,
+                                interopmetas: true,
+                                source: sourceParameter
+                            });
+                        loadingSchemas[cacheKey].success(function (data) {
+                            schemaCache[cacheKey] = data;
                             context.dataset = new ODS.Dataset(data);
                             deferred.resolve(context.dataset);
                         }).error(function (data) {
                             deferred.reject("Failed to fetch " + contextName + " context.");
                         });
+                    }
                 }
                 return context;
             }

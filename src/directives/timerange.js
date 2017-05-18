@@ -2,7 +2,7 @@
     'use strict';
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsTimerange', ['ModuleLazyLoader', 'translate', function(ModuleLazyLoader, translate) {
+    mod.directive('odsTimerange', ['ModuleLazyLoader', 'translate', 'odsTimerangeParser', function(ModuleLazyLoader, translate, odsTimerangeParser) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsTimerange
@@ -150,17 +150,19 @@
                     }
                     return parameterName;
                 };
-                var parameterValue,
-                    parameterRE = /([\w-]+):\[(.*) TO (.*)\]/;
+                var parameterValue;
                 if (angular.isArray(scope.context)) {
                     parameterValue = scope.context[0].parameters[getParameterName(scope.context[0])];
                 } else {
                     parameterValue = scope.context.parameters[getParameterName(scope.context)];
                 }
-                var matches = parameterRE.exec(decodeURIComponent(parameterValue));
-                if (matches && matches[1] == scope.timeField) {
-                    scope.defaultFrom = matches[2];
-                    scope.defaultTo = matches[3];
+
+                if (angular.isDefined(parameterValue)) {
+                    var parsedRange = odsTimerangeParser(parameterValue);
+                    if (parsedRange.field === scope.timeField) {
+                        scope.defaultFrom = parsedRange.from;
+                        scope.defaultTo = parsedRange.to;
+                    }
                 }
                 // Second step: parse defaultTo and defaultFrom and fill in the model
                 if (angular.isDefined(scope.defaultFrom)) {
@@ -209,6 +211,19 @@
                             scope.to = formatTimeToISO(to);
                         });
                     });
+
+                    var areAllParametersEmpty = function () {
+                        var contexts = angular.isArray(scope.context) ? scope.context : [scope.context];
+                        return contexts.reduce(function (allEmpty, context) {
+                            return allEmpty && !context.parameters[getParameterName(context)];
+                        }, true);
+                    };
+
+                    scope.$watch(areAllParametersEmpty, function (nv, ov) {
+                        if (nv && !ov) {
+                            inputs.val(null);
+                        }
+                    }, true)
                 });
             },
             controller: ['$scope', '$attrs', '$q', '$compile', '$rootScope', '$parse', function($scope, $attrs, $q, $compile, $rootScope, $parse) {

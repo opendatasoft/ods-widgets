@@ -91,6 +91,18 @@
                     });
                 })).then(function() {
                     react(contexts, timeFields);
+
+                    // watch for reset
+                    var areAllParametersEmpty = function () {
+                        return contexts.reduce(function (allEmpty, context) {
+                            return allEmpty && !context.parameters[parameterName];
+                        }, true);
+                    };
+                    $scope.$watch(areAllParametersEmpty, function (nv, ov) {
+                        if (nv && !ov) {
+                            $scope.scale = 'everything';
+                        }
+                    }, true);
                 });
 
                 var react = function(contexts, timeFields) {
@@ -103,20 +115,18 @@
                             return;
                         }
                         var q = null;
-                        var now = new Date();
                         if (scale === 'day') {
-                            now.setDate(now.getDate()-1);
+                            q = "#now(days=-1)";
                         } else if (scale === 'week') {
-                            now.setDate(now.getDate()-7);
+                            q = "#now(weeks=-1)";
                         } else if (scale === 'month') {
-                            now.setMonth(now.getMonth()-1);
+                            q = "#now(weeks=-4)";
                         } else if (scale === 'year') {
-                            now.setFullYear(now.getFullYear()-1);
+                            q = "#now(years=-1)";
                         }
-                        q = now.toISOString();
 
                         angular.forEach(contexts, function(context) {
-                            context.parameters[parameterName] = timeFields[context.dataset.getUniqueId()] + '>="' + q + '"';
+                            context.parameters[parameterName] = timeFields[context.dataset.getUniqueId()] + '>=' + q;
                         });
                     }, true);
                 };

@@ -350,6 +350,11 @@
                         return resultArray;
                     }, []);
                 }
+            },
+            sortNumbers: function(a, b) {
+                /* Use this function as a parameter to array.sort() to sort an array of numbers (by default .sort()
+                 * does an alphanumerical sort, even on numbers) */
+                return a - b;
             }
         },
         URLUtils: {

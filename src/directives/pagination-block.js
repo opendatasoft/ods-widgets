@@ -13,6 +13,8 @@
          * @param {number} [perPage=10] How many results should be contained per page.
          * @param {boolean} [nofollow=false] If true, all links within the widget (used to change page) will contain a `rel="nofollow"` attribute.
          * It should be used if you don't want search engines to crawl all the pages of your widget.
+         * @param {string} [containerIdentifier] By default, changing the page will trigger a scroll to the top of the window.
+         * Using this parameter, you can specify the ID of the element you want to scroll to the top of (e.g. "my-results").
          * @description
          * This widget displays a pagination control that you can use to make the context "scroll" through a list of results. It doesn't display
          * results by itself, and therefore should be paired with another widget. Note that by itself it also doesn't control the number of results fetched by the context,
@@ -44,7 +46,8 @@
             scope: {
                 context: '=',
                 perPage: '@',
-                nofollow: '@'
+                nofollow: '@',
+                containerIdentifier: '@'
             },
             controller: ['$scope', '$anchorScroll', function($scope, $anchorScroll) {
                 $scope.location = $location;
@@ -97,6 +100,11 @@
                     $scope.pages = pages;
                 };
 
+                var containerElement;
+                if ($scope.containerIdentifier) {
+                    containerElement = document.getElementById($scope.containerIdentifier);
+                }
+
                 var unwatch = $scope.$watch('context', function(nv, ov) {
                     if (nv) {
                         $scope.$watch('context.nhits', function(newValue, oldValue) {
@@ -110,7 +118,13 @@
                         $scope.$watch('context.parameters.start', function(newValue, oldValue) {
                             if ($scope.context.nhits && $scope.perPage)
                                 buildPages();
-                            $anchorScroll();
+                            if (angular.isDefined(newValue) || angular.isDefined(oldValue)) {
+                                if (containerElement) {
+                                    containerElement.scrollTop = 0;
+                                } else {
+                                    $anchorScroll();
+                                }
+                            }
                         });
                         unwatch();
                     }

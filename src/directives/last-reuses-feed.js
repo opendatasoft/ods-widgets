@@ -11,6 +11,8 @@
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @param {number} [max=5] Maximum number of reuses to show
+         * @param {boolean} [externalLinks=false] Clicking on the reuses' titles or images will directly redirect to the reuse.
+         * Otherwise, by default it will redirect to the dataset.
          * @description
          * This widget displays the last 5 reuses published on a domain.
          *
@@ -49,7 +51,7 @@
                 '       </div>' +
                 '       <div class="odswidget-last-reuses-feed__reuse-details">' +
                 '           <div class="odswidget-last-reuses-feed__reuse-details-title"><a ng-href="{{reuse.url}}" target="_self">{{ reuse.title }}</a></div>' +
-                '           <div class="odswidget-last-reuses-feed__reuse-details-dataset"><a ng-href="{{reuse.url}}" target="_self">{{ reuse.dataset.title }}</a></div>' +
+                '           <div class="odswidget-last-reuses-feed__reuse-details-dataset"><a ng-href="{{reuse.datasetUrl}}" target="_self">{{ reuse.dataset.title }}</a></div>' +
                 '           <div class="odswidget-last-reuses-feed__reuse-details-modified"><span title="{{ reuse.created_at|moment:\'LLL\' }}"><i class="fa fa-calendar" aria-hidden="true"></i> {{ reuse.created_at|timesince }}</span></div>' +
                 '       </div>' +
                 '   </li>' +
@@ -57,7 +59,8 @@
                 '</div>',
             scope: {
                 context: '=',
-                max: '@'
+                max: '@',
+                externalLinks: '=?'
             },
             controller: ['$scope', function($scope) {
                 $scope.max = $scope.max || 5;
@@ -66,7 +69,10 @@
                     ODSAPI.reuses($scope.context, {'rows': $scope.max}).
                         success(function(data) {
                             angular.forEach(data.reuses, function(reuse) {
-                                reuse.url = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/?tab=metas';
+                                if (!$scope.externalLinks) {
+                                    reuse.url = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/information/';
+                                }
+                                reuse.datasetUrl = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/information/';
                             });
                             $scope.reuses = data.reuses;
                         });

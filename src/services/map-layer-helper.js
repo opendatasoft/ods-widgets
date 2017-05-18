@@ -303,7 +303,7 @@
             },
             isAnalyzeEnabledClustering: function(layerConfig) {
                 /* Are the analyze features enabled for this clustering? */
-                return layerConfig.display === 'heatmap' || layerConfig.display === 'polygonforced' || layerConfig.display === 'shape' || layerConfig.display === 'aggregation';
+                return ['heatmap', 'polygonforced', 'shape', 'aggregation', 'clusters'].indexOf(layerConfig.display) >= 0;
             },
             doesLayerRefreshOnLocationChange: function(layerConfig) {
                 if (layerConfig.display === 'tiles') {
@@ -315,7 +315,7 @@
                     return true;
                 }
             },
-            drawPoint: function(layerConfig, map, coords, record, targetLayer) {
+            drawPoint: function(layerConfig, map, coords, record, targetLayer, geoDigest) {
                 var service = this;
                 SVGInliner.getPromise(PictoHelper.mapPictoToURL(layerConfig.picto, layerConfig.context), layerConfig.marker ? 'white' : service.getRecordColor(record, layerConfig)).then(function (svg) {
                     var singleMarker = new L.VectorMarker(coords, {
@@ -328,7 +328,11 @@
 
                     targetLayer.addLayer(singleMarker);
                     //targetLayer.addLayer(new L.Marker(coords)); // Uncomment to debug pointer alignment
-                    service.bindTooltip(map, singleMarker, layerConfig, coords, record.recordid);
+                    if (record) {
+                        service.bindTooltip(map, singleMarker, layerConfig, coords, record.recordid);
+                    } else {
+                        service.bindTooltip(map, singleMarker, layerConfig, coords, null, geoDigest);
+                    }
                 });
             },
             drawShape: function(layerConfig, map, geoJSON, record, targetLayer, geoDigest) {
@@ -393,28 +397,28 @@
             },
             patternToDashArray: function(pattern) {
                 var dashArray;
-                var DOT = 2;
+                var DOT = 1;
                 var SHORT = 5;
-                var MEDIUM = 10;
-                var LONG = 15;
+                var MEDIUM = 15;
+                var LONG = 30;
                 switch (pattern) {
                     case 'long-dashes':
-                        dashArray = [LONG, SHORT];
+                        dashArray = [LONG, MEDIUM];
                         break;
                     case 'medium-dashes':
-                        dashArray = [MEDIUM, SHORT];
+                        dashArray = [MEDIUM, MEDIUM];
                         break;
                     case 'short-dashes':
-                        dashArray = [SHORT, DOT];
+                        dashArray = [SHORT, MEDIUM];
                         break;
                     case 'dots':
-                        dashArray = [DOT, DOT];
+                        dashArray = [DOT, MEDIUM];
                         break;
                     case 'short-dot':
-                        dashArray = [SHORT, DOT, DOT, DOT];
+                        dashArray = [DOT, SHORT, SHORT];
                         break;
                     case 'short-dot-dot':
-                        dashArray = [SHORT, DOT, DOT, DOT, DOT];
+                        dashArray = [DOT, SHORT, SHORT, DOT, SHORT];
                         break;
                     case 'medium-short':
                         dashArray = [MEDIUM, SHORT, SHORT, SHORT];

@@ -2,7 +2,7 @@
     'use strict';
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsGeoSearch', ['ModuleLazyLoader', 'ODSWidgetsConfig', function (ModuleLazyLoader, ODSWidgetsConfig) {
+    mod.directive('odsGeoSearch', ['ModuleLazyLoader', 'ODSWidgetsConfig', 'MapHelper', function (ModuleLazyLoader, ODSWidgetsConfig, MapHelper) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsGeoSearch
@@ -62,7 +62,12 @@
                         }
                     });
                     map.addControl(drawControl);
-                    map.setView([0, 0], 0);
+                    if (angular.isDefined(ODSWidgetsConfig.defaultMapLocation)) {
+                        var loc = MapHelper.getLocationStructure(ODSWidgetsConfig.defaultMapLocation);
+                        map.setView(loc.center, loc.zoom);
+                    } else {
+                        map.setView([0, 0], 0);
+                    }
 
                     var clearLayers = function () {
                         if (drawnItems.getLayers().length > 0) {

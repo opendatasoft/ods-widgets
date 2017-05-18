@@ -11,6 +11,8 @@
          * @param {string} placeholder the text to display as a placeholder when the searchbox is empty
          * @param {CatalogContext} [context=none] {@link ods-widgets.directive:odsCatalogContext Catalog Context} indicating the domain to redirect the user to show the search results.
          * If none, the search is done on the local domain (/explore/ of the current domain the user is).
+         * @param {string} [autofocus] Add the autofocus attribute (no need for a value) to set the focus in the text search input
+         *
          * @description
          * This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.
          *
@@ -18,14 +20,20 @@
         return {
             restrict: 'E',
             replace: true,
-            template: '<div class="odswidget odswidget-searchbox">' +
-                    '<form method="GET" action="{{ actionUrl }}" ng-if="actionUrl">' +
+            template: '' +
+            '<div class="odswidget odswidget-searchbox">' +
+                '<form method="GET" action="{{ actionUrl }}" ng-show="actionUrl">' +
                     '<input class="odswidget-searchbox__box" name="q" type="text" placeholder="{{placeholder|translate}}">' +
-                    '</form>' +
-                '</div>',
+                '</form>' +
+            '</div>',
             scope: {
                 placeholder: '@',
                 context: '='
+            },
+            link: function (scope, element, attrs) {
+                if ('autofocus' in attrs) {
+                    $(element).find('input').focus();
+                }
             },
             controller: ['$scope', '$sce', function($scope, $sce) {
                 $scope.actionUrl = '/explore/';

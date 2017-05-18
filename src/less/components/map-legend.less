@@ -34,7 +34,8 @@
     text-align: center;
 }
 
-.odswidget-map-legend__categories__color-block {
+.odswidget-map-legend__categories__color-block,
+.odswidget-map-legend__choropleth__color-block{
     width: 16px;
     height: 16px;
     border: solid 1px black;
@@ -55,6 +56,7 @@
     padding: 2px;
     text-align: center;
     display: flex;
+    font-size: 0.9rem;
 }
 
 .odswidget-map-legend__categories--extended__item-color {
@@ -73,6 +75,33 @@
 .odswidget-map-legend__categories--extended__item-value--others {
     font-style: italic;
 }
+.odswidget-map-legend__choropleth-container {
+
+}
+.odswidget-map-legend__choropleth__item {
+    display: flex;
+    padding: 2px;
+}
+.odswidget-map-legend__choropleth__item-color {
+    flex-grow: 0;
+    flex-shrink: 0;
+    margin-right: 5px;
+}
+.odswidget-map-legend__choropleth__item-range {
+    flex-grow: 1;
+    flex-shrink: 1;
+    font-size: 0.9rem;
+    display: flex;
+}
+.odswidget-map-legend__choropleth__item-range__bound {
+    flex-grow: 1;
+    flex-shrink: 1;
+    text-align: right;
+    width: 50%;
+}
+.odswidget-map-legend__choropleth__item-range__bound-arrow {
+    margin-left: 10px;
+}
 
 .odswidget-map-legend__simple-container {
     text-align: center;
@@ -83,15 +112,41 @@
     border: solid 1px black;
     display: inline-block;
     margin-top: 10px;
+}
+
+.odswidget-map-legend__simple__color-block:last-child {
     margin-bottom: 10px;
 }
 
+.odswidget-map-legend__simple__color-block-subtext {
+    display: inline-flex;
+    width: 60%;
+    font-size: 0.8rem;
+    margin-bottom: 10px;
+}
+
+.odswidget-map-legend__simple__color-block-subtext-left {
+    width: 50%;
+    text-align: left;
+}
+
+.odswidget-map-legend__simple__color-block-subtext-right {
+    width: 50%;
+    text-align: right;
+}
 .odswidget-map-legend__title {
     position: relative;
     font-weight: 600;
     text-align: center;
+}
+.odswidget-map-legend__label {
+    font-size: 0.9rem;
+    text-align: center;
+}
+.odswidget-map-legend__header {
     margin-bottom: 5px;
 }
+
 .odswidget-map-legend__title--toggleable {
     padding-right: 20px;
 }

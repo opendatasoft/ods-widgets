@@ -90,8 +90,9 @@
                     $scope.fetching = true;
                     if ($scope.context.type === 'catalog') {
                         // FIXME: the extrametas parameter has been added here because the only place we use this directive
-                        // requires it, but we may be able to find something less "hardcoded".
-                        ODSAPI.datasets.search($scope.context, {rows: 10, start: start, extrametas: true}).success(function(data) {
+                        // requires it, and we can't pre-set the context parameters since it is urlsync'd,
+                        // but we may be able to find something less "hardcoded".
+                        ODSAPI.datasets.search($scope.context, {rows: 10, start: start, extrametas: true, interopmetas: true}).success(function(data) {
                             noMoreResults = data.datasets.length == 0;
                             renderResults(data.datasets, init);
                         });

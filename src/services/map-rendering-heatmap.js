@@ -29,10 +29,12 @@
 
                     //heatmapLayer.options.radius.value = Math.min((1 / data.clusters.length) * 4000 + 20, 50);
 
-                    heatmapOptions.radius = Math.min((1 / data.clusters.length) * 4000 + 20, 50);
+                    heatmapOptions.radius = Math.min((1 / data.clusters.length) * (4000 * (layerConfig.radius / 4)) + 20, 50);
 
                     var min = MapLayerHelper.getClusterMin(data, layerConfig);
                     var max = MapLayerHelper.getClusterMax(data, layerConfig);
+
+                    layerConfig._bounds = [min, max];
 
                     var heatmapData = [];
                     for (var i = 0; i < records.length; i++) {

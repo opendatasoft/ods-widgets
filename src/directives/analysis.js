@@ -47,10 +47,10 @@
          *                              ods-analysis-context="tree"
          *                              ods-analysis-max="10"
          *                              ods-analysis-x="espece"
-         *                              ods-analysis-sort="circonference"
-         *                              ods-analysis-serie-hauteur="AVG(hauteur)"
+         *                              ods-analysis-sort="circonferenceencm"
+         *                              ods-analysis-serie-hauteur="AVG(hauteurenm)"
          *                              ods-analysis-serie-hauteur-cumulative="false"
-         *                              ods-analysis-serie-circonference="AVG(circonf)"
+         *                              ods-analysis-serie-circonference="AVG(circonferenceencm)"
          *                      >
          *                          <td>{{ result.x }}</td>
          *                          <td>{{ result.hauteur|number:2 }}</td>
@@ -58,7 +58,7 @@
          *                      </tr>
          *                  </tbody>
          *              </table>
-         *          </ods-catalog-context>
+         *          </ods-dataset-context>
          *      </file>
          *  </example>
          */
@@ -194,7 +194,7 @@
          * @restrict A
          * @param {string} odsAnalysisSerie Analysis results
          * @param {string} odsAnalysisSerieCondition The condition to that the value must validate to be part of the serie. 'y' will be replaced by the value
-         * @param {string} odsAnalysisSerieName name of the serie to check for validation 
+         * @param {string} odsAnalysisSerieName name of the serie to check for validation
          * @param {string} odsAnalysisSerieSeparateOnX name of the x axis in the analysis response used to split series
          * @param {string} odsAnalysisSerieMode if mode is set to "reduce", keep only the longest serie of all splited series. Requires separate-on-x parameter.
          * @description
@@ -358,7 +358,7 @@
          * @param {string} odsSubaggregation Analysis results
          * @param {number} odsSubaggregationSerie* Aggregation expression
          * @description
-         * This widget computes aggregations on an analysis result. It 
+         * This widget computes aggregations on an analysis result. It
          * It can be used with AngularJS's ngRepeat to simply build a table of analysis results.
          *
          * @example

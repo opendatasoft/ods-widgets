@@ -9,7 +9,8 @@
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-searchbox
        placeholder="{string}"
-       context="{CatalogContext}"&gt;
+       context="{CatalogContext}"
+       [autofocus]="{string}"&gt;
 &lt;/ods-searchbox&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -18,5 +19,6 @@
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>placeholder</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odssearchbox-page"><p>the text to display as a placeholder when the searchbox is empty</p>
 </div></td></tr><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odssearchbox-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> indicating the domain to redirect the user to show the search results.
 If none, the search is done on the local domain (/explore/ of the current domain the user is).</p>
-</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>[autofocus]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odssearchbox-page"><p>Add the autofocus attribute (no need for a value) to set the focus in the text search input</p>
+</div></td></tr></tbody></table></div>
 </div>

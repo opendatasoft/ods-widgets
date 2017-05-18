@@ -27,7 +27,7 @@
             '           <i class="fa fa-search"></i> Search {{userQuery}} in displayed data' +
             '       </li>' +
             '       <li ng-repeat="suggestion in suggestions" ' +
-            '           ng-click="moveToSuggestion(suggestion)"' +
+            '           ng-click="moveToSuggestion(suggestion, $index + 1)"' +
             '           ng-class="[\'odswidget-map-search-box__suggestion\', {\'odswidget-map-search-box__suggestion--selected\': selectedIndex === $index + 1}]">' +
             '           <i ng-class="[\'odswidget-map-search-box__suggestion-icon\', getSuggestionIcon(suggestion)]"></i>' +
             '           <span class="odswidget-map-search-box__suggestion-name" ng-bind-html="suggestion._highlightResult.locale_names[0].value"></span>' +
@@ -102,14 +102,25 @@
                         }
                     );
                 };
+                
+                // Reset search
+                
                 scope.resetSearch = function() {
+                    // this will trigger then the registered reset callback (see below)
+                    mapCtrl.resetMapDataFilter();
+                };
+                
+                mapCtrl.registerResetCallback(function () {
                     scope.suggestions = [];
                     scope.userQuery = '';
-                    mapCtrl.resetMapDataFilter();
                     scope.stopDataSearch();
-                };
+                });
+                
                 scope.$on('$destroy', scope.resetSearch);
-                scope.moveToSuggestion = function(suggestion) {
+                scope.moveToSuggestion = function(suggestion, index) {
+                    if (angular.isDefined(index)) {
+                        scope.selectedIndex = index;
+                    }
                     var zoom;
                     if (suggestion.is_city) {
                         zoom = 14;
@@ -356,7 +367,7 @@
         var options = {};
         if (ODSWidgetsConfig.algoliaPlacesApplicationId) {
             options.headers = {
-                    'X-Algolia-Application-Id': ODSWidgetsConfig.algoliaPlacesApplicationID,
+                    'X-Algolia-Application-Id': ODSWidgetsConfig.algoliaPlacesApplicationId,
                     'X-Algolia-API-Key': ODSWidgetsConfig.algoliaPlacesAPIKey
             };
         }

@@ -29,7 +29,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget exposes the results of an analysis (as an object containing a results array and optionally an aggregations object) in a variable available in the scope.",
-      "keywords": "aggregations analysis angularjs api arbresremarquablesparis2011 array avg build catalog circonference class context dataset directive espece exposes false hauteur html invert maximum module ng-repeat ngrepeat number object ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-circonference ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-sort ods-analysis-x ods-widgets odsanalysiscontext odsanalysissort opendatasoft optionally parisdata result scope serie simply sort table table-bordered table-condensed table-striped tree tree-dataset tree-domain variable widget"
+      "keywords": "aggregations analysis angularjs api arbresremarquablesparis2011 array avg build catalog circonference circonferenceencm class context dataset directive espece exposes false hauteur html invert maximum module ng-repeat ngrepeat number object ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-circonference ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-sort ods-analysis-x ods-widgets odsanalysiscontext odsanalysissort opendatasoft optionally parisdata result scope serie simply sort table table-bordered table-condensed table-striped tree tree-dataset tree-domain variable widget"
     },
     {
       "section": "api",
@@ -222,6 +222,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsGist",
+      "shortName": "odsGist",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Integrates a GitHub Gist widget into a page",
+      "keywords": "api directive find gist github html integrates module ods-widgets opendatasoft url username widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsHighcharts",
       "shortName": "odsHighcharts",
       "type": "directive",
@@ -263,7 +272,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays the last 5 reuses published on a domain.",
-      "keywords": "adding api catalog context created_at customize dataset datetime description directive display displays domain first_name format fr html http inside iso last_name lll maximum module number ods-widgets original paris paris-domain published reuse reuses submission submitter tag template thumbnail title url user variables widget"
+      "keywords": "adding api catalog clicking context created_at customize dataset datetime default description directive directly display displays domain first_name format fr html http images inside iso last_name lll maximum module number ods-widgets original paris paris-domain published redirect reuse reuses submission submitter tag template thumbnail title titles url user variables widget"
     },
     {
       "section": "api",
@@ -325,7 +334,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a pagination control that you can use to make the context &quot;scroll&quot; through a list of results. It doesn&#39;t display",
-      "keywords": "active api attribute catalog change contained context control crawl dataset directive display displays doesn don engines fetched include links list nofollow note number ods-widgets odsresultenumerator pagination paired parameter perpage rel relevant rows scroll search system true widget"
+      "keywords": "active api attribute catalog change changing contained context control crawl dataset default directive display displays doesn don element engines fetched include links list my-results nofollow note number ods-widgets odsresultenumerator pagination paired parameter perpage rel relevant rows scroll search system top trigger true widget window"
     },
     {
       "section": "api",
@@ -397,7 +406,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.",
-      "keywords": "api catalog context current directive display displays domain empty explore homepage indicating local ods-widgets placeholder redirect redirects search searchbox text user wide widget"
+      "keywords": "add api attribute autofocus catalog context current directive display displays domain empty explore focus homepage indicating input local ods-widgets placeholder redirect redirects search searchbox set text user wide widget"
     },
     {
       "section": "api",
@@ -432,7 +441,7 @@ NG_DOCS={
       "shortName": "odsSubaggregation",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget computes aggregations on an analysis result. It ",
+      "shortDescription": "This widget computes aggregations on an analysis result. It",
       "keywords": "aggregation aggregations analysis angularjs api arbresremarquablesparis2011 average avg avgcirc build circonference computes context directive espece expression false family height html max maxhauteur module ngrepeat ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-circonference ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-sort ods-analysis-x ods-subaggregation ods-subaggregation-serie-avgcirc ods-subaggregation-serie-maxhauteur ods-widgets odssubaggregation odssubaggregationserie opendatasoft parisdata result simply table tree tree-dataset tree-domain widget"
     },
     {
@@ -541,7 +550,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This directive will refine the given context(s) for a click on an element representing a record.",
-      "keywords": "accept api called click conjunction context directive directives element exposes field1 field2 field3 field4 finite function html link method module mycontext mycontext2 ods-widgets odscalendar odschart odschartserie odsmap odsmediagallery optional order record refine refine-on-click refine-on-click-context refine-on-click-context-field refine-on-click-mycontext-context-field refine-on-click-mycontext-record-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-record-field refine-on-click-record-field refinecontext refineonclick refineonclickctrl relevant representing set support widget works"
+      "keywords": "add api click clicking configured conjunction context contexts default directive directives element field1 field2 field3 field4 fields finite html item items module multiples mycontext mycontext2 ods-widgets odscalendar odschart odschartserie odsmap odsmediagallery prefer record refine refine-on-click refine-on-click-context refine-on-click-context-field refine-on-click-mycontext-context-field refine-on-click-mycontext-record-field refine-on-click-mycontext-replace-refine refine-on-click-mycontext2-context-field refine-on-click-mycontext2-record-field refine-on-click-record-field refined refinement refinements refineonclickreplacerefine replaced representing set situations time true values works"
     },
     {
       "section": "api",

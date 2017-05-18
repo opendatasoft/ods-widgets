@@ -69,7 +69,7 @@
                         '       <span ng-switch-default ng-bind-html="record.fields[field.name]|prettyText|nofollow|safenewlines"></span>' +
                         '   </dd>' +
                         '</dl>' +
-    
+
                         '<a href="{{ image.download_url }}"' +
                         '       target="_self"' +
                         '       ods-resource-download-conditions' +
@@ -361,10 +361,10 @@
                     if (image.allFieldsInitialized) {
                         loadPromise = $q.resolve();
                     } else {
-                        var options = {
+                        var options = angular.copy(scope.context.parameters);
+                        jQuery.extend(options, {
                             q: ['recordid=' + image.record.recordid]
-                        };
-                        jQuery.extend(options, scope.context.parameters);
+                        });
 
                         image.fetching = true;
                         loadPromise = ODSAPI.records.search(scope.context, options, $q.defer()).success(function (data, status, headers, config) {

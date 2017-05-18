@@ -1,5 +1,5 @@
 
-@mapDisplayControl-gutterWidth: 20px;
+@mapDisplayControl-gutterWidth: 10px;
 .odswidget-map-display-control {
     width: 300px;
     position: absolute;
@@ -10,7 +10,7 @@
 
 .odswidget-map-display-control__groups {
     margin: 0;
-    padding: @mapDisplayControl-gutterWidth / 2;
+    padding: @mapDisplayControl-gutterWidth;
     list-style: none;
 }
 .odswidget-map-display-control__group {
@@ -19,10 +19,10 @@
     transition: margin-left 0.2s, border-left-width 0.2s, opacity 0.2s;
     border: solid 1px #E5E5E5;
     border-left-width: 5px;
-    padding: @mapDisplayControl-gutterWidth / 4;
+    padding: @mapDisplayControl-gutterWidth / 2;
 }
 .odswidget-map-display-control__group:not(:last-child) {
-    margin-bottom: @mapDisplayControl-gutterWidth / 2;
+    margin-bottom: @mapDisplayControl-gutterWidth;
 }
 .odswidget-map-display-control__group--disabled {
     //background-color: red;
@@ -35,6 +35,8 @@
     font-size: 1.1rem;
     color: #2C3F56;
     font-weight: 600;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .odswidget-map-display-control__group-description {

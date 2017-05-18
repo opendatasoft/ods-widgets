@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.factory('MapHelper', ['ODSWidgetsConfig', 'ODSAPI', '$q', function (ODSWidgetsConfig, ODSAPI, $q) {
+    mod.factory('MapHelper', ['ODSWidgetsConfig', 'ODSAPI', '$q', 'AggregationHelper', 'translate', function (ODSWidgetsConfig, ODSAPI, $q, AggregationHelper, translate) {
         var locationAccuracy = 5;
         var locationDelimiter = ',';
         var defaultMarkerColor = "#C32D1C";
@@ -74,6 +74,75 @@
                 var lng = L.Util.formatNum(center.lng, locationAccuracy);
                 return zoom + locationDelimiter + lat + locationDelimiter + lng;
             },
+            _getDatasetFieldBound: function(context, fieldName, orderPrefix) {
+                var service = this;
+                var deferred = $q.defer();
+                var apiParams = angular.extend({}, context.parameters, {'rows': 1});
+                var sort = fieldName;
+                if (orderPrefix) {
+                    sort = orderPrefix + sort;
+                }
+                ODSAPI.records.search(context, angular.extend(apiParams, {sort: sort})).then(function(result) {
+                    deferred.resolve(service.boundAsNumber(result.data.records[0].fields[fieldName]));
+                });
+                return deferred.promise;
+            },
+            getDatasetFieldBoundMin: function(context, fieldName) {
+                return this._getDatasetFieldBound(context, fieldName, '-');
+            },
+            getDatasetFieldBoundMax: function(context, fieldName) {
+                return this._getDatasetFieldBound(context, fieldName);
+            },
+            getDatasetFieldBounds: function(context, fieldName) {
+                var service = this;
+                var calls = [
+                    this.getDatasetFieldBoundMin(context, fieldName),
+                    this.getDatasetFieldBoundMax(context, fieldName)
+                ];
+                var deferred = $q.defer();
+                $q.all(calls).then(function(results) {
+                    var values = results.sort(ODS.ArrayUtils.sortNumbers);
+                    var minValue = values[0];
+                    var maxValue = values[1];
+                    deferred.resolve([minValue, maxValue]);
+                });
+                return deferred.promise;
+            },
+            boundAsNumber: function(number) {
+                return Math.round(parseFloat(number) * 100) / 100;
+            },
+            getLayerLegendLabel: function(layerConfig) {
+                var label = null;
+                if (['choropleth', 'categories', 'heatmap'].indexOf(layerConfig.display) >= 0) {
+                    var field;
+                    if (layerConfig.display === 'categories' || layerConfig.display === 'choropleth') {
+                        field = layerConfig.context.dataset.getField(layerConfig.color.field);
+                    } else if (layerConfig.func.toUpperCase() !== 'COUNT') {
+                        field = layerConfig.context.dataset.getField(layerConfig.expr);
+                    }
+                    if (field) {
+                        label = field.label;
+
+                        var addendums = [];
+                        if (layerConfig.func) {
+                            addendums.push(AggregationHelper.getFunctionLabel(layerConfig.func));
+                        }
+
+                        var unit = layerConfig.context.dataset.getFieldAnnotation(field, 'unit');
+                        if (unit) {
+                            var unitLabel = translate('in {unit}');
+                            addendums.push(format_string(unitLabel, {unit: unit.args[0]}));
+                        }
+
+                        if (addendums.length) {
+                            label += ' (' + addendums.join(', ') + ')';
+                        }
+                    } else {
+                        label = translate('Number of elements')
+                    }
+                    return label;
+                }
+            },
             MapConfiguration: {
                 getActiveContextList: function (config, options) {
                     /*
@@ -105,7 +174,7 @@
                     /* Returns all the contexts from active layergroups */
                     angular.forEach(config.groups, function (group) {
                         angular.forEach(group.layers, function (datasetConfig) {
-                            if (datasetConfig.context.dataset.hasGeoField()) {
+                            if (datasetConfig.context && datasetConfig.context.dataset && datasetConfig.context.dataset.hasGeoField()) {
                                 contexts.push(datasetConfig.context);
                             }
                         });
@@ -138,6 +207,7 @@
                     }
                     // Also converts the size to an int, if it was a string
                     config.size = Math.min(config.size, 10);
+                    config.radius = Math.min(config.radius, 10);
                     // FIXME: This is not clear which is what between this and setLayerDisplaySettingsFromDefault()
                     var layer = {
                         "context": null,
@@ -149,6 +219,7 @@
                         "expr": config.expression || null,
                         "marker": null,
                         "size": config.size || null,
+                        "radius": config.radius || null,
                         "tooltipTemplate": template,
                         "localKey": config.localKey || null,
                         "remoteKey": config.remoteKey || null,
@@ -184,7 +255,7 @@
                     }
 
                     layer.color = layer.color || layer.context.dataset.getExtraMeta('visualization', 'map_marker_color') || defaultMarkerColor;
-                    layer.picto = layer.picto || layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "circle" : "dot");
+                    layer.picto = layer.picto || layer.context.dataset.getExtraMeta('visualization', 'map_marker_picto') || (layer.marker ? "ods-circle" : "dot");
                     if (layer.marker) {
                         layer.size = layer.size || 4;
                     } else {
@@ -196,7 +267,7 @@
                     if (angular.isUndefined(layer.pointOpacity) || layer.pointOpacity === null) {
                         layer.pointOpacity = layer.pointOpacity || 1;
                     }
-
+                    layer.radius = layer.radius || 4;
                     layer.borderOpacity = layer.borderOpacity || 1;
                     layer.borderColor = layer.borderColor || '#FFFFFF';
                     layer.borderSize = layer.borderSize || 1;
@@ -221,7 +292,7 @@
                     });
                     return layerIds;
                 },
-                createLayerId: function(layer) {
+                createLayerId: function (layer) {
                     if (angular.isUndefined(layer._runtimeId)) {
                         layer._runtimeId = ODS.StringUtils.getRandomUUID();
                     }

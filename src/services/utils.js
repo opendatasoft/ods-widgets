@@ -238,7 +238,9 @@
                 });
             },
             markNotificationAsHandled: function(notification) {
-                notification.handled = true;
+                if (notification) {
+                    notification.handled = true;
+                }
             }
         };
     });
@@ -260,7 +262,7 @@
             var svg = angular.element(code);
             if (color) {
                 svg.css('fill', color);
-                svg.find('path, polygon, circle, rect, text').css('fill', color); // Needed for our legacy SVGs of various quality...
+                svg.find('path, polygon, circle, rect, text, ellipse').css('fill', color); // Needed for our legacy SVGs of various quality...
             }
             element.append(svg);
         };
@@ -493,11 +495,14 @@
                     }
                     url += '/static/pictos/img/set-v1/fa/' + pictoName + '.svg';
                 } else if (picto.startsWith('pdpicto-') || picto.startsWith('odspicto-')) {
-                    // Legacy - old picto set
+                    // Legacy - old picto set V1
                     picto = picto.replace('pdpicto-', 'pdpicto/').replace('odspicto-', 'odspicto/');
                     url += '/static/pictos/img/set-v1/' + picto + '.svg';
-                } else {
-                    // New picto set
+                } else if  (picto.startsWith('ods-')) {
+                    picto = picto.replace('ods-', '');
+                    url += '/static/pictos/img/set-v3/pictos/' + picto + '.svg' ;
+                }else {
+                    // Old picto set V2
                     url += '/static/pictos/img/set-v2/' + picto + '.svg';
                 }
                 return url;

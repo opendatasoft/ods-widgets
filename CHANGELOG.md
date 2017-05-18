@@ -2,6 +2,32 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.0.10 - 2017-05-18
+### Added
+- `odsFilterSummary`: now lists `odsTimerange`, `odsTimescale` and `odsMap` filters as well
+- `odsGeoSearch`: now uses the default map location set through ODSWidgetsConfig
+- `odsInfiniteScrollResults`: now lists dataset's interop metas as well
+- `odsLastReusesFeed`: new option to link either to the reuse or to the dataset
+- `odsMapDisplayControls`: if no group title or description is set, default to the title or description of the first 
+layer of the group before resorting to the this layer's dataset title and description.
+- `odsMapLegend`: support for choropleth and heatmap legends, and lots of visual improvements
+- `odsMapSearchBox`: visual improvements
+- `odsRefineOnClick`: new replace-refine option
+- `odsResultEnumerator`: new class to make customization easy and better scroll-to-top integration with `odsPaginationBlock`
+- `odsMap` lots of visual improvements and bug fixes
+- `odsDatasetContext`: now caching schema requests, resulting in a lot less requests (less quota usage and performance improvement)
+- `odsGist`: new directive to embed a GitHub Gist into any dashboard
+
+### Fixed
+- `odsAnalysis`: documentation's example
+- `odsCrossTable`: non-repeating row headers now working properly
+- `odsHighcharts`: only set HighCharts' UTC option for timeserie analysis
+- `odsMapSearchBox`: Algolia Places API key now correctly set
+- `odsMediaGallery`: fix bug with refined context where the selected picture was replaced by the first picture at selection
+- `odsPaginationBlock`: documentation update and trigger scroll-to-top only on page change and not at init
+- `odsSearchBox`: do not display search box if there is no context + support for autofocus
+- `odsTimerange`: fix default values that were always empty
+
 ## 1.0.9 - 2017-02-08
 ### Added
 - `odsCharts`: support for boxplot charts

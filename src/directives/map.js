@@ -274,7 +274,7 @@
             transclude: true,
             template: '' +
             '<div class="odswidget odswidget-map">' +
-            '    <div class="odswidget odswidget-map__map"></div>' +
+            '    <div class="odswidget odswidget-map__map" ng-class="{\'odswidget-map__map--with-searchbox\': searchBox, \'odswidget-map__map--with-display-control\': displayControl}"></div>' +
             '    <div class="odswidget-overlay map odswidget-overlay--opaque" ng-show="initialLoading">' +
             '        <ods-spinner></ods-spinner>' +
             '    </div>' +
@@ -283,7 +283,7 @@
             '    </div>' +
             '    <ods-map-display-control ng-if="displayControl && allContextsInitialized" single-layer="displayControlSingleLayer" map-config="mapConfig"></ods-map-display-control>' +
             '    <ods-map-search-box ng-if="searchBox"></ods-map-search-box>' +
-            '    <ods-map-legend ng-if="displayLegend" map-config="mapConfig"></ods-map-legend>' +
+            '    <ods-map-legend ng-if="displayLegend && allContextsInitialized" map-config="mapConfig"></ods-map-legend>' +
             '    <div ng-transclude></div>' + // Can't find any better solution...
             '</div>',
             link: function(scope, element, attrs) {
@@ -783,8 +783,10 @@
                                         parameters: value.parameters,
                                     };
                                 }
+                                // Things we want to discard, that don't impact the display
                                 if (['mapPresets', 'singleLayer', 'toolbarGeolocation', 'toolbarFullscreen',
-                                        'autoGeolocation', 'layerSelection', 'searchBox'].indexOf(key) > -1) {
+                                        'autoGeolocation', 'layerSelection', 'searchBox',
+                                        'title', 'description', 'caption', 'captionTitle'].indexOf(key) > -1) {
                                     return undefined;
                                 }
                                 return value;
@@ -858,6 +860,9 @@
                             angular.forEach(scope.mapConfig.groups, function(layerGroup) {
                                 if (!layerGroup.displayed) {
                                     angular.forEach(layerGroup.layers, function(layer) {
+                                        if (layer._currentRequestTimeout) {
+                                            layer._currentRequestTimeout.resolve();
+                                        }
                                         if (layer._rendered) {
                                             scope.map.removeLayer(layer._rendered);
                                             layer._rendered = null;
@@ -890,6 +895,9 @@
                             Object.keys(renderedLayers).forEach(function(runtimeId) {
                                 if (angular.isUndefined(newlyRenderedLayers[runtimeId])) {
                                     var layer = renderedLayers[runtimeId];
+                                    if (layer._currentRequestTimeout) {
+                                        layer._currentRequestTimeout.resolve();
+                                    }
                                     if (layer._rendered) {
                                         scope.map.removeLayer(layer._rendered);
                                         layer._rendered = null;
@@ -928,6 +936,8 @@
                             renderData();
                         }
                     };
+
+
 
                     var initDrawingTools = function() {
                         // Make sure we know when the user is drawing, so that we can ignore other interactions (click on
@@ -1146,7 +1156,14 @@
                         'groups': []
                     };
                 } else {
-                    //console.log('Using existing config', $scope.mapConfig);
+                    // Apply default values for existing configs (useful for migration of old configs)
+                    $scope.mapConfig.groups.forEach(function(group) {
+                        group.layers.forEach(function(layer) {
+                            layer.context.wait().then(function() {
+                                MapHelper.MapConfiguration.setLayerDisplaySettingsFromDefault(layer);
+                            });
+                        });
+                    });
                 }
 
                 // DEBUG //
@@ -1181,6 +1198,9 @@
                     contexts.forEach(function(ctx) {
                         delete ctx.parameters['q.mapfilter'];
                     });
+                    if (resetCallback) {
+                        resetCallback();
+                    }
                 };
                 this.applyMapDataFilter = function(userQuery) {
                     // This applies the search to all contexts. We could have done this only for the map, but this could
@@ -1195,6 +1215,27 @@
                 this.getActiveContexts = function() {
                     return MapHelper.MapConfiguration.getActiveContextList($scope.mapConfig);
                 };
+                
+                var resetCallback;
+                this.registerResetCallback = function (callback) {
+                    resetCallback = callback;
+                };
+                
+                // watch for reset
+                var that = this;
+                $scope.$watch(
+                    function () {
+                        var contexts = MapHelper.MapConfiguration.getContextList($scope.mapConfig);
+                        return contexts.reduce(function (empty, context) {
+                            return empty && !context.parameters['q.mapfilter'];
+                        }, true);
+                    },
+                    function (nv, ov) {
+                        if (nv && !ov && resetCallback) {
+                            resetCallback();
+                        }
+                    },
+                    true);
             }]
         };
     }]);
@@ -1242,6 +1283,8 @@
                 color: '@',
                 borderColor: '@',
                 opacity: '@',
+                shapeOpacity: '@',
+                pointOpacity: '@',
                 colorScale: '@',
                 colorRanges: '@',
                 colorCategories: '=',
@@ -1250,6 +1293,7 @@
                 colorGradient: '=',
                 colorByField: '@',
                 colorFunction: '@',
+                radius: '@',
                 size: '@',
                 sizeMin: '@',
                 sizeMax: '@',
@@ -1348,8 +1392,8 @@
                     'color': color,
                     'colorFunction': scope.colorFunction,
                     'borderColor': scope.borderColor,
-                    'shapeOpacity': scope.opacity,
-                    'pointOpacity': scope.opacity,
+                    'shapeOpacity': angular.isDefined(scope.shapeOpacity) && scope.shapeOpacity || scope.opacity,
+                    'pointOpacity': angular.isDefined(scope.pointOpacity) && scope.pointOpacity || scope.opacity,
                     'picto': scope.picto,
                     'display': scope.display,
                     'function': scope['function'],
@@ -1363,6 +1407,7 @@
                     'captionTitle': scope.captionTitle,
                     'showZoomMin': scope.showZoomMin,
                     'showZoomMax': scope.showZoomMax,
+                    'radius': scope.radius,
                     'size': scope.size,
                     'minSize': scope.sizeMin,
                     'maxSize': scope.sizeMax,

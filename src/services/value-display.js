@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.service('ValueDisplay', ['$filter', 'translate', function($filter, translate) {
+    mod.service('ValueDisplay', ['$filter', 'translate', 'ODSWidgetsConfig', function($filter, translate, ODSWidgetsConfig) {
         var valueFormatters = {
             'language': function(value) {
                 return $filter('isocode_to_language')(value);
@@ -21,7 +21,7 @@
                     case 'api':
                         return '<i class="odswidget-facet__value-icon fa fa-cogs"></i> ' + translate('API');
                     case 'custom_view':
-                        return '<i class="odswidget-facet__value-icon fa fa-tachometer"></i> ' + translate('Custom view');
+                        return '<i class="odswidget-facet__value-icon fa fa-' + ODSWidgetsConfig.defaultCustomViewConfig.icon + '"></i> ' + ODSWidgetsConfig.defaultCustomViewConfig.title;
                     default:
                         return value;
 

@@ -956,18 +956,20 @@
                         precision = timeserie.precision;
                         periodic = timeserie.periodic;
 
-                        var useUTC = false;
-                        if (periodic && precision === "hour") {
-                            useUTC = true;
-                        } else if (!periodic) {
-                            if (['year', 'month', 'day'].indexOf(precision) !== -1) {
+                        if (precision) {
+                            var useUTC = false;
+                            if (periodic && precision === "hour") {
                                 useUTC = true;
+                            } else if (!periodic) {
+                                if (['year', 'month', 'day'].indexOf(precision) !== -1) {
+                                    useUTC = true;
+                                }
                             }
-                        }
 
-                        Highcharts.setOptions({
-                            global: {'useUTC': useUTC}
-                        });
+                            Highcharts.setOptions({
+                                global: {'useUTC': useUTC}
+                            });
+                        }
 
                         var options = getGlobalOptions(parameters, precision, periodic, chartplaceholder, domain);
                         $scope.chartoptions = options;

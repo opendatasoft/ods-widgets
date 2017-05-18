@@ -292,6 +292,8 @@
                             var label = that.labelBuilder.buildLabel(analysisValue, fieldName, isMultiXAnalysis);
                             if (i === that.rowFields.length - 1 || that.repeatRowHeaders || that._insertedRowHeaders[fieldName].indexOf(label) === -1) {
                                 that.table[rowNumber][i] = new Cell(label, 0, 'ods-cross-table__cell--header');
+                                // Reset row value as it wasn't repeated
+                                that._insertedRowHeaders[fieldName] = [];
                                 that._insertedRowHeaders[fieldName].push(label);
                             }
                         }
