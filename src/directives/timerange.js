@@ -223,7 +223,7 @@
                         if (nv && !ov) {
                             inputs.val(null);
                         }
-                    }, true)
+                    }, true);
                 });
             },
             controller: ['$scope', '$attrs', '$q', '$compile', '$rootScope', '$parse', function($scope, $attrs, $q, $compile, $rootScope, $parse) {

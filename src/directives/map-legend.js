@@ -6,73 +6,148 @@
     mod.directive('odsMapLegend', [ function () {
         return {
             restrict: 'E',
+            require: '^odsMap',
             template: '' + '' +
-            '<div class="odswidget odswidget-map-legend" ng-class="{\'odswidget-map-legend--extended\': extended}" ng-if="layers.length > 0">' +
+            '<div class="odswidget odswidget-map-legend" ' +
+            '     ng-class="{\'odswidget-map-legend--extended\': ( selectedLayer.config.display === \'categories\' && extended), \'odswidget-map-legend--not-toggleable\' : !isToggleable(selectedLayer)}" ' +
+            '     ng-if="layers.length > 0" ' +
+            '     ng-click="isToggleable(selectedLayer) && !clickBlocked && toggle()">' +
             '   <div class="odswidget-map-legend__header">' +
-            '       <div class="odswidget-map-legend__title" ng-class="{\'odswidget-map-legend__title--toggleable\': getCategoriesCount(selectedLayer) > 6}" ng-click="toggle()">' +
-            '           {{ selectedLayer.config.captionTitle || selectedLayer.config.title || selectedLayer.config.context.dataset.metas.title}}' +
-            '           <i ng-show="getCategoriesCount(selectedLayer) > 6 && !extended" class="odswidget-map-legend__title-toggle odsui-top"></i>' +
-            '           <i ng-show="getCategoriesCount(selectedLayer) > 6 && extended" class="odswidget-map-legend__title-toggle odsui-bottom"></i>' +
+            '       <div ng-if="selectedLayer.config.captionPictoIcon" class="odswidget-map-legend__picto">' +
+            '           <ods-map-picto name="{{ selectedLayer.config.captionPictoIcon }}"'+
+            '                          color="{{ selectedLayer.config.captionPictoColor }}">' +
+            '           </ods-map-picto>' +
+            '       </div> ' +
+            '       <div class="odswidget-map-legend__title"' +
+            '           title="{{ getLayerTitle(selectedLayer) }}"' +
+            '           ng-bind="shortSummaryFilter(getLayerTitle(selectedLayer), 50)">'+
             '       </div>' +
+            '       <i ng-show="isToggleable(selectedLayer) && !extended" class="odswidget-map-legend__title-toggle odsui-top" ods-tooltip="Click to unfold" translate="ods-tooltip"></i>' +
+            '       <i ng-show="isToggleable(selectedLayer) && extended" class="odswidget-map-legend__title-toggle odsui-bottom" ods-tooltip="Click to fold" translate="ods-tooltip"></i>' +
             '       <div ng-show="selectedLayer.properties.legendLabel" ng-bind="selectedLayer.properties.legendLabel" class="odswidget-map-legend__label">' +
             '       </div>' +
             '   </div>' +
             '   <div ng-switch="selectedLayer.config.display">' +
-            '       <div ng-switch-when="categories" class="odswidget-map-legend__categories-container">' +
-            '           <div ng-if="getCategoriesCount(selectedLayer) > 6 && !extended" class="odswidget-map-legend__categories--condensed">' +
-            '              <div ng-repeat="(value, color) in getCategories(selectedLayer, 6)" class="odswidget-map-legend__categories--condensed__item">' +
-            '                  <div style="background-color: {{color}}" class="odswidget-map-legend__categories__color-block"></div>' +
-            '              </div>' +
+            '       <div ng-switch-when="categories" class="odswidget-map-legend__categories-container" ng-class="{\'odswidget-map-legend__categories-container--extended\' : extended}">' +
+            '           <div ng-if="selectedLayer.config.color.type !== \'field\'">' +
+            '               <div ng-if="isToggleable(selectedLayer) && !extended" class="odswidget-map-legend__categories--condensed">' +
+            '                   <div ng-repeat="(value, color) in getCategories(selectedLayer, maxCategories) track by $index" class="odswidget-map-legend__categories__item">' +
+            '                       <div class="odswidget-map-legend__categories__item-color">' +
+            '                           <div ng-style="{\'background-color\' :color}" class="odswidget-map-legend__categories__color-block"></div>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__categories__item-value" ng-bind="value"></div>' +
+            '                   </div>' +
+            '                   <div class="odswidget-map-legend__categories__item">' +
+            '                       <div class="odswidget-map-legend__categories__item-value--others">{{ getCategoriesCount(selectedLayer) - maxCategories }} <span translate>more item(s)...</span></div>'+
+            '                   </div>' +
+            '               </div>' +
+            '               <div ng-if="!isToggleable(selectedLayer) || extended" class="odswidget-map-legend__categories--extended">' +
+            '                   <div ng-repeat="(value, color) in getCategories(selectedLayer) track by $index" class="odswidget-map-legend__categories__item">' +
+            '                       <div class="odswidget-map-legend__categories__item-color">' +
+            '                           <div ng-style="{\'background-color\' :color}" class="odswidget-map-legend__categories__color-block"></div>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__categories__item-value" ng-bind="value"></div>' +
+            '                   </div>' +
+            '                   <div ng-show="selectedLayer.config.color.otherCategories" class="odswidget-map-legend__categories__item">' +
+            '                       <div class="odswidget-map-legend__categories__item-color">' +
+            '                           <div ng-style="{\'background-color\' :selectedLayer.config.color.otherCategories}" class="odswidget-map-legend__categories__color-block"></div>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__categories__item-value--others">Others</div>' +
+            '                   </div>' +
+            '               </div>' +
             '           </div>' +
-            '           <div ng-if="getCategoriesCount(selectedLayer) <= 6 || extended" class="odswidget-map-legend__categories--extended">' +
-            '               <div ng-repeat="(value, color) in getCategories(selectedLayer)" class="odswidget-map-legend__categories--extended__item">' +
-            '                   <div class="odswidget-map-legend__categories--extended__item-color">' +
-            '                       <div style="background-color: {{color}}" class="odswidget-map-legend__categories__color-block"></div>' +
-            '                   </div>' +
-            '                   <div class="odswidget-map-legend__categories--extended__item-value" ng-bind="value"></div>' +
-            '               </div>' +
-            '               <div ng-show="selectedLayer.config.color.otherCategories" class="odswidget-map-legend__categories--extended__item">' +
-            '                   <div class="odswidget-map-legend__categories--extended__item-color">' +
-            '                       <div style="background-color: {{selectedLayer.config.color.otherCategories}}" class="odswidget-map-legend__categories__color-block"></div>' +
-            '                   </div>' +
-            '                   <div class="odswidget-map-legend__categories--extended__item-value--others">Others</div>' +
-            '               </div>' +
+            '           <div ng-if="selectedLayer.config.color.type === \'field\'">' +
+            '               <div class="odswidget-map-legend__no-legend-placeholder" translate>No legend available</div>' +
             '           </div>' +
             '       </div>' +
             '       <div ng-switch-when="choropleth" class="odswidget-map-legend__choropleth-container">' +
-            '           <div ng-repeat="bound in selectedLayer.properties.bounds" class="odswidget-map-legend__choropleth__item">' +
-            '               <div class="odswidget-map-legend__choropleth__item-color">' +
-            '                   <div style="background-color: {{ bound.color }}" class="odswidget-map-legend__choropleth__color-block"></div>' +
-            '               </div>' +
-            '               <div class="odswidget-map-legend__choropleth__item-range">' +
-            '                   <div class="odswidget-map-legend__choropleth__item-range__bound">' +
-            '                       {{ bound.lowerBound|number:selectedLayer.properties.floatLength }}' +
-            '                       <i aria-hidden="true" class="fa fa-long-arrow-right odswidget-map-legend__choropleth__item-range__bound-arrow"></i>' +
+            '           <div ng-if="!isToggleable(selectedLayer) || extended">' +
+            '               <div ng-repeat="bound in selectedLayer.properties.bounds" class="odswidget-map-legend__choropleth__item">' +
+            '                   <div class="odswidget-map-legend__choropleth__item-color">' +
+            '                       <div ng-style="{\'background-color\' : bound.color }" class="odswidget-map-legend__choropleth__color-block"></div>' +
             '                   </div>' +
-            '                   <div class="odswidget-map-legend__choropleth__item-range__bound">' +
-            '                       {{ bound.upperBound|number:selectedLayer.properties.floatLength }}' +
+            '                   <div class="odswidget-map-legend__choropleth__item-range">' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ bound.lowerBound|number:selectedLayer.properties.floatLength }}' +
+            '                           <i aria-hidden="true" class="fa fa-long-arrow-right odswidget-map-legend__choropleth__item-range__bound-arrow"></i>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ bound.upperBound|number:selectedLayer.properties.floatLength }}' +
+            '                       </div>' +
+            '                   </div>' +
+            '               </div>' +
+            '           </div>' +
+            '           <div ng-if="isToggleable(selectedLayer) && !extended">' +
+            '               <div class="odswidget-map-legend__choropleth__item">' +
+            '                   <div class="odswidget-map-legend__choropleth__item-color">' +
+            '                       <div ng-style="{\'background-color\' : selectedLayer.properties.bounds[0].color }" class="odswidget-map-legend__choropleth__color-block"></div>' +
+            '                   </div>' +
+            '                   <div class="odswidget-map-legend__choropleth__item-range">' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ selectedLayer.properties.bounds[0].lowerBound|number:selectedLayer.properties.floatLength }}' +
+            '                           <i aria-hidden="true" class="fa fa-long-arrow-right odswidget-map-legend__choropleth__item-range__bound-arrow"></i>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ selectedLayer.properties.bounds[0].upperBound|number:selectedLayer.properties.floatLength }}' +
+            '                       </div>' +
+            '                   </div>' +
+            '               </div>' +
+            '               <div class="odswidget-map-legend__choropleth__item" ng-if="selectedLayer.properties.bounds.length > 3">' +
+            '                   <p class="odswidget-map-legend__choropleth__item-value--remaining">' +
+            '                   {{selectedLayer.properties.bounds.length - 2 }} <span translate>more item(s)...</span>' +
+            '                   </p>' +
+            '               </div>' +
+            '               <div class="odswidget-map-legend__choropleth__item" ng-if="selectedLayer.properties.bounds.length === 3">' +
+            '                   <div class="odswidget-map-legend__choropleth__item-color">' +
+            '                       <div ng-style="{ \'background-color\': selectedLayer.properties.bounds[1].color}" class="odswidget-map-legend__choropleth__color-block"></div>' +
+            '                   </div>' +
+            '                   <div class="odswidget-map-legend__choropleth__item-range">' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ selectedLayer.properties.bounds[1].lowerBound|number:selectedLayer.properties.floatLength }}' +
+            '                           <i aria-hidden="true" class="fa fa-long-arrow-right odswidget-map-legend__choropleth__item-range__bound-arrow"></i>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ selectedLayer.properties.bounds[1].upperBound|number:selectedLayer.properties.floatLength }}' +
+            '                       </div>' +
+            '                   </div>' +
+            '               </div>' +
+            '               <div class="odswidget-map-legend__choropleth__item">' +
+            '                   <div class="odswidget-map-legend__choropleth__item-color">' +
+            '                       <div ng-style="{ \'background-color\': selectedLayer.properties.bounds[selectedLayer.properties.bounds.length - 1].color }" class="odswidget-map-legend__choropleth__color-block"></div>' +
+            '                   </div>' +
+            '                   <div class="odswidget-map-legend__choropleth__item-range">' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ selectedLayer.properties.bounds[selectedLayer.properties.bounds.length - 1].lowerBound|number:selectedLayer.properties.floatLength }}' +
+            '                           <i aria-hidden="true" class="fa fa-long-arrow-right odswidget-map-legend__choropleth__item-range__bound-arrow"></i>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ selectedLayer.properties.bounds[selectedLayer.properties.bounds.length - 1].upperBound|number:selectedLayer.properties.floatLength }}' +
+            '                       </div>' +
             '                   </div>' +
             '               </div>' +
             '           </div>' +
             '       </div>' +
             '       <div ng-switch-when="heatmap" class="odswidget-map-legend__simple-container">' +
             '           <div><span translate ng-bind="layer.func"></div> '+
-            '           <div style="background: {{selectedLayer.properties.gradient}}" class="odswidget-map-legend__simple__color-block"></div>' +
+            '           <div ng-style="{ \'background\': selectedLayer.properties.gradient}" class="odswidget-map-legend__simple__color-block"></div>' +
             '           <div class="odswidget-map-legend__simple__color-block-subtext">' +
             '               <div class="odswidget-map-legend__simple__color-block-subtext-left" translate>Low</div>' +
             '               <div class="odswidget-map-legend__simple__color-block-subtext-right" translate>High</div>' +
             '           </div>' +
             '       </div>'+
-            '       <div ng-switch-default class="odswidget-map-legend__simple-container">' +
-            '           <div style="background-color: {{selectedLayer.config.color}}" class="odswidget-map-legend__simple__color-block"></div>' +
+            '       <div ng-switch-default class="odswidget-map-legend__default-container">' +
+            '           <div ng-style="{ \'background-color\': selectedLayer.config.color}" class="odswidget-map-legend__default__color-block"></div>' +
+            '           <div translate>Item</div>' +
             '       </div>' +
             '   </div>' +
             '   <div ng-if="layers.length > 1" class="odswidget-map-legend__pagination">' +
-            '       <button title="Previous" translate="title" class="odswidget-map-legend__pagination-button" ng-show="selectedIndex > 0" ng-click="previous()">' +
+            '       <button title="Previous" translate="title" class="odswidget-map-legend__pagination-button" ' +
+            '               ng-show="selectedIndex > 0" ng-click="previous()" ng-mouseenter="preventToggle()" ng-mouseleave="allowToggle()">' +
             '           <i class="odsui-left" aria-hidden="true"></i>' +
             '       </button>' +
             '       {{selectedIndex+1}}/{{layers.length}}' +
-            '       <button title="Next" translate="title" class="odswidget-map-legend__pagination-button" ng-show="selectedIndex < layers.length - 1" ng-click="next()">' +
+            '       <button title="Next" translate="title" class="odswidget-map-legend__pagination-button" ' +
+            '               ng-show="selectedIndex < layers.length - 1" ng-click="next()" ng-mouseenter="preventToggle()" ng-mouseleave="allowToggle()">' +
             '           <i class="odsui-right"aria-hidden="true"></i>' +
             '       </button>' +
             '   </div>' +
@@ -80,31 +155,65 @@
             scope: {
                 mapConfig: '='
             },
-            controller: ['$scope', 'MapHelper', function ($scope, MapHelper) {
+            link: function (scope, element, attrs, odsMapCtrl) {
+                scope.resizeMapDisplayControl = odsMapCtrl.resizeMapDisplayControl;
+            },
+            controller: ['$scope', 'MapHelper', 'shortSummaryFilter', function ($scope, MapHelper, shortSummaryFilter) {
                 $scope.extended = false;
                 $scope.selectedLayer = null;
                 $scope.selectedIndex = 0;
+                $scope.maxCategories = 4;
+
+                $scope.isToggleable = function(layer){
+                    if (layer.config.display === 'choropleth' && Object.keys(layer.config.color.ranges).length > 3 ){
+                        return true;
+                    } else if (layer.config.display === 'categories' &&  $scope.getCategoriesCount(layer) > $scope.maxCategories && layer.config.color.type !== 'field' ) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                };
+
+                $scope.shortSummaryFilter = shortSummaryFilter;
+
+                $scope.getLayerTitle = function(layer){
+                    return layer.config.captionTitle || layer.config.title || layer.config.context.dataset.metas.title;
+                };
 
                 $scope.toggle = function() {
-                    if ($scope.getCategoriesCount($scope.selectedLayer) <= 6) {
+                    if ($scope.getCategoriesCount($scope.selectedLayer) <= $scope.maxCategories && $scope.extended) {
                         $scope.extended = false;
-                        return;
+                    } else {
+                        $scope.extended = !$scope.extended;
                     }
-                    $scope.extended = !$scope.extended;
+                    $scope.resizeMapDisplayControl();
                 };
+
                 $scope.select = function(index) {
                     $scope.selectedLayer = $scope.layers[index];
-                    if ($scope.getCategoriesCount($scope.selectedLayer) <= 6 && $scope.extended) {
-                        $scope.toggle();
+                    if (!$scope.isToggleable($scope.selectedLayer)){
+                        $scope.extended = false;
                     }
                 };
+
                 $scope.previous = function() {
                     $scope.selectedIndex -= 1;
                     $scope.select($scope.selectedIndex);
+                    $scope.resizeMapDisplayControl();
                 };
+
                 $scope.next = function() {
                     $scope.selectedIndex += 1;
                     $scope.select($scope.selectedIndex);
+                    $scope.resizeMapDisplayControl();
+                };
+
+                $scope.preventToggle = function(){
+                  $scope.clickBlocked = true;
+                };
+
+                $scope.allowToggle = function(){
+                  $scope.clickBlocked = false;
                 };
 
                 $scope.getCategoriesCount = function(layer) {
@@ -121,104 +230,21 @@
                 };
 
                 $scope.getCategories = function(layer, limit) {
-                    if (limit) {
-                        var subset = {};
-                        var i;
+                    var subset = {};
+                    var i;
 
-                        var categoryNames = Object.keys(layer.config.color.categories).sort(ODS.ArrayUtils.sortNumbers);
+                    var categoryNames = Object.keys(layer.config.color.categories).sort(ODS.ArrayUtils.sortNumbers);
 
-                        for (i=0; i<Math.min(limit, categoryNames.length); i++) {
-
-                            var key = categoryNames[i];
-                            subset[key] = layer.config.color.categories[key];
-                        }
-                        return subset;
-                    } else {
-                        return layer.config.color.categories;
+                    if (!limit){
+                        limit = categoryNames.length;
                     }
-                };
 
-                // In a legend, we want all bounds to have the same float length with a maximal number of 3 decimals numbers.
-
-                // Find the maximum float length in an array of bounds.
-                // We do this by calculating the length of the 2nd part of a float number splited at comma position.
-
-                var getBoundsFloatValue = function(bounds) {
-                    var boundFloatLength,
-                        floatLength = 0;
-
-                    angular.forEach(bounds, function(bound){
-                        angular.forEach(bound, function(value, key){
-                            if (key !== 'color' && Math.floor(value) !== value) {
-                                boundFloatLength = value.toString().split(".")[1].length;
-                                if (boundFloatLength > floatLength) {
-                                    floatLength = boundFloatLength;
-                                }
-                            }
-                        });
-                    });
-
-                    if (floatLength > 3) {
-                        floatLength = 3;
+                    for (i=0; i<Math.min(limit, categoryNames.length); i++) {
+                        var key = categoryNames[i];
+                        subset[key] = layer.config.color.categories[key];
                     }
-                    return floatLength;
+                    return subset;
                 };
-
-
-                // Format upper bounds and lower bounds according to the float length if needed
-
-                var formatBounds = function (minBound, bounds, floatLength) {
-                    var isUpperBound = true;
-                    if (floatLength !== 0) {
-                        angular.forEach(bounds, function (bound) {
-                            bound.lowerBound = formatBound(bounds, minBound, bound.lowerBound, floatLength);
-                            bound.upperBound = formatBound(bounds, minBound, bound.upperBound, floatLength, isUpperBound);
-                        });
-                        return bounds;
-                    } else {
-                        return bounds;
-                    }
-                };
-
-                var formatBound = function(bounds, minBound, bound, floatLength, isUpperBound) {
-                    bound = bound.toString();
-                    var commaPosition;
-                    if (bound === minBound) {
-                        return bound;
-                    } else if (isUpperBound && Math.floor(bound) != bound) {
-                        // Format upper bound
-                        return setBoundLength(bound, floatLength);
-                    } else if (floatLength !== 0 && Math.floor(bound) != bound && !isUpperBound) {
-                        // Format lower bounds to be equal to upper bound minus 1 even in float value (i.e. 3.14 -> 3.13)
-                        // Find comma position in bound
-                        commaPosition = bound.length - bound.split('.')[1].length;
-                        // Format bound to the float length calculated before
-                        bound = setBoundLength(bound, floatLength);
-                        // Remove comma in bound, transform it in number and remove 1 (i.e. '3.14' -> '314' -> 314 -> 313 -> '313' )
-                        bound = (Number((bound.replace('.', ''))) + 1).toString();
-                        // Recalculate comma position in case it has changed (i.e. 99,99 > 100,00)
-                        commaPosition = bound.length - (bound.length - commaPosition) - 1;
-                        // Reposition comma and return lower bound
-                        bound = [bound.slice(0, commaPosition), ".", bound.slice(commaPosition)].join('');
-                        return bound;
-                    } else {
-                        return bound;
-                    }
-                };
-
-                //
-                var setBoundLength = function(bound, floatLength) {
-                    var commaPosition = bound.length - bound.split('.')[1].length;
-                    // Add 0 if bound float length is not equal to float length, else remove exceeding numbers in float
-                    if (bound.split('.')[1].length < floatLength) {
-                        bound += ('0'.repeat(floatLength - bound.split('.')[1].length));
-                    } else {
-                        bound = bound.slice(0, (commaPosition + floatLength));
-                    }
-                    return bound;
-                };
-
-
 
                 var refreshLayers = function() {
                     var layers = [];
@@ -229,7 +255,7 @@
                         }
                         group.layers.forEach(function(layer) {
 
-                            if (layer.caption && (angular.isString(layer.color) || (layer.color.type !== 'field' ))) {
+                            if (layer.caption && layer.context.dataset !== null) {
                                 var properties = {};
                                 layers.push({
                                     config: layer,
@@ -237,44 +263,44 @@
                                 });
                                 properties.legendLabel = MapHelper.getLayerLegendLabel(layer);
                                 if (layer.display === 'choropleth') {
-                                    var minBound;
-                                    MapHelper.getDatasetFieldBoundMin(layer.context, layer.color.field).then(function (bound) {
+                                    var minBound = layer.color.minValue;
 
-                                        minBound = bound;
+                                    // FIXME: A lot of code duplication with mapbuilder-color-choropleth
 
-                                        // FIXME: A lot of code duplication with mapbuilder-color-choropleth
-                                        var rangesUpperBounds = Object.keys(layer.color.ranges).map(MapHelper.boundAsNumber).sort(ODS.ArrayUtils.sortNumbers);
-                                        var bounds = [];
-                                        rangesUpperBounds.forEach(function (upperBound, index) {
-                                            var searchingColor = true;
-                                            upperBound = MapHelper.boundAsNumber(upperBound);
-                                            angular.forEach(layer.color.ranges, function (color, bound) {
-                                                if (upperBound == bound && searchingColor) {
-                                                    if (index === 0) {
-                                                        bounds.push({
-                                                            color: color,
-                                                            lowerBound: minBound,
-                                                            upperBound: upperBound
-                                                        });
-                                                    } else {
-                                                        bounds.push({
-                                                            color: color,
-                                                            lowerBound: rangesUpperBounds[index - 1],
-                                                            upperBound: upperBound
-                                                        });
-                                                    }
-                                                    searchingColor = false;
-                                                }
-                                            });
-                                        });
-
-                                        properties.floatLength = getBoundsFloatValue(bounds);
-
-                                        bounds = formatBounds(minBound, bounds, properties.floatLength);
-
-                                        properties.bounds = bounds;
-
+                                    var rangesUpperBounds = Object.keys(layer.color.ranges).sort(function (a, b) {
+                                        return parseFloat(a) - parseFloat(b);
                                     });
+
+                                    var bounds = [];
+
+                                    properties.floatLength = Object.keys(layer.color.ranges).reduce(function(sofar, current) {
+                                        if (current.toString().indexOf('.') === -1) {
+                                            return sofar;
+                                        } else {
+                                            return Math.max(sofar, current.toString().length - current.toString().indexOf('.') - 1);
+                                        }
+                                    }, 0);
+                                    rangesUpperBounds.forEach(function (upperBound, index) {
+                                        var color = layer.color.ranges[upperBound];
+
+                                        if (index === 0) {
+                                            bounds.push({
+                                                color: color,
+                                                lowerBound: minBound,
+                                                upperBound: upperBound
+                                            });
+                                        } else {
+                                            bounds.push({
+                                                color: color,
+                                                lowerBound: ODS.CalculationUtils.incrementByOneUnit(rangesUpperBounds[index - 1]),
+                                                upperBound: upperBound
+                                            });
+                                        }
+                                    });
+
+                                    properties.bounds = bounds;
+
+                                    $scope.resizeMapDisplayControl();
                                 } else if (layer.display === 'heatmap') {
 
                                     var orderedSteps = Object.keys(layer.color.steps).map(parseFloat).sort(ODS.ArrayUtils.sortNumbers);

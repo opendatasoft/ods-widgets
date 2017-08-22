@@ -240,9 +240,13 @@ angular.module('gettext').factory('gettextCatalog', ["gettextPlurals", "gettextF
                 }
 
                 // Expand single strings for each context.
+                var defaultPlural = gettextPlurals(language, 1);
                 for (var context in val) {
                     var str = val[context];
-                    val[context] = angular.isArray(str) ? str : [str];
+                    if (!angular.isArray(str)) {
+                        val[context] = [];
+                        val[context][defaultPlural] = str;
+                    }
                 }
                 this.strings[language][key] = val;
             }
@@ -6864,7 +6868,7 @@ mod.directive('infiniteScroll', [
             }
         }
         return true;
-    }
+    };
 
     window.utf8_to_b64 = function(str) {
         // we escape the unicode string before encoding it in base64 becase btoa does not support unicode characters
@@ -6903,7 +6907,7 @@ mod.directive('infiniteScroll', [
         }
 
         return str;
-    }
+    };
 
     if (typeof Object.assign !== 'function') {
       Object.assign = function(target, varArgs) { // .length of function is 2
@@ -6935,7 +6939,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '1.0.10';
+    var version = '1.0.11';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -7293,7 +7297,7 @@ mod.directive('infiniteScroll', [
                 func = func.toUpperCase();
                 return $.grep(availableFunctions, function(f){return func === f.func;})[0].label;
             }
-        }
+        };
     }]);
 
     mod.factory('ChartHelper', ['translate', 'AggregationHelper', 'ODSWidgetsConfig', 'ODSCurrentDomain', 'colorScale', function(translate, AggregationHelper, ODSWidgetsConfig, ODSCurrentDomain, colorScale) {
@@ -7436,7 +7440,7 @@ mod.directive('infiniteScroll', [
                         dataset = value;
                     }
                     return false;
-                })
+                });
                 return dataset;
             },
             isChartSortable: function(chartType) {
@@ -7613,10 +7617,10 @@ mod.directive('infiniteScroll', [
             },
             getAllowedColors: function(serietype, breakdown) {
                 var allowedColors = [];
-                if (breakdown || ['pie', 'treemap'].indexOf(serietype) !== -1) {
+                if (breakdown || this.isMultiColorChart(serietype)) {
                     allowedColors.push('range');
                 }
-                if (!breakdown && ['pie', 'treemap'].indexOf(serietype) === -1) {
+                if (!breakdown && !this.isMultiColorChart(serietype)) {
                     allowedColors.push('single');
                 }
                 return allowedColors;
@@ -7999,6 +8003,9 @@ mod.directive('infiniteScroll', [
             },
             allowThresholds: function(type) {
                 return ['column', 'bar', 'scatter'].indexOf(type) !== -1;
+            },
+            isMultiColorChart: function(type) {
+                return ['pie', 'treemap', 'funnel', 'polar'].indexOf(type) !== -1;
             }
         };
     }]);
@@ -8208,7 +8215,7 @@ mod.directive('infiniteScroll', [
                 }
             }
 
-        }
+        };
     }]);
 
 }());;(function() {
@@ -8532,14 +8539,36 @@ mod.directive('infiniteScroll', [
                 });
                 return deferred.promise;
             },
+            getDatasetAggregationBounds: function(context, aggregationFunction, fieldName) {
+                var service = this;
+                var apiParams = angular.extend({}, context.parameters);
+                var deferred = $q.defer();
+
+                apiParams.maxpoints = 1;
+
+                if (aggregationFunction !== 'COUNT') {
+                    apiParams['y.serie.expr'] = fieldName;
+                    apiParams['y.serie.func'] = aggregationFunction;
+                }
+
+                ODSAPI.records.geopolygon(context, apiParams).then(function(result) {
+                    var data = result.data;
+                    if (aggregationFunction !== 'COUNT') {
+                        deferred.resolve([data.series.serie.min, data.series.serie.max]);
+                    } else {
+                        deferred.resolve([data.count.min, data.count.max]);
+                    }
+                });
+                return deferred.promise;
+            },
             boundAsNumber: function(number) {
-                return Math.round(parseFloat(number) * 100) / 100;
+                return parseFloat(number);
             },
             getLayerLegendLabel: function(layerConfig) {
                 var label = null;
-                if (['choropleth', 'categories', 'heatmap'].indexOf(layerConfig.display) >= 0) {
+                if (['choropleth', 'categories', 'heatmap', 'clusters'].indexOf(layerConfig.display) >= 0) {
                     var field;
-                    if (layerConfig.display === 'categories' || layerConfig.display === 'choropleth') {
+                    if (layerConfig.display === 'categories' || (layerConfig.display === 'choropleth' && layerConfig.color.field)) {
                         field = layerConfig.context.dataset.getField(layerConfig.color.field);
                     } else if (layerConfig.func.toUpperCase() !== 'COUNT') {
                         field = layerConfig.context.dataset.getField(layerConfig.expr);
@@ -8562,7 +8591,7 @@ mod.directive('infiniteScroll', [
                             label += ' (' + addendums.join(', ') + ')';
                         }
                     } else {
-                        label = translate('Number of elements')
+                        label = translate('Number of elements');
                     }
                     return label;
                 }
@@ -8583,9 +8612,11 @@ mod.directive('infiniteScroll', [
                     angular.forEach(config.groups, function (group) {
                         if (group.displayed) {
                             angular.forEach(group.layers, function (datasetConfig) {
-                                if (!options.geoOnly || datasetConfig.context.dataset.hasGeoField()) {
-                                    if (!(datasetConfig.excludeFromRefit && options.skipExcludedFromRefit)) {
-                                        contexts.push(datasetConfig.context);
+                                if (!datasetConfig.unknown && datasetConfig.context.dataset !== null){
+                                    if (!options.geoOnly || datasetConfig.context.dataset.hasGeoField()) {
+                                        if (!(datasetConfig.excludeFromRefit && options.skipExcludedFromRefit)) {
+                                            contexts.push(datasetConfig.context);
+                                        }
                                     }
                                 }
                             });
@@ -8639,7 +8670,7 @@ mod.directive('infiniteScroll', [
                         "colorFunction": config.colorFunction,
                         "picto": config.picto,
                         "display": display,
-                        "func": config['function'] || (config.expression ? "AVG" : "COUNT"), // If there is a field, default to the average
+                        "func": config['function'] || null,
                         "expr": config.expression || null,
                         "marker": null,
                         "size": config.size || null,
@@ -8651,18 +8682,31 @@ mod.directive('infiniteScroll', [
                         "hoverField": config.hoverField || null,
                         //"opacity": config.opacity || null,
                         "shapeOpacity": config.shapeOpacity || null,
-                        "borderOpacity": config.borderOpacity || null,
                         "pointOpacity": config.pointOpacity || null,
+                        "lineWidth": config.lineWidth || null,
+                        "borderOpacity": config.borderOpacity || null,
                         "borderColor": config.borderColor,
+                        "borderSize": config.borderSize || null,
+                        "borderPattern": config.borderPattern || null,
                         "excludeFromRefit": config.excludeFromRefit,
                         "caption": angular.isDefined(config.caption) ? config.caption : false,
                         "captionTitle": config.captionTitle || null,
+                        "captionPictoIcon": config.captionPictoIcon || null,
+                        "captionPictoColor": config.captionPictoColor || null,
+                        "title": config.title || null,
+                        "description": config.description || null,
                         "showZoomMin": config.showZoomMin || null,
                         "showZoomMax": config.showZoomMax || null,
                         "minSize": config.minSize || null,
                         "maxSize": config.maxSize || null,
                         "sizeFunction": config.sizeFunction || null
                     };
+
+                    if (!layer.func && ['shape', 'aggregation'].indexOf(layer.display) > -1) {
+                        // In shape or aggregation mode, we *need* a function
+                        layer.func = 'COUNT';
+                    }
+
                     this.createLayerId(layer);
                     return layer;
                 },
@@ -8692,6 +8736,7 @@ mod.directive('infiniteScroll', [
                         layer.pointOpacity = layer.pointOpacity || 1;
                     }
                     layer.radius = layer.radius || 4;
+                    layer.lineWidth = layer.lineWidth || 5;
                     layer.borderOpacity = layer.borderOpacity || 1;
                     layer.borderColor = layer.borderColor || '#FFFFFF';
                     layer.borderSize = layer.borderSize || 1;
@@ -8771,7 +8816,12 @@ mod.directive('infiniteScroll', [
                         return '#000000';
                     }
                 } else if (layerConfig.color.type === 'choropleth') {
-                    value = record && record.fields && record.fields[layerConfig.color.field];
+                    if (layerConfig.func) {
+                        // This is an aggregation, the record is already the value itself
+                        value = record;
+                    } else {
+                        value = record && record.fields && record.fields[layerConfig.color.field];
+                    }
                     if (angular.isUndefined(value)) {
                         return '#000000';
                     }
@@ -8781,11 +8831,10 @@ mod.directive('infiniteScroll', [
                         return '#000000';
                     }
                     var rangesUpperBounds = Object.keys(layerConfig.color.ranges)
-                            .map(function(b) { return parseFloat(b); })
-                            .sort(function(a, b) { return a - b; });
-                    var i = 0;
+                            .sort(function(a, b) { return parseFloat(a) - parseFloat(b); });
+                    var i;
                     for (i=0; i<rangesUpperBounds.length; i++) {
-                        if (value <= rangesUpperBounds[i]) {
+                        if (value <= parseFloat(rangesUpperBounds[i])) {
                             return layerConfig.color.ranges[rangesUpperBounds[i]];
                         }
                     }
@@ -8850,7 +8899,7 @@ mod.directive('infiniteScroll', [
                             return;
                         }
                         // TODO: Support tiles and refineOnClick
-                        service.refineContextOnClick(layerConfig, clusterShape, geoDigest, fieldValue);
+                        service.refineContextOnClick(layerConfig, clusterShape, geoDigest, fieldValue, recordid);
                     });
                 } else {
                     // Binds on a feature (marker, shape) so that it shows a popup on click
@@ -8874,7 +8923,7 @@ mod.directive('infiniteScroll', [
                     });
                 }
             },
-            refineContextOnClick: function(layerConfig, shape, digest, fieldValue) {
+            refineContextOnClick: function(layerConfig, shape, digest, fieldValue, recordid) {
                 var refineContext = function(refineConfig) {
                     var contextField = refineConfig.contextField;
                     var mapField = refineConfig.mapField;
@@ -8899,6 +8948,8 @@ mod.directive('infiniteScroll', [
                             };
                             if (digest) {
                                 options.geo_digest = digest;
+                            } else if (recordid) {
+                                options.q = 'recordid:' + recordid;
                             } else {
                                 ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
                             }
@@ -8991,7 +9042,7 @@ mod.directive('infiniteScroll', [
 
                 if (layerConfig.func !== 'COUNT' && this.isAnalyzeEnabledClustering(layerConfig)) {
                     return apiResult.series.serie1.min;
-                } else {
+                } else if (apiResult.count) {
                     return apiResult.count.min;
                 }
             },
@@ -9003,7 +9054,7 @@ mod.directive('infiniteScroll', [
 
                 if (layerConfig.func !== 'COUNT' && this.isAnalyzeEnabledClustering(layerConfig)) {
                     return apiResult.series.serie1.max;
-                } else {
+                } else if (apiResult.count) {
                     return apiResult.count.max;
                 }
             },
@@ -9029,7 +9080,7 @@ mod.directive('infiniteScroll', [
             },
             isAnalyzeEnabledClustering: function(layerConfig) {
                 /* Are the analyze features enabled for this clustering? */
-                return ['heatmap', 'polygonforced', 'shape', 'aggregation', 'clusters'].indexOf(layerConfig.display) >= 0;
+                return ['heatmap', 'polygonforced', 'shape', 'aggregation', 'clusters', 'choropleth'].indexOf(layerConfig.display) >= 0;
             },
             doesLayerRefreshOnLocationChange: function(layerConfig) {
                 if (layerConfig.display === 'tiles') {
@@ -9054,7 +9105,7 @@ mod.directive('infiniteScroll', [
 
                     targetLayer.addLayer(singleMarker);
                     //targetLayer.addLayer(new L.Marker(coords)); // Uncomment to debug pointer alignment
-                    if (record) {
+                    if (angular.isObject(record)) {
                         service.bindTooltip(map, singleMarker, layerConfig, coords, record.recordid);
                     } else {
                         service.bindTooltip(map, singleMarker, layerConfig, coords, null, geoDigest);
@@ -9074,7 +9125,7 @@ mod.directive('infiniteScroll', [
                         }
 
                         if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
-                            opts.weight = 5; // To be overloaded
+                            opts.weight = layerConfig.lineWidth;
                             opts.color = service.getRecordColor(record, layerConfig);
                             if (angular.isDefined(layerConfig.shapeOpacity)) {
                                 opts.opacity = layerConfig.shapeOpacity;
@@ -9113,7 +9164,7 @@ mod.directive('infiniteScroll', [
                 });
 
                 // TODO: Document the cases
-                if (record) {
+                if (angular.isObject(record)) {
                     service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, record.recordid);
                 } else {
                     service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, null, geoDigest);
@@ -9157,23 +9208,24 @@ mod.directive('infiniteScroll', [
             },
         };
     }]);
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
 
     mod.factory('MapLayerRenderer', [
         'ODSAPI', 'AggregationHelper', 'SVGInliner', 'PictoHelper', 'MapLayerHelper',
-        'MapRenderingAggregation', 'MapRenderingClustered', 'MapRenderingHeatmap', 'MapRenderingRaw', 'MapRenderingShapePreview',
+        'MapRenderingAggregation', 'MapRenderingClustered', 'MapRenderingHeatmap', 'MapRenderingRaw', 'MapRenderingShapePreview', 'MapRenderingChoroplethAggregation',
         '$q', '$filter', '$rootScope', '$compile', '$timeout',
         function(ODSAPI, AggregationHelper, SVGInliner, PictoHelper, MapLayerHelper,
-                 MapRenderingAggregation, MapRenderingClustered, MapRenderingHeatmap, MapRenderingRaw, MapRenderingShapePreview,
+                 MapRenderingAggregation, MapRenderingClustered, MapRenderingHeatmap, MapRenderingRaw, MapRenderingShapePreview, MapRenderingChoroplethAggregation,
                  $q, $filter, $rootScope, $compile, $timeout) {
         // TODO: Query interruption when moving
         return {
-            updateDataLayer: function (layerConfig, map) {
+            updateDataLayer: function (layerConfig, map, deferred) {
                 var service = this;
-                var previousRenderedLayer = layerConfig._rendered;
+                var leafletLayerGroup = new L.LayerGroup();
 
                 // Depending on the rendering mode, we either replace the previous layer with a new one, or we update
                 // the existing one (tiles).
@@ -9189,17 +9241,17 @@ mod.directive('infiniteScroll', [
                 }
                 var timeout = $q.defer();
                 layerConfig._currentRequestTimeout = timeout;
-                var deferred = $q.defer();
 
                 var applyLayer = function (newLayer) {
-                    service.swapLayers(map, previousRenderedLayer, newLayer);
                     layerConfig._rendered = newLayer;
                     layerConfig._currentRequestTimeout = null;
                     layerConfig._loading = false;
                     deferred.resolve();
                 };
 
-                if (layerConfig.display === 'tiles') {
+                if (layerConfig.context.dataset === null) {
+                    console.log('ERROR: Unknown dataset "' + layerConfig.title + '"');
+                } else if (layerConfig.display === 'tiles') {
                     // TODO
                     // If the bundlelayer already exists in layerConfig.layer, then setUrl to it.
                     if (!layerConfig._rendered) {
@@ -9250,27 +9302,32 @@ mod.directive('infiniteScroll', [
                     if (layerConfig._rendered._url !== url) {
                         layerConfig._rendered.setUrl(url);
                     }
+
                     // FIXME: Bind to load/unload to not resolve until all is loaded
                     deferred.resolve();
                 } else if (layerConfig.display === 'none' || map.getZoom() === map.getMaxZoom() && layerConfig.display === 'polygon') {
                     layerConfig._loading = true;
-                    MapRenderingRaw.render(layerConfig, map, timeout).then(applyLayer);
+                    MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
                 } else if (['polygon', 'polygonforced', 'clusters'].indexOf(layerConfig.display) >= 0) {
                     layerConfig._loading = true;
-                    MapRenderingClustered.render(layerConfig, map, timeout, true).then(applyLayer);
+                    MapRenderingClustered.render(layerConfig, map, leafletLayerGroup, timeout, true).then(applyLayer);
                 } else if (layerConfig.display === 'heatmap') {
                     layerConfig._loading = true;
-                    MapRenderingHeatmap.render(layerConfig, map, timeout).then(applyLayer);
+                    MapRenderingHeatmap.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
                 } else if (layerConfig.display === 'shape' || layerConfig.display === 'aggregation') { // 'shape' is legacy
                     layerConfig._loading = true;
-                    MapRenderingAggregation.render(layerConfig, map, timeout).then(applyLayer);
+                    MapRenderingAggregation.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
                 } else if (layerConfig.display === 'categories') {
                     layerConfig._loading = true;
-                    MapRenderingRaw.render(layerConfig, map, timeout).then(applyLayer);
+                    MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
                 } else if (layerConfig.display === 'choropleth') {
                     // TODO: Handle depending if aggregation or not
                     layerConfig._loading = true;
-                    MapRenderingRaw.render(layerConfig, map, timeout).then(applyLayer);
+                    if (layerConfig.func) {
+                        MapRenderingChoroplethAggregation.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
+                    } else {
+                        MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
+                    }
                 } else if (layerConfig.display === 'auto') {
                     layerConfig._loading = true;
                     // Auto-decide what to do depending on the number of items
@@ -9292,31 +9349,25 @@ mod.directive('infiniteScroll', [
 
                         if (data.geometries && data.geometries.Point && data.geometries.Point > data.count / 2 && (data.count < DOWNLOAD_CAP || map.getZoom() === map.getMaxZoom())) {
                             // Low enough and mostly points: always download
-                            MapRenderingRaw.render(layerConfig, map, timeout).then(applyLayer);
+                            MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
                         } else if (data.count < SHAPEPREVIEW_HIGHCAP) {
                             // We take our decision depending on the content of the envelope
                             if (data.geometries && data.geometries.Point && data.geometries.Point > data.count / 2) {
                                 // Geo polygons
-                                MapRenderingClustered.render(layerConfig, map, timeout, returnPolygons).then(applyLayer);
+                                MapRenderingClustered.render(layerConfig, map, leafletLayerGroup, timeout, returnPolygons).then(applyLayer);
                             } else {
                                 // Geo preview
-                                MapRenderingShapePreview.render(layerConfig, map, timeout).then(applyLayer);
+                                MapRenderingShapePreview.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
                             }
                         } else {
                             // Clusters
-                            MapRenderingClustered.render(layerConfig, map, timeout, returnPolygons).then(applyLayer);
+                            MapRenderingClustered.render(layerConfig, map, leafletLayerGroup, timeout, returnPolygons).then(applyLayer);
                         }
                     });
                 } else {
                     console.log('ERROR: Unknown display mode "' + layerConfig.display + '"');
                 }
-                return deferred.promise;
-            },
-            swapLayers: function (map, oldLayer, newLayer) {
-                if (oldLayer) {
-                    map.removeLayer(oldLayer);
-                }
-                map.addLayer(newLayer);
+                return leafletLayerGroup;
             }
         };
     }]);
@@ -9327,9 +9378,9 @@ mod.directive('infiniteScroll', [
 
     mod.service('MapRenderingAggregation', ['ODSAPI', 'MapLayerHelper', 'AggregationHelper', '$q', function (ODSAPI, MapLayerHelper, AggregationHelper, $q) {
         return {
-            render: function (layerConfig, map, timeout) {
+            render: function (layerConfig, map, layerGroup, timeout) {
                 var deferred = $q.defer();
-                var shapeLayerGroup = new L.LayerGroup();
+                var shapeLayerGroup = layerGroup;
 
                 // Either we self-join, or we join on a remote dataset
                 // Remote requires:
@@ -9362,7 +9413,7 @@ mod.directive('infiniteScroll', [
                     };
                     var joinedFields = shapefield;
                     if (layerConfig.hoverField) {
-                        joinedFields += ',' + layerConfig.hoverField
+                        joinedFields += ',' + layerConfig.hoverField;
                     }
                     parameters = angular.extend({}, layerConfig.context.parameters, {
                         'clusterprecision': map.getZoom(),
@@ -9523,16 +9574,25 @@ mod.directive('infiniteScroll', [
                                     style: function (feature) {
                                         var opts = angular.copy(geojsonOptions);
                                         opts.fillColor = colorScale(value);
-                                        if (angular.isDefined(layerConfig.shapeOpacity)) {
-                                            opts.fillOpacity = layerConfig.shapeOpacity;
+
+                                        // update defaults
+                                        // in this map, the keys are the keys of layerOption and the values the keys of opts
+                                        var optionsMap = {
+                                            'shapeOpacity': 'fillOpacity',
+                                            'size': 'radius',
+                                            'borderSize': 'weight',
+                                            'borderOpacity': 'opacity',
+                                            'borderColor': 'color'
+                                        };
+                                        for (var prop in optionsMap) {
+                                            if (optionsMap.hasOwnProperty(prop) && angular.isDefined(layerConfig[prop])) {
+                                                opts[optionsMap[prop]] = layerConfig[prop]
+                                            }
                                         }
+
                                         if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
                                             opts.weight = 5;
                                             opts.color = colorScale(value);
-                                        } else {
-                                            if (angular.isDefined(layerConfig.borderColor)) {
-                                                opts.color = layerConfig.borderColor;
-                                            }
                                         }
                                         return opts;
                                     }
@@ -9560,11 +9620,8 @@ mod.directive('infiniteScroll', [
                                     if ((layerConfig.func !== 'COUNT' && MapLayerHelper.isAnalyzeEnabledClustering(layerConfig)) || min !== max) {
                                         shapeLayer.bindLabel(MapLayerHelper.formatNumber(value));
                                     }
-                                    if (layerConfig.refineOnClick) {
-                                        // We're not sure yet what we want to show when we click on an aggregated shape, so we just handled
-                                        // refine on click for now.
-                                        MapLayerHelper.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest);
-                                    }
+
+                                    MapLayerHelper.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest);
                                 }
                                 shapeLayerGroup.addLayer(shapeLayer);
                             }
@@ -9583,11 +9640,58 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
+    mod.service('MapRenderingChoroplethAggregation', ['ODSAPI', 'MapLayerHelper', 'AggregationHelper', '$q', function (ODSAPI, MapLayerHelper, AggregationHelper, $q) {
+        return {
+            render: function (layerConfig, map, layerGroup, timeout) {
+                var deferred = $q.defer();
+                var shapeLayerGroup = layerGroup;
+
+                var parameters = angular.extend({}, layerConfig.context.parameters, {
+                    'clusterprecision': map.getZoom(),
+                    'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
+                });
+
+                if (layerConfig.func !== 'COUNT' && MapLayerHelper.isAnalyzeEnabledClustering(layerConfig)) {
+                    parameters['y.serie1.expr'] = layerConfig.expr;
+                    parameters['y.serie1.func'] = layerConfig.func;
+                }
+
+                ODSAPI.records.geopolygon(layerConfig.context, parameters, timeout.promise).success(handleResult);
+
+                function handleResult(rawResult) {
+                    var records = rawResult.clusters;
+
+                    // var min = MapLayerHelper.getClusterMin(rawResult, layerConfig);
+                    // var max = MapLayerHelper.getClusterMax(rawResult, layerConfig);
+                    // var values = MapLayerHelper.getClusterValues(rawResult, layerConfig);
+
+                    for (var i = 0; i < records.length; i++) {
+                        var record = records[i];
+                        var value = MapLayerHelper.getClusterValue(record, layerConfig);
+                        var shape = record.cluster;
+                        if (shape.type === 'Point') {
+                            MapLayerHelper.drawPoint(layerConfig, map, [shape.coordinates[1], shape.coordinates[0]], value, shapeLayerGroup, record.geo_digest);
+                        } else {
+                            MapLayerHelper.drawShape(layerConfig, map, shape, value, shapeLayerGroup, record.geo_digest);
+                        }
+                    }
+                    deferred.resolve(shapeLayerGroup);
+                }
+
+                return deferred.promise;
+            }
+        };
+    }]);
+}());
+;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
     mod.service('MapRenderingClustered', ['ODSAPI', 'MapLayerHelper', 'SVGInliner', 'PictoHelper', '$q', function (ODSAPI, MapLayerHelper, SVGInliner, PictoHelper, $q) {
         return {
-            render: function (layerConfig, map, timeout, showPolygons) {
+            render: function (layerConfig, map, layerGroup, timeout, showPolygons) {
                 var deferred = $q.defer();
-                var layerGroup = new L.LayerGroup();
                 var parameters = angular.extend({}, layerConfig.context.parameters, {
                     'clusterdistance': 50,
                     'clusterprecision': map.getZoom(),
@@ -9645,7 +9749,7 @@ mod.directive('infiniteScroll', [
 
     mod.service('MapRenderingHeatmap', ['ODSAPI', 'MapLayerHelper', '$q', function (ODSAPI, MapLayerHelper, $q) {
         return {
-            render: function (layerConfig, map, timeout) {
+            render: function (layerConfig, map, layerGroup, timeout) {
                 var deferred = $q.defer();
                 var heatmapOptions = {};
                 if (angular.isObject(layerConfig.color) && layerConfig.color.type === 'gradient' && layerConfig.color.steps) {
@@ -9693,6 +9797,7 @@ mod.directive('infiniteScroll', [
                     var heatmapLayer = null;
                     if (heatmapData.length > 0) {
                         heatmapLayer = L.heatLayer(heatmapData, heatmapOptions);
+                        layerGroup.addLayer(heatmapLayer);
                     }
                     deferred.resolve(heatmapLayer);
                 });
@@ -9708,9 +9813,9 @@ mod.directive('infiniteScroll', [
 
     mod.service('MapRenderingRaw', ['ODSAPI', 'MapLayerHelper', 'SVGInliner', 'PictoHelper', '$q', function (ODSAPI, MapLayerHelper, SVGInliner, PictoHelper, $q) {
         return {
-            render: function (layerConfig, map, timeout) {
+            render: function (layerConfig, map, layerGroup, timeout) {
                 var deferred = $q.defer();
-                var markerLayerGroup = new L.LayerGroup();
+                var markerLayerGroup = layerGroup;
                 var parameters = angular.extend({}, layerConfig.context.parameters, {
                     'rows': 1000,
                     'format': 'json',
@@ -9780,14 +9885,13 @@ mod.directive('infiniteScroll', [
 
     mod.service('MapRenderingShapePreview', ['ODSAPI', 'MapLayerHelper', '$q', function (ODSAPI, MapLayerHelper, $q) {
         return {
-            render: function (layerConfig, map, timeout) {
+            render: function (layerConfig, map, layerGroup, timeout) {
                 var deferred = $q.defer();
                 var parameters = angular.extend({}, layerConfig.context.parameters, {
                     'rows': 1000,
                     'clusterprecision': map.getZoom(),
                     'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
                 });
-                var layerGroup = new L.LayerGroup();
                 ODSAPI.records.geopreview(layerConfig.context, parameters, timeout.promise).success(function (data) {
                     var shape;
                     for (var i = 0; i < data.length; i++) {
@@ -9850,7 +9954,7 @@ mod.directive('infiniteScroll', [
             return {
                 field: matches[1],
                 scaleLabel: scaleLabels[matches[2]][matches[3]]
-            }
+            };
         };
     }]);
 }());
@@ -11281,7 +11385,7 @@ mod.directive('infiniteScroll', [
             return null;
         };
 
-        return function(record, field) {
+        return function(record, field, context) {
 
             var value = record[field.name];
             if (value === null || value === undefined) {
@@ -11341,7 +11445,12 @@ mod.directive('infiniteScroll', [
                     // Ugly hack to fix https://github.com/opendatasoft/platform/issues/4019
                     // The idea is that once we have API V2, we'll have an absolute link
                     // https://opendatasoft.clubhouse.io/story/423
-                    var datasetID = DATASETID_RE.exec(decodeURIComponent(window.location.pathname))[3];
+                    var datasetID
+                    if (typeof context !== "undefined"){
+                        datasetID = context.dataset.datasetid;
+                    } else {
+                        datasetID = DATASETID_RE.exec(decodeURIComponent(window.location.pathname))[3];
+                    }
                     var url = '/explore/dataset/' + datasetID + '/files/'+value.id+'/download/';
                     return $sce.trustAsHtml('<a target="_self" href="' + url + '">' + (value.filename || record.filename) + '</a>');
                 } else {
@@ -11869,6 +11978,27 @@ mod.directive('infiniteScroll', [
         };
     });
 
+    mod.filter('filesize', ['translate', '$filter', function(translate, $filter) {
+        var translate_unit = translate;
+        return function(value) {
+            var formatted = value,
+                units = [
+                    translate_unit('B'),
+                    translate_unit('KB'),
+                    translate_unit('MB'),
+                    translate_unit('GB'),
+                    translate_unit('TB')
+                ],
+                count = 0;
+
+            while (formatted / 1024 > 1 && count < units.length) {
+                formatted = formatted / 1024;
+                count++;
+            }
+
+            return $filter('number')(formatted) + ' ' + units[count];
+        };
+    }]);
 }());;(function(target) {
     // Used for character normalization
     var defaultDiacriticsRemovalMap = [
@@ -12226,6 +12356,9 @@ mod.directive('infiniteScroll', [
                 /* Use this function as a parameter to array.sort() to sort an array of numbers (by default .sort()
                  * does an alphanumerical sort, even on numbers) */
                 return a - b;
+            },
+            reverseSortNumbers: function(a, b) {
+                return b - a;
             }
         },
         URLUtils: {
@@ -12492,6 +12625,38 @@ mod.directive('infiniteScroll', [
                     //console.log('calc log', relativeValue, '/', relativeMax, 'result', ratio);
                 }
                 return ratio;
+            },
+            incrementByOneUnit: function(number) {
+                var fromString = false;
+                var finalNumber;
+                var digits;
+
+                if (angular.isString(number)) {
+                    number = parseFloat(number);
+                    fromString = true;
+                }
+                if (number.toString().indexOf('.') === -1) {
+                    // Integer
+                    finalNumber = number + 1;
+                } else {
+                    digits = number.toString().length - number.toString().indexOf('.') - 1;
+                    finalNumber = number + Math.pow(10, -digits);
+                }
+
+                if (fromString) {
+                    if (digits) {
+                        return finalNumber.toFixed(digits);
+                    } else {
+                        return finalNumber.toString();
+                    }
+                } else {
+                    if (digits) {
+                        return Math.round(finalNumber * Math.pow(10, digits)) / Math.pow(10, digits);
+                    } else {
+                        return finalNumber;
+                    }
+                }
+
             }
         },
         DateFieldUtils: {
@@ -12556,7 +12721,7 @@ mod.directive('infiniteScroll', [
                         }
                     }
                     return datePattern;
-                }
+                };
             },
             getDateFromXObject: function (x, minDate) {
                 var minYear = minDate ? minDate.getUTCFullYear() : 2000;
@@ -12661,6 +12826,7 @@ mod.directive('infiniteScroll', [
          * @description
          * This widget exposes the results of an aggregation function over a context. Can be used for example to expose the average temperature of a weather dataset.
          * The result is exposed into a new variable that you can use in other widgets or directly in your HTML.
+         * If aggregation returns no result, the result value will be null.
          *
          * @example
          *  <example module="ods-widgets">
@@ -12670,11 +12836,11 @@ mod.directive('infiniteScroll', [
          *                  <div class="span4">
          *                      <ods-facets context="tree"></ods-facets>
          *                  </div>
-         *                  <div class="span8" ods-aggregation="height" ods-aggregation-context="tree" ods-aggregation-expression="hauteur" ods-aggregation-function="AVG">
+         *                  <div class="span8" ods-aggregation="height" ods-aggregation-context="tree" ods-aggregation-expression="hauteurenm" ods-aggregation-function="AVG">
          *                      Average height is {{ height }} meters.
          *                  </div>
          *              </div>
-         *          </ods-catalog-context>
+         *          </ods-dataset-context>
          *      </file>
          *  </example>
          */
@@ -12694,7 +12860,11 @@ mod.directive('infiniteScroll', [
                             'y.serie1.func': func
                         });
                         ODSAPI.records.analyze(context, options).success(function(data) {
-                            $scope[variableName] = data[0].serie1;
+                            if (data.length) {
+                                $scope[variableName] = data[0].serie1;
+                            } else {
+                                $scope[variableName] = null;
+                            }
                         });
                     }, true);
                 });
@@ -13134,7 +13304,7 @@ mod.directive('infiniteScroll', [
                         accumulation: function(accumulations, needed_aggregates) {
                             var res = {};
                             angular.forEach(needed_aggregates, function(k) {
-                                res[k] = accumulations[k]
+                                res[k] = accumulations[k];
                             });
                             return res;
                         }(accumulations, aggregates),
@@ -13145,7 +13315,7 @@ mod.directive('infiniteScroll', [
                 console.warn("Error while compiling aggregation value with expr", compiled_expr);
             }
             return valueY;
-        }
+        };
 
         return {
             restrict: 'A',
@@ -13474,7 +13644,7 @@ mod.directive('infiniteScroll', [
 
                     if (!angular.isDefined(scope.eventColor)) {
                         if (visualization_metas.calendar_event_color) {
-                            scope.eventColor = visualization_metas.calendar_event_color
+                            scope.eventColor = visualization_metas.calendar_event_color;
                         } else {
                             scope.eventColor = '#C32D1C';
                         }
@@ -13616,7 +13786,7 @@ mod.directive('infiniteScroll', [
                         buildTooltipContent: eventTooltipContentBuilder(record),
                         editable: false,
                         record: record
-                    }
+                    };
                 };
 
                 var eventTooltipContentBuilder = function (record) {
@@ -13670,7 +13840,7 @@ mod.directive('infiniteScroll', [
                 });
 
             }
-        }
+        };
     }]);
 
     mod.directive('odsCalendarTooltip', function () {
@@ -13709,7 +13879,7 @@ mod.directive('infiniteScroll', [
             '        </span>' +
             '    </dd>' +
             '</dl>'
-        }
+        };
     });
 }());
 ;(function() {
@@ -13823,7 +13993,7 @@ mod.directive('infiniteScroll', [
                                         || filter == 'geofilter.polygon'
                                         || filter == 'geofilter.distance'
                                         || filter.indexOf('refine.') === 0
-                                        || (filter == 'q.geographic_area' && that.parameters['q.geographic_area'] && that.parameters['q.geographic_area'].length > 0)
+                                        || (filter == 'q.geographic_area' && that.parameters['q.geographic_area'] && that.parameters['q.geographic_area'].length > 0);
                                 });
                             } else {
                                 return [];
@@ -13910,8 +14080,8 @@ mod.directive('infiniteScroll', [
          *
          * @param {DatasetContext} context Context {@link ods-widgets.directive:odsDatasetContext Dataset Context} from which data is
          * extracted
-         * @param {string} rows Comma-separated list of field names which will be used for row headers' values
-         * @param {string} column Name of the field which will be used for column header's values
+         * @param {string} rows Comma-separated list of field names which will be used for row headers' values. These fields must all be facets.
+         * @param {string} column Name of the field which will be used for column header's values. This field must be a facet.
          * @param {string} serieXxxLabel Label of the serie, which will be displayed as column header (Xxx being the
          * name of the serie).
          * @param {string} serieXxxFunc Function (SUM, AVG, COUNT etc...) used to aggregate the serie's analysis (Xxx
@@ -14066,7 +14236,7 @@ mod.directive('infiniteScroll', [
                 // _insertedRowHeaders
                 this._insertedRowHeaders = rowFields.reduce(function (previous, current) {
                     previous[current] = [];
-                    return previous
+                    return previous;
                 }, {});
 
                 // table
@@ -14147,7 +14317,7 @@ mod.directive('infiniteScroll', [
                     // first row
                     row = [];
                     angular.forEach(this.rowFields, function () {
-                        row.push(new Cell('', 'ods-cross-table__cell--header'))
+                        row.push(new Cell('', 'ods-cross-table__cell--header'));
                     });
                     angular.forEach(colValues, function (colValue) {
                         row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField, isMultiXAnalysis), 'ods-cross-table__cell--header', nbSeries));
@@ -14157,11 +14327,11 @@ mod.directive('infiniteScroll', [
                     // second row
                     row = [];
                     angular.forEach(this.rowFields, function (fieldName) {
-                        row.push(new Cell(that.schema[fieldName].label, 'ods-cross-table__cell--header'))
+                        row.push(new Cell(that.schema[fieldName].label, 'ods-cross-table__cell--header'));
                     });
                     var serieHeaders = [];
                     angular.forEach(this.series, function (serie) {
-                        serieHeaders.push(new Cell(serie.label || serie.name, 'ods-cross-table__cell--header'))
+                        serieHeaders.push(new Cell(serie.label || serie.name, 'ods-cross-table__cell--header'));
                     });
                     angular.forEach(colValues, function () {
                         row = row.concat(serieHeaders);
@@ -14170,7 +14340,7 @@ mod.directive('infiniteScroll', [
                 } else {
                     row = [];
                     angular.forEach(this.rowFields, function (fieldName) {
-                        row.push(new Cell(that.schema[fieldName].label, 'ods-cross-table__cell--header'))
+                        row.push(new Cell(that.schema[fieldName].label, 'ods-cross-table__cell--header'));
                     });
                     angular.forEach(colValues, function (colValue) {
                         row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField, isMultiXAnalysis), 'ods-cross-table__cell--header'));
@@ -14458,7 +14628,7 @@ mod.directive('infiniteScroll', [
                         }
                     });
                     return Object.keys(series).map(function (name) {
-                        return series[name]
+                        return series[name];
                     });
                 };
 
@@ -14481,7 +14651,7 @@ mod.directive('infiniteScroll', [
                         var fieldSchema = scope.context.dataset.getField(fieldName);
                         if (['date', 'datetime'].indexOf(fieldSchema.type) > -1) {
                             var timescale = scope.context.dataset.getFieldAnnotation(fieldSchema, 'timeserie_precision').args[0];
-                            xs = xs.concat(ODS.DateFieldUtils.getTimescaleX(fieldName, timescale))
+                            xs = xs.concat(ODS.DateFieldUtils.getTimescaleX(fieldName, timescale));
                         } else {
                             xs.push(fieldName);
                         }
@@ -14494,7 +14664,7 @@ mod.directive('infiniteScroll', [
                         fieldNames = [fieldNames];
                     }
                     return fieldNames.map(function (name) {
-                        return 'x.' + name
+                        return 'x.' + name;
                     }).join(',');
                 };
 
@@ -14655,10 +14825,10 @@ mod.directive('infiniteScroll', [
                         scope.repeatRowHeaders === true,
                         scope.displayIntermediaryResults === true,
                         scope.numberPrecision);
-                    scope.$watch('context.parameters', reloadData);
+                    scope.$watch('context.parameters', reloadData, true);
                 });
             }
-        }
+        };
     }]);
 })();
 ;(function() {
@@ -15327,7 +15497,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsFacets', ['$compile', 'translate', function($compile, translate) {
+    mod.directive('odsFacets', ['$compile', 'translate', '$q', function($compile, translate, $q) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsFacets
@@ -15683,7 +15853,7 @@ mod.directive('infiniteScroll', [
                                 });
                             };
                             if (context.type === 'dataset') {
-                                context.wait().then(function () {
+                                $q.all([$scope.context.wait(), context.wait()]).then(function() {
                                     checkMappingType($scope.context, context);
                                 });
                             } else {
@@ -15791,7 +15961,7 @@ mod.directive('infiniteScroll', [
             template: '' +
             '<ul class="odswidget-facet__category-list">' +
             '   <li class="odswidget-facet__value-search" ng-show="valueSearchEnabled">' +
-            '       <input class="odswidget-facet__value-search-input" ng-model="valueFilter">' +
+            '       <input class="odswidget-facet__value-search-input" ng-model="valueFilter" aria-label="Search in {{facetName}}" translate="aria-label">' +
             '       <i ng-show="!!valueFilter" class="odswidget-facet__value-search-cancel fa fa-times" ng-click="valueFilter=\'\'"></i>' +
             '   </li>' +
             '   <li ng-repeat="category in categories|filter:searchValue(valueFilter)" class="odswidget-facet__category-container">' +
@@ -16111,9 +16281,9 @@ mod.directive('infiniteScroll', [
                         if (refinement.contexts.length < contexts.length) {
                             refinement.contextsLabel = refinement.contexts
                                 .map(function (ctx) {
-                                    return $attrs[ctx.name + 'Label'] || ctx.name
+                                    return $attrs[ctx.name + 'Label'] || ctx.name;
                                 })
-                                .join(', ')
+                                .join(', ');
                         }
                     });
 
@@ -16648,7 +16818,7 @@ mod.directive('infiniteScroll', [
                         $(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
                         element.append(data.div);
                     }
-                })
+                });
             }
         };
     });
@@ -16659,7 +16829,7 @@ mod.directive('infiniteScroll', [
 
     var functionUsesField = function(func) {
         return ['COUNT', 'CONSTANT'].indexOf(func) === -1;
-    }
+    };
 
     mod.factory("requestData", ['ODSAPI', '$q', 'ChartHelper', 'AggregationHelper', function(ODSAPI, $q, ChartHelper, AggregationHelper) {
         var buildTimescaleX = ODS.DateFieldUtils.getTimescaleX;
@@ -17065,7 +17235,7 @@ mod.directive('infiniteScroll', [
                 },
                 noData: {
                     style: {
-                        fontFamily: 'Open Sans',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
                         fontWeight: 'normal',
                         fontSize: '1.4em',
                         color: '#333',
@@ -17165,9 +17335,9 @@ mod.directive('infiniteScroll', [
             var datasetid = ChartHelper.getDatasetId({dataset: {datasetid: query.config.dataset}, domain: domain});
             var yLabel = ChartHelper.getYLabel(datasetid, serie);
             var serieColor;
-            if (!suppXValue && ['pie', 'treemap'].indexOf(serie.type) === -1) {
+            if (!suppXValue && !ChartHelper.isMultiColorChart(serie.type)) {
                 serieColor = colorScale.getUniqueColor(serie.color);
-            } else if ( ['pie', 'treemap'].indexOf(serie.type) !== -1) {
+            } else if (ChartHelper.isMultiColorChart(serie.type)) {
                 if (!serie.extras) {
                     serie.extras = {};
                 }
@@ -17193,6 +17363,7 @@ mod.directive('infiniteScroll', [
                 type = 'line';
             } else if (serie.type === 'polar') {
                 type = 'column';
+                serie.extras.colorByPoint = true;
             } else {
                 type = serie.type;
             }
@@ -17404,7 +17575,7 @@ mod.directive('infiniteScroll', [
                     } else {
                         return this.value;
                     }
-                }
+                };
             }
 
             if (chart.type === 'spiderweb') {
@@ -18160,7 +18331,7 @@ mod.directive('infiniteScroll', [
                         ChartHelper.init($scope.context);
                         if (angular.isUndefined($scope.chartConfig)) {
                             var extras = {};
-                            if ($scope.chartType === 'pie') {
+                            if (ChartHelper.isMultiColorChart($scope.chartType)) {
                                 extras = {'colors': colors};
                             }
                             // Sort: x, -x, y, -y
@@ -18453,7 +18624,7 @@ mod.directive('infiniteScroll', [
                                 ChartHelper.init($scope.context);
                                 if (angular.isUndefined($scope.chartConfig)) {
                                     var extras = {};
-                                    if ($scope.chartType === 'pie') {
+                                    if (ChartHelper.isMultiColorChart($scope.chartType)) {
                                         extras = {'colors': colors};
                                     }
                                     // Sort: x, -x, y, -y
@@ -18572,7 +18743,7 @@ mod.directive('infiniteScroll', [
          * @scope
          * @param {string} fieldX Set the field that is used to compute the aggregations during the analysis query.
          * @param {string} [timescale="year"] Works only with timeseries (when fieldX is a date or datetime). Y values will be computed against this interval. For example, if you have daily values in a dataset and ask for a "month" timescale, the Y values for the {@link ods-widgets.directive:odsChartSerie series} inside this query will aggregated month by month and computed.
-         * @param {integer} [maxpoints=0] Defines the maximum number of points fetched by the query.
+         * @param {integer} [maxpoints=50] Defines the maximum number of points fetched by the query. With a value of 0, all points will be fetched by the query.
          * @param {boolean} [stacked=false] Stack the resulting charts. Only works with columns, line charts and area charts.
          * @param {string} [seriesBreakdown=none] When declared, all series are break down by the defined facet
          * @param {string} [seriesBreakdownTimescale=true] if the break down facet is a time serie (date or datetime), it defines the aggregation level for this facet
@@ -19126,17 +19297,49 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsMapDisplayControl', [function () {
+    mod.directive('odsMapDisplayControl', ['translate', function (translate) {
         return {
             restrict: 'E',
+            require: '^odsMap',
             template: '' + '' +
-            '<div class="odswidget odswidget-map-display-control">' +
+            '<div class="odswidget odswidget-map-display-control"' +
+            '     ng-class="{\'odswidget-map-display-control--expanded\': expanded}"  >' +
+            '   <button class="odswidget-map-display-control__toggle"' +
+            '           ng-if="expanded"' +
+            '           ods-tooltip="Collapse panel"' +
+            '           translate="ods-tooltip"' +
+            '           ods-tooltip-direction="left"' +
+            '           ng-click="toggleDisplayControl()">' +
+            '       <i class="fa fa-caret-right"></i>' +
+            '   </button>' +
+            '   <button class="odswidget-map-display-control__toggle"' +
+            '           ng-if="!expanded"' +
+            '           ods-tooltip="Expand panel"' +
+            '           translate="ods-tooltip"' +
+            '           ods-tooltip-direction="left"' +
+            '           ng-click="toggleDisplayControl()">' +
+            '       <i class="fa fa-caret-left"></i>' +
+            '   </button>' +
             '   <ul class="odswidget-map-display-control__groups">' +
             '       <li ng-repeat="group in mapConfig.groups" ' +
-            '           ng-click="toggleGroup(group)" ' +
-            '           ng-class="{\'odswidget-map-display-control__group\': true, \'odswidget-map-display-control__group--disabled\': !group.displayed}">' +
-            '           <div class="odswidget-map-display-control__group-title" ng-bind="group.title || group.layers[0].title || group.layers[0].context.dataset.metas.title"></div>' +
-            '           <div class="odswidget-map-display-control__group-description" ng-if="getGroupDescription(group)" ng-bind="getGroupDescription(group)"></p>' +
+            '           ng-click="mapConfig.groups.length > 1 && toggleGroup(group)" ' +
+            '           ng-class="{\'odswidget-map-display-control__group\': true, \'odswidget-map-display-control__group--disabled\': !group.displayed, \'odswidget-map-display-control__group--not-toggleable\': mapConfig.groups.length === 1}"' +
+            '           ng-style="group.pictoColor && {\'border-left-color\':group.pictoColor} || group.layers.length === 1 && group.layers[0].captionPictoColor && {\'border-left-color\':group.layers[0].captionPictoColor}">' +
+            '           <ods-map-picto class="odswidget-map-display-control__picto"'+
+            '                          ng-if="!group.hasUnknownDataset && (group.pictoIcon || (group.layers.length === 1 && group.layers[0].captionPictoIcon))"'+
+            '                          name="{{ group.pictoIcon || group.layers[0].captionPictoIcon }}"'+
+            '                          color="{{ group.pictoColor || group.layers[0].captionPictoColor }}">' +
+            '           </ods-map-picto>' +
+            '           <i class="fa fa-exclamation-triangle odswidget-map-display-control__picto--error" ' +
+            '              ng-if="group.hasUnknownDataset"></i>' +
+            '           <span class="odswidget-map-display-control__group-title" ' +
+            '                ng-class="{\'odswidget-map-display-control__group-title--error\' : group.hasUnknownDataset}"' +
+            '                title="{{ getGroupTitle(group) }}" ' +
+            '                ng-bind="shortSummaryFilter(getGroupTitle(group), 50)"></span>' +
+            '           <div class="odswidget-map-display-control__group-description"' +
+            '                ng-class="{\'odswidget-map-display-control__group-description--error\' : group.hasUnknownDataset}"' +
+            '                ng-if="getGroupDescription(group)" ' +
+            '                ng-bind-html="getGroupDescription(group)|prettyText|safenewlines"></p>' +
             '       </li>' +
             '   </ul>' +
             '</div>',
@@ -19144,10 +19347,47 @@ mod.directive('infiniteScroll', [
                 mapConfig: '=',
                 singleLayer: '='
             },
+            link: function (scope, element, attrs, odsMapCtrl) {
+                scope.resizeMapDisplayControl = odsMapCtrl.resizeMapDisplayControl;
+            },
             controller: ['$scope', 'shortSummaryFilter', function ($scope, shortSummaryFilter) {
+                $scope.expanded = true;
+                $scope.$emit('toggleMapDisplayControl', {expanded: $scope.expanded});
+
+                $scope.shortSummaryFilter = shortSummaryFilter;
+
                 $scope.getGroupDescription = function(group) {
-                    return group.description || shortSummaryFilter(group.layers[0].description, 200) || shortSummaryFilter(group.layers[0].context.dataset.metas.description, 200);
+                    angular.forEach(group.layers, function(layer){
+                        if (layer.context.dataset === null){
+                            group.hasUnknownDataset = true;
+                        }
+                    });
+
+                    if (group.hasUnknownDataset && group.layers.length === 1){
+                        return translate('The dataset associated with this layer is unknown. Some data may not appear on the map.');
+                    } else if (group.hasUnknownDataset && group.layers.length > 1){
+                        return translate('One or more datasets associated with this group of layers are unknown. Some data may not appear on the map.');
+                    } else if (group.layers.length > 1) {
+                        // The group has its own configuration panel, if the description is empty, it's intended
+                        return group.description;
+                    } else {
+                        // The description of the only dataset within is usually the right one, but in widget mode, we
+                        // may set the description on the layer group even if there is only one layer
+                        return group.description || group.layers[0].description;
+                    }
+
                 };
+
+                $scope.getGroupTitle = function(group) {
+                    // The title has to have a value
+                    return group.title || group.layers[0].title || group.layers[0].context.dataset.metas.title;
+                };
+
+                $scope.toggleDisplayControl = function (){
+                    $scope.expanded = !$scope.expanded;
+                    $scope.$emit('toggleMapDisplayControl', {expanded: $scope.expanded});
+                };
+
                 $scope.toggleGroup = function(group) {
                     if (!$scope.singleLayer) {
                         group.displayed = !group.displayed;
@@ -19155,14 +19395,20 @@ mod.directive('infiniteScroll', [
                         $scope.mapConfig.groups.forEach(function(group) {group.displayed = false; });
                         group.displayed = true;
                     }
+                    $scope.resizeMapDisplayControl();
                 };
+
+                $scope.$on('resizeMapDisplayControl', function () {
+                    $scope.resizeMapDisplayControl();
+                });
 
                 // FIXME: What if we want to have an empty description? Maybe default to empty instead of dataset description?
             }]
         };
     }]);
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -20155,73 +20401,148 @@ mod.directive('infiniteScroll', [
     mod.directive('odsMapLegend', [ function () {
         return {
             restrict: 'E',
+            require: '^odsMap',
             template: '' + '' +
-            '<div class="odswidget odswidget-map-legend" ng-class="{\'odswidget-map-legend--extended\': extended}" ng-if="layers.length > 0">' +
+            '<div class="odswidget odswidget-map-legend" ' +
+            '     ng-class="{\'odswidget-map-legend--extended\': ( selectedLayer.config.display === \'categories\' && extended), \'odswidget-map-legend--not-toggleable\' : !isToggleable(selectedLayer)}" ' +
+            '     ng-if="layers.length > 0" ' +
+            '     ng-click="isToggleable(selectedLayer) && !clickBlocked && toggle()">' +
             '   <div class="odswidget-map-legend__header">' +
-            '       <div class="odswidget-map-legend__title" ng-class="{\'odswidget-map-legend__title--toggleable\': getCategoriesCount(selectedLayer) > 6}" ng-click="toggle()">' +
-            '           {{ selectedLayer.config.captionTitle || selectedLayer.config.title || selectedLayer.config.context.dataset.metas.title}}' +
-            '           <i ng-show="getCategoriesCount(selectedLayer) > 6 && !extended" class="odswidget-map-legend__title-toggle odsui-top"></i>' +
-            '           <i ng-show="getCategoriesCount(selectedLayer) > 6 && extended" class="odswidget-map-legend__title-toggle odsui-bottom"></i>' +
+            '       <div ng-if="selectedLayer.config.captionPictoIcon" class="odswidget-map-legend__picto">' +
+            '           <ods-map-picto name="{{ selectedLayer.config.captionPictoIcon }}"'+
+            '                          color="{{ selectedLayer.config.captionPictoColor }}">' +
+            '           </ods-map-picto>' +
+            '       </div> ' +
+            '       <div class="odswidget-map-legend__title"' +
+            '           title="{{ getLayerTitle(selectedLayer) }}"' +
+            '           ng-bind="shortSummaryFilter(getLayerTitle(selectedLayer), 50)">'+
             '       </div>' +
+            '       <i ng-show="isToggleable(selectedLayer) && !extended" class="odswidget-map-legend__title-toggle odsui-top" ods-tooltip="Click to unfold" translate="ods-tooltip"></i>' +
+            '       <i ng-show="isToggleable(selectedLayer) && extended" class="odswidget-map-legend__title-toggle odsui-bottom" ods-tooltip="Click to fold" translate="ods-tooltip"></i>' +
             '       <div ng-show="selectedLayer.properties.legendLabel" ng-bind="selectedLayer.properties.legendLabel" class="odswidget-map-legend__label">' +
             '       </div>' +
             '   </div>' +
             '   <div ng-switch="selectedLayer.config.display">' +
-            '       <div ng-switch-when="categories" class="odswidget-map-legend__categories-container">' +
-            '           <div ng-if="getCategoriesCount(selectedLayer) > 6 && !extended" class="odswidget-map-legend__categories--condensed">' +
-            '              <div ng-repeat="(value, color) in getCategories(selectedLayer, 6)" class="odswidget-map-legend__categories--condensed__item">' +
-            '                  <div style="background-color: {{color}}" class="odswidget-map-legend__categories__color-block"></div>' +
-            '              </div>' +
+            '       <div ng-switch-when="categories" class="odswidget-map-legend__categories-container" ng-class="{\'odswidget-map-legend__categories-container--extended\' : extended}">' +
+            '           <div ng-if="selectedLayer.config.color.type !== \'field\'">' +
+            '               <div ng-if="isToggleable(selectedLayer) && !extended" class="odswidget-map-legend__categories--condensed">' +
+            '                   <div ng-repeat="(value, color) in getCategories(selectedLayer, maxCategories) track by $index" class="odswidget-map-legend__categories__item">' +
+            '                       <div class="odswidget-map-legend__categories__item-color">' +
+            '                           <div ng-style="{\'background-color\' :color}" class="odswidget-map-legend__categories__color-block"></div>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__categories__item-value" ng-bind="value"></div>' +
+            '                   </div>' +
+            '                   <div class="odswidget-map-legend__categories__item">' +
+            '                       <div class="odswidget-map-legend__categories__item-value--others">{{ getCategoriesCount(selectedLayer) - maxCategories }} <span translate>more item(s)...</span></div>'+
+            '                   </div>' +
+            '               </div>' +
+            '               <div ng-if="!isToggleable(selectedLayer) || extended" class="odswidget-map-legend__categories--extended">' +
+            '                   <div ng-repeat="(value, color) in getCategories(selectedLayer) track by $index" class="odswidget-map-legend__categories__item">' +
+            '                       <div class="odswidget-map-legend__categories__item-color">' +
+            '                           <div ng-style="{\'background-color\' :color}" class="odswidget-map-legend__categories__color-block"></div>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__categories__item-value" ng-bind="value"></div>' +
+            '                   </div>' +
+            '                   <div ng-show="selectedLayer.config.color.otherCategories" class="odswidget-map-legend__categories__item">' +
+            '                       <div class="odswidget-map-legend__categories__item-color">' +
+            '                           <div ng-style="{\'background-color\' :selectedLayer.config.color.otherCategories}" class="odswidget-map-legend__categories__color-block"></div>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__categories__item-value--others">Others</div>' +
+            '                   </div>' +
+            '               </div>' +
             '           </div>' +
-            '           <div ng-if="getCategoriesCount(selectedLayer) <= 6 || extended" class="odswidget-map-legend__categories--extended">' +
-            '               <div ng-repeat="(value, color) in getCategories(selectedLayer)" class="odswidget-map-legend__categories--extended__item">' +
-            '                   <div class="odswidget-map-legend__categories--extended__item-color">' +
-            '                       <div style="background-color: {{color}}" class="odswidget-map-legend__categories__color-block"></div>' +
-            '                   </div>' +
-            '                   <div class="odswidget-map-legend__categories--extended__item-value" ng-bind="value"></div>' +
-            '               </div>' +
-            '               <div ng-show="selectedLayer.config.color.otherCategories" class="odswidget-map-legend__categories--extended__item">' +
-            '                   <div class="odswidget-map-legend__categories--extended__item-color">' +
-            '                       <div style="background-color: {{selectedLayer.config.color.otherCategories}}" class="odswidget-map-legend__categories__color-block"></div>' +
-            '                   </div>' +
-            '                   <div class="odswidget-map-legend__categories--extended__item-value--others">Others</div>' +
-            '               </div>' +
+            '           <div ng-if="selectedLayer.config.color.type === \'field\'">' +
+            '               <div class="odswidget-map-legend__no-legend-placeholder" translate>No legend available</div>' +
             '           </div>' +
             '       </div>' +
             '       <div ng-switch-when="choropleth" class="odswidget-map-legend__choropleth-container">' +
-            '           <div ng-repeat="bound in selectedLayer.properties.bounds" class="odswidget-map-legend__choropleth__item">' +
-            '               <div class="odswidget-map-legend__choropleth__item-color">' +
-            '                   <div style="background-color: {{ bound.color }}" class="odswidget-map-legend__choropleth__color-block"></div>' +
-            '               </div>' +
-            '               <div class="odswidget-map-legend__choropleth__item-range">' +
-            '                   <div class="odswidget-map-legend__choropleth__item-range__bound">' +
-            '                       {{ bound.lowerBound|number:selectedLayer.properties.floatLength }}' +
-            '                       <i aria-hidden="true" class="fa fa-long-arrow-right odswidget-map-legend__choropleth__item-range__bound-arrow"></i>' +
+            '           <div ng-if="!isToggleable(selectedLayer) || extended">' +
+            '               <div ng-repeat="bound in selectedLayer.properties.bounds" class="odswidget-map-legend__choropleth__item">' +
+            '                   <div class="odswidget-map-legend__choropleth__item-color">' +
+            '                       <div ng-style="{\'background-color\' : bound.color }" class="odswidget-map-legend__choropleth__color-block"></div>' +
             '                   </div>' +
-            '                   <div class="odswidget-map-legend__choropleth__item-range__bound">' +
-            '                       {{ bound.upperBound|number:selectedLayer.properties.floatLength }}' +
+            '                   <div class="odswidget-map-legend__choropleth__item-range">' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ bound.lowerBound|number:selectedLayer.properties.floatLength }}' +
+            '                           <i aria-hidden="true" class="fa fa-long-arrow-right odswidget-map-legend__choropleth__item-range__bound-arrow"></i>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ bound.upperBound|number:selectedLayer.properties.floatLength }}' +
+            '                       </div>' +
+            '                   </div>' +
+            '               </div>' +
+            '           </div>' +
+            '           <div ng-if="isToggleable(selectedLayer) && !extended">' +
+            '               <div class="odswidget-map-legend__choropleth__item">' +
+            '                   <div class="odswidget-map-legend__choropleth__item-color">' +
+            '                       <div ng-style="{\'background-color\' : selectedLayer.properties.bounds[0].color }" class="odswidget-map-legend__choropleth__color-block"></div>' +
+            '                   </div>' +
+            '                   <div class="odswidget-map-legend__choropleth__item-range">' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ selectedLayer.properties.bounds[0].lowerBound|number:selectedLayer.properties.floatLength }}' +
+            '                           <i aria-hidden="true" class="fa fa-long-arrow-right odswidget-map-legend__choropleth__item-range__bound-arrow"></i>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ selectedLayer.properties.bounds[0].upperBound|number:selectedLayer.properties.floatLength }}' +
+            '                       </div>' +
+            '                   </div>' +
+            '               </div>' +
+            '               <div class="odswidget-map-legend__choropleth__item" ng-if="selectedLayer.properties.bounds.length > 3">' +
+            '                   <p class="odswidget-map-legend__choropleth__item-value--remaining">' +
+            '                   {{selectedLayer.properties.bounds.length - 2 }} <span translate>more item(s)...</span>' +
+            '                   </p>' +
+            '               </div>' +
+            '               <div class="odswidget-map-legend__choropleth__item" ng-if="selectedLayer.properties.bounds.length === 3">' +
+            '                   <div class="odswidget-map-legend__choropleth__item-color">' +
+            '                       <div ng-style="{ \'background-color\': selectedLayer.properties.bounds[1].color}" class="odswidget-map-legend__choropleth__color-block"></div>' +
+            '                   </div>' +
+            '                   <div class="odswidget-map-legend__choropleth__item-range">' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ selectedLayer.properties.bounds[1].lowerBound|number:selectedLayer.properties.floatLength }}' +
+            '                           <i aria-hidden="true" class="fa fa-long-arrow-right odswidget-map-legend__choropleth__item-range__bound-arrow"></i>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ selectedLayer.properties.bounds[1].upperBound|number:selectedLayer.properties.floatLength }}' +
+            '                       </div>' +
+            '                   </div>' +
+            '               </div>' +
+            '               <div class="odswidget-map-legend__choropleth__item">' +
+            '                   <div class="odswidget-map-legend__choropleth__item-color">' +
+            '                       <div ng-style="{ \'background-color\': selectedLayer.properties.bounds[selectedLayer.properties.bounds.length - 1].color }" class="odswidget-map-legend__choropleth__color-block"></div>' +
+            '                   </div>' +
+            '                   <div class="odswidget-map-legend__choropleth__item-range">' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ selectedLayer.properties.bounds[selectedLayer.properties.bounds.length - 1].lowerBound|number:selectedLayer.properties.floatLength }}' +
+            '                           <i aria-hidden="true" class="fa fa-long-arrow-right odswidget-map-legend__choropleth__item-range__bound-arrow"></i>' +
+            '                       </div>' +
+            '                       <div class="odswidget-map-legend__choropleth__item-range__bound">' +
+            '                           {{ selectedLayer.properties.bounds[selectedLayer.properties.bounds.length - 1].upperBound|number:selectedLayer.properties.floatLength }}' +
+            '                       </div>' +
             '                   </div>' +
             '               </div>' +
             '           </div>' +
             '       </div>' +
             '       <div ng-switch-when="heatmap" class="odswidget-map-legend__simple-container">' +
             '           <div><span translate ng-bind="layer.func"></div> '+
-            '           <div style="background: {{selectedLayer.properties.gradient}}" class="odswidget-map-legend__simple__color-block"></div>' +
+            '           <div ng-style="{ \'background\': selectedLayer.properties.gradient}" class="odswidget-map-legend__simple__color-block"></div>' +
             '           <div class="odswidget-map-legend__simple__color-block-subtext">' +
             '               <div class="odswidget-map-legend__simple__color-block-subtext-left" translate>Low</div>' +
             '               <div class="odswidget-map-legend__simple__color-block-subtext-right" translate>High</div>' +
             '           </div>' +
             '       </div>'+
-            '       <div ng-switch-default class="odswidget-map-legend__simple-container">' +
-            '           <div style="background-color: {{selectedLayer.config.color}}" class="odswidget-map-legend__simple__color-block"></div>' +
+            '       <div ng-switch-default class="odswidget-map-legend__default-container">' +
+            '           <div ng-style="{ \'background-color\': selectedLayer.config.color}" class="odswidget-map-legend__default__color-block"></div>' +
+            '           <div translate>Item</div>' +
             '       </div>' +
             '   </div>' +
             '   <div ng-if="layers.length > 1" class="odswidget-map-legend__pagination">' +
-            '       <button title="Previous" translate="title" class="odswidget-map-legend__pagination-button" ng-show="selectedIndex > 0" ng-click="previous()">' +
+            '       <button title="Previous" translate="title" class="odswidget-map-legend__pagination-button" ' +
+            '               ng-show="selectedIndex > 0" ng-click="previous()" ng-mouseenter="preventToggle()" ng-mouseleave="allowToggle()">' +
             '           <i class="odsui-left" aria-hidden="true"></i>' +
             '       </button>' +
             '       {{selectedIndex+1}}/{{layers.length}}' +
-            '       <button title="Next" translate="title" class="odswidget-map-legend__pagination-button" ng-show="selectedIndex < layers.length - 1" ng-click="next()">' +
+            '       <button title="Next" translate="title" class="odswidget-map-legend__pagination-button" ' +
+            '               ng-show="selectedIndex < layers.length - 1" ng-click="next()" ng-mouseenter="preventToggle()" ng-mouseleave="allowToggle()">' +
             '           <i class="odsui-right"aria-hidden="true"></i>' +
             '       </button>' +
             '   </div>' +
@@ -20229,31 +20550,65 @@ mod.directive('infiniteScroll', [
             scope: {
                 mapConfig: '='
             },
-            controller: ['$scope', 'MapHelper', function ($scope, MapHelper) {
+            link: function (scope, element, attrs, odsMapCtrl) {
+                scope.resizeMapDisplayControl = odsMapCtrl.resizeMapDisplayControl;
+            },
+            controller: ['$scope', 'MapHelper', 'shortSummaryFilter', function ($scope, MapHelper, shortSummaryFilter) {
                 $scope.extended = false;
                 $scope.selectedLayer = null;
                 $scope.selectedIndex = 0;
+                $scope.maxCategories = 4;
+
+                $scope.isToggleable = function(layer){
+                    if (layer.config.display === 'choropleth' && Object.keys(layer.config.color.ranges).length > 3 ){
+                        return true;
+                    } else if (layer.config.display === 'categories' &&  $scope.getCategoriesCount(layer) > $scope.maxCategories && layer.config.color.type !== 'field' ) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                };
+
+                $scope.shortSummaryFilter = shortSummaryFilter;
+
+                $scope.getLayerTitle = function(layer){
+                    return layer.config.captionTitle || layer.config.title || layer.config.context.dataset.metas.title;
+                };
 
                 $scope.toggle = function() {
-                    if ($scope.getCategoriesCount($scope.selectedLayer) <= 6) {
+                    if ($scope.getCategoriesCount($scope.selectedLayer) <= $scope.maxCategories && $scope.extended) {
                         $scope.extended = false;
-                        return;
+                    } else {
+                        $scope.extended = !$scope.extended;
                     }
-                    $scope.extended = !$scope.extended;
+                    $scope.resizeMapDisplayControl();
                 };
+
                 $scope.select = function(index) {
                     $scope.selectedLayer = $scope.layers[index];
-                    if ($scope.getCategoriesCount($scope.selectedLayer) <= 6 && $scope.extended) {
-                        $scope.toggle();
+                    if (!$scope.isToggleable($scope.selectedLayer)){
+                        $scope.extended = false;
                     }
                 };
+
                 $scope.previous = function() {
                     $scope.selectedIndex -= 1;
                     $scope.select($scope.selectedIndex);
+                    $scope.resizeMapDisplayControl();
                 };
+
                 $scope.next = function() {
                     $scope.selectedIndex += 1;
                     $scope.select($scope.selectedIndex);
+                    $scope.resizeMapDisplayControl();
+                };
+
+                $scope.preventToggle = function(){
+                  $scope.clickBlocked = true;
+                };
+
+                $scope.allowToggle = function(){
+                  $scope.clickBlocked = false;
                 };
 
                 $scope.getCategoriesCount = function(layer) {
@@ -20270,104 +20625,21 @@ mod.directive('infiniteScroll', [
                 };
 
                 $scope.getCategories = function(layer, limit) {
-                    if (limit) {
-                        var subset = {};
-                        var i;
+                    var subset = {};
+                    var i;
 
-                        var categoryNames = Object.keys(layer.config.color.categories).sort(ODS.ArrayUtils.sortNumbers);
+                    var categoryNames = Object.keys(layer.config.color.categories).sort(ODS.ArrayUtils.sortNumbers);
 
-                        for (i=0; i<Math.min(limit, categoryNames.length); i++) {
-
-                            var key = categoryNames[i];
-                            subset[key] = layer.config.color.categories[key];
-                        }
-                        return subset;
-                    } else {
-                        return layer.config.color.categories;
+                    if (!limit){
+                        limit = categoryNames.length;
                     }
-                };
 
-                // In a legend, we want all bounds to have the same float length with a maximal number of 3 decimals numbers.
-
-                // Find the maximum float length in an array of bounds.
-                // We do this by calculating the length of the 2nd part of a float number splited at comma position.
-
-                var getBoundsFloatValue = function(bounds) {
-                    var boundFloatLength,
-                        floatLength = 0;
-
-                    angular.forEach(bounds, function(bound){
-                        angular.forEach(bound, function(value, key){
-                            if (key !== 'color' && Math.floor(value) !== value) {
-                                boundFloatLength = value.toString().split(".")[1].length;
-                                if (boundFloatLength > floatLength) {
-                                    floatLength = boundFloatLength;
-                                }
-                            }
-                        });
-                    });
-
-                    if (floatLength > 3) {
-                        floatLength = 3;
+                    for (i=0; i<Math.min(limit, categoryNames.length); i++) {
+                        var key = categoryNames[i];
+                        subset[key] = layer.config.color.categories[key];
                     }
-                    return floatLength;
+                    return subset;
                 };
-
-
-                // Format upper bounds and lower bounds according to the float length if needed
-
-                var formatBounds = function (minBound, bounds, floatLength) {
-                    var isUpperBound = true;
-                    if (floatLength !== 0) {
-                        angular.forEach(bounds, function (bound) {
-                            bound.lowerBound = formatBound(bounds, minBound, bound.lowerBound, floatLength);
-                            bound.upperBound = formatBound(bounds, minBound, bound.upperBound, floatLength, isUpperBound);
-                        });
-                        return bounds;
-                    } else {
-                        return bounds;
-                    }
-                };
-
-                var formatBound = function(bounds, minBound, bound, floatLength, isUpperBound) {
-                    bound = bound.toString();
-                    var commaPosition;
-                    if (bound === minBound) {
-                        return bound;
-                    } else if (isUpperBound && Math.floor(bound) != bound) {
-                        // Format upper bound
-                        return setBoundLength(bound, floatLength);
-                    } else if (floatLength !== 0 && Math.floor(bound) != bound && !isUpperBound) {
-                        // Format lower bounds to be equal to upper bound minus 1 even in float value (i.e. 3.14 -> 3.13)
-                        // Find comma position in bound
-                        commaPosition = bound.length - bound.split('.')[1].length;
-                        // Format bound to the float length calculated before
-                        bound = setBoundLength(bound, floatLength);
-                        // Remove comma in bound, transform it in number and remove 1 (i.e. '3.14' -> '314' -> 314 -> 313 -> '313' )
-                        bound = (Number((bound.replace('.', ''))) + 1).toString();
-                        // Recalculate comma position in case it has changed (i.e. 99,99 > 100,00)
-                        commaPosition = bound.length - (bound.length - commaPosition) - 1;
-                        // Reposition comma and return lower bound
-                        bound = [bound.slice(0, commaPosition), ".", bound.slice(commaPosition)].join('');
-                        return bound;
-                    } else {
-                        return bound;
-                    }
-                };
-
-                //
-                var setBoundLength = function(bound, floatLength) {
-                    var commaPosition = bound.length - bound.split('.')[1].length;
-                    // Add 0 if bound float length is not equal to float length, else remove exceeding numbers in float
-                    if (bound.split('.')[1].length < floatLength) {
-                        bound += ('0'.repeat(floatLength - bound.split('.')[1].length));
-                    } else {
-                        bound = bound.slice(0, (commaPosition + floatLength));
-                    }
-                    return bound;
-                };
-
-
 
                 var refreshLayers = function() {
                     var layers = [];
@@ -20378,7 +20650,7 @@ mod.directive('infiniteScroll', [
                         }
                         group.layers.forEach(function(layer) {
 
-                            if (layer.caption && (angular.isString(layer.color) || (layer.color.type !== 'field' ))) {
+                            if (layer.caption && layer.context.dataset !== null) {
                                 var properties = {};
                                 layers.push({
                                     config: layer,
@@ -20386,44 +20658,44 @@ mod.directive('infiniteScroll', [
                                 });
                                 properties.legendLabel = MapHelper.getLayerLegendLabel(layer);
                                 if (layer.display === 'choropleth') {
-                                    var minBound;
-                                    MapHelper.getDatasetFieldBoundMin(layer.context, layer.color.field).then(function (bound) {
+                                    var minBound = layer.color.minValue;
 
-                                        minBound = bound;
+                                    // FIXME: A lot of code duplication with mapbuilder-color-choropleth
 
-                                        // FIXME: A lot of code duplication with mapbuilder-color-choropleth
-                                        var rangesUpperBounds = Object.keys(layer.color.ranges).map(MapHelper.boundAsNumber).sort(ODS.ArrayUtils.sortNumbers);
-                                        var bounds = [];
-                                        rangesUpperBounds.forEach(function (upperBound, index) {
-                                            var searchingColor = true;
-                                            upperBound = MapHelper.boundAsNumber(upperBound);
-                                            angular.forEach(layer.color.ranges, function (color, bound) {
-                                                if (upperBound == bound && searchingColor) {
-                                                    if (index === 0) {
-                                                        bounds.push({
-                                                            color: color,
-                                                            lowerBound: minBound,
-                                                            upperBound: upperBound
-                                                        });
-                                                    } else {
-                                                        bounds.push({
-                                                            color: color,
-                                                            lowerBound: rangesUpperBounds[index - 1],
-                                                            upperBound: upperBound
-                                                        });
-                                                    }
-                                                    searchingColor = false;
-                                                }
-                                            });
-                                        });
-
-                                        properties.floatLength = getBoundsFloatValue(bounds);
-
-                                        bounds = formatBounds(minBound, bounds, properties.floatLength);
-
-                                        properties.bounds = bounds;
-
+                                    var rangesUpperBounds = Object.keys(layer.color.ranges).sort(function (a, b) {
+                                        return parseFloat(a) - parseFloat(b);
                                     });
+
+                                    var bounds = [];
+
+                                    properties.floatLength = Object.keys(layer.color.ranges).reduce(function(sofar, current) {
+                                        if (current.toString().indexOf('.') === -1) {
+                                            return sofar;
+                                        } else {
+                                            return Math.max(sofar, current.toString().length - current.toString().indexOf('.') - 1);
+                                        }
+                                    }, 0);
+                                    rangesUpperBounds.forEach(function (upperBound, index) {
+                                        var color = layer.color.ranges[upperBound];
+
+                                        if (index === 0) {
+                                            bounds.push({
+                                                color: color,
+                                                lowerBound: minBound,
+                                                upperBound: upperBound
+                                            });
+                                        } else {
+                                            bounds.push({
+                                                color: color,
+                                                lowerBound: ODS.CalculationUtils.incrementByOneUnit(rangesUpperBounds[index - 1]),
+                                                upperBound: upperBound
+                                            });
+                                        }
+                                    });
+
+                                    properties.bounds = bounds;
+
+                                    $scope.resizeMapDisplayControl();
                                 } else if (layer.display === 'heatmap') {
 
                                     var orderedSteps = Object.keys(layer.color.steps).map(parseFloat).sort(ODS.ArrayUtils.sortNumbers);
@@ -20485,7 +20757,8 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-}());;(function () {
+}());
+;(function () {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -20494,7 +20767,8 @@ mod.directive('infiniteScroll', [
         return {
             restrict: 'E',
             template: '' +
-            '<div class="odswidget odswidget-map-search-box" ng-class="{\'odswidget-map-search-box--datasearch\': dataSearchActive}">' +
+            '<div class="odswidget odswidget-map-search-box" ' +
+            '     ng-class="{\'odswidget-map-search-box--datasearch\': dataSearchActive, \'odswidget-map-search-box--expanded\': expanded}">' +
             '   <div class="odswidget-map-search-box__box-wrapper"' +
             '        ng-class="{\'odswidget-map-search-box__box-wrapper--datasearch\': dataSearchActive}">' +
             '       <input type="text" ' +
@@ -20502,12 +20776,31 @@ mod.directive('infiniteScroll', [
             '              ng-class="{\'odswidget-map-search-box__box--datasearch\': dataSearchActive}"' +
             '              ng-model="userQuery" ' +
             '              ng-change="runQuery(userQuery)" ' +
-            '              ng-keydown="handleKeyDown($event)">' +
+            '              ng-keydown="handleKeyDown($event)"' +
+            '              ng-focus="expandSearchBox()" >' +
             '       <button type="button" class="odswidget-map-search-box__box-cancel" ng-click="resetSearch()" ng-show="userQuery || dataSearchActive">' +
             '           <i class="fa fa-times odswidget-map-search-box__close-search-icon"></i>' +
             '       </button>' +
+            '       <button class="odswidget-map-search-box__toggle"' +
+            '               ng-hide="expanded"' +
+            '               ods-tooltip="Expand the search bar"' +
+            '               ods-tooltip-direction="right"' +
+            '               translate="ods-tooltip"' +
+            '               ng-click="expandSearchBox()">' +
+            '           <i class="fa fa-caret-right"></i>' +
+            '       </button>' +
+            '       <button class="odswidget-map-search-box__toggle"' +
+            '               ng-show="expanded"' +
+            '               ods-tooltip="Collapse the search bar"' +
+            '               translate="ods-tooltip"' +
+            '               ods-tooltip-direction="left"' +
+            '               ng-click="collapseSearchBox()">' +
+            '           <i class="fa fa-caret-left"></i>' +
+            '       </button>' +
             '   </div>' +
-            '   <ul class="odswidget-map-search-box__suggestions" ng-if="!dataSearchActive && userQuery">' +
+            '   <ul class="odswidget-map-search-box__suggestions" ' +
+            '     ng-class="{\'odswidget-map-search-box__suggestions--expanded\': expanded}"' +
+            '       ng-if="!dataSearchActive && userQuery">' +
             '       <li ng-show="userQuery"' +
             '           ng-click="runDataSearch(userQuery)"' +
             '           ng-class="[\'odswidget-map-search-box__search-suggestion\', {\'odswidget-map-search-box__search-suggestion--selected\': selectedIndex === 0}]">' +
@@ -20577,6 +20870,7 @@ mod.directive('infiniteScroll', [
             link: function(scope, element, attrs, mapCtrl) {
                 scope.suggestions = [];
                 scope.selectedIndex = 0;
+                scope.expanded = false;
                 scope.runQuery = function(userQuery) {
                     var loc = MapHelper.getLocationStructure(mapCtrl.getCurrentPosition());
                     AlgoliaPlaces(userQuery, loc.center.join(',')).then(
@@ -20589,20 +20883,29 @@ mod.directive('infiniteScroll', [
                         }
                     );
                 };
-                
+
+                scope.expandSearchBox = function () {
+                    scope.expanded = true;
+                };
+
+                scope.collapseSearchBox = function () {
+                    $('.odswidget-map-search-box__box').blur();
+                    scope.expanded = false;
+                };
+
                 // Reset search
-                
+
                 scope.resetSearch = function() {
                     // this will trigger then the registered reset callback (see below)
                     mapCtrl.resetMapDataFilter();
                 };
-                
+
                 mapCtrl.registerResetCallback(function () {
                     scope.suggestions = [];
                     scope.userQuery = '';
                     scope.stopDataSearch();
                 });
-                
+
                 scope.$on('$destroy', scope.resetSearch);
                 scope.moveToSuggestion = function(suggestion, index) {
                     if (angular.isDefined(index)) {
@@ -20619,6 +20922,8 @@ mod.directive('infiniteScroll', [
                         zoom = 21;
                     }
                     mapCtrl.moveMap(suggestion._geoloc, zoom);
+                    scope.collapseSearchBox();
+                    scope.resetSearch();
                 };
                 scope.moveToDataRecord = function(dataset, record) {
                     var geoShapeFields = dataset.getFieldsForType('geo_shape');
@@ -20632,10 +20937,11 @@ mod.directive('infiniteScroll', [
                     }
 
                     if (isShape) {
-                        console.log('TODO move to data record for shapes');
+                        mapCtrl.fitMapToShape(record.fields[fieldName]);
                     } else {
                         mapCtrl.moveMap(record.fields[fieldName], 21);
                     }
+                    scope.collapseSearchBox();
                 };
 
                 scope.runDataSearch = function(userQuery) {
@@ -21358,7 +21664,7 @@ mod.directive('infiniteScroll', [
             '    <ods-map-legend ng-if="displayLegend && allContextsInitialized" map-config="mapConfig"></ods-map-legend>' +
             '    <div ng-transclude></div>' + // Can't find any better solution...
             '</div>',
-            link: function(scope, element, attrs) {
+            link: function(scope, element, attrs, ctrl) {
                 var mapElement = angular.element(element.children()[0]);
                 // "Porting" the attributes to the real map.
                 if (attrs.id) { mapElement.attr('id', attrs.id); }
@@ -21436,6 +21742,9 @@ mod.directive('infiniteScroll', [
                         var height = Math.max(200, $(window).height() - mapElement.offset().top);
                         mapElement.height(height);
                     }
+
+                    // resize map-display-control
+                    ctrl.resizeMapDisplayControl();
                 }
 
                 if (scope.autoResize === 'true') {
@@ -21452,6 +21761,15 @@ mod.directive('infiniteScroll', [
 
                 scope.$on('mapFitBounds', function(e, bounds) {
                     scope.map.fitBounds(bounds);
+                });
+
+                scope.$on('toggleMapDisplayControl', function (event, data) {
+                    var $leafletControlsElement = $('.leaflet-top.leaflet-right');
+                    if (data.expanded) {
+                        $leafletControlsElement.removeClass('collapsed');
+                    } else {
+                        $leafletControlsElement.addClass('collapsed');
+                    }
                 });
 
                 /* INITIALISATION AND DEFAULT VALUES */
@@ -21547,7 +21865,7 @@ mod.directive('infiniteScroll', [
 
 
                     // Only during the Mapbuilder beta phase
-                    if (!window.location.pathname.startsWith('/map2/') && ODSWidgetsConfig.mapGeobox && !scope.searchBox && !isStatic) {
+                    if (ODSWidgetsConfig.mapGeobox && !scope.searchBox && !isStatic) {
                         var geocoder = L.Control.geocoder({
                             placeholder: translate('Find a place...'),
                             errorMessage: translate('Nothing found.'),
@@ -21664,7 +21982,7 @@ mod.directive('infiniteScroll', [
                                     end: translate('Release mouse to finish drawing')
                                 }
                             }
-                        }
+                        };
                         L.drawLocal.edit.handlers = {
                             edit: {
                                 tooltip: {
@@ -21786,7 +22104,7 @@ mod.directive('infiniteScroll', [
                         scope.$watch(function() {
                             var pending = 0;
                             angular.forEach(scope.mapConfig.groups, function(groupConfig) {
-                                angular.forEach(groupConfig.layers, function(layerConfig) {
+                                angular.forEach(groupConfig.layers, function (layerConfig) {
                                     if (layerConfig._loading) {
                                         pending++;
                                     }
@@ -21837,6 +22155,7 @@ mod.directive('infiniteScroll', [
                             // We want a light version of the config, and the only reliable mechanism to efficiently
                             // simplify a complex object for comparison is JSON.stringify.
                             var simplified = JSON.stringify(scope.mapConfig, function(key, value) {
+
                                 if (typeof(value) === "function") {
                                     return undefined;
                                 }
@@ -21848,12 +22167,14 @@ mod.directive('infiniteScroll', [
                                     // Internal runtime properties
                                     return undefined;
                                 }
-                                if (key === 'context') {
+                                if (key === 'context' && value.dataset !== null) {
                                     // Serialize the context object
                                     return {
                                         datasetId: value.dataset.datasetid,
                                         parameters: value.parameters,
                                     };
+                                } else {
+                                    return undefined;
                                 }
                                 // Things we want to discard, that don't impact the display
                                 if (['mapPresets', 'singleLayer', 'toolbarGeolocation', 'toolbarFullscreen',
@@ -21916,6 +22237,7 @@ mod.directive('infiniteScroll', [
                     };
 
                     var renderedLayers = {};
+                    var previousMasterLayerGroup;
                     var refreshData = function(fitView, locationChangedOnly) {
                         /* Used when one of the context changes, or the viewport changes: triggers a refresh of the displayed data
                            If "fitView" is true, then the map moves to the new bounding box containing all the data, before
@@ -21929,11 +22251,13 @@ mod.directive('infiniteScroll', [
                             //console.log('renderdata');
                             var promises = [];
                             var newlyRenderedLayers = {};
+                            var masterLayerGroup = new L.LayerGroup();
                             angular.forEach(scope.mapConfig.groups, function(layerGroup) {
                                 if (!layerGroup.displayed) {
                                     angular.forEach(layerGroup.layers, function(layer) {
                                         if (layer._currentRequestTimeout) {
                                             layer._currentRequestTimeout.resolve();
+                                            layer._loading = false;
                                         }
                                         if (layer._rendered) {
                                             scope.map.removeLayer(layer._rendered);
@@ -21950,12 +22274,18 @@ mod.directive('infiniteScroll', [
                                         return;
                                     }
 
+                                    if (layer.context.dataset === null){
+                                        return;
+                                    }
+
                                     // Depending on the layer config, we can opt for various representations
 
                                     // Tiles: call a method on the existing layer
                                     // Client-side: build a new layer and remove the old one
                                     if (!locationChangedOnly || MapLayerRenderer.doesLayerRefreshOnLocationChange(layer)) {
-                                        promises.push(MapLayerRenderer.updateDataLayer(layer, scope.map));
+                                        var deferred = $q.defer();
+                                        masterLayerGroup.addLayer(MapLayerRenderer.updateDataLayer(layer, scope.map, deferred));
+                                        promises.push(deferred.promise);
                                         newlyRenderedLayers[layer._runtimeId] = layer;
                                     }
                                 });
@@ -21969,6 +22299,7 @@ mod.directive('infiniteScroll', [
                                     var layer = renderedLayers[runtimeId];
                                     if (layer._currentRequestTimeout) {
                                         layer._currentRequestTimeout.resolve();
+                                        layer._loading = false;
                                     }
                                     if (layer._rendered) {
                                         scope.map.removeLayer(layer._rendered);
@@ -21980,7 +22311,11 @@ mod.directive('infiniteScroll', [
                             renderedLayers = newlyRenderedLayers;
                             $q.all(promises).then(function() {
                                 // We got them all
-                                // FIXME: Do we have something to do here?
+                                if (previousMasterLayerGroup) {
+                                    scope.map.removeLayer(previousMasterLayerGroup);
+                                }
+                                scope.map.addLayer(masterLayerGroup);
+                                previousMasterLayerGroup = masterLayerGroup;
                             });
                         };
 
@@ -22009,7 +22344,9 @@ mod.directive('infiniteScroll', [
                         }
                     };
 
-
+                    scope.$on('mapRefresh', function(e, bounds) {
+                        refreshData(false);
+                    });
 
                     var initDrawingTools = function() {
                         // Make sure we know when the user is drawing, so that we can ignore other interactions (click on
@@ -22174,10 +22511,22 @@ mod.directive('infiniteScroll', [
                     // FIXME: Include joinContexts and refineOnClickContexts
                     var contexts = MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig);
                     var promises = contexts.map(function(context) { return context.wait(); });
-                    $q.all(promises).then(function() {
-                        syncGeofilterToDrawing();
-                        deferred.resolve();
-                    });
+
+
+
+                    var resolvedPromises = function(promises){
+                        $q.all(promises).then(function(){
+                            syncGeofilterToDrawing();
+                            deferred.resolve();
+                        }).catch(function(){
+                            promises = promises.filter(function(promise) {
+                                return promise.$$state.status !== 2;
+                            });
+                            resolvedPromises(promises);
+                        })
+                    };
+
+                    resolvedPromises(promises);
 
                     return deferred.promise;
                 }
@@ -22265,6 +22614,11 @@ mod.directive('infiniteScroll', [
                     $scope.map.setView(coords, zoom);
                 };
 
+                this.fitMapToShape = function(geoJson) {
+                    var layer = L.geoJson(geoJson);
+                    $scope.map.fitBounds(layer.getBounds());
+                };
+
                 this.resetMapDataFilter = function() {
                     var contexts = MapHelper.MapConfiguration.getContextList($scope.mapConfig);
                     contexts.forEach(function(ctx) {
@@ -22287,12 +22641,29 @@ mod.directive('infiniteScroll', [
                 this.getActiveContexts = function() {
                     return MapHelper.MapConfiguration.getActiveContextList($scope.mapConfig);
                 };
-                
+
                 var resetCallback;
                 this.registerResetCallback = function (callback) {
                     resetCallback = callback;
                 };
-                
+
+                this.resizeMapDisplayControl = function () {
+                    $timeout(function () {
+                        var $mapElement = $('.odswidget-map');
+                        var $legendElement = $('.odswidget-map-legend');
+                        var $mapDisplayControlElement = $('.odswidget-map-display-control__groups');
+                        if ($mapDisplayControlElement.length === 1) {
+                            $mapDisplayControlElement = $mapDisplayControlElement.first();
+                            if ($legendElement.length > 0) {
+                                $legendElement = $legendElement.first();
+                                $mapDisplayControlElement.css('max-height', 'calc(' + $mapElement.outerHeight() + 'px - 2*10px - 26px - ' + $legendElement.outerHeight() + 'px)');
+                            } else {
+                                $mapDisplayControlElement.css('max-height', 'calc(' + $mapElement.outerHeight() + 'px - 10px - 26px)');
+                            }
+                        }
+                    });
+                };
+
                 // watch for reset
                 var that = this;
                 $scope.$watch(
@@ -22319,8 +22690,9 @@ mod.directive('infiniteScroll', [
             scope: {
                 "title": "@",
                 "description": "@",
-                "color": "@",
-                "picto": "@"
+                "pictoColor": "@",
+                "pictoIcon": "@",
+                "displayed": "=?"
             },
             require: '^odsMap',
             link: function(scope, element, attrs, mapCtrl) {
@@ -22328,11 +22700,15 @@ mod.directive('infiniteScroll', [
             },
             controller: ['$scope', function($scope) {
                 $scope.group = MapHelper.MapConfiguration.createLayerGroupConfiguration();
+                if (!angular.isDefined($scope.displayed)) {
+                    $scope.displayed = true;
+                }
                 angular.extend($scope.group, {
                     "title": $scope.title,
                     "description": $scope.description,
-                    "color": $scope.color,
-                    "picto": $scope.picto
+                    "pictoColor": $scope.pictoColor,
+                    "pictoIcon": $scope.pictoIcon,
+                    "displayed": $scope.displayed
                 });
 
                 this.registerLayer = function(obj) {
@@ -22354,9 +22730,13 @@ mod.directive('infiniteScroll', [
                 showZoomMax: '@',
                 color: '@',
                 borderColor: '@',
+                borderSize: '@',
+                borderPattern: '@',
+                borderOpacity: '@',
                 opacity: '@',
                 shapeOpacity: '@',
                 pointOpacity: '@',
+                lineWidth: '@',
                 colorScale: '@',
                 colorRanges: '@',
                 colorCategories: '=',
@@ -22388,6 +22768,10 @@ mod.directive('infiniteScroll', [
 
                 caption: '=?',
                 captionTitle: '@',
+                captionPictoColor: "@",
+                captionPictoIcon: "@",
+                title: '@',
+                description: '@',
 
                 excludeFromRefit: '=?'
             },
@@ -22445,8 +22829,8 @@ mod.directive('infiniteScroll', [
                         steps: scope.colorGradient
                     };
                 } else if (scope.colorNumericRanges) {
-                    if (!scope.colorByField) {
-                        console.error('odsMapLayer: using colorNumericRanges requires specifying a field to use, using colorByField');
+                    if (!scope.colorByField && !scope['function']) {
+                        console.error('odsMapLayer: using colorNumericRanges requires specifying either a field to use (using colorByField) or a function');
                     }
                     color = {
                         type: 'choropleth',
@@ -22464,8 +22848,12 @@ mod.directive('infiniteScroll', [
                     'color': color,
                     'colorFunction': scope.colorFunction,
                     'borderColor': scope.borderColor,
+                    'borderSize': scope.borderSize,
+                    'borderPattern': scope.borderPattern,
+                    'borderOpacity': scope.borderOpacity,
                     'shapeOpacity': angular.isDefined(scope.shapeOpacity) && scope.shapeOpacity || scope.opacity,
                     'pointOpacity': angular.isDefined(scope.pointOpacity) && scope.pointOpacity || scope.opacity,
+                    'lineWidth': scope.lineWidth,
                     'picto': scope.picto,
                     'display': scope.display,
                     'function': scope['function'],
@@ -22477,6 +22865,10 @@ mod.directive('infiniteScroll', [
                     'excludeFromRefit': scope.excludeFromRefit,
                     'caption': !!scope.caption,
                     'captionTitle': scope.captionTitle,
+                    'captionPictoIcon': scope.captionPictoIcon,
+                    'captionPictoColor': scope.captionPictoColor,
+                    'title': scope.title,
+                    'description': scope.description,
                     'showZoomMin': scope.showZoomMin,
                     'showZoomMax': scope.showZoomMax,
                     'radius': scope.radius,
@@ -23482,7 +23874,7 @@ mod.directive('infiniteScroll', [
             template: '',
             link: function(scope, element) {
                 scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
-                var template = '<ods-picto url="themeConfig.url" color="themeConfig.color" classes="originalClasses + \' odswidget-theme-picto theme-\' + (getTheme()|themeSlug) "></ods-picto>';
+                var template = '<ods-picto url="themeConfig.url" aria-label="Theme of this dataset: {{ theme|firstValue }}" translate="aria-label" color="themeConfig.color" classes="originalClasses + \' odswidget-theme-picto theme-\' + (getTheme()|themeSlug) "></ods-picto>';
                 var themeConfig = null;
                 var defaultPicto = false;
                 if (ODSWidgetsConfig.themes[scope.theme] && ODSWidgetsConfig.themes[scope.theme].url) {
@@ -23571,7 +23963,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsRangeInput', [function () {
+    mod.directive('odsRangeInput', ['$timeout', function ($timeout) {
         return {
             restrict: 'E',
             replace: true,
@@ -23595,9 +23987,19 @@ mod.directive('infiniteScroll', [
             '           step="{{ step }}"' +
             '           class="ods-range-input__range-input"' +
             '           ng-change="onRangeChange()"' +
+            '           ng-model-options="{ debounce: 0 }"' +
             '           ng-model="values.internalRange">' +
             '    <i class="ods-range-input__icon ods-range-input__icon--max" ng-if="iconMax" ng-class="iconMax"></i>' +
-            '   <input class="ods-range-input__value-input" ng-change="onValueChange()" ng-if="editableValue" type="number" ng-model="values.internalValue" min="{{ actualMin }}" max="{{ max }}" step="{{ step }}">' +
+            '   <input class="ods-range-input__value-input" ' +
+            '          ng-change="onValueChange()" ' +
+            '          ng-if="editableValue" ' +
+            '          type="number" ' +
+            '          ng-model="values.internalValue"' +
+            '          ng-model-options="{ debounce: 0 }"' +
+            '          ng-blur="onValueBlur()"' +
+            '          min="{{ actualMin }}" ' +
+            '          max="{{ max }}" ' +
+            '          step="{{ step }}">' +
             '</div>',
             link: function (scope, element, attrs, ngModelCtrl) {
                 var inputElement = element.find('.ods-range-input__input');
@@ -23608,15 +24010,31 @@ mod.directive('infiniteScroll', [
                     scope.actualMin = scope.min;
                 }
 
+                var isValueInvalid = function () {
+                    return isNaN(scope.values.internalValue) || scope.values.internalValue < scope.actualMin || scope.values.internalValue > scope.max;
+                };
+
                 scope.onRangeChange = function() {
                     var num = parseFloat(scope.values.internalRange, 10);
                     scope.values.internalValue = num;
                     ngModelCtrl.$setViewValue(num);
                 };
+
                 scope.onValueChange = function() {
+                    if (isValueInvalid()) {
+                        return;
+                    }
+
                     scope.values.internalRange = scope.values.internalValue.toString();
                     ngModelCtrl.$setViewValue(scope.values.internalValue);
                 };
+
+                scope.onValueBlur = function () {
+                    if (isValueInvalid()) {
+                        scope.onRangeChange();
+                    }
+                };
+
                 ngModelCtrl.$render = function() {
                     scope.values.internalValue = ngModelCtrl.$modelValue;
                     scope.values.internalRange = ngModelCtrl.$modelValue.toString();
@@ -23630,6 +24048,11 @@ mod.directive('infiniteScroll', [
                             scope.ngModel = nv;
                         }
                     }
+                });
+
+                // Workaround for the lousy AngularJS support of input[range]
+                $timeout(function() {
+                    element.find('.ods-range-input__range-input').val(scope.values.internalRange);
                 });
             }
         };
@@ -23766,7 +24189,7 @@ mod.directive('infiniteScroll', [
                 // parse attributes and build conf
                 var unwatchRefineOnClick = $scope.$watch(
                     function () {
-                        return $attrs.refineOnClickContext
+                        return $attrs.refineOnClickContext;
                     },
                     function (nv) {
                         // parse contexts
@@ -24214,30 +24637,30 @@ mod.directive('infiniteScroll', [
             '             height="{{ imageHeight }}"' +
             '             ng-show="imageThumbnail"  >' +
             '        <div class="ods-slideshow__tooltip-wrapper"' +
-            '             ng-show="tooltip">' +
+            '             ng-if="tooltip">' +
             '            <div class="ods-slideshow__tooltip" ' +
             '                 inject>' +
             '                <dl>' +
             '                   <dt ng-repeat-start="field in context.dataset.fields"' +
-            '                           ng-show="record.fields[field.name]|isDefined">' +
+            '                           ng-if="record.fields[field.name]|isDefined">' +
             '                       {{ field.label }}' +
             '                   </dt>' +
             '                   <dd ng-repeat-end ng-switch="field.type"' +
-            '                           ng-show="record.fields[field.name]|isDefined">' +
-            '                       <span ng-switch-when="geo_point_2d">' +
+            '                           ng-if="record.fields[field.name]|isDefined">' +
+            '                        <span ng-switch-when="geo_point_2d">' +
             '                           <ods-geotooltip width="300" height="300"' +
-            '                                   coords="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
-            '                       </span>' +
-            '                       <span ng-switch-when="geo_shape">' +
-            '                            <ods-geotooltip width="300" height="300"' +
-            '                                   geojson="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
+            '                                   coords="record.fields[field.name]">{{ record.fields|formatFieldValue:field:context }}</ods-geotooltip>' +
             '                        </span>' +
-            '                        <span ng-switch-when="double">{{ record.fields|formatFieldValue:field }}</span>' +
-            '                        <span ng-switch-when="int">{{ record.fields|formatFieldValue:field }}</span>' +
-            '                        <span ng-switch-when="date">{{ record.fields|formatFieldValue:field }}</span>' +
-            '                        <span ng-switch-when="datetime">{{ record.fields|formatFieldValue:field }}</span>' +
+            '                        <span ng-switch-when="geo_shape">' +
+            '                            <ods-geotooltip width="300" height="300"' +
+            '                                   geojson="record.fields[field.name]">{{ record.fields|formatFieldValue:field:context }}</ods-geotooltip>' +
+            '                        </span>' +
+            '                        <span ng-switch-when="double">{{ record.fields|formatFieldValue:field:context }}</span>' +
+            '                        <span ng-switch-when="int">{{ record.fields|formatFieldValue:field:context }}</span>' +
+            '                        <span ng-switch-when="date">{{ record.fields|formatFieldValue:field:context }}</span>' +
+            '                        <span ng-switch-when="datetime">{{ record.fields|formatFieldValue:field:context }}</span>' +
             '                        <span ng-switch-when="file">' +
-            '                            <div ng-bind-html="record.fields|formatFieldValue:field"></div>' +
+            '                            <div ng-bind-html="record.fields|formatFieldValue:field:context"></div>' +
             '                        </span>' +
             '                       <span ng-switch-default ng-bind-html="record.fields[field.name]|prettyText|nofollow|safenewlines"></span>' +
             '                   </dd>' +
@@ -24439,7 +24862,7 @@ mod.directive('infiniteScroll', [
                                 field = scope.context.dataset.fields[i];
                                 if (field.type === 'text') {
                                     titleFields = [field.name];
-                                    break
+                                    break;
                                 }
                             }
                         }
@@ -24448,7 +24871,7 @@ mod.directive('infiniteScroll', [
                                 field = scope.context.dataset.fields[i];
                                 if (field.type === 'file') {
                                     scope.imageField = field.name;
-                                    break
+                                    break;
                                 }
                             }
                         }
@@ -24465,7 +24888,7 @@ mod.directive('infiniteScroll', [
                     }
                 }, true);
             }
-        }
+        };
     }]);
 }());
 ;(function() {
@@ -24534,7 +24957,7 @@ mod.directive('infiniteScroll', [
                         if (availableButtons.indexOf(button) > -1) {
                             scope.selectedButtons.push(button);
                         }
-                    })
+                    });
                 }
                 // load AddThis
                 var addthis = document.createElement('script');
@@ -24543,7 +24966,7 @@ mod.directive('infiniteScroll', [
                 addthis.src   = '//s7.addthis.com/js/300/addthis_widget.js#domready=1';
                 (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(addthis);
             }
-        }
+        };
     }]);
 })();
 ;(function () {
@@ -24656,8 +25079,12 @@ mod.directive('infiniteScroll', [
                        '                 <div class="odswidget-table__header-cell-container">' +
                        '                     <div class="odswidget-table__label" ng-bind="field.label"></div>' +
                        '                     <div ng-class="{\'odswidget-table__sort-icons\': true, \'odswidget-table__sort-icons--active\': field.name == context.parameters.sort || \'-\'+field.name == context.parameters.sort}" ng-show="isFieldSortable(field)" title="sort" translate="title">' +
-                       '                         <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true" ng-class="{\'odswidget-table__sort-icons__up--active\': isDescendingSorted(field)}"></i>' +
-                       '                         <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true" ng-class="{\'odswidget-table__sort-icons__down--active\': isAscendingSorted(field)}"></i>' +
+                       '                         <button class="odswidget-table__sort-icon" aria-label="Sort column {{ field.label }} in ascending order" tabindex="0" translate="aria-label">' +
+                       '                            <i class="fa fa-chevron-up odswidget-table__sort-icons__up"  ng-class="{\'odswidget-table__sort-icons__up--active\': isDescendingSorted(field)}" aria-hidden="true"></i>' +
+                       '                         </button>' +
+                       '                         <button class="odswidget-table__sort-icon" aria-label="Sort column {{ field.label }} in descending order" tabindex="0" translate="aria-label">' +
+                       '                            <i class="fa fa-chevron-down odswidget-table__sort-icons__down"  ng-class="{\'odswidget-table__sort-icons__down--active\': isAscendingSorted(field)}" aria-hidden="true"></i>' +
+                       '                         </button>' +
                        '                     </div>' +
                        '                 </div>' +
                        '             </th>' +
@@ -24675,8 +25102,12 @@ mod.directive('infiniteScroll', [
                        '                     <div class="odswidget-table__cell-container">' +
                        '                         <span ng-bind="field.label"></span>' +
                        '                         <div class="odswidget-table__sort-icons" ng-show="isFieldSortable(field)" title="sort" translate="title">' +
-                       '                             <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true"></i>' +
-                       '                             <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true"></i>' +
+                       '                             <button class="odswidget-table__sort-icon" aria-label="Sort column {{ field.label }} in ascending order" tabindex="0" translate="aria-label">' +
+                       '                                <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true"></i>' +
+                       '                             </button>' +
+                       '                             <button class="odswidget-table__sort-icon" aria-label="Sort column {{ field.label }} in descending order" tabindex="0" translate="aria-label">' +
+                       '                                <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true"></i>' +
+                       '                             </button>' +
                        '                         </div>' +
                        '                     </div>' +
                        '                 </th>' +
@@ -25256,8 +25687,8 @@ mod.directive('infiniteScroll', [
                         }
 
                         // Switch between the fake header and the default header
-                        $element.find('.odswidget-table__internal-header-table-header').hide();
-                        $element.find('.odswidget-table__internal-table-header').show();
+                        $element.find('.odswidget-table__internal-header-table-header').hide().attr('role', 'representation');
+                        $element.find('.odswidget-table__internal-table-header').show().removeAttr('role');
 
                         var totalWidth = 0;
                         angular.forEach($element.find('.odswidget-table__internal-table-header .odswidget-table__cell-container'), function (thDiv, i) {
@@ -25309,8 +25740,8 @@ mod.directive('infiniteScroll', [
                         $element[0].appendChild(css);
 
                         // Switch between the default header and the fake header
-                        $element.find('.odswidget-table__internal-table-header').hide();
-                        $element.find('.odswidget-table__internal-header-table-header').show();
+                        $element.find('.odswidget-table__internal-table-header').hide().attr('role', 'representation');
+                        $element.find('.odswidget-table__internal-header-table-header').show().removeAttr('role');
 
                         if (!forceScrollLeft) {
                             $timeout(function () {
@@ -25583,8 +26014,8 @@ mod.directive('infiniteScroll', [
             template: '' +
             '<div class="odswidget odswidget-text-search">' +
             '    <form ng-submit="applySearch()" class="odswidget-text-search__form">' +
-            '        <input class="odswidget-text-search__search-box" name="q" type="text" ng-model="searchExpression" placeholder="{{ translatedPlaceholder }}">' +
-            '        <button type="submit" class="odswidget-text-search__submit" title="{{ translatedPlaceholder}}"><i class="fa fa-search" aria-hidden="true"></i></button>' +
+            '        <input class="odswidget-text-search__search-box" name="q" type="text" ng-model="searchExpression" aria-label="{{ translatedPlaceholder }}" placeholder="{{ translatedPlaceholder }}">' +
+            '        <button type="submit" class="odswidget-text-search__submit" title="{{ translatedPlaceholder}}" aria-label="Search in catalog" translate="aria-label"><i class="fa fa-search" aria-hidden="true"></i></button>' +
             '    </form>' +
             '</div>',
             scope: {
@@ -25636,7 +26067,7 @@ mod.directive('infiniteScroll', [
 
                         // parse parameters
                         angular.forEach(nv, function (context) {
-                            $scope.searchExpression = $scope.searchExpression || parseParameter(context)
+                            $scope.searchExpression = $scope.searchExpression || parseParameter(context);
                         });
                         if (!$scope.searchExpression) {
                             angular.forEach(nv, function (context) {
@@ -25950,7 +26381,7 @@ mod.directive('infiniteScroll', [
                         if (nv && !ov) {
                             inputs.val(null);
                         }
-                    }, true)
+                    }, true);
                 });
             },
             controller: ['$scope', '$attrs', '$q', '$compile', '$rootScope', '$parse', function($scope, $attrs, $q, $compile, $rootScope, $parse) {

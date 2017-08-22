@@ -70,30 +70,30 @@
             '             height="{{ imageHeight }}"' +
             '             ng-show="imageThumbnail"  >' +
             '        <div class="ods-slideshow__tooltip-wrapper"' +
-            '             ng-show="tooltip">' +
+            '             ng-if="tooltip">' +
             '            <div class="ods-slideshow__tooltip" ' +
             '                 inject>' +
             '                <dl>' +
             '                   <dt ng-repeat-start="field in context.dataset.fields"' +
-            '                           ng-show="record.fields[field.name]|isDefined">' +
+            '                           ng-if="record.fields[field.name]|isDefined">' +
             '                       {{ field.label }}' +
             '                   </dt>' +
             '                   <dd ng-repeat-end ng-switch="field.type"' +
-            '                           ng-show="record.fields[field.name]|isDefined">' +
-            '                       <span ng-switch-when="geo_point_2d">' +
+            '                           ng-if="record.fields[field.name]|isDefined">' +
+            '                        <span ng-switch-when="geo_point_2d">' +
             '                           <ods-geotooltip width="300" height="300"' +
-            '                                   coords="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
-            '                       </span>' +
-            '                       <span ng-switch-when="geo_shape">' +
-            '                            <ods-geotooltip width="300" height="300"' +
-            '                                   geojson="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
+            '                                   coords="record.fields[field.name]">{{ record.fields|formatFieldValue:field:context }}</ods-geotooltip>' +
             '                        </span>' +
-            '                        <span ng-switch-when="double">{{ record.fields|formatFieldValue:field }}</span>' +
-            '                        <span ng-switch-when="int">{{ record.fields|formatFieldValue:field }}</span>' +
-            '                        <span ng-switch-when="date">{{ record.fields|formatFieldValue:field }}</span>' +
-            '                        <span ng-switch-when="datetime">{{ record.fields|formatFieldValue:field }}</span>' +
+            '                        <span ng-switch-when="geo_shape">' +
+            '                            <ods-geotooltip width="300" height="300"' +
+            '                                   geojson="record.fields[field.name]">{{ record.fields|formatFieldValue:field:context }}</ods-geotooltip>' +
+            '                        </span>' +
+            '                        <span ng-switch-when="double">{{ record.fields|formatFieldValue:field:context }}</span>' +
+            '                        <span ng-switch-when="int">{{ record.fields|formatFieldValue:field:context }}</span>' +
+            '                        <span ng-switch-when="date">{{ record.fields|formatFieldValue:field:context }}</span>' +
+            '                        <span ng-switch-when="datetime">{{ record.fields|formatFieldValue:field:context }}</span>' +
             '                        <span ng-switch-when="file">' +
-            '                            <div ng-bind-html="record.fields|formatFieldValue:field"></div>' +
+            '                            <div ng-bind-html="record.fields|formatFieldValue:field:context"></div>' +
             '                        </span>' +
             '                       <span ng-switch-default ng-bind-html="record.fields[field.name]|prettyText|nofollow|safenewlines"></span>' +
             '                   </dd>' +
@@ -295,7 +295,7 @@
                                 field = scope.context.dataset.fields[i];
                                 if (field.type === 'text') {
                                     titleFields = [field.name];
-                                    break
+                                    break;
                                 }
                             }
                         }
@@ -304,7 +304,7 @@
                                 field = scope.context.dataset.fields[i];
                                 if (field.type === 'file') {
                                     scope.imageField = field.name;
-                                    break
+                                    break;
                                 }
                             }
                         }
@@ -321,6 +321,6 @@
                     }
                 }, true);
             }
-        }
+        };
     }]);
 }());

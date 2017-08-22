@@ -34,7 +34,7 @@
                 func = func.toUpperCase();
                 return $.grep(availableFunctions, function(f){return func === f.func;})[0].label;
             }
-        }
+        };
     }]);
 
     mod.factory('ChartHelper', ['translate', 'AggregationHelper', 'ODSWidgetsConfig', 'ODSCurrentDomain', 'colorScale', function(translate, AggregationHelper, ODSWidgetsConfig, ODSCurrentDomain, colorScale) {
@@ -177,7 +177,7 @@
                         dataset = value;
                     }
                     return false;
-                })
+                });
                 return dataset;
             },
             isChartSortable: function(chartType) {
@@ -354,10 +354,10 @@
             },
             getAllowedColors: function(serietype, breakdown) {
                 var allowedColors = [];
-                if (breakdown || ['pie', 'treemap'].indexOf(serietype) !== -1) {
+                if (breakdown || this.isMultiColorChart(serietype)) {
                     allowedColors.push('range');
                 }
-                if (!breakdown && ['pie', 'treemap'].indexOf(serietype) === -1) {
+                if (!breakdown && !this.isMultiColorChart(serietype)) {
                     allowedColors.push('single');
                 }
                 return allowedColors;
@@ -740,6 +740,9 @@
             },
             allowThresholds: function(type) {
                 return ['column', 'bar', 'scatter'].indexOf(type) !== -1;
+            },
+            isMultiColorChart: function(type) {
+                return ['pie', 'treemap', 'funnel', 'polar'].indexOf(type) !== -1;
             }
         };
     }]);

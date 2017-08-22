@@ -19,6 +19,10 @@
     overflow: hidden; /* Avoid a scrollbar during the transition effct */
 }
 
+.odswidget-map-legend__categories-container--extended {
+    column-count: 2;
+}
+
 .odswidget-map-legend__categories--condensed {
     display: flex;
     flex-direction: row;
@@ -49,7 +53,7 @@
     justify-content: space-around;
 }
 
-.odswidget-map-legend__categories--extended__item {
+.odswidget-map-legend__categories__item {
     flex-grow: 1;
     flex-shrink: 0;
     width: 190px;
@@ -59,12 +63,12 @@
     font-size: 0.9rem;
 }
 
-.odswidget-map-legend__categories--extended__item-color {
+.odswidget-map-legend__categories__item-color {
     flex-grow: 0;
     flex-shrink: 0;
     margin-right: 5px;
 }
-.odswidget-map-legend__categories--extended__item-value {
+.odswidget-map-legend__categories__item-value {
     flex-grow: 1;
     flex-shrink: 1;
     white-space: nowrap;
@@ -72,15 +76,27 @@
     overflow: hidden;
     text-align: left;
 }
-.odswidget-map-legend__categories--extended__item-value--others {
+.odswidget-map-legend__categories__item-value--remaining {
     font-style: italic;
 }
+
+.odswidget-map-legend__choropleth__item-value--remaining {
+    font-style: italic;
+    font-size: .9rem;
+    text-align: right;
+    width: 100%;
+}
+
+.odswidget-map-legend__categories__item-value--others {
+    font-style: italic;
+}
+
 .odswidget-map-legend__choropleth-container {
 
 }
 .odswidget-map-legend__choropleth__item {
     display: flex;
-    padding: 2px;
+    padding: 0px 2px;
 }
 .odswidget-map-legend__choropleth__item-color {
     flex-grow: 0;
@@ -103,9 +119,29 @@
     margin-left: 10px;
 }
 
+.odswidget-map-legend__default-container {
+    flex-grow: 1;
+    flex-shrink: 0;
+    width: 190px;
+    padding: 2px;
+    text-align: center;
+    display: flex;
+    font-size: 0.9rem;
+}
+
 .odswidget-map-legend__simple-container {
     text-align: center;
 }
+
+
+.odswidget-map-legend__default__color-block {
+    width: 16px;
+    height: 16px;
+    border: solid 1px black;
+    display: inline-block;
+    margin-right: 5px;
+}
+
 .odswidget-map-legend__simple__color-block {
     width: 60%;
     height: 16px;
@@ -138,24 +174,28 @@
     position: relative;
     font-weight: 600;
     text-align: center;
+    display: inline;
 }
+
+.odswidget-map-legend__picto {
+    display: inline-block;
+    vertical-align: sub;
+}
+
 .odswidget-map-legend__label {
     font-size: 0.9rem;
     text-align: center;
 }
 .odswidget-map-legend__header {
+    text-align: center;
     margin-bottom: 5px;
+    margin-right: 20px;
 }
 
-.odswidget-map-legend__title--toggleable {
-    padding-right: 20px;
+.odswidget-map-legend--not-toggleable[ng-click] {
+    cursor: auto;
 }
-.odswidget-map-legend__title[ng-click] {
-    cursor: default;
-}
-.odswidget-map-legend__title--toggleable[ng-click] {
-    cursor: pointer;
-}
+
 .odswidget-map-legend__title-toggle {
     position: absolute;
     right: 5px;
@@ -179,4 +219,9 @@
     /* Use visibility instead of display none, so that the block doesn't move when the button is hidden */
     display: inline-block !important;
     visibility: hidden;
+}
+
+.odswidget-map-legend__no-legend-placeholder {
+    text-align: center;
+    font-style: italic;
 }

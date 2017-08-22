@@ -242,7 +242,7 @@
             return null;
         };
 
-        return function(record, field) {
+        return function(record, field, context) {
 
             var value = record[field.name];
             if (value === null || value === undefined) {
@@ -302,7 +302,12 @@
                     // Ugly hack to fix https://github.com/opendatasoft/platform/issues/4019
                     // The idea is that once we have API V2, we'll have an absolute link
                     // https://opendatasoft.clubhouse.io/story/423
-                    var datasetID = DATASETID_RE.exec(decodeURIComponent(window.location.pathname))[3];
+                    var datasetID
+                    if (typeof context !== "undefined"){
+                        datasetID = context.dataset.datasetid;
+                    } else {
+                        datasetID = DATASETID_RE.exec(decodeURIComponent(window.location.pathname))[3];
+                    }
                     var url = '/explore/dataset/' + datasetID + '/files/'+value.id+'/download/';
                     return $sce.trustAsHtml('<a target="_self" href="' + url + '">' + (value.filename || record.filename) + '</a>');
                 } else {
@@ -830,4 +835,25 @@
         };
     });
 
+    mod.filter('filesize', ['translate', '$filter', function(translate, $filter) {
+        var translate_unit = translate;
+        return function(value) {
+            var formatted = value,
+                units = [
+                    translate_unit('B'),
+                    translate_unit('KB'),
+                    translate_unit('MB'),
+                    translate_unit('GB'),
+                    translate_unit('TB')
+                ],
+                count = 0;
+
+            while (formatted / 1024 > 1 && count < units.length) {
+                formatted = formatted / 1024;
+                count++;
+            }
+
+            return $filter('number')(formatted) + ' ' + units[count];
+        };
+    }]);
 }());

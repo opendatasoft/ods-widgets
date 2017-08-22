@@ -99,7 +99,7 @@
 
                     if (!angular.isDefined(scope.eventColor)) {
                         if (visualization_metas.calendar_event_color) {
-                            scope.eventColor = visualization_metas.calendar_event_color
+                            scope.eventColor = visualization_metas.calendar_event_color;
                         } else {
                             scope.eventColor = '#C32D1C';
                         }
@@ -241,7 +241,7 @@
                         buildTooltipContent: eventTooltipContentBuilder(record),
                         editable: false,
                         record: record
-                    }
+                    };
                 };
 
                 var eventTooltipContentBuilder = function (record) {
@@ -295,7 +295,7 @@
                 });
 
             }
-        }
+        };
     }]);
 
     mod.directive('odsCalendarTooltip', function () {
@@ -334,6 +334,6 @@
             '        </span>' +
             '    </dd>' +
             '</dl>'
-        }
+        };
     });
 }());

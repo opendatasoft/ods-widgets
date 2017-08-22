@@ -1,3 +1,5 @@
+/* TimeRange Widget
+   ========================================================================== */
 .clearfix {
   *zoom: 1;
 }
@@ -571,6 +573,7 @@
 .odswidget-map {
   position: relative;
   min-height: 400px;
+  overflow: hidden;
 }
 .odswidget-map__map {
   height: 100%;
@@ -578,7 +581,8 @@
 }
 .odswidget-map__loading {
   position: absolute;
-  right: 10px;
+  left: 50%;
+  margin-left: -24px;
   bottom: 30px;
   background: rgba(255, 255, 255, 0.9);
   padding: 5px 12px;
@@ -667,8 +671,7 @@
 }
 .leaflet-geocoder-highlight {
   opacity: 1;
-  -webkit-transition: opacity 2s ease-out;
-          transition: opacity 2s ease-out;
+  transition: opacity 2s ease-out;
 }
 .geocoder-highlight-on .leaflet-geocoder-highlight {
   opacity: 0;
@@ -706,24 +709,72 @@
   top: 45px;
 }
 .odswidget-map__map--with-display-control .leaflet-top.leaflet-right {
+  transition: right 0.25s ease-in;
   right: 310px;
 }
+@media (max-width: 767px) {
+  .odswidget-map__map--with-display-control .leaflet-top.leaflet-right.collapsed {
+    right: 40px;
+  }
+}
 .odswidget-map-display-control {
-  width: 300px;
   position: absolute;
   top: 10px;
-  right: 10px;
-  background-color: white;
+  transition: right 0.25s ease-in;
+}
+@media (max-width: 767px) {
+  .odswidget-map-display-control {
+    right: -260px;
+  }
+}
+@media (min-width: 768px) {
+  .odswidget-map-display-control {
+    right: 10px;
+  }
+}
+@media (max-width: 767px) {
+  .odswidget-map-display-control--expanded {
+    right: 10px;
+  }
+}
+.odswidget-map-display-control__toggle {
+  background-color: #ffffff;
+  border: none;
+  position: absolute;
+  top: 100px;
+  right: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  font-size: 1.33rem;
+  padding: 0;
+  width: 1em;
+  height: 2em;
+}
+@media (min-width: 768px) {
+  .odswidget-map-display-control__toggle {
+    display: none;
+  }
 }
 .odswidget-map-display-control__groups {
+  width: 300px;
+  overflow-y: scroll;
   margin: 0;
   padding: 10px;
+  background-color: #ffffff;
   list-style: none;
+  min-height: 150px;
+  max-height: calc(100% - 2*10px);
 }
 .odswidget-map-display-control__group {
   margin-left: 0;
-  -webkit-transition: margin-left 0.2s, border-left-width 0.2s, opacity 0.2s;
-          transition: margin-left 0.2s, border-left-width 0.2s, opacity 0.2s;
+  transition: margin-left 0.2s, border-left-width 0.2s, opacity 0.2s;
   border: solid 1px #E5E5E5;
   border-left-width: 5px;
   padding: 5px;
@@ -736,12 +787,28 @@
   border-left-width: 1px;
   opacity: 0.5;
 }
+.odswidget-map-display-control__group--not-toggleable[ng-click] {
+  cursor: auto;
+}
 .odswidget-map-display-control__group-title {
   font-size: 1.1rem;
   color: #2C3F56;
   font-weight: 600;
   text-overflow: ellipsis;
   overflow: hidden;
+  display: inline;
+}
+.odswidget-map-display-control__group-title--error {
+  color: #c42b23;
+}
+.odswidget-map-display-control__picto {
+  display: inline-block;
+  vertical-align: sub;
+}
+.odswidget-map-display-control__picto--error,
+.odswidget-map-display-control__group-title--error,
+.odswidget-map-display-control__group-description--error {
+  color: #c42b23;
 }
 .odswidget-map-display-control__group-description {
   text-overflow: ellipsis;
@@ -752,12 +819,51 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 435px;
   padding: 10px;
   background-color: transparent;
-  -webkit-transition: background-color 0.1s;
-          transition: background-color 0.1s;
+  transition: background-color 0.1s, width 0.25s ease;
   z-index: 8;
+}
+@media (max-width: 767px) {
+  .odswidget-map-search-box {
+    width: 100px;
+    padding-right: 20px;
+  }
+}
+@media (min-width: 768px) {
+  .odswidget-map-search-box {
+    width: 435px;
+  }
+}
+@media (max-width: 767px) {
+  .odswidget-map-search-box--expanded {
+    width: calc(100% - 10px);
+  }
+}
+.odswidget-map-search-box__toggle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-left-width: 0;
+  width: 20px;
+  padding: 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+@media (min-width: 768px) {
+  .odswidget-map-search-box__toggle {
+    display: none;
+  }
 }
 .odswidget-map-search-box__box-wrapper {
   position: relative;
@@ -779,8 +885,7 @@
   font-size: 1.2rem;
   line-height: 2;
   outline: none;
-  -webkit-transition: border-color 0.1s;
-          transition: border-color 0.1s;
+  transition: border-color 0.1s;
 }
 .odswidget-map-search-box__box--datasearch {
   border-color: rgba(0, 0, 0, 0.1);
@@ -801,6 +906,20 @@
   margin: 0;
   padding: 0;
   border: solid 1px #90A4AE;
+}
+@media (max-width: 767px) {
+  .odswidget-map-search-box__suggestions {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+}
+@media (max-width: 767px) {
+  .odswidget-map-search-box__suggestions--expanded {
+    max-height: none;
+    opacity: 1;
+    overflow: inherit;
+  }
 }
 .odswidget-map-search-box__suggestions:hover {
   cursor: pointer;
@@ -1027,6 +1146,10 @@
   overflow: hidden;
   /* Avoid a scrollbar during the transition effct */
 }
+.odswidget-map-legend__categories-container--extended {
+  -webkit-column-count: 2;
+          column-count: 2;
+}
 .odswidget-map-legend__categories--condensed {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -1070,7 +1193,7 @@
   -ms-flex-pack: distribute;
       justify-content: space-around;
 }
-.odswidget-map-legend__categories--extended__item {
+.odswidget-map-legend__categories__item {
   -webkit-box-flex: 1;
       -ms-flex-positive: 1;
           flex-grow: 1;
@@ -1084,7 +1207,7 @@
   display: flex;
   font-size: 0.9rem;
 }
-.odswidget-map-legend__categories--extended__item-color {
+.odswidget-map-legend__categories__item-color {
   -webkit-box-flex: 0;
       -ms-flex-positive: 0;
           flex-grow: 0;
@@ -1092,7 +1215,7 @@
       flex-shrink: 0;
   margin-right: 5px;
 }
-.odswidget-map-legend__categories--extended__item-value {
+.odswidget-map-legend__categories__item-value {
   -webkit-box-flex: 1;
       -ms-flex-positive: 1;
           flex-grow: 1;
@@ -1103,14 +1226,23 @@
   overflow: hidden;
   text-align: left;
 }
-.odswidget-map-legend__categories--extended__item-value--others {
+.odswidget-map-legend__categories__item-value--remaining {
+  font-style: italic;
+}
+.odswidget-map-legend__choropleth__item-value--remaining {
+  font-style: italic;
+  font-size: .9rem;
+  text-align: right;
+  width: 100%;
+}
+.odswidget-map-legend__categories__item-value--others {
   font-style: italic;
 }
 .odswidget-map-legend__choropleth__item {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  padding: 2px;
+  padding: 0px 2px;
 }
 .odswidget-map-legend__choropleth__item-color {
   -webkit-box-flex: 0;
@@ -1143,8 +1275,29 @@
 .odswidget-map-legend__choropleth__item-range__bound-arrow {
   margin-left: 10px;
 }
+.odswidget-map-legend__default-container {
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+  width: 190px;
+  padding: 2px;
+  text-align: center;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 0.9rem;
+}
 .odswidget-map-legend__simple-container {
   text-align: center;
+}
+.odswidget-map-legend__default__color-block {
+  width: 16px;
+  height: 16px;
+  border: solid 1px black;
+  display: inline-block;
+  margin-right: 5px;
 }
 .odswidget-map-legend__simple__color-block {
   width: 60%;
@@ -1176,22 +1329,23 @@
   position: relative;
   font-weight: 600;
   text-align: center;
+  display: inline;
+}
+.odswidget-map-legend__picto {
+  display: inline-block;
+  vertical-align: sub;
 }
 .odswidget-map-legend__label {
   font-size: 0.9rem;
   text-align: center;
 }
 .odswidget-map-legend__header {
+  text-align: center;
   margin-bottom: 5px;
+  margin-right: 20px;
 }
-.odswidget-map-legend__title--toggleable {
-  padding-right: 20px;
-}
-.odswidget-map-legend__title[ng-click] {
-  cursor: default;
-}
-.odswidget-map-legend__title--toggleable[ng-click] {
-  cursor: pointer;
+.odswidget-map-legend--not-toggleable[ng-click] {
+  cursor: auto;
 }
 .odswidget-map-legend__title-toggle {
   position: absolute;
@@ -1215,6 +1369,10 @@
   /* Use visibility instead of display none, so that the block doesn't move when the button is hidden */
   display: inline-block !important;
   visibility: hidden;
+}
+.odswidget-map-legend__no-legend-placeholder {
+  text-align: center;
+  font-style: italic;
 }
 .odswidget-media-gallery {
   position: relative;
@@ -1260,8 +1418,7 @@
   vertical-align: bottom;
   background-color: rgba(0, 0, 0, 0.4);
   color: #ffffff;
-  -webkit-transition: top 0.2s;
-          transition: top 0.2s;
+  transition: top 0.2s;
   padding: 5px;
 }
 .odswidget-media-gallery__media-container:hover .odswidget-media-gallery__media-container__title-container {
@@ -1572,8 +1729,7 @@
   overflow: hidden;
   opacity: 0;
   text-align: center;
-  -webkit-transition: all 0.5s ease;
-          transition: all 0.5s ease;
+  transition: all 0.5s ease;
 }
 .odswidget-social-buttons__buttons--open {
   opacity: 1;
@@ -1996,6 +2152,12 @@
           flex: 0 0 auto;
   height: 1.4em;
 }
+.odswidget-table__sort-icon {
+  background: none;
+  border: none;
+  display: block;
+  padding: 0;
+}
 .odswidget-table__cell-container__right-aligned {
   text-align: right;
 }
@@ -2078,8 +2240,9 @@
   font-size: 1.2rem;
   position: absolute;
   right: 5px;
-  top: 5px;
-  line-height: 1.8rem;
+  top: 0;
+  bottom: 0;
+  line-height: 1;
   padding: 0;
   border: none;
   background: none;
@@ -2107,6 +2270,12 @@
 .odswidget-theme-picto .ods-svginliner__svg-container {
   height: 100%;
 }
+/* ==========================================================================
+   Timerange Widget
+
+   This file includes CSS overrides and enhancements for the Rome.js datepicker
+   which is used by this widget.
+   ========================================================================== */
 .odswidget-timerange {
   text-align: center;
 }
@@ -2114,12 +2283,45 @@
 .odswidget-timerange__to {
   display: inline-block;
 }
-.odswidgets-rd-container {
+.odswidgets-rd-container.rd-container {
+  background-color: #ffffff;
+  padding: 0.72rem;
+  border-radius: 0.2rem;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   z-index: 1000;
 }
-.odswidgets-rd-container table {
-  border-collapse: separate;
-  border-spacing: 2px;
+.odswidgets-rd-container.rd-container table {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+.odswidgets-rd-container .rd-day-body {
+  padding: 0.45rem;
+  border-radius: 0.4rem;
+}
+.odswidgets-rd-container .rd-day-selected,
+.odswidgets-rd-container .rd-time-selected,
+.odswidgets-rd-container .rd-time-option:hover,
+.odswidgets-rd-container .rd-day-body:hover {
+  background-color: #0088cc;
+  color: #ffffff;
+}
+.odswidgets-rd-container .rd-day-head {
+  text-align: center;
+}
+.odswidgets-rd-container .rd-month-label {
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+  margin-bottom: 0.72rem;
+}
+.odswidgets-rd-container .rd-day-prev-month,
+.odswidgets-rd-container .rd-day-next-month {
+  color: #cccccc;
+}
+.odswidgets-rd-container .rd-back,
+.odswidgets-rd-container .rd-next {
+  padding: 0.45rem;
+  margin-bottom: 0.72rem;
 }
 .odswidget-timescale {
   text-align: center;

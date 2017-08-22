@@ -5,14 +5,13 @@
 
     mod.service('MapRenderingShapePreview', ['ODSAPI', 'MapLayerHelper', '$q', function (ODSAPI, MapLayerHelper, $q) {
         return {
-            render: function (layerConfig, map, timeout) {
+            render: function (layerConfig, map, layerGroup, timeout) {
                 var deferred = $q.defer();
                 var parameters = angular.extend({}, layerConfig.context.parameters, {
                     'rows': 1000,
                     'clusterprecision': map.getZoom(),
                     'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
                 });
-                var layerGroup = new L.LayerGroup();
                 ODSAPI.records.geopreview(layerConfig.context, parameters, timeout.promise).success(function (data) {
                     var shape;
                     for (var i = 0; i < data.length; i++) {

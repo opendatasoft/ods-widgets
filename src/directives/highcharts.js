@@ -5,7 +5,7 @@
 
     var functionUsesField = function(func) {
         return ['COUNT', 'CONSTANT'].indexOf(func) === -1;
-    }
+    };
 
     mod.factory("requestData", ['ODSAPI', '$q', 'ChartHelper', 'AggregationHelper', function(ODSAPI, $q, ChartHelper, AggregationHelper) {
         var buildTimescaleX = ODS.DateFieldUtils.getTimescaleX;
@@ -411,7 +411,7 @@
                 },
                 noData: {
                     style: {
-                        fontFamily: 'Open Sans',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
                         fontWeight: 'normal',
                         fontSize: '1.4em',
                         color: '#333',
@@ -511,9 +511,9 @@
             var datasetid = ChartHelper.getDatasetId({dataset: {datasetid: query.config.dataset}, domain: domain});
             var yLabel = ChartHelper.getYLabel(datasetid, serie);
             var serieColor;
-            if (!suppXValue && ['pie', 'treemap'].indexOf(serie.type) === -1) {
+            if (!suppXValue && !ChartHelper.isMultiColorChart(serie.type)) {
                 serieColor = colorScale.getUniqueColor(serie.color);
-            } else if ( ['pie', 'treemap'].indexOf(serie.type) !== -1) {
+            } else if (ChartHelper.isMultiColorChart(serie.type)) {
                 if (!serie.extras) {
                     serie.extras = {};
                 }
@@ -539,6 +539,7 @@
                 type = 'line';
             } else if (serie.type === 'polar') {
                 type = 'column';
+                serie.extras.colorByPoint = true;
             } else {
                 type = serie.type;
             }
@@ -750,7 +751,7 @@
                     } else {
                         return this.value;
                     }
-                }
+                };
             }
 
             if (chart.type === 'spiderweb') {
@@ -1506,7 +1507,7 @@
                         ChartHelper.init($scope.context);
                         if (angular.isUndefined($scope.chartConfig)) {
                             var extras = {};
-                            if ($scope.chartType === 'pie') {
+                            if (ChartHelper.isMultiColorChart($scope.chartType)) {
                                 extras = {'colors': colors};
                             }
                             // Sort: x, -x, y, -y
@@ -1799,7 +1800,7 @@
                                 ChartHelper.init($scope.context);
                                 if (angular.isUndefined($scope.chartConfig)) {
                                     var extras = {};
-                                    if ($scope.chartType === 'pie') {
+                                    if (ChartHelper.isMultiColorChart($scope.chartType)) {
                                         extras = {'colors': colors};
                                     }
                                     // Sort: x, -x, y, -y
@@ -1918,7 +1919,7 @@
          * @scope
          * @param {string} fieldX Set the field that is used to compute the aggregations during the analysis query.
          * @param {string} [timescale="year"] Works only with timeseries (when fieldX is a date or datetime). Y values will be computed against this interval. For example, if you have daily values in a dataset and ask for a "month" timescale, the Y values for the {@link ods-widgets.directive:odsChartSerie series} inside this query will aggregated month by month and computed.
-         * @param {integer} [maxpoints=0] Defines the maximum number of points fetched by the query.
+         * @param {integer} [maxpoints=50] Defines the maximum number of points fetched by the query. With a value of 0, all points will be fetched by the query.
          * @param {boolean} [stacked=false] Stack the resulting charts. Only works with columns, line charts and area charts.
          * @param {string} [seriesBreakdown=none] When declared, all series are break down by the defined facet
          * @param {string} [seriesBreakdownTimescale=true] if the break down facet is a time serie (date or datetime), it defines the aggregation level for this facet

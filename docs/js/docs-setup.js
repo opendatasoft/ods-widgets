@@ -20,7 +20,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget exposes the results of an aggregation function over a context. Can be used for example to expose the average temperature of a weather dataset.",
-      "keywords": "aggregation api apply arbresremarquablesparis2011 average avg catalog class context count dataset directive directly example expose exposed exposes expression field function hauteur height html max meters min module ods-aggregation ods-aggregation-context ods-aggregation-expression ods-aggregation-function ods-widgets odsaggregationcontext opendatasoft optional parisdata result row-fluid sort span4 span8 stddev sum temperature tree tree-dataset tree-domain tree-parameters typically variable weather widget widgets"
+      "keywords": "aggregation api apply arbresremarquablesparis2011 average avg catalog class context count dataset directive directly example expose exposed exposes expression field function hauteurenm height html max meters min module null ods-aggregation ods-aggregation-context ods-aggregation-expression ods-aggregation-function ods-widgets odsaggregationcontext opendatasoft optional parisdata result returns row-fluid sort span4 span8 stddev sum temperature tree tree-dataset tree-domain tree-parameters typically variable weather widget widgets"
     },
     {
       "section": "api",
@@ -119,7 +119,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget create a cross table from a context.",
-      "keywords": "aggregate aggregations analysis api average averagewages averagewages-dataset averagewages-domain avg column comma-separated context count create cross data dataset decimals directive display displayed extracted field fields function header headers html https intermediary label list location module multiple names number ods-widgets oecd-average-wages opendatasoft repeat row rows serie serie-production-expr serie-production-func serie-production-label seriexxxexpr seriexxxfunc seriexxxlabel single subaverages subtotals supports table time values wages widget"
+      "keywords": "aggregate aggregations analysis api average averagewages averagewages-dataset averagewages-domain avg column comma-separated context count create cross data dataset decimals directive display displayed extracted facet facets field fields function header headers html https intermediary label list location module multiple names number ods-widgets oecd-average-wages opendatasoft repeat row rows serie serie-production-expr serie-production-func serie-production-label seriexxxexpr seriexxxfunc seriexxxlabel single subaverages subtotals supports table time values wages widget"
     },
     {
       "section": "api",

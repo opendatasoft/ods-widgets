@@ -74,7 +74,7 @@
                 // parse attributes and build conf
                 var unwatchRefineOnClick = $scope.$watch(
                     function () {
-                        return $attrs.refineOnClickContext
+                        return $attrs.refineOnClickContext;
                     },
                     function (nv) {
                         // parse contexts

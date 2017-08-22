@@ -1,3 +1,18 @@
+/* ==========================================================================
+   Timerange Widget
+
+   This file includes CSS overrides and enhancements for the Rome.js datepicker
+   which is used by this widget.
+   ========================================================================== */
+
+@timeRange-borderRadius: .2rem;
+@timeRange-zIndex: @zIndex-10;
+@timeRange-padding: .72rem;
+@timeRange-boxShadow: @boxShadow-2;
+@timeRange-item-padding: .45rem;
+@timeRange-item-borderRadius: .4rem;
+@timeRange-item-margin: .72rem;
+
 .odswidget-timerange {
     text-align: center;
 }
@@ -7,11 +22,54 @@
     display: inline-block;
 }
 
-.odswidgets-rd-container {
-    // Rome style for ODS Widgets
-    z-index: 1000;
-    table {
-        border-collapse: separate;
-        border-spacing: 2px;
-    }
+
+// Rome.js Overrides
+
+.odswidgets-rd-container.rd-container {
+    background-color: @color-timeRange-background;
+    padding: @timeRange-padding;
+    border-radius: @timeRange-borderRadius;
+    border: 1px solid @color-timeRange-border;
+    box-shadow: @timeRange-boxShadow;
+    z-index: @timeRange-zIndex;
+}
+
+.odswidgets-rd-container.rd-container table {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.odswidgets-rd-container .rd-day-body {
+    // Make the hit target bigger
+    padding: @timeRange-item-padding;
+    border-radius: @timeRange-item-borderRadius;
+}
+
+.odswidgets-rd-container .rd-day-selected,
+.odswidgets-rd-container .rd-time-selected,
+.odswidgets-rd-container .rd-time-option:hover,
+.odswidgets-rd-container .rd-day-body:hover{
+    background-color: @color-timeRange-active-background;
+    color: contrast(@color-timeRange-active-background);
+}
+
+.odswidgets-rd-container .rd-day-head {
+    text-align: center;
+}
+
+.odswidgets-rd-container .rd-month-label  {
+    padding-top: @timeRange-item-padding;
+    padding-bottom: @timeRange-item-padding;
+    margin-bottom: @timeRange-item-margin;
+}
+
+.odswidgets-rd-container .rd-day-prev-month,
+.odswidgets-rd-container .rd-day-next-month {
+    color: @color-timeRange-otherMonth-text;
+}
+
+.odswidgets-rd-container .rd-back,
+.odswidgets-rd-container .rd-next {
+    padding: @timeRange-item-padding;
+    margin-bottom: @timeRange-item-margin;
 }

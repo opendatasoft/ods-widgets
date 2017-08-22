@@ -355,6 +355,9 @@
                 /* Use this function as a parameter to array.sort() to sort an array of numbers (by default .sort()
                  * does an alphanumerical sort, even on numbers) */
                 return a - b;
+            },
+            reverseSortNumbers: function(a, b) {
+                return b - a;
             }
         },
         URLUtils: {
@@ -621,6 +624,38 @@
                     //console.log('calc log', relativeValue, '/', relativeMax, 'result', ratio);
                 }
                 return ratio;
+            },
+            incrementByOneUnit: function(number) {
+                var fromString = false;
+                var finalNumber;
+                var digits;
+
+                if (angular.isString(number)) {
+                    number = parseFloat(number);
+                    fromString = true;
+                }
+                if (number.toString().indexOf('.') === -1) {
+                    // Integer
+                    finalNumber = number + 1;
+                } else {
+                    digits = number.toString().length - number.toString().indexOf('.') - 1;
+                    finalNumber = number + Math.pow(10, -digits);
+                }
+
+                if (fromString) {
+                    if (digits) {
+                        return finalNumber.toFixed(digits);
+                    } else {
+                        return finalNumber.toString();
+                    }
+                } else {
+                    if (digits) {
+                        return Math.round(finalNumber * Math.pow(10, digits)) / Math.pow(10, digits);
+                    } else {
+                        return finalNumber;
+                    }
+                }
+
             }
         },
         DateFieldUtils: {
@@ -685,7 +720,7 @@
                         }
                     }
                     return datePattern;
-                }
+                };
             },
             getDateFromXObject: function (x, minDate) {
                 var minYear = minDate ? minDate.getUTCFullYear() : 2000;

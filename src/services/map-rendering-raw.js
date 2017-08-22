@@ -5,9 +5,9 @@
 
     mod.service('MapRenderingRaw', ['ODSAPI', 'MapLayerHelper', 'SVGInliner', 'PictoHelper', '$q', function (ODSAPI, MapLayerHelper, SVGInliner, PictoHelper, $q) {
         return {
-            render: function (layerConfig, map, timeout) {
+            render: function (layerConfig, map, layerGroup, timeout) {
                 var deferred = $q.defer();
-                var markerLayerGroup = new L.LayerGroup();
+                var markerLayerGroup = layerGroup;
                 var parameters = angular.extend({}, layerConfig.context.parameters, {
                     'rows': 1000,
                     'format': 'json',

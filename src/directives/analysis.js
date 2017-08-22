@@ -431,7 +431,7 @@
                         accumulation: function(accumulations, needed_aggregates) {
                             var res = {};
                             angular.forEach(needed_aggregates, function(k) {
-                                res[k] = accumulations[k]
+                                res[k] = accumulations[k];
                             });
                             return res;
                         }(accumulations, aggregates),
@@ -442,7 +442,7 @@
                 console.warn("Error while compiling aggregation value with expr", compiled_expr);
             }
             return valueY;
-        }
+        };
 
         return {
             restrict: 'A',

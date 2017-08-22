@@ -2,6 +2,26 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.0.11 - 2017-08-21
+### Added
+- `odsMap`: better support for thunderforest basemaps (now accepts API keys in conf) and support for tile format option for WMS basemaps
+- `odsTimerange`: better style
+- `odsCrossTable`: improved documentation
+- `odsHighcharts`: funnel and polar charts now support color ranges, improved documentation
+- `odsRangeInput`: added validation
+- new `filesize` filter that transforms an integer into a file size (in kB, MB etc.)
+- Lots of accessibility improvements
+- Switched to system fonts for lighter pages and better integration with the OS
+
+### Fixed
+- `odsAggregation`: fix example and crash when aggregation yields no result
+- `odsCrossTable`: fix refresh condition
+- `odsFacets`: fix race condition with filtered contexts 
+- `odsRangeInput`: fix bad display on init
+- `odsSlideshow`: fix numerous errors that used to show up in the console
+- `odsMap`: bug fixes and many improvement following the release of the new mapbuilder
+- Added back lots of missing ";"
+
 ## 1.0.10 - 2017-05-18
 ### Added
 - `odsFilterSummary`: now lists `odsTimerange`, `odsTimescale` and `odsMap` filters as well

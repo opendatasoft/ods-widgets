@@ -5,9 +5,8 @@
 
     mod.service('MapRenderingClustered', ['ODSAPI', 'MapLayerHelper', 'SVGInliner', 'PictoHelper', '$q', function (ODSAPI, MapLayerHelper, SVGInliner, PictoHelper, $q) {
         return {
-            render: function (layerConfig, map, timeout, showPolygons) {
+            render: function (layerConfig, map, layerGroup, timeout, showPolygons) {
                 var deferred = $q.defer();
-                var layerGroup = new L.LayerGroup();
                 var parameters = angular.extend({}, layerConfig.context.parameters, {
                     'clusterdistance': 50,
                     'clusterprecision': map.getZoom(),

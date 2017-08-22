@@ -1,17 +1,55 @@
-
 @mapDisplayControl-gutterWidth: 10px;
+@mapDisplayControl-collapsedGutterWidth: 40px;
+@mapDisplayControl-collapseTransition: right 0.25s ease-in;
+@mapDisplayControl-width: 300px;
+
 .odswidget-map-display-control {
-    width: 300px;
     position: absolute;
     top: @mapDisplayControl-gutterWidth;
-    right: @mapDisplayControl-gutterWidth;
-    background-color: white;
+    transition: @mapDisplayControl-collapseTransition;
+
+    @media (max-width: @screen-xs-max) {
+        right: @mapDisplayControl-collapsedGutterWidth - @mapDisplayControl-width;
+    }
+    @media (min-width: @screen-sm-min) {
+        right: @mapDisplayControl-gutterWidth;
+    }
+}
+
+.odswidget-map-display-control--expanded {
+    @media (max-width: @screen-xs-max) {
+        right: @mapDisplayControl-gutterWidth;
+    }
+}
+
+.odswidget-map-display-control__toggle {
+    background-color: @color-white;
+    border: none;
+    position: absolute;
+    top: 100px;
+    right: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.33rem;
+    padding: 0;
+    width: 1em;
+    height: 2em;
+
+    @media (min-width: @screen-sm-min) {
+        display: none;
+    }
 }
 
 .odswidget-map-display-control__groups {
+    width: @mapDisplayControl-width;
+    overflow-y: scroll;
     margin: 0;
     padding: @mapDisplayControl-gutterWidth;
+    background-color: @color-white;
     list-style: none;
+    min-height: 150px;
+    max-height: ~"calc(100% - 2*@{mapDisplayControl-gutterWidth})";
 }
 .odswidget-map-display-control__group {
     //background-color: lightgreen;
@@ -31,12 +69,30 @@
     opacity: 0.5;
 }
 
+.odswidget-map-display-control__group--not-toggleable[ng-click] {
+  cursor: auto;
+}
+
 .odswidget-map-display-control__group-title {
     font-size: 1.1rem;
     color: #2C3F56;
     font-weight: 600;
     text-overflow: ellipsis;
     overflow: hidden;
+    display: inline;
+}
+
+.odswidget-map-display-control__group-title--error {
+    color: @color-red;
+}
+
+.odswidget-map-display-control__picto {
+    display: inline-block;
+    vertical-align: sub;
+}
+
+.odswidget-map-display-control__picto--error, .odswidget-map-display-control__group-title--error, .odswidget-map-display-control__group-description--error {
+    color: @color-red;
 }
 
 .odswidget-map-display-control__group-description {

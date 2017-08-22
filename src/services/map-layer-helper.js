@@ -45,7 +45,12 @@
                         return '#000000';
                     }
                 } else if (layerConfig.color.type === 'choropleth') {
-                    value = record && record.fields && record.fields[layerConfig.color.field];
+                    if (layerConfig.func) {
+                        // This is an aggregation, the record is already the value itself
+                        value = record;
+                    } else {
+                        value = record && record.fields && record.fields[layerConfig.color.field];
+                    }
                     if (angular.isUndefined(value)) {
                         return '#000000';
                     }
@@ -55,11 +60,10 @@
                         return '#000000';
                     }
                     var rangesUpperBounds = Object.keys(layerConfig.color.ranges)
-                            .map(function(b) { return parseFloat(b); })
-                            .sort(function(a, b) { return a - b; });
-                    var i = 0;
+                            .sort(function(a, b) { return parseFloat(a) - parseFloat(b); });
+                    var i;
                     for (i=0; i<rangesUpperBounds.length; i++) {
-                        if (value <= rangesUpperBounds[i]) {
+                        if (value <= parseFloat(rangesUpperBounds[i])) {
                             return layerConfig.color.ranges[rangesUpperBounds[i]];
                         }
                     }
@@ -124,7 +128,7 @@
                             return;
                         }
                         // TODO: Support tiles and refineOnClick
-                        service.refineContextOnClick(layerConfig, clusterShape, geoDigest, fieldValue);
+                        service.refineContextOnClick(layerConfig, clusterShape, geoDigest, fieldValue, recordid);
                     });
                 } else {
                     // Binds on a feature (marker, shape) so that it shows a popup on click
@@ -148,7 +152,7 @@
                     });
                 }
             },
-            refineContextOnClick: function(layerConfig, shape, digest, fieldValue) {
+            refineContextOnClick: function(layerConfig, shape, digest, fieldValue, recordid) {
                 var refineContext = function(refineConfig) {
                     var contextField = refineConfig.contextField;
                     var mapField = refineConfig.mapField;
@@ -173,6 +177,8 @@
                             };
                             if (digest) {
                                 options.geo_digest = digest;
+                            } else if (recordid) {
+                                options.q = 'recordid:' + recordid;
                             } else {
                                 ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
                             }
@@ -265,7 +271,7 @@
 
                 if (layerConfig.func !== 'COUNT' && this.isAnalyzeEnabledClustering(layerConfig)) {
                     return apiResult.series.serie1.min;
-                } else {
+                } else if (apiResult.count) {
                     return apiResult.count.min;
                 }
             },
@@ -277,7 +283,7 @@
 
                 if (layerConfig.func !== 'COUNT' && this.isAnalyzeEnabledClustering(layerConfig)) {
                     return apiResult.series.serie1.max;
-                } else {
+                } else if (apiResult.count) {
                     return apiResult.count.max;
                 }
             },
@@ -303,7 +309,7 @@
             },
             isAnalyzeEnabledClustering: function(layerConfig) {
                 /* Are the analyze features enabled for this clustering? */
-                return ['heatmap', 'polygonforced', 'shape', 'aggregation', 'clusters'].indexOf(layerConfig.display) >= 0;
+                return ['heatmap', 'polygonforced', 'shape', 'aggregation', 'clusters', 'choropleth'].indexOf(layerConfig.display) >= 0;
             },
             doesLayerRefreshOnLocationChange: function(layerConfig) {
                 if (layerConfig.display === 'tiles') {
@@ -328,7 +334,7 @@
 
                     targetLayer.addLayer(singleMarker);
                     //targetLayer.addLayer(new L.Marker(coords)); // Uncomment to debug pointer alignment
-                    if (record) {
+                    if (angular.isObject(record)) {
                         service.bindTooltip(map, singleMarker, layerConfig, coords, record.recordid);
                     } else {
                         service.bindTooltip(map, singleMarker, layerConfig, coords, null, geoDigest);
@@ -348,7 +354,7 @@
                         }
 
                         if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
-                            opts.weight = 5; // To be overloaded
+                            opts.weight = layerConfig.lineWidth;
                             opts.color = service.getRecordColor(record, layerConfig);
                             if (angular.isDefined(layerConfig.shapeOpacity)) {
                                 opts.opacity = layerConfig.shapeOpacity;
@@ -387,7 +393,7 @@
                 });
 
                 // TODO: Document the cases
-                if (record) {
+                if (angular.isObject(record)) {
                     service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, record.recordid);
                 } else {
                     service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, null, geoDigest);

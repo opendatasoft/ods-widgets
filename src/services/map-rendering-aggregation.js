@@ -5,9 +5,9 @@
 
     mod.service('MapRenderingAggregation', ['ODSAPI', 'MapLayerHelper', 'AggregationHelper', '$q', function (ODSAPI, MapLayerHelper, AggregationHelper, $q) {
         return {
-            render: function (layerConfig, map, timeout) {
+            render: function (layerConfig, map, layerGroup, timeout) {
                 var deferred = $q.defer();
-                var shapeLayerGroup = new L.LayerGroup();
+                var shapeLayerGroup = layerGroup;
 
                 // Either we self-join, or we join on a remote dataset
                 // Remote requires:
@@ -40,7 +40,7 @@
                     };
                     var joinedFields = shapefield;
                     if (layerConfig.hoverField) {
-                        joinedFields += ',' + layerConfig.hoverField
+                        joinedFields += ',' + layerConfig.hoverField;
                     }
                     parameters = angular.extend({}, layerConfig.context.parameters, {
                         'clusterprecision': map.getZoom(),
@@ -201,16 +201,25 @@
                                     style: function (feature) {
                                         var opts = angular.copy(geojsonOptions);
                                         opts.fillColor = colorScale(value);
-                                        if (angular.isDefined(layerConfig.shapeOpacity)) {
-                                            opts.fillOpacity = layerConfig.shapeOpacity;
+
+                                        // update defaults
+                                        // in this map, the keys are the keys of layerOption and the values the keys of opts
+                                        var optionsMap = {
+                                            'shapeOpacity': 'fillOpacity',
+                                            'size': 'radius',
+                                            'borderSize': 'weight',
+                                            'borderOpacity': 'opacity',
+                                            'borderColor': 'color'
+                                        };
+                                        for (var prop in optionsMap) {
+                                            if (optionsMap.hasOwnProperty(prop) && angular.isDefined(layerConfig[prop])) {
+                                                opts[optionsMap[prop]] = layerConfig[prop]
+                                            }
                                         }
+
                                         if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
                                             opts.weight = 5;
                                             opts.color = colorScale(value);
-                                        } else {
-                                            if (angular.isDefined(layerConfig.borderColor)) {
-                                                opts.color = layerConfig.borderColor;
-                                            }
                                         }
                                         return opts;
                                     }
@@ -238,11 +247,8 @@
                                     if ((layerConfig.func !== 'COUNT' && MapLayerHelper.isAnalyzeEnabledClustering(layerConfig)) || min !== max) {
                                         shapeLayer.bindLabel(MapLayerHelper.formatNumber(value));
                                     }
-                                    if (layerConfig.refineOnClick) {
-                                        // We're not sure yet what we want to show when we click on an aggregated shape, so we just handled
-                                        // refine on click for now.
-                                        MapLayerHelper.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest);
-                                    }
+
+                                    MapLayerHelper.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest);
                                 }
                                 shapeLayerGroup.addLayer(shapeLayer);
                             }

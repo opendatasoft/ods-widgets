@@ -64,7 +64,7 @@
                         if (availableButtons.indexOf(button) > -1) {
                             scope.selectedButtons.push(button);
                         }
-                    })
+                    });
                 }
                 // load AddThis
                 var addthis = document.createElement('script');
@@ -73,6 +73,6 @@
                 addthis.src   = '//s7.addthis.com/js/300/addthis_widget.js#domready=1';
                 (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(addthis);
             }
-        }
+        };
     }]);
 })();

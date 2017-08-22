@@ -53,21 +53,14 @@ L.ODSTileLayer = L.TileLayer.extend({
         //            subdomains: "1234"
         //        });
         //} else
-        if (basemap.provider === 'opencycle') {
+        if (basemap.provider === 'opencycle' || basemap.provider === 'osmtransport') {
             attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="http://www.thunderforest.com" target="_blank">Thunderforest</a> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
-            L.TileLayer.prototype.initialize.call(this, 'http://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png',
-                {
-                    minZoom: 1,
-                    maxNativeZoom: 18,
-                    maxZoom: 19,
-                    attribution: !disableAttribution ? attrib : '',
-                    subdomains: "abc"
-                });
-        } else if (basemap.provider === 'osmtransport') {
-            attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="http://www.thunderforest.com" target="_blank">Thunderforest</a> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
-            attrib = this._addAttributionPart(attrib, appendAttribution);
-            L.TileLayer.prototype.initialize.call(this, 'http://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png',
+            var thunderforestUrl = 'http://{s}.tile.thunderforest.com/' + (basemap.provider === 'osmtransport' ? 'transport' : 'cycle') + '/{z}/{x}/{y}.png';
+            if (basemap.thunderforest_api_key) {
+                thunderforestUrl += '?apikey=' + basemap.thunderforest_api_key;
+            }
+            L.TileLayer.prototype.initialize.call(this, thunderforestUrl,
                 {
                     minZoom: 1,
                     maxNativeZoom: 18,
@@ -143,7 +136,7 @@ L.ODSTileLayer = L.TileLayer.extend({
 
             attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/images/favicon.png" width="16" height="16"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
-            
+
             layerOptions = {
                 minZoom: 1,
                 maxZoom: 22,
@@ -191,6 +184,9 @@ L.ODSWMSTileLayer = L.TileLayer.WMS.extend({
         layerOptions.layers = basemap.layers;
         if (basemap.styles) {
             layerOptions.styles = basemap.styles;
+        }
+        if (basemap.tile_format){
+            layerOptions.format = basemap.tile_format;
         }
 
         attrib = this._addAttributionPart(attrib, basemap.attribution);

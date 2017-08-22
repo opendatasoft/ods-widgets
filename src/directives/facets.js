@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsFacets', ['$compile', 'translate', function($compile, translate) {
+    mod.directive('odsFacets', ['$compile', 'translate', '$q', function($compile, translate, $q) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsFacets
@@ -359,7 +359,7 @@
                                 });
                             };
                             if (context.type === 'dataset') {
-                                context.wait().then(function () {
+                                $q.all([$scope.context.wait(), context.wait()]).then(function() {
                                     checkMappingType($scope.context, context);
                                 });
                             } else {
@@ -467,7 +467,7 @@
             template: '' +
             '<ul class="odswidget-facet__category-list">' +
             '   <li class="odswidget-facet__value-search" ng-show="valueSearchEnabled">' +
-            '       <input class="odswidget-facet__value-search-input" ng-model="valueFilter">' +
+            '       <input class="odswidget-facet__value-search-input" ng-model="valueFilter" aria-label="Search in {{facetName}}" translate="aria-label">' +
             '       <i ng-show="!!valueFilter" class="odswidget-facet__value-search-cancel fa fa-times" ng-click="valueFilter=\'\'"></i>' +
             '   </li>' +
             '   <li ng-repeat="category in categories|filter:searchValue(valueFilter)" class="odswidget-facet__category-container">' +

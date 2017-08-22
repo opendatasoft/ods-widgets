@@ -286,7 +286,7 @@
             '    <ods-map-legend ng-if="displayLegend && allContextsInitialized" map-config="mapConfig"></ods-map-legend>' +
             '    <div ng-transclude></div>' + // Can't find any better solution...
             '</div>',
-            link: function(scope, element, attrs) {
+            link: function(scope, element, attrs, ctrl) {
                 var mapElement = angular.element(element.children()[0]);
                 // "Porting" the attributes to the real map.
                 if (attrs.id) { mapElement.attr('id', attrs.id); }
@@ -364,6 +364,9 @@
                         var height = Math.max(200, $(window).height() - mapElement.offset().top);
                         mapElement.height(height);
                     }
+
+                    // resize map-display-control
+                    ctrl.resizeMapDisplayControl();
                 }
 
                 if (scope.autoResize === 'true') {
@@ -380,6 +383,15 @@
 
                 scope.$on('mapFitBounds', function(e, bounds) {
                     scope.map.fitBounds(bounds);
+                });
+
+                scope.$on('toggleMapDisplayControl', function (event, data) {
+                    var $leafletControlsElement = $('.leaflet-top.leaflet-right');
+                    if (data.expanded) {
+                        $leafletControlsElement.removeClass('collapsed');
+                    } else {
+                        $leafletControlsElement.addClass('collapsed');
+                    }
                 });
 
                 /* INITIALISATION AND DEFAULT VALUES */
@@ -475,7 +487,7 @@
 
 
                     // Only during the Mapbuilder beta phase
-                    if (!window.location.pathname.startsWith('/map2/') && ODSWidgetsConfig.mapGeobox && !scope.searchBox && !isStatic) {
+                    if (ODSWidgetsConfig.mapGeobox && !scope.searchBox && !isStatic) {
                         var geocoder = L.Control.geocoder({
                             placeholder: translate('Find a place...'),
                             errorMessage: translate('Nothing found.'),
@@ -592,7 +604,7 @@
                                     end: translate('Release mouse to finish drawing')
                                 }
                             }
-                        }
+                        };
                         L.drawLocal.edit.handlers = {
                             edit: {
                                 tooltip: {
@@ -714,7 +726,7 @@
                         scope.$watch(function() {
                             var pending = 0;
                             angular.forEach(scope.mapConfig.groups, function(groupConfig) {
-                                angular.forEach(groupConfig.layers, function(layerConfig) {
+                                angular.forEach(groupConfig.layers, function (layerConfig) {
                                     if (layerConfig._loading) {
                                         pending++;
                                     }
@@ -765,6 +777,7 @@
                             // We want a light version of the config, and the only reliable mechanism to efficiently
                             // simplify a complex object for comparison is JSON.stringify.
                             var simplified = JSON.stringify(scope.mapConfig, function(key, value) {
+
                                 if (typeof(value) === "function") {
                                     return undefined;
                                 }
@@ -776,12 +789,14 @@
                                     // Internal runtime properties
                                     return undefined;
                                 }
-                                if (key === 'context') {
+                                if (key === 'context' && value.dataset !== null) {
                                     // Serialize the context object
                                     return {
                                         datasetId: value.dataset.datasetid,
                                         parameters: value.parameters,
                                     };
+                                } else {
+                                    return undefined;
                                 }
                                 // Things we want to discard, that don't impact the display
                                 if (['mapPresets', 'singleLayer', 'toolbarGeolocation', 'toolbarFullscreen',
@@ -844,6 +859,7 @@
                     };
 
                     var renderedLayers = {};
+                    var previousMasterLayerGroup;
                     var refreshData = function(fitView, locationChangedOnly) {
                         /* Used when one of the context changes, or the viewport changes: triggers a refresh of the displayed data
                            If "fitView" is true, then the map moves to the new bounding box containing all the data, before
@@ -857,11 +873,13 @@
                             //console.log('renderdata');
                             var promises = [];
                             var newlyRenderedLayers = {};
+                            var masterLayerGroup = new L.LayerGroup();
                             angular.forEach(scope.mapConfig.groups, function(layerGroup) {
                                 if (!layerGroup.displayed) {
                                     angular.forEach(layerGroup.layers, function(layer) {
                                         if (layer._currentRequestTimeout) {
                                             layer._currentRequestTimeout.resolve();
+                                            layer._loading = false;
                                         }
                                         if (layer._rendered) {
                                             scope.map.removeLayer(layer._rendered);
@@ -878,12 +896,18 @@
                                         return;
                                     }
 
+                                    if (layer.context.dataset === null){
+                                        return;
+                                    }
+
                                     // Depending on the layer config, we can opt for various representations
 
                                     // Tiles: call a method on the existing layer
                                     // Client-side: build a new layer and remove the old one
                                     if (!locationChangedOnly || MapLayerRenderer.doesLayerRefreshOnLocationChange(layer)) {
-                                        promises.push(MapLayerRenderer.updateDataLayer(layer, scope.map));
+                                        var deferred = $q.defer();
+                                        masterLayerGroup.addLayer(MapLayerRenderer.updateDataLayer(layer, scope.map, deferred));
+                                        promises.push(deferred.promise);
                                         newlyRenderedLayers[layer._runtimeId] = layer;
                                     }
                                 });
@@ -897,6 +921,7 @@
                                     var layer = renderedLayers[runtimeId];
                                     if (layer._currentRequestTimeout) {
                                         layer._currentRequestTimeout.resolve();
+                                        layer._loading = false;
                                     }
                                     if (layer._rendered) {
                                         scope.map.removeLayer(layer._rendered);
@@ -908,7 +933,11 @@
                             renderedLayers = newlyRenderedLayers;
                             $q.all(promises).then(function() {
                                 // We got them all
-                                // FIXME: Do we have something to do here?
+                                if (previousMasterLayerGroup) {
+                                    scope.map.removeLayer(previousMasterLayerGroup);
+                                }
+                                scope.map.addLayer(masterLayerGroup);
+                                previousMasterLayerGroup = masterLayerGroup;
                             });
                         };
 
@@ -937,7 +966,9 @@
                         }
                     };
 
-
+                    scope.$on('mapRefresh', function(e, bounds) {
+                        refreshData(false);
+                    });
 
                     var initDrawingTools = function() {
                         // Make sure we know when the user is drawing, so that we can ignore other interactions (click on
@@ -1102,10 +1133,22 @@
                     // FIXME: Include joinContexts and refineOnClickContexts
                     var contexts = MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig);
                     var promises = contexts.map(function(context) { return context.wait(); });
-                    $q.all(promises).then(function() {
-                        syncGeofilterToDrawing();
-                        deferred.resolve();
-                    });
+
+
+
+                    var resolvedPromises = function(promises){
+                        $q.all(promises).then(function(){
+                            syncGeofilterToDrawing();
+                            deferred.resolve();
+                        }).catch(function(){
+                            promises = promises.filter(function(promise) {
+                                return promise.$$state.status !== 2;
+                            });
+                            resolvedPromises(promises);
+                        })
+                    };
+
+                    resolvedPromises(promises);
 
                     return deferred.promise;
                 }
@@ -1193,6 +1236,11 @@
                     $scope.map.setView(coords, zoom);
                 };
 
+                this.fitMapToShape = function(geoJson) {
+                    var layer = L.geoJson(geoJson);
+                    $scope.map.fitBounds(layer.getBounds());
+                };
+
                 this.resetMapDataFilter = function() {
                     var contexts = MapHelper.MapConfiguration.getContextList($scope.mapConfig);
                     contexts.forEach(function(ctx) {
@@ -1215,12 +1263,29 @@
                 this.getActiveContexts = function() {
                     return MapHelper.MapConfiguration.getActiveContextList($scope.mapConfig);
                 };
-                
+
                 var resetCallback;
                 this.registerResetCallback = function (callback) {
                     resetCallback = callback;
                 };
-                
+
+                this.resizeMapDisplayControl = function () {
+                    $timeout(function () {
+                        var $mapElement = $('.odswidget-map');
+                        var $legendElement = $('.odswidget-map-legend');
+                        var $mapDisplayControlElement = $('.odswidget-map-display-control__groups');
+                        if ($mapDisplayControlElement.length === 1) {
+                            $mapDisplayControlElement = $mapDisplayControlElement.first();
+                            if ($legendElement.length > 0) {
+                                $legendElement = $legendElement.first();
+                                $mapDisplayControlElement.css('max-height', 'calc(' + $mapElement.outerHeight() + 'px - 2*10px - 26px - ' + $legendElement.outerHeight() + 'px)');
+                            } else {
+                                $mapDisplayControlElement.css('max-height', 'calc(' + $mapElement.outerHeight() + 'px - 10px - 26px)');
+                            }
+                        }
+                    });
+                };
+
                 // watch for reset
                 var that = this;
                 $scope.$watch(
@@ -1247,8 +1312,9 @@
             scope: {
                 "title": "@",
                 "description": "@",
-                "color": "@",
-                "picto": "@"
+                "pictoColor": "@",
+                "pictoIcon": "@",
+                "displayed": "=?"
             },
             require: '^odsMap',
             link: function(scope, element, attrs, mapCtrl) {
@@ -1256,11 +1322,15 @@
             },
             controller: ['$scope', function($scope) {
                 $scope.group = MapHelper.MapConfiguration.createLayerGroupConfiguration();
+                if (!angular.isDefined($scope.displayed)) {
+                    $scope.displayed = true;
+                }
                 angular.extend($scope.group, {
                     "title": $scope.title,
                     "description": $scope.description,
-                    "color": $scope.color,
-                    "picto": $scope.picto
+                    "pictoColor": $scope.pictoColor,
+                    "pictoIcon": $scope.pictoIcon,
+                    "displayed": $scope.displayed
                 });
 
                 this.registerLayer = function(obj) {
@@ -1282,9 +1352,13 @@
                 showZoomMax: '@',
                 color: '@',
                 borderColor: '@',
+                borderSize: '@',
+                borderPattern: '@',
+                borderOpacity: '@',
                 opacity: '@',
                 shapeOpacity: '@',
                 pointOpacity: '@',
+                lineWidth: '@',
                 colorScale: '@',
                 colorRanges: '@',
                 colorCategories: '=',
@@ -1316,6 +1390,10 @@
 
                 caption: '=?',
                 captionTitle: '@',
+                captionPictoColor: "@",
+                captionPictoIcon: "@",
+                title: '@',
+                description: '@',
 
                 excludeFromRefit: '=?'
             },
@@ -1373,8 +1451,8 @@
                         steps: scope.colorGradient
                     };
                 } else if (scope.colorNumericRanges) {
-                    if (!scope.colorByField) {
-                        console.error('odsMapLayer: using colorNumericRanges requires specifying a field to use, using colorByField');
+                    if (!scope.colorByField && !scope['function']) {
+                        console.error('odsMapLayer: using colorNumericRanges requires specifying either a field to use (using colorByField) or a function');
                     }
                     color = {
                         type: 'choropleth',
@@ -1392,8 +1470,12 @@
                     'color': color,
                     'colorFunction': scope.colorFunction,
                     'borderColor': scope.borderColor,
+                    'borderSize': scope.borderSize,
+                    'borderPattern': scope.borderPattern,
+                    'borderOpacity': scope.borderOpacity,
                     'shapeOpacity': angular.isDefined(scope.shapeOpacity) && scope.shapeOpacity || scope.opacity,
                     'pointOpacity': angular.isDefined(scope.pointOpacity) && scope.pointOpacity || scope.opacity,
+                    'lineWidth': scope.lineWidth,
                     'picto': scope.picto,
                     'display': scope.display,
                     'function': scope['function'],
@@ -1405,6 +1487,10 @@
                     'excludeFromRefit': scope.excludeFromRefit,
                     'caption': !!scope.caption,
                     'captionTitle': scope.captionTitle,
+                    'captionPictoIcon': scope.captionPictoIcon,
+                    'captionPictoColor': scope.captionPictoColor,
+                    'title': scope.title,
+                    'description': scope.description,
                     'showZoomMin': scope.showZoomMin,
                     'showZoomMax': scope.showZoomMax,
                     'radius': scope.radius,

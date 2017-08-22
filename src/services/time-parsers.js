@@ -43,7 +43,7 @@
             return {
                 field: matches[1],
                 scaleLabel: scaleLabels[matches[2]][matches[3]]
-            }
+            };
         };
     }]);
 }());

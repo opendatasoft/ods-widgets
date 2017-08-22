@@ -108,14 +108,36 @@
                 });
                 return deferred.promise;
             },
+            getDatasetAggregationBounds: function(context, aggregationFunction, fieldName) {
+                var service = this;
+                var apiParams = angular.extend({}, context.parameters);
+                var deferred = $q.defer();
+
+                apiParams.maxpoints = 1;
+
+                if (aggregationFunction !== 'COUNT') {
+                    apiParams['y.serie.expr'] = fieldName;
+                    apiParams['y.serie.func'] = aggregationFunction;
+                }
+
+                ODSAPI.records.geopolygon(context, apiParams).then(function(result) {
+                    var data = result.data;
+                    if (aggregationFunction !== 'COUNT') {
+                        deferred.resolve([data.series.serie.min, data.series.serie.max]);
+                    } else {
+                        deferred.resolve([data.count.min, data.count.max]);
+                    }
+                });
+                return deferred.promise;
+            },
             boundAsNumber: function(number) {
-                return Math.round(parseFloat(number) * 100) / 100;
+                return parseFloat(number);
             },
             getLayerLegendLabel: function(layerConfig) {
                 var label = null;
-                if (['choropleth', 'categories', 'heatmap'].indexOf(layerConfig.display) >= 0) {
+                if (['choropleth', 'categories', 'heatmap', 'clusters'].indexOf(layerConfig.display) >= 0) {
                     var field;
-                    if (layerConfig.display === 'categories' || layerConfig.display === 'choropleth') {
+                    if (layerConfig.display === 'categories' || (layerConfig.display === 'choropleth' && layerConfig.color.field)) {
                         field = layerConfig.context.dataset.getField(layerConfig.color.field);
                     } else if (layerConfig.func.toUpperCase() !== 'COUNT') {
                         field = layerConfig.context.dataset.getField(layerConfig.expr);
@@ -138,7 +160,7 @@
                             label += ' (' + addendums.join(', ') + ')';
                         }
                     } else {
-                        label = translate('Number of elements')
+                        label = translate('Number of elements');
                     }
                     return label;
                 }
@@ -159,9 +181,11 @@
                     angular.forEach(config.groups, function (group) {
                         if (group.displayed) {
                             angular.forEach(group.layers, function (datasetConfig) {
-                                if (!options.geoOnly || datasetConfig.context.dataset.hasGeoField()) {
-                                    if (!(datasetConfig.excludeFromRefit && options.skipExcludedFromRefit)) {
-                                        contexts.push(datasetConfig.context);
+                                if (!datasetConfig.unknown && datasetConfig.context.dataset !== null){
+                                    if (!options.geoOnly || datasetConfig.context.dataset.hasGeoField()) {
+                                        if (!(datasetConfig.excludeFromRefit && options.skipExcludedFromRefit)) {
+                                            contexts.push(datasetConfig.context);
+                                        }
                                     }
                                 }
                             });
@@ -215,7 +239,7 @@
                         "colorFunction": config.colorFunction,
                         "picto": config.picto,
                         "display": display,
-                        "func": config['function'] || (config.expression ? "AVG" : "COUNT"), // If there is a field, default to the average
+                        "func": config['function'] || null,
                         "expr": config.expression || null,
                         "marker": null,
                         "size": config.size || null,
@@ -227,18 +251,31 @@
                         "hoverField": config.hoverField || null,
                         //"opacity": config.opacity || null,
                         "shapeOpacity": config.shapeOpacity || null,
-                        "borderOpacity": config.borderOpacity || null,
                         "pointOpacity": config.pointOpacity || null,
+                        "lineWidth": config.lineWidth || null,
+                        "borderOpacity": config.borderOpacity || null,
                         "borderColor": config.borderColor,
+                        "borderSize": config.borderSize || null,
+                        "borderPattern": config.borderPattern || null,
                         "excludeFromRefit": config.excludeFromRefit,
                         "caption": angular.isDefined(config.caption) ? config.caption : false,
                         "captionTitle": config.captionTitle || null,
+                        "captionPictoIcon": config.captionPictoIcon || null,
+                        "captionPictoColor": config.captionPictoColor || null,
+                        "title": config.title || null,
+                        "description": config.description || null,
                         "showZoomMin": config.showZoomMin || null,
                         "showZoomMax": config.showZoomMax || null,
                         "minSize": config.minSize || null,
                         "maxSize": config.maxSize || null,
                         "sizeFunction": config.sizeFunction || null
                     };
+
+                    if (!layer.func && ['shape', 'aggregation'].indexOf(layer.display) > -1) {
+                        // In shape or aggregation mode, we *need* a function
+                        layer.func = 'COUNT';
+                    }
+
                     this.createLayerId(layer);
                     return layer;
                 },
@@ -268,6 +305,7 @@
                         layer.pointOpacity = layer.pointOpacity || 1;
                     }
                     layer.radius = layer.radius || 4;
+                    layer.lineWidth = layer.lineWidth || 5;
                     layer.borderOpacity = layer.borderOpacity || 1;
                     layer.borderColor = layer.borderColor || '#FFFFFF';
                     layer.borderSize = layer.borderSize || 1;

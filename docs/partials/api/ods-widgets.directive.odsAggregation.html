@@ -5,7 +5,8 @@
 </h1>
 <div><h2 id="description">Description</h2>
 <div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>This widget exposes the results of an aggregation function over a context. Can be used for example to expose the average temperature of a weather dataset.
-The result is exposed into a new variable that you can use in other widgets or directly in your HTML.</p>
+The result is exposed into a new variable that you can use in other widgets or directly in your HTML.
+If aggregation returns no result, the result value will be null.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as attribute<pre class="prettyprint linenums">&lt;ANY ods-aggregation="{string}"
@@ -34,11 +35,11 @@ The result is exposed into a new variable that you can use in other widgets or d
             <div class="span4">
                 <ods-facets context="tree"></ods-facets>
             </div>
-            <div class="span8" ods-aggregation="height" ods-aggregation-context="tree" ods-aggregation-expression="hauteur" ods-aggregation-function="AVG">
+            <div class="span8" ods-aggregation="height" ods-aggregation-context="tree" ods-aggregation-expression="hauteurenm" ods-aggregation-function="AVG">
                 Average height is {{ height }} meters.
             </div>
         </div>
-    </ods-catalog-context>
+    </ods-dataset-context>
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>

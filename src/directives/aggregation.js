@@ -16,6 +16,7 @@
          * @description
          * This widget exposes the results of an aggregation function over a context. Can be used for example to expose the average temperature of a weather dataset.
          * The result is exposed into a new variable that you can use in other widgets or directly in your HTML.
+         * If aggregation returns no result, the result value will be null.
          *
          * @example
          *  <example module="ods-widgets">
@@ -25,11 +26,11 @@
          *                  <div class="span4">
          *                      <ods-facets context="tree"></ods-facets>
          *                  </div>
-         *                  <div class="span8" ods-aggregation="height" ods-aggregation-context="tree" ods-aggregation-expression="hauteur" ods-aggregation-function="AVG">
+         *                  <div class="span8" ods-aggregation="height" ods-aggregation-context="tree" ods-aggregation-expression="hauteurenm" ods-aggregation-function="AVG">
          *                      Average height is {{ height }} meters.
          *                  </div>
          *              </div>
-         *          </ods-catalog-context>
+         *          </ods-dataset-context>
          *      </file>
          *  </example>
          */
@@ -49,7 +50,11 @@
                             'y.serie1.func': func
                         });
                         ODSAPI.records.analyze(context, options).success(function(data) {
-                            $scope[variableName] = data[0].serie1;
+                            if (data.length) {
+                                $scope[variableName] = data[0].serie1;
+                            } else {
+                                $scope[variableName] = null;
+                            }
                         });
                     }, true);
                 });

@@ -256,7 +256,7 @@
             }
         }
         return true;
-    }
+    };
 
     window.utf8_to_b64 = function(str) {
         // we escape the unicode string before encoding it in base64 becase btoa does not support unicode characters
@@ -295,7 +295,7 @@
         }
 
         return str;
-    }
+    };
 
     if (typeof Object.assign !== 'function') {
       Object.assign = function(target, varArgs) { // .length of function is 2

@@ -7,7 +7,8 @@
         return {
             restrict: 'E',
             template: '' +
-            '<div class="odswidget odswidget-map-search-box" ng-class="{\'odswidget-map-search-box--datasearch\': dataSearchActive}">' +
+            '<div class="odswidget odswidget-map-search-box" ' +
+            '     ng-class="{\'odswidget-map-search-box--datasearch\': dataSearchActive, \'odswidget-map-search-box--expanded\': expanded}">' +
             '   <div class="odswidget-map-search-box__box-wrapper"' +
             '        ng-class="{\'odswidget-map-search-box__box-wrapper--datasearch\': dataSearchActive}">' +
             '       <input type="text" ' +
@@ -15,12 +16,31 @@
             '              ng-class="{\'odswidget-map-search-box__box--datasearch\': dataSearchActive}"' +
             '              ng-model="userQuery" ' +
             '              ng-change="runQuery(userQuery)" ' +
-            '              ng-keydown="handleKeyDown($event)">' +
+            '              ng-keydown="handleKeyDown($event)"' +
+            '              ng-focus="expandSearchBox()" >' +
             '       <button type="button" class="odswidget-map-search-box__box-cancel" ng-click="resetSearch()" ng-show="userQuery || dataSearchActive">' +
             '           <i class="fa fa-times odswidget-map-search-box__close-search-icon"></i>' +
             '       </button>' +
+            '       <button class="odswidget-map-search-box__toggle"' +
+            '               ng-hide="expanded"' +
+            '               ods-tooltip="Expand the search bar"' +
+            '               ods-tooltip-direction="right"' +
+            '               translate="ods-tooltip"' +
+            '               ng-click="expandSearchBox()">' +
+            '           <i class="fa fa-caret-right"></i>' +
+            '       </button>' +
+            '       <button class="odswidget-map-search-box__toggle"' +
+            '               ng-show="expanded"' +
+            '               ods-tooltip="Collapse the search bar"' +
+            '               translate="ods-tooltip"' +
+            '               ods-tooltip-direction="left"' +
+            '               ng-click="collapseSearchBox()">' +
+            '           <i class="fa fa-caret-left"></i>' +
+            '       </button>' +
             '   </div>' +
-            '   <ul class="odswidget-map-search-box__suggestions" ng-if="!dataSearchActive && userQuery">' +
+            '   <ul class="odswidget-map-search-box__suggestions" ' +
+            '     ng-class="{\'odswidget-map-search-box__suggestions--expanded\': expanded}"' +
+            '       ng-if="!dataSearchActive && userQuery">' +
             '       <li ng-show="userQuery"' +
             '           ng-click="runDataSearch(userQuery)"' +
             '           ng-class="[\'odswidget-map-search-box__search-suggestion\', {\'odswidget-map-search-box__search-suggestion--selected\': selectedIndex === 0}]">' +
@@ -90,6 +110,7 @@
             link: function(scope, element, attrs, mapCtrl) {
                 scope.suggestions = [];
                 scope.selectedIndex = 0;
+                scope.expanded = false;
                 scope.runQuery = function(userQuery) {
                     var loc = MapHelper.getLocationStructure(mapCtrl.getCurrentPosition());
                     AlgoliaPlaces(userQuery, loc.center.join(',')).then(
@@ -102,20 +123,29 @@
                         }
                     );
                 };
-                
+
+                scope.expandSearchBox = function () {
+                    scope.expanded = true;
+                };
+
+                scope.collapseSearchBox = function () {
+                    $('.odswidget-map-search-box__box').blur();
+                    scope.expanded = false;
+                };
+
                 // Reset search
-                
+
                 scope.resetSearch = function() {
                     // this will trigger then the registered reset callback (see below)
                     mapCtrl.resetMapDataFilter();
                 };
-                
+
                 mapCtrl.registerResetCallback(function () {
                     scope.suggestions = [];
                     scope.userQuery = '';
                     scope.stopDataSearch();
                 });
-                
+
                 scope.$on('$destroy', scope.resetSearch);
                 scope.moveToSuggestion = function(suggestion, index) {
                     if (angular.isDefined(index)) {
@@ -132,6 +162,8 @@
                         zoom = 21;
                     }
                     mapCtrl.moveMap(suggestion._geoloc, zoom);
+                    scope.collapseSearchBox();
+                    scope.resetSearch();
                 };
                 scope.moveToDataRecord = function(dataset, record) {
                     var geoShapeFields = dataset.getFieldsForType('geo_shape');
@@ -145,10 +177,11 @@
                     }
 
                     if (isShape) {
-                        console.log('TODO move to data record for shapes');
+                        mapCtrl.fitMapToShape(record.fields[fieldName]);
                     } else {
                         mapCtrl.moveMap(record.fields[fieldName], 21);
                     }
+                    scope.collapseSearchBox();
                 };
 
                 scope.runDataSearch = function(userQuery) {

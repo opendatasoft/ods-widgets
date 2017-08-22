@@ -49,8 +49,12 @@
                        '                 <div class="odswidget-table__header-cell-container">' +
                        '                     <div class="odswidget-table__label" ng-bind="field.label"></div>' +
                        '                     <div ng-class="{\'odswidget-table__sort-icons\': true, \'odswidget-table__sort-icons--active\': field.name == context.parameters.sort || \'-\'+field.name == context.parameters.sort}" ng-show="isFieldSortable(field)" title="sort" translate="title">' +
-                       '                         <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true" ng-class="{\'odswidget-table__sort-icons__up--active\': isDescendingSorted(field)}"></i>' +
-                       '                         <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true" ng-class="{\'odswidget-table__sort-icons__down--active\': isAscendingSorted(field)}"></i>' +
+                       '                         <button class="odswidget-table__sort-icon" aria-label="Sort column {{ field.label }} in ascending order" tabindex="0" translate="aria-label">' +
+                       '                            <i class="fa fa-chevron-up odswidget-table__sort-icons__up"  ng-class="{\'odswidget-table__sort-icons__up--active\': isDescendingSorted(field)}" aria-hidden="true"></i>' +
+                       '                         </button>' +
+                       '                         <button class="odswidget-table__sort-icon" aria-label="Sort column {{ field.label }} in descending order" tabindex="0" translate="aria-label">' +
+                       '                            <i class="fa fa-chevron-down odswidget-table__sort-icons__down"  ng-class="{\'odswidget-table__sort-icons__down--active\': isAscendingSorted(field)}" aria-hidden="true"></i>' +
+                       '                         </button>' +
                        '                     </div>' +
                        '                 </div>' +
                        '             </th>' +
@@ -68,8 +72,12 @@
                        '                     <div class="odswidget-table__cell-container">' +
                        '                         <span ng-bind="field.label"></span>' +
                        '                         <div class="odswidget-table__sort-icons" ng-show="isFieldSortable(field)" title="sort" translate="title">' +
-                       '                             <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true"></i>' +
-                       '                             <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true"></i>' +
+                       '                             <button class="odswidget-table__sort-icon" aria-label="Sort column {{ field.label }} in ascending order" tabindex="0" translate="aria-label">' +
+                       '                                <i class="fa fa-chevron-up odswidget-table__sort-icons__up" aria-hidden="true"></i>' +
+                       '                             </button>' +
+                       '                             <button class="odswidget-table__sort-icon" aria-label="Sort column {{ field.label }} in descending order" tabindex="0" translate="aria-label">' +
+                       '                                <i class="fa fa-chevron-down odswidget-table__sort-icons__down" aria-hidden="true"></i>' +
+                       '                             </button>' +
                        '                         </div>' +
                        '                     </div>' +
                        '                 </th>' +
@@ -649,8 +657,8 @@
                         }
 
                         // Switch between the fake header and the default header
-                        $element.find('.odswidget-table__internal-header-table-header').hide();
-                        $element.find('.odswidget-table__internal-table-header').show();
+                        $element.find('.odswidget-table__internal-header-table-header').hide().attr('role', 'representation');
+                        $element.find('.odswidget-table__internal-table-header').show().removeAttr('role');
 
                         var totalWidth = 0;
                         angular.forEach($element.find('.odswidget-table__internal-table-header .odswidget-table__cell-container'), function (thDiv, i) {
@@ -702,8 +710,8 @@
                         $element[0].appendChild(css);
 
                         // Switch between the default header and the fake header
-                        $element.find('.odswidget-table__internal-table-header').hide();
-                        $element.find('.odswidget-table__internal-header-table-header').show();
+                        $element.find('.odswidget-table__internal-table-header').hide().attr('role', 'representation');
+                        $element.find('.odswidget-table__internal-header-table-header').show().removeAttr('role');
 
                         if (!forceScrollLeft) {
                             $timeout(function () {

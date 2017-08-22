@@ -12,8 +12,8 @@
          *
          * @param {DatasetContext} context Context {@link ods-widgets.directive:odsDatasetContext Dataset Context} from which data is
          * extracted
-         * @param {string} rows Comma-separated list of field names which will be used for row headers' values
-         * @param {string} column Name of the field which will be used for column header's values
+         * @param {string} rows Comma-separated list of field names which will be used for row headers' values. These fields must all be facets.
+         * @param {string} column Name of the field which will be used for column header's values. This field must be a facet.
          * @param {string} serieXxxLabel Label of the serie, which will be displayed as column header (Xxx being the
          * name of the serie).
          * @param {string} serieXxxFunc Function (SUM, AVG, COUNT etc...) used to aggregate the serie's analysis (Xxx
@@ -168,7 +168,7 @@
                 // _insertedRowHeaders
                 this._insertedRowHeaders = rowFields.reduce(function (previous, current) {
                     previous[current] = [];
-                    return previous
+                    return previous;
                 }, {});
 
                 // table
@@ -249,7 +249,7 @@
                     // first row
                     row = [];
                     angular.forEach(this.rowFields, function () {
-                        row.push(new Cell('', 'ods-cross-table__cell--header'))
+                        row.push(new Cell('', 'ods-cross-table__cell--header'));
                     });
                     angular.forEach(colValues, function (colValue) {
                         row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField, isMultiXAnalysis), 'ods-cross-table__cell--header', nbSeries));
@@ -259,11 +259,11 @@
                     // second row
                     row = [];
                     angular.forEach(this.rowFields, function (fieldName) {
-                        row.push(new Cell(that.schema[fieldName].label, 'ods-cross-table__cell--header'))
+                        row.push(new Cell(that.schema[fieldName].label, 'ods-cross-table__cell--header'));
                     });
                     var serieHeaders = [];
                     angular.forEach(this.series, function (serie) {
-                        serieHeaders.push(new Cell(serie.label || serie.name, 'ods-cross-table__cell--header'))
+                        serieHeaders.push(new Cell(serie.label || serie.name, 'ods-cross-table__cell--header'));
                     });
                     angular.forEach(colValues, function () {
                         row = row.concat(serieHeaders);
@@ -272,7 +272,7 @@
                 } else {
                     row = [];
                     angular.forEach(this.rowFields, function (fieldName) {
-                        row.push(new Cell(that.schema[fieldName].label, 'ods-cross-table__cell--header'))
+                        row.push(new Cell(that.schema[fieldName].label, 'ods-cross-table__cell--header'));
                     });
                     angular.forEach(colValues, function (colValue) {
                         row.push(new Cell(that.labelBuilder.buildLabel(colValue, that.colField, isMultiXAnalysis), 'ods-cross-table__cell--header'));
@@ -560,7 +560,7 @@
                         }
                     });
                     return Object.keys(series).map(function (name) {
-                        return series[name]
+                        return series[name];
                     });
                 };
 
@@ -583,7 +583,7 @@
                         var fieldSchema = scope.context.dataset.getField(fieldName);
                         if (['date', 'datetime'].indexOf(fieldSchema.type) > -1) {
                             var timescale = scope.context.dataset.getFieldAnnotation(fieldSchema, 'timeserie_precision').args[0];
-                            xs = xs.concat(ODS.DateFieldUtils.getTimescaleX(fieldName, timescale))
+                            xs = xs.concat(ODS.DateFieldUtils.getTimescaleX(fieldName, timescale));
                         } else {
                             xs.push(fieldName);
                         }
@@ -596,7 +596,7 @@
                         fieldNames = [fieldNames];
                     }
                     return fieldNames.map(function (name) {
-                        return 'x.' + name
+                        return 'x.' + name;
                     }).join(',');
                 };
 
@@ -757,9 +757,9 @@
                         scope.repeatRowHeaders === true,
                         scope.displayIntermediaryResults === true,
                         scope.numberPrecision);
-                    scope.$watch('context.parameters', reloadData);
+                    scope.$watch('context.parameters', reloadData, true);
                 });
             }
-        }
+        };
     }]);
 })();

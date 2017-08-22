@@ -1,6 +1,7 @@
 .odswidget-map {
     position: relative;
     min-height: 400px;
+    overflow: hidden;
 }
 .odswidget-map__map {
     height: 100%;
@@ -9,7 +10,8 @@
 
 .odswidget-map__loading {
     position: absolute;
-    right: 10px;
+    left: 50%;
+    margin-left: -24px;
     bottom: 30px; // Room for the attribution line
     background: rgba(255,255,255,0.9);
     padding: 5px 12px;
@@ -162,5 +164,11 @@
 }
 
 .odswidget-map__map--with-display-control .leaflet-top.leaflet-right {
+    transition: @mapDisplayControl-collapseTransition;
     right: 310px; // 300px (width of map display control) + 10px (leaflet control gutter width)
+}
+.odswidget-map__map--with-display-control .leaflet-top.leaflet-right.collapsed {
+    @media (max-width: @screen-xs-max) {
+        right: 40px;
+    }
 }

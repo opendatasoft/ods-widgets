@@ -193,9 +193,9 @@
                         if (refinement.contexts.length < contexts.length) {
                             refinement.contextsLabel = refinement.contexts
                                 .map(function (ctx) {
-                                    return $attrs[ctx.name + 'Label'] || ctx.name
+                                    return $attrs[ctx.name + 'Label'] || ctx.name;
                                 })
-                                .join(', ')
+                                .join(', ');
                         }
                     });
 

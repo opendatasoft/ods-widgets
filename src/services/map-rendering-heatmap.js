@@ -5,7 +5,7 @@
 
     mod.service('MapRenderingHeatmap', ['ODSAPI', 'MapLayerHelper', '$q', function (ODSAPI, MapLayerHelper, $q) {
         return {
-            render: function (layerConfig, map, timeout) {
+            render: function (layerConfig, map, layerGroup, timeout) {
                 var deferred = $q.defer();
                 var heatmapOptions = {};
                 if (angular.isObject(layerConfig.color) && layerConfig.color.type === 'gradient' && layerConfig.color.steps) {
@@ -53,6 +53,7 @@
                     var heatmapLayer = null;
                     if (heatmapData.length > 0) {
                         heatmapLayer = L.heatLayer(heatmapData, heatmapOptions);
+                        layerGroup.addLayer(heatmapLayer);
                     }
                     deferred.resolve(heatmapLayer);
                 });

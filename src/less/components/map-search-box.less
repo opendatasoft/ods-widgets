@@ -2,13 +2,44 @@
     position: absolute;
     left: 0;
     top: 0;
-    width: 435px;
     padding: 10px;
     background-color: transparent;
-    transition: background-color 0.1s;
+    transition: background-color 0.1s, width 0.25s ease;
     z-index: 8; // Z-index for leaflet controls is 7
+
+    @media (max-width: @screen-xs-max) {
+        width: 100px;
+        padding-right: 20px;
+    }
+    @media (min-width: @screen-sm-min) {
+        width: 435px;
+    }
 }
 
+.odswidget-map-search-box--expanded {
+    @media (max-width: @screen-xs-max) {
+        width: ~"calc(100% - 10px)";
+    }
+}
+
+.odswidget-map-search-box__toggle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 100%;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-left-width: 0;
+    width: 20px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    @media (min-width: @screen-sm-min) {
+        display: none;
+    }
+}
 
 .odswidget-map-search-box__box-wrapper {
     position: relative;
@@ -58,6 +89,19 @@
     margin: 0;
     padding: 0;
     border: solid 1px #90A4AE;
+
+    @media (max-width: @screen-xs-max) {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+    }
+}
+.odswidget-map-search-box__suggestions--expanded {
+    @media (max-width: @screen-xs-max) {
+        max-height: none;
+        opacity: 1;
+        overflow: inherit;
+    }
 }
 .odswidget-map-search-box__suggestions:hover {
     cursor: pointer;

@@ -38,7 +38,7 @@
                         $(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
                         element.append(data.div);
                     }
-                })
+                });
             }
         };
     });
