@@ -94,7 +94,7 @@ module.exports = function(grunt) {
 			docs: {
 				expand: true,
 				cwd: '../ods/img/',
-				src: 'logo.png',
+				src: 'ODS_logo_widget_bleu.svg',
 				dest: 'assets/'
 			},
             libs: {
@@ -118,8 +118,9 @@ module.exports = function(grunt) {
                     '../dist/ods-widgets.css',
                     'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
                 ],
+                template: 'src/templates/index.tmpl',
 				html5Mode: false,
-				image: 'assets/logo.png',
+                // image: 'assets/ODS_logo_widget_bleu.svg',
 				title: "ODS Widgets",
 				bestMatch: true,
                 startPage: '/api',
@@ -178,6 +179,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['dist']);
-    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'autoprefixer', 'copy:libs', 'ngdocs']);
+    grunt.registerTask('dist', ['clean', 'uglify:dist', 'less:dist', 'less:dev', 'concat', 'autoprefixer', 'copy:libs', 'ngdocs']);
     grunt.registerTask('server', ['default', 'connect', 'watch']);
 };

@@ -1,24 +1,24 @@
 <!doctype html>
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" ng-app="docsApp"  lang="en" ng-controller="DocsController"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" ng-app="docsApp"  lang="en" ng-controller="DocsController"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js lt-ie9" ng-app="docsApp"  lang="en" ng-controller="DocsController"> <![endif]-->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" <% if(!deferLoad) { %>ng-app="docsApp" <% } %> lang="en" ng-controller="DocsController"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" <% if(!deferLoad) { %>ng-app="docsApp" <% } %> lang="en" ng-controller="DocsController"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" <% if(!deferLoad) { %>ng-app="docsApp" <% } %> lang="en" ng-controller="DocsController"> <![endif]-->
 <!--[if gt IE 8]><!-->
 <html class="no-js" 
-    ng-app="docsApp" lang="en" ng-controller="DocsController"><![endif]
+    <% if(!deferLoad) { %>ng-app="docsApp"<% } %> lang="en" ng-controller="DocsController"><![endif]
 
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <meta name="Description" content="Hello my friend">
         <meta name="fragment" content="!">
-        <title ng-bind-template="ODS Widgets: {{partialTitle}}">Docs</title>
+        <title ng-bind-template="<%= title || 'Doc' %>: {{partialTitle}}">Docs</title>
         <script type="text/javascript">
             // dynamically add base tag as well as css and javascript files.
             // we can't add css/js the usual way, because some browsers (FF) eagerly prefetch resources
             // before the base attribute is added, causing 404 and terribly slow loading of the docs app.
             (function () {
                 var indexFile = (location.pathname.match(/\/(index[^\.]*\.html)/) || ['', ''])[1],
-                    origin, baseUrl, rUrl = /(\/?#!\/.*|\/(api|tutorial)\/?(\?.*)*|\/index[^\.]*\.html.*)$/,
+                    origin, baseUrl, rUrl = /(\/?#!\/.*|\/(<%= sections %>)\/?(\?.*)*|\/index[^\.]*\.html.*)$/,
                     headEl = document.getElementsByTagName('head')[0],
                     sync = true;
 
@@ -37,34 +37,22 @@
                 addTag('link', { rel: 'stylesheet', href: 'css/docs.css', type: 'text/css' });
                 addTag('link', { rel: 'stylesheet', href: 'css/animations.css', type: 'text/css' });
 
-                
-                    addTag('link', { rel: 'stylesheet', href: '../dist/ods-widgets.css', type: 'text/css' }, sync);
-                
-                    addTag('link', { rel: 'stylesheet', href: 'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css', type: 'text/css' }, sync);
-                
+                <% _.forEach(styles, function (url) { %>
+                    addTag('link', { rel: 'stylesheet', href: '<%= url %>', type: 'text/css' }, sync);
+                <% }); %>
 
                 addTag('script', { src: 'js/google-code-prettify.js' }, sync);
                 addTag('script', { src: 'js/marked.js' }, sync);
 
-                
-                    addTag('script', { src: 'https://code.jquery.com/jquery-2.1.4.min.js' }, sync);
-                
-                    addTag('script', { src: 'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.js' }, sync);
-                
-                    addTag('script', { src: 'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular-animate.js' }, sync);
-                
-                    addTag('script', { src: 'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular-sanitize.js' }, sync);
-                
-                    addTag('script', { src: '../dist/ods-widgets.js' }, sync);
-                
-                    addTag('script', { src: '../docs-load-css.js' }, sync);
-                
-                
+                <% _.forEach(scripts, function (url) { %>
+                    addTag('script', { src: '<%= url %>' }, sync);
+                <% }); %>
+                <% if (!deferLoad) { %>
                     addTag('script', { src: 'js/angular-bootstrap.js' }, sync);
                     addTag('script', { src: 'js/angular-bootstrap-prettify.js' }, sync);
                     addTag('script', { src: 'js/docs-setup.js' }, sync);
                     addTag('script', { src: 'js/docs.js' }, sync);
-                
+                <% } %>
                 function addTag(name, attributes, sync) {
                     var el = document.createElement(name),
                         attrName;
@@ -96,24 +84,29 @@
             <div class="navbar navbar-fixed-top">
                 <div class="navbar-inner">
                     <div class="container">
-                        
-                        
-                            <a  class="brand">
-                                ODS Widgets
+                        <% if (image) { %>
+                            <% if (imageLink) { %>
+                                <a href="<%= imageLink %>">
+                            <% } %>
+                                <img class="pull-left" src="<%= image %>">
+                                <% if (imageLink) { %>
+                                    </a>
+                                <% } %>
+                        <% } %>
+                        <% if (title) {%>
+                            <a <% if (titleLink) { %> href="
+                                <%= titleLink %>"
+                                <% } %> class="brand">
+                                <%= title %>
                             </a>
-                        
+                        <% } %>
                         <ul class="nav">
                             <li ng-repeat="(url, name) in sections" ng-class="{active: isActivePath(url)}">
                                 <a ng-href="{{url}}">
                                     <i class="icon-book icon-white"></i> {{name}}</a>
                             </li>
                         </ul>
-                        <ul class="nav pull-right">
-  <li>
-    <a href="http://github.com/opendatasoft/ods-widgets">
-      <i class="icon-github-sign"></i> ODS Widgets on Github
-    </a>
-</ul>
+                        <%= navContent %>
                     </div>
                 </div>
             </div>
@@ -148,7 +141,7 @@
             <div class="row">
                 <div class="span3">
                     <form class="form-search" ng-submit="submitForm()">
-                        
+                        <% if (bestMatch) { %>
                             <div class="dropdown search" ng-class="{open: focused && bestMatch.rank > 0 && bestMatch.page != currentPage}">
                                 <input type="text" ng-model="search" placeholder="search the docs" tabindex="1" accesskey="s" class="search-query" focused="focused">
                                 <ul class="dropdown-menu">
@@ -157,7 +150,9 @@
                                     </li>
                                 </ul>
                             </div>
-                        
+                        <% } else { %>
+                            <input type="text" ng-model="search" placeholder="search the docs" tabindex="1" accesskey="s" class="search-query">
+                        <% } %>
                         <div class="spacer"></div>
 
                         <ul class="nav nav-list well" ng-show="pages.length">
