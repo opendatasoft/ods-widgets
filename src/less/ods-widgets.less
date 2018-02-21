@@ -2,9 +2,11 @@
 @import "variables/components-colors";
 @import "variables/z-index";
 @import "variables/breakpoints";
+@import "variables/ods-theme";
 
 @import "utilities";
 @import "box-shadow";
+@import "header";
 
 @import "components/calendar";
 @import "components/chart";
@@ -67,4 +69,76 @@
 .ng-leaflet-tooltip-cloak {
     // Style used to cloak the content of directives in leaflet tooltips until it is ready
     display: none;
+}
+
+// ODS Theme Custom
+
+.ods__theme-container {
+    margin-top: 115px;
+    margin-left: 0;
+    margin-right: 0;
+    width: auto;
+}
+
+//- Sidebar 
+// .ods__theme-sidebar {
+
+// }
+
+.ods__theme-form-search {
+    // border: 1px solid orange;
+    margin-left: 20px;
+    padding-right: 10px;
+}
+
+.form-search .search-query {
+    width: 228px;
+    border: 1px solid lighten(@grey-dark, 30%);
+}
+
+.form-search .search-query:focus {
+    box-shadow: none;
+    border: 1px solid lighten(@grey-dark, 30%);
+}
+
+.form-search .well {
+    border: none;
+    background-color: white;
+}
+
+.form-search > ul.nav > li.section {
+    background-color: white;
+    margin: 10px 0;
+}
+
+.form-search .well .guide {
+    float: left;
+    color: black!important;
+    font-size: 18px;
+}
+
+.ng-binding {
+    color: @grey-dark;
+}
+
+.ods__theme-form-search > ul.nav > li > a {
+    padding: 5px;
+    text-shadow: none;
+}
+
+.nav-list > .active > a {
+    background-color: @blue-light;
+    text-shadow: none;
+}
+
+.api-list-item > a:hover,
+.api-list-item > a:focus {
+    background-color: @blue-light!important;
+    color: white!important;
+    text-shadow: none;
+}
+
+//- Content principal
+.ods__theme-content-principal {
+    // border: 1px solid red;
 }

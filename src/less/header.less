@@ -1,0 +1,127 @@
+////////////////////////////////////////////////////////////////////////////////
+// ODS DOCUMENTATION HEADER
+////////////////////////////////////////////////////////////////////////////////
+
+//- By default mobile
+.ods__documentation-header {
+  height: 100px;
+  width: 100%;
+  position: fixed; 
+  top: 0;
+  left: 0;
+  z-index: 50;
+  background-color: @blue-light;
+}
+.ods__documentation-header-logo {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  height: 99px;
+  width: 100%;
+  button {
+    border: none;
+    margin: auto 0;
+    background-color: white;
+    color: @blue-light;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 16px;
+    font-weight: 500;
+    &.open {
+      background-color: @blue-hover;
+      color: white;
+    }
+    &.ods__documentation-help-hub-btn-active {
+      background-color: @blue-hover;
+      color: white;
+    }
+  }
+  button:focus {
+    outline: none;
+  }
+  img {
+    height: 60px;
+    margin: auto 0;
+  }
+}
+.ods__documentation-header-nav {
+  display: none;
+}
+.ods__documentation-help-hub-sidebar {
+  position: fixed;
+  top: 100px;
+  right: -250px;
+  height: 100%;
+  width: 250px;
+  padding-top: 40px;
+  background-color: @blue-light;
+  border-top: 1px solid transparentize(@grey-dark, 0.6);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transition: 0.5s;
+}
+.ods__documentation-help-hub-sidebar-item {
+  text-align: center;
+  margin: 30px 0;
+  a {
+    color: white;
+    font-size: 16px;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 5px;
+  }
+}
+.ods__documentation-help-hub-sidebar-active {
+  right: 0;
+}
+
+//- Desktop
+@media (min-width: @tablet-width) {
+  .ods__documentation-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+  .ods__documentation-header-logo {
+    height: 99px;
+    width: auto;
+    padding-left: 10px;
+    img {
+      height: 80px;
+    }
+    button {
+      display: none;
+    }
+  }
+  .ods__documentation-help-hub-sidebar {
+    display: none;
+  }
+  .ods__documentation-header-nav {
+    display: flex;
+    margin-left: 30px;
+  }
+  .ods__documentation-header-nav-item {
+    margin: auto 20px;
+  }
+  .ods__documentation-header-nav-item:first-child {
+    margin-left: 0px;
+  }
+  .ods__documentation-header-nav-item:last-child {
+    margin-right: 0px;
+  }
+  .ods__documentation-header-nav-item > a {
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 5px;
+    border-bottom: 2px solid transparent;
+  }
+  .ods__documentation-header-nav-item > a:hover {
+    border-bottom: 2px solid white;
+  }
+  .ods__documentation-header-nav-item-active > a {
+    border-bottom: 2px solid white;
+  }
+}

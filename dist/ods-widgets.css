@@ -12,6 +12,146 @@
 .clearfix:after {
   clear: both;
 }
+.ods__documentation-header {
+  height: 100px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  background-color: #126e92;
+}
+.ods__documentation-header-logo {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -ms-flex-pack: distribute;
+      justify-content: space-around;
+  height: 99px;
+  width: 100%;
+}
+.ods__documentation-header-logo button {
+  border: none;
+  margin: auto 0;
+  background-color: white;
+  color: #126e92;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.ods__documentation-header-logo button.open {
+  background-color: #166482;
+  color: white;
+}
+.ods__documentation-header-logo button.ods__documentation-help-hub-btn-active {
+  background-color: #166482;
+  color: white;
+}
+.ods__documentation-header-logo button:focus {
+  outline: none;
+}
+.ods__documentation-header-logo img {
+  height: 60px;
+  margin: auto 0;
+}
+.ods__documentation-header-nav {
+  display: none;
+}
+.ods__documentation-help-hub-sidebar {
+  position: fixed;
+  top: 100px;
+  right: -250px;
+  height: 100%;
+  width: 250px;
+  padding-top: 40px;
+  background-color: #126e92;
+  border-top: 1px solid transparentize(#7b7b7b, 0.6);
+  z-index: 1000;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  transition: 0.5s;
+}
+.ods__documentation-help-hub-sidebar-item {
+  text-align: center;
+  margin: 30px 0;
+}
+.ods__documentation-help-hub-sidebar-item a {
+  color: white;
+  font-size: 16px;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 5px;
+}
+.ods__documentation-help-hub-sidebar-active {
+  right: 0;
+}
+@media (min-width: 930px) {
+  .ods__documentation-header {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: row;
+            flex-direction: row;
+    -webkit-box-pack: start;
+        -ms-flex-pack: start;
+            justify-content: flex-start;
+  }
+  .ods__documentation-header-logo {
+    height: 99px;
+    width: auto;
+    padding-left: 10px;
+  }
+  .ods__documentation-header-logo img {
+    height: 80px;
+  }
+  .ods__documentation-header-logo button {
+    display: none;
+  }
+  .ods__documentation-help-hub-sidebar {
+    display: none;
+  }
+  .ods__documentation-header-nav {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    margin-left: 30px;
+  }
+  .ods__documentation-header-nav-item {
+    margin: auto 20px;
+  }
+  .ods__documentation-header-nav-item:first-child {
+    margin-left: 0px;
+  }
+  .ods__documentation-header-nav-item:last-child {
+    margin-right: 0px;
+  }
+  .ods__documentation-header-nav-item > a {
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 5px;
+    border-bottom: 2px solid transparent;
+  }
+  .ods__documentation-header-nav-item > a:hover {
+    border-bottom: 2px solid white;
+  }
+  .ods__documentation-header-nav-item-active > a {
+    border-bottom: 2px solid white;
+  }
+}
 .odswidget-calendar {
   position: relative;
   display: block;
@@ -2695,4 +2835,52 @@
 }
 .ng-leaflet-tooltip-cloak {
   display: none;
+}
+.ods__theme-container {
+  margin-top: 115px;
+  margin-left: 0;
+  margin-right: 0;
+  width: auto;
+}
+.ods__theme-form-search {
+  margin-left: 20px;
+  padding-right: 10px;
+}
+.form-search .search-query {
+  width: 228px;
+  border: 1px solid #c8c8c8;
+}
+.form-search .search-query:focus {
+  box-shadow: none;
+  border: 1px solid #c8c8c8;
+}
+.form-search .well {
+  border: none;
+  background-color: white;
+}
+.form-search > ul.nav > li.section {
+  background-color: white;
+  margin: 10px 0;
+}
+.form-search .well .guide {
+  float: left;
+  color: black!important;
+  font-size: 18px;
+}
+.ng-binding {
+  color: #7b7b7b;
+}
+.ods__theme-form-search > ul.nav > li > a {
+  padding: 5px;
+  text-shadow: none;
+}
+.nav-list > .active > a {
+  background-color: #126e92;
+  text-shadow: none;
+}
+.api-list-item > a:hover,
+.api-list-item > a:focus {
+  background-color: #126e92 !important;
+  color: white!important;
+  text-shadow: none;
 }

@@ -48,7 +48,7 @@ module.exports = function(grunt) {
         },
         watch: {
             styles: {
-                files: ['src/*.less'], // which files to watch
+                files: ['src/less/**/*.less'], // which files to watch
                 tasks: ['less'],
                 options: {
                     spawn: false
@@ -120,11 +120,10 @@ module.exports = function(grunt) {
                 ],
                 template: 'src/templates/index.tmpl',
 				html5Mode: false,
-                // image: 'assets/ODS_logo_widget_bleu.svg',
+                image: 'assets/ODS_logo_widget_blanc.svg',
 				title: "ODS Widgets",
 				bestMatch: true,
-                startPage: '/api',
-                navTemplate: 'src-docs/navbar.html'
+                startPage: '/api'
 			},
 			all: {
 				src: [
