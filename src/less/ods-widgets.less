@@ -123,21 +123,34 @@
     color: @grey-dark;
 }
 
-.ods__theme-form-search > ul.nav > li > a {
-    padding: 5px;
-    text-shadow: none;
-}
-
-.nav-list > .active > a {
+.nav-list > .active > a,
+.nav-list > .active > a:hover,
+.nav-list > .active > a:focus {
     background-color: @blue-light;
     text-shadow: none;
 }
 
-.api-list-item > a:hover,
-.api-list-item > a:focus {
-    background-color: @blue-light!important;
+.nav-list > .active > a > [class^="icon-"] {
     color: white!important;
-    text-shadow: none;
+}
+
+.api-list-item:hover {
+    .ng-binding {
+        background-color: @blue-light!important;
+        color: white!important;
+        text-shadow: none;
+    }
+    .pull-right {
+        background-color: @blue-light!important;
+        .icon-cog {
+            color: white!important;
+            text-shadow: none;
+        }
+    }
+}   
+
+.icon-cog {
+    color: @blue-hover;
 }
 
 //- Content principal
@@ -159,3 +172,7 @@
     color: black;
     font-weight: bold;
 }
+
+// .match > a {
+//     background-color: @blue-ultra-light;
+// }

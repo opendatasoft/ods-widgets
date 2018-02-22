@@ -95,7 +95,7 @@ module.exports = function(grunt) {
 				expand: true,
 				cwd: 'assets/',
 				src: 'ODS_logo_widget_bleu.svg',
-				dest: 'assets/'
+				dest: 'docs/grunt-styles/assets/'
             },
             libs: {
                 expand: true,
@@ -122,7 +122,7 @@ module.exports = function(grunt) {
                 html5Mode: false,
                 image: 'assets/ODS_logo_widget_blanc.svg',
 				title: "ODS Widgets",
-				bestMatch: true,
+				bestMatch: false,
                 startPage: '/api'
 			},
 			all: {

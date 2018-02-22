@@ -88,6 +88,7 @@
                             return h;
                         })(node);
                 }
+
             })();
         </script>
     </head>
@@ -152,14 +153,7 @@
                 <div class="span4 ods__theme-sidebar">
                     <form class="form-search ods__theme-form-search" ng-submit="submitForm()">
                         
-                            <div class="dropdown search" ng-class="{open: focused && bestMatch.rank > 0 && bestMatch.page != currentPage}">
-                                <input type="text" ng-model="search" placeholder="Search in documentation" tabindex="1" accesskey="s" class="search-query" focused="focused">
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a href="{{bestMatch.page.url}}">{{bestMatch.page.shortName}}</a>
-                                    </li>
-                                </ul>
-                            </div>
+                            <input type="text" ng-model="search" placeholder="search the docs" tabindex="1" accesskey="s" class="search-query">
                         
                         <div class="spacer"></div>
 
