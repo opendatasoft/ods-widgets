@@ -71,28 +71,30 @@
     display: none;
 }
 
-// ODS Theme Custom
+////////////////////////////////////////////////////////////////////////////////
+// ODS CUSTOM THEME
+////////////////////////////////////////////////////////////////////////////////
 
 .ods__theme-container {
-    margin-top: 115px;
-    margin-left: 0;
-    margin-right: 0;
+    margin: 100px 0 0 0;
     width: auto;
 }
 
 //- Sidebar 
-// .ods__theme-sidebar {
-
-// }
+.ods__theme-sidebar {
+    // border: 1px solid red;
+    border-right: 1px solid lighten(@grey-dark, 30%);
+    padding-top: 25px;
+}
 
 .ods__theme-form-search {
     // border: 1px solid orange;
-    margin-left: 20px;
-    padding-right: 10px;
+    margin-left: 40px;
+    padding-right: 35px;
 }
 
 .form-search .search-query {
-    width: 228px;
+    width: 185px;
     border: 1px solid lighten(@grey-dark, 30%);
 }
 
@@ -141,4 +143,19 @@
 //- Content principal
 .ods__theme-content-principal {
     // border: 1px solid red;
+    padding: 25px 10px 0 10px;
+    margin-left: 30px;
+}
+
+.breadcrumb {
+    // border: 1px solid red;
+    background-color: white;
+    padding: 6px 0;
+}
+
+.breadcrumb > li > a,
+.breadcrumb > li > span,
+.breadcrumb > li > .divider {
+    color: black;
+    font-weight: bold;
 }

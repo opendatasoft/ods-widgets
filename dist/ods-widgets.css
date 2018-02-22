@@ -33,6 +33,7 @@
       justify-content: space-around;
   height: 99px;
   width: 100%;
+  margin-left: 45px;
 }
 .ods__documentation-header-logo button {
   border: none;
@@ -111,7 +112,7 @@
   .ods__documentation-header-logo {
     height: 99px;
     width: auto;
-    padding-left: 10px;
+    padding-left: 0;
   }
   .ods__documentation-header-logo img {
     height: 80px;
@@ -132,7 +133,7 @@
     margin: auto 20px;
   }
   .ods__documentation-header-nav-item:first-child {
-    margin-left: 0px;
+    margin-left: 50px;
   }
   .ods__documentation-header-nav-item:last-child {
     margin-right: 0px;
@@ -140,7 +141,7 @@
   .ods__documentation-header-nav-item > a {
     color: white;
     font-size: 18px;
-    font-weight: 500;
+    font-weight: 0;
     text-decoration: none;
     padding: 5px;
     border-bottom: 2px solid transparent;
@@ -2837,17 +2838,19 @@
   display: none;
 }
 .ods__theme-container {
-  margin-top: 115px;
-  margin-left: 0;
-  margin-right: 0;
+  margin: 100px 0 0 0;
   width: auto;
 }
+.ods__theme-sidebar {
+  border-right: 1px solid #c8c8c8;
+  padding-top: 25px;
+}
 .ods__theme-form-search {
-  margin-left: 20px;
-  padding-right: 10px;
+  margin-left: 40px;
+  padding-right: 35px;
 }
 .form-search .search-query {
-  width: 228px;
+  width: 185px;
   border: 1px solid #c8c8c8;
 }
 .form-search .search-query:focus {
@@ -2883,4 +2886,18 @@
   background-color: #126e92 !important;
   color: white!important;
   text-shadow: none;
+}
+.ods__theme-content-principal {
+  padding: 25px 10px 0 10px;
+  margin-left: 30px;
+}
+.breadcrumb {
+  background-color: white;
+  padding: 6px 0;
+}
+.breadcrumb > li > a,
+.breadcrumb > li > span,
+.breadcrumb > li > .divider {
+  color: black;
+  font-weight: bold;
 }
