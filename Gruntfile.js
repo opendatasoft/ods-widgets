@@ -8,7 +8,8 @@ var JS_FILES = [
     'src/services/*.js',
     'src/filters.js',
     'src/functions.js',
-    'src/directives/*.js'
+    'src/directives/*.js',
+    'src/ods-custom.js'
 ];
 
 module.exports = function(grunt) {
@@ -131,6 +132,7 @@ module.exports = function(grunt) {
                     'src/services/*.js',
                     'src/filters.js',
                     'src/ods-widgets.js',
+                    'src/ods-custom.js',
                     'src-docs/widgets/*.ngdoc'
                 ],
 				title: 'Reference Documentation'

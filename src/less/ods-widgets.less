@@ -48,6 +48,16 @@
 @import "components/cross-table";
 @import "components/slideshow";
 
+body {
+    font-size: 25px;
+    line-height: 35px;
+}
+@media (min-width: @screen-md-min) {
+    body {
+        font-size: 14px;
+        line-height: 20px;
+    }
+}
 
 // This empty style is only here to override default styles from third-party libraries
 // .odswidget.odwidget-my-widget {} has a much higher precedence
@@ -74,28 +84,62 @@
 ////////////////////////////////////////////////////////////////////////////////
 // ODS CUSTOM THEME
 ////////////////////////////////////////////////////////////////////////////////
-
+//- Mobile
 .ods__theme-container {
-    margin: 100px 0 0 0;
+    margin: 200px 0 0 0;
     width: auto;
+}
+@media (min-width: @screen-md-min) {
+    .ods__theme-container {
+        margin: 100px 0 0 0;
+    }
 }
 
 //- Sidebar 
 .ods__theme-sidebar {
     // border: 1px solid red;
     border-right: 1px solid lighten(@grey-dark, 30%);
-    padding-top: 25px;
+    padding-top: 40px;
+    position: absolute;
+    top: 200px;
+    left: -435px;
+    z-index: 2;
+    width: 400px;
+    background-color: white;
+    transition: 0.5s;
+}
+@media (min-width: @screen-md-min) {
+    .ods__theme-sidebar {
+        position: static;
+        margin-left: 35px;
+        width: 300px;
+        padding-top: 25px;
+    }
+}
+
+.menu-active {
+	left: 0;
 }
 
 .ods__theme-form-search {
     // border: 1px solid orange;
-    margin-left: 40px;
+    margin-left: 20px;
     padding-right: 35px;
 }
 
 .form-search .search-query {
-    width: 185px;
+    width: 310px;
+    height: 40px;
+    font-size: 20px;
     border: 1px solid lighten(@grey-dark, 30%);
+}
+@media (min-width: @screen-md-min) {
+    .form-search .search-query {
+        height: 20px;
+        width: 215px;
+        font-size: 16px;
+        height: 25px;
+    }
 }
 
 .form-search .search-query:focus {
@@ -110,17 +154,44 @@
 
 .form-search > ul.nav > li.section {
     background-color: white;
-    margin: 10px 0;
+    margin: 25px 0;
+}
+@media (min-width: @screen-md-min) {
+    .form-search > ul.nav > li.section {
+        margin: 10px 0;
+    }
+}
+
+.form-search > ul.nav > li {
+    width: 345px;
+}
+@media (min-width: @screen-md-min) {
+    .form-search > ul.nav > li {
+        width: 245px;
+    }
 }
 
 .form-search .well .guide {
     float: left;
     color: black!important;
-    font-size: 18px;
+    font-size: 30px;
+}
+@media (min-width: @screen-md-min) {
+    .form-search .well .guide {
+        font-size: 20px;
+    }
 }
 
 .ng-binding {
     color: @grey-dark;
+    font-size: 25px;
+    line-height: 35px;
+}
+@media (min-width: @screen-md-min) {
+    .ng-binding {
+        font-size: 16px;
+        line-height: 20px;
+    }
 }
 
 .nav-list > .active > a,
@@ -151,19 +222,40 @@
 
 .icon-cog {
     color: @blue-hover;
+    line-height: 35px;
+    font-size: 25px;
+}
+@media (min-width: @screen-md-min) {
+    .icon-cog {
+        line-height: 20px;
+        font-size: 16px;
+    }
 }
 
 //- Content principal
 .ods__theme-content-principal {
     // border: 1px solid red;
     padding: 25px 10px 0 10px;
-    margin-left: 30px;
+    margin: 0 70px;
+    width: 87%;
+}
+@media (min-width: @screen-md-min) {    
+    .ods__theme-content-principal {
+        margin-left: 35px;
+        width: 60%;
+    }
 }
 
 .breadcrumb {
     // border: 1px solid red;
     background-color: white;
-    padding: 6px 0;
+    padding: 10px 0;
+    margin-bottom: 30px;
+}
+@media (min-width: @screen-md-min) {
+   .breadcrumb {
+       margin-bottom: 20px;
+   } 
 }
 
 .breadcrumb > li > a,
@@ -173,6 +265,82 @@
     font-weight: bold;
 }
 
-// .match > a {
-//     background-color: @blue-ultra-light;
-// }
+.breadcrumb > li > .divider {
+    font-size: 25px;
+    margin-top: 7px;
+}
+@media (min-width: @screen-md-min) {
+    .breadcrumb > li > .divider {
+        font-size: 18px;
+        margin: -1px 5px 0 5px;
+    }
+}
+
+.content h1 {
+    font-size: 50px;
+}
+@media (min-width: @screen-md-min) {
+    .content h1 {
+        font-size: 30px;
+    }
+}
+
+.content h2 {
+    font-size: 35px;
+}
+@media (min-width: @screen-md-min) {
+    .content h2 {
+        font-size: 24px;
+    }
+}
+
+.content h3 {
+    line-height: 40px;
+    font-size: 25px;
+}
+@media (min-width: @screen-md-min) {
+    .content h3 {
+        line-height: 27px;
+        font-size: 18px;
+    }
+}
+
+.content h4 {
+    font-size: 20px;
+    line-height: 35px;
+}
+@media (min-width: @screen-md-min) {
+    .content h4 {
+        font-size: 15px;
+        line-height: 20px;
+    }
+}
+
+.table td {
+    line-height: 35px;
+}
+@media (min-width: @screen-md-min) {
+    .table td {
+        line-height: 20px;
+    }
+}
+
+ol.linenums li {
+    font-size: 20px;
+    line-height: 30px;
+}
+@media (min-width: @screen-md-min) {
+    ol.linenums li {
+        font-size: 12px;
+        line-height: 18px;
+    }
+}
+
+li {
+    line-height: 30px;
+}
+@media (min-width: @screen-md-min) {
+    li {
+        line-height: 20px;
+    }
+}

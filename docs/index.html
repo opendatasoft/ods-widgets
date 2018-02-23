@@ -22,7 +22,6 @@
                     origin, baseUrl, rUrl = /(\/?#!\/.*|\/(api|tutorial)\/?(\?.*)*|\/index[^\.]*\.html.*)$/,
                     headEl = document.getElementsByTagName('head')[0],
                     sync = true;
-
                 if (location.href.slice(0, 7) == 'file://') {
                     baseUrl = location.href.replace(rUrl, '/' + indexFile);
                 } else {
@@ -30,23 +29,19 @@
                         (window.location.port ? ':' + window.location.port : ''));
                     baseUrl = origin + location.href.substr(origin.length).replace(rUrl, '/' + indexFile);
                 }
-
                 addTag('base', { href: baseUrl });
                 addTag('link', { rel: 'stylesheet', href: 'css/bootstrap.min.css', type: 'text/css' });
                 addTag('link', { rel: 'stylesheet', href: 'css/font-awesome.css', type: 'text/css' });
                 addTag('link', { rel: 'stylesheet', href: 'css/prettify.css', type: 'text/css' });
                 addTag('link', { rel: 'stylesheet', href: 'css/docs.css', type: 'text/css' });
                 addTag('link', { rel: 'stylesheet', href: 'css/animations.css', type: 'text/css' });
-
                 
                     addTag('link', { rel: 'stylesheet', href: '../dist/ods-widgets.css', type: 'text/css' }, sync);
                 
                     addTag('link', { rel: 'stylesheet', href: 'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css', type: 'text/css' }, sync);
                 
-
                 addTag('script', { src: 'js/google-code-prettify.js' }, sync);
                 addTag('script', { src: 'js/marked.js' }, sync);
-
                 
                     addTag('script', { src: 'https://code.jquery.com/jquery-2.1.4.min.js' }, sync);
                 
@@ -76,7 +71,6 @@
 
                     sync ? document.write(outerHTML(el)) : headEl.appendChild(el);
                 }
-
                 function outerHTML(node) {
                     // if IE, Chrome take the internal method otherwise build one
                     return node.outerHTML || (
@@ -88,8 +82,56 @@
                             return h;
                         })(node);
                 }
-
             })();
+
+            //- ODS Custom Theme
+            var helpHubSidebar = "ods__documentation-help-hub-sidebar";
+            var menuSidebar = "ods__theme-sidebar";
+            //- Help hub sidebar
+            function openHelpHub() {
+                var element = document.getElementsByClassName(helpHubSidebar);
+                var btn = document.querySelector("#help-hub-button");
+                element[0].classList.add("help-hub-active");
+                btn[0].classList.add("ods__documentation-header-btn-active");
+            }
+            function closeHelpHub() {
+                var element = document.getElementsByClassName(helpHubSidebar);
+                var btn = document.querySelector("#help-hub-button");
+                element[0].classList.remove("help-hub-active");
+                btn[0].classList.remove("ods__documentation-header-btn-active");
+            }
+            //- Menu sidebar
+            function openMenu() {
+                var element = document.getElementsByClassName(menuSidebar);
+                var btn = document.querySelector("#nav-button");
+                element[0].classList.add("menu-active");
+                btn[0].classList.add("ods__documentation-header-btn-active");
+            }
+            function closeMenu() {
+                var element = document.getElementsByClassName(menuSidebar);
+                var btn = document.querySelector("#nav-button");
+                element[0].classList.remove("menu-active");
+                btn[0].classList.remove("ods__documentation-header-btn-active");
+            }
+            //- Main
+            var sidebar = document.getElementsByClassName(helpHubSidebar)
+                menu = document.getElementsByClassName(menuSidebar);
+            function toggleHelpHub() {
+                if (sidebar[0].className.includes("help-hub-active") && !menu[0].className.includes("menu-active")) {
+                    closeHelpHub();
+                } else if (!sidebar[0].className.includes("help-hub-active") && menu[0].className.includes("menu-active")) {
+                    openHelpHub();
+                    closeMenu();
+                } else openHelpHub();
+            }
+            function toggleMenu() {
+                if (menu[0].className.includes("menu-active") && !sidebar[0].className.includes("help-hub-active")) {
+                    closeMenu();
+                } else if (!menu[0].className.includes("menu-active") && sidebar[0].className.includes("help-hub-active")) {
+                    openMenu();
+                    closeHelpHub();
+                } else openMenu();
+            }
         </script>
     </head>
 
@@ -98,9 +140,11 @@
         <div class="ods__documentation-header">
     
             <div class="ods__documentation-header-logo">
-                <button type="button" id="nav-button"> Menu </button>
-                <img src="grunt-styles/assets/ODS_logo_widget_blanc.svg" alt="ods-documentation-logo">
-                <button type="button" id="help-hub-button"> Help Hub </button>
+                <button type="button" id="nav-button" onclick="toggleMenu()"> Menu </button>
+                <a href="#/api">
+                    <img src="grunt-styles/assets/ODS_logo_widget_blanc.svg" alt="ods-documentation-logo">
+                </a>
+                <button type="button" id="help-hub-button" onclick="toggleHelpHub()"> Help Hub </button>
             </div>
 
             <div class="ods__documentation-header-nav">
@@ -128,22 +172,22 @@
 
         <div class="ods__documentation-help-hub-sidebar">
             <div class="ods__documentation-help-hub-sidebar-item">
-                <a href="">Plateform</a>
+                <a href="" onclick="toggleHelpHub()">Plateform</a>
             </div>
             <div class="ods__documentation-help-hub-sidebar-item">
-                <a href="">Discovery</a>
+                <a href="" onclick="toggleHelpHub()">Discovery</a>
             </div>
             <div class="ods__documentation-help-hub-sidebar-item">
-                <a href="">FAQ</a>
+                <a href="" onclick="toggleHelpHub()">FAQ</a>
             </div>
             <div class="ods__documentation-help-hub-sidebar-item ods__documentation-header-nav-item-active">
-                <a href="">Widget</a>
+                <a href="#/api" onclick="toggleHelpHub()">Widget</a>
             </div>
             <div class="ods__documentation-help-hub-sidebar-item">
-                <a href="">Tutorial</a>
+                <a href="#/tutorial" onclick="toggleHelpHub()">Tutorial</a>
             </div>
             <div class="ods__documentation-help-hub-sidebar-item">
-                <a href="">API</a>
+                <a href="" onclick="toggleHelpHub()">API</a>
             </div>
         </div>
 
