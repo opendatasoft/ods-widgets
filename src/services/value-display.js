@@ -3,10 +3,10 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.service('ValueDisplay', ['$filter', 'translate', 'ODSWidgetsConfig', function($filter, translate, ODSWidgetsConfig) {
+    mod.service('ValueDisplay', ['$filter', 'translate', 'ODSWidgetsConfig', '$sce', function($filter, translate, ODSWidgetsConfig, $sce) {
         var valueFormatters = {
             'language': function(value) {
-                return $filter('isocode_to_language')(value);
+                return $filter('isocode_to_language')(ODS.StringUtils.escapeHTML(value));
             },
             'visualization': function(value) {
                 switch (value) {
@@ -21,17 +21,17 @@
                     case 'api':
                         return '<i class="odswidget-facet__value-icon fa fa-cogs"></i> ' + translate('API');
                     case 'custom_view':
-                        return '<i class="odswidget-facet__value-icon fa fa-' + ODSWidgetsConfig.defaultCustomViewConfig.icon + '"></i> ' + ODSWidgetsConfig.defaultCustomViewConfig.title;
+                        return '<i class="odswidget-facet__value-icon fa fa-' + ODSWidgetsConfig.defaultCustomViewConfig.icon
+                            + '"></i> ' + ODS.StringUtils.escapeHTML(ODSWidgetsConfig.defaultCustomViewConfig.title);
                     default:
-                        return value;
-
+                        return ODS.StringUtils.escapeHTML(value);
                 }
             },
             'date': function(value, path) {
                 if (path.match(/^[0-9]{4}\/[0-9]{2}$/)) {
                     return ODS.StringUtils.capitalize(moment.months()[parseInt(value, 10)-1]);
                 }
-                return value;
+                return ODS.StringUtils.escapeHTML(value);
             }
         };
 
@@ -41,7 +41,7 @@
                     return valueFormatters[valueType](value, path);
                 }
                 console.log('Warning (ValueDisplay): unknown value formatter "'+valueType+'"');
-                return value;
+                return $sce.trustAsHtml(value);
             }
         };
     }]);

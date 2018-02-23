@@ -4,6 +4,19 @@
 .odswidget-facet__facet-title {
     margin: 0 0 0.33rem 0;
 }
+
+.odswidget-facet__date-range {
+    margin-bottom: 0.33rem;
+    .rtl-prop(padding-left, padding-right, 0.67rem, 0);
+    .rtl-prop(border-left, border-right, solid 3px @color-facetCategoryList-border, 0);
+}
+
+.odswidget-facet__date-range .odswidget-timerange__from, .odswidget-facet__date-range .odswidget-timerange__to {
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+}
+
 .odswidget-facet__category-list {
     list-style: none;
     padding: 0;
@@ -12,9 +25,10 @@
 .odswidget-facet__category {
     position: relative;
     color: @color-facetCategory-text;
-    padding: 0.1rem 0 0.1rem 0.67rem;
-    border-left: solid 3px @color-facetCategoryList-border;
-
+    padding-top: 0.1rem;;
+    padding-bottom: 0.1rem;
+    .rtl-prop(padding-left, padding-right, 0.67rem, 0);
+    .rtl-prop(border-left, border-right, solid 3px @color-facetCategoryList-border, 0);
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
@@ -27,33 +41,34 @@
     color: @color-facetCategory-hover-text;
     text-decoration: none;
     border-color: @color-facetCategoryList-hover-border;
+    .rtl-prop(border-left-color, border-right-color, @color-facetCategoryList-hover-border, transparent);
 }
 .odswidget-facet__category-container .odswidget-facet__category-list {
-    margin-left: ~"calc(0.67rem + 3px)";
+    .rtl-prop(margin-left, margin-right, ~"calc(0.67rem + 3px)", auto);
 }
 
 .odswidget-facet--disjunctive .odswidget-facet__category:hover:before {
     content: "+";
     position: absolute;
     top: 0;
-    left: 0.05rem;
+    .rtl-prop(left, right, 0.05rem, auto);
     padding: .1rem 0;
 }
 .odswidget-facet--disjunctive .odswidget-facet__category--refined:hover:before {
     content: "-";
     position: absolute;
     top: 0;
-    left: 0.05rem;
+    .rtl-prop(left, right, 0.05rem, auto);
     padding: .1rem 0;
 }
 .odswidget-facet__category-name {
     word-break: break-word;
     order: 1;
-    margin-right: auto;
+    .rtl-prop(margin-right, margin-left, auto, 0);
 }
 .odswidget-facet__category-count {
     font-size: 0.9rem;
-    padding-left: 0.33rem;
+    .rtl-prop(padding-left, padding-right, 0.33rem, 0);
     padding-top: 0.1rem;
     order: 2;
     // ie9 fallback
@@ -73,7 +88,7 @@
 .odswidget-facet__value-search-cancel {
     position: absolute;
     top: 0;
-    right: 0.5em;
+    .rtl-prop(right, left, 0.5rem, auto);
     line-height: 1.6;
     opacity: 0.5;
     cursor: pointer;
@@ -87,7 +102,7 @@
     content: "\f002";
     position: absolute;
     top: 0;
-    left: 0.5em;
+    .rtl-prop(left, right, 0.5rem, auto);
     line-height: 1.6;
     width: 1em;
     text-align: center;

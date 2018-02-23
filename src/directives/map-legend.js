@@ -38,7 +38,7 @@
             '                       <div class="odswidget-map-legend__categories__item-value" ng-bind="value"></div>' +
             '                   </div>' +
             '                   <div class="odswidget-map-legend__categories__item">' +
-            '                       <div class="odswidget-map-legend__categories__item-value--others">{{ getCategoriesCount(selectedLayer) - maxCategories }} <span translate>more item(s)...</span></div>'+
+            '                       <div class="odswidget-map-legend__categories__item-value--others" translate translate-n="getCategoriesCount(selectedLayer) - maxCategories" translate-plural="{{ $count }} more items...">{{ $count }} more item...</div>'+
             '                   </div>' +
             '               </div>' +
             '               <div ng-if="!isToggleable(selectedLayer) || extended" class="odswidget-map-legend__categories--extended">' +
@@ -93,8 +93,8 @@
             '                   </div>' +
             '               </div>' +
             '               <div class="odswidget-map-legend__choropleth__item" ng-if="selectedLayer.properties.bounds.length > 3">' +
-            '                   <p class="odswidget-map-legend__choropleth__item-value--remaining">' +
-            '                   {{selectedLayer.properties.bounds.length - 2 }} <span translate>more item(s)...</span>' +
+            '                   <p class="odswidget-map-legend__choropleth__item-value--remaining" translate translate-n="selectedLayer.properties.bounds.length - 2" translate-plural="{{ $count }} more items...">' +
+            '                   {{ $count }} more item...' +
             '                   </p>' +
             '               </div>' +
             '               <div class="odswidget-map-legend__choropleth__item" ng-if="selectedLayer.properties.bounds.length === 3">' +
@@ -300,7 +300,9 @@
 
                                     properties.bounds = bounds;
 
-                                    $scope.resizeMapDisplayControl();
+                                    if ($scope.resizeMapDisplayControl) {
+                                        $scope.resizeMapDisplayControl();
+                                    }
                                 } else if (layer.display === 'heatmap') {
 
                                     var orderedSteps = Object.keys(layer.color.steps).map(parseFloat).sort(ODS.ArrayUtils.sortNumbers);

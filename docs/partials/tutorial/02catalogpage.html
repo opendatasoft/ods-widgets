@@ -36,36 +36,20 @@ and <a href="#/api/ods-widgets.directive:odsMostPopularDatasets">odsMostPopularD
 widget which metadata to use (here, we need the keywords).</p>
 <pre class="prettyprint linenums">
 &lt;ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com" ods-domain-statistics&gt;
-    &lt;h2&gt;Welcome on our public portal! Take a tour of our {{catalog.stats.dataset}} available datasets!&lt;/h2&gt;
+    &lt;h3&gt;Welcome on our public portal! Take a tour of our {{catalog.stats.dataset}} available datasets!&lt;/h3&gt;
     &lt;div class="row-fluid"&gt;
         &lt;div class="span6"&gt;
             &lt;ods-tag-cloud facet-name="keyword" context="catalog"&gt;&lt;/ods-tag-cloud&gt;
         &lt;/div&gt;
         &lt;div class="span6"&gt;
-            &lt;h3&gt;Last datasets&lt;/h3&gt;
+            &lt;h4&gt;Last datasets&lt;/h4&gt;
             &lt;ods-last-datasets-feed context="catalog"&gt;&lt;/ods-last-datasets-feed&gt;
-            &lt;h3&gt;Most popular&lt;/h3&gt;
+            &lt;h4&gt;Most popular&lt;/h4&gt;
             &lt;ods-most-popular-datasets context="catalog"&gt;&lt;/ods-most-popular-datasets&gt;
             &lt;ods-last-reuses-feed context="catalog"&gt;&lt;/ods-last-reuses-feed&gt;
         &lt;/div&gt;
     &lt;/div&gt;
 &lt;/ods-catalog-context&gt;
 </pre>
-<div class="well" ng-embed-app="ods-widgets">
-<ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com" ods-domain-statistics>
-    <h3 id="tutorial-a-catalog-homepage_welcome-on-our-public-portal-take-a-tour-of-our-{{catalogstatsdataset}}-available-datasets">Welcome on our public portal! Take a tour of our {{catalog.stats.dataset}} available datasets!</h3>
-    <div class="row-fluid">
-        <div class="span6">
-            <h4 id="tutorial-a-catalog-homepage_welcome-on-our-public-portal-take-a-tour-of-our-{{catalogstatsdataset}}-available-datasets_keywords">Keywords</h4>
-            <ods-tag-cloud facet-name="keyword" context="catalog"></ods-tag-cloud>
-        </div>
-        <div class="span6">
-            <h4 id="tutorial-a-catalog-homepage_welcome-on-our-public-portal-take-a-tour-of-our-{{catalogstatsdataset}}-available-datasets_last-datasets">Last datasets</h4>
-            <ods-last-datasets-feed context="catalog"></ods-last-datasets-feed>
-
-            <h4 id="tutorial-a-catalog-homepage_welcome-on-our-public-portal-take-a-tour-of-our-{{catalogstatsdataset}}-available-datasets_most-popular">Most popular</h4>
-            <ods-most-popular-datasets context="catalog"></ods-most-popular-datasets>
-        </div>
-    </div>
-</ods-catalog-context>
-</div></div></div>
+<iframe frameborder="0" style="width: 800px; height: 930px; margin-left: -50px;"
+        src="/docs/examples/02catalogpage.html"></iframe></div></div>

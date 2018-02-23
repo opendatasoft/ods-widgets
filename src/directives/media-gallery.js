@@ -12,7 +12,6 @@
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {string} [displayedFields=all] A comma-separated list of fields to display in the details for each thumbnail. If no value is specified, the options configured for the dataset are used or all fields if nothing configured.
          * @param {string} [imageFields=all] A comma-separated list of fields to display in the gallery as thumbnails. If no value is specified, the options configured for the dataset are used or all media fields if nothing configured.
-         * @param {string} [displayMode=compact] Specify the layout of the gallery. Accepted values are: compact, large. In compact mode, the images are fitted together on each lines giving coherent lines. In large mode, the images are given more space and less constrained in height.
          * @param {string} [odsWidgetTooltip] {@link ods-widgets.directive:odsWidgetTooltip Widget Tooltip}
          * @param {boolean} [odsAutoResize] see {@link ods-widgets.directive:odsAutoResize Auto Resize} for more informations
          * @param {boolean} [refineOnClick] see {@link ods-widgets.directive:refineOnClick Refine on click} for more informations. This option takes precedence over the widget tooltip.
@@ -53,18 +52,18 @@
                         '           ng-show="record.fields[field.name]|isDefined">' +
                         '       <span ng-switch-when="geo_point_2d">' +
                         '           <ods-geotooltip width="300" height="300"' +
-                        '                   coords="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
+                        '                   coords="record.fields[field.name]">{{ record.fields|formatFieldValue:field:context }}</ods-geotooltip>' +
                         '       </span>' +
                         '       <span ng-switch-when="geo_shape">' +
                         '            <ods-geotooltip width="300" height="300"' +
-                        '                   geojson="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
+                        '                   geojson="record.fields[field.name]">{{ record.fields|formatFieldValue:field:context }}</ods-geotooltip>' +
                         '        </span>' +
-                        '        <span ng-switch-when="double">{{ record.fields|formatFieldValue:field }}</span>' +
-                        '        <span ng-switch-when="int">{{ record.fields|formatFieldValue:field }}</span>' +
-                        '        <span ng-switch-when="date">{{ record.fields|formatFieldValue:field }}</span>' +
-                        '        <span ng-switch-when="datetime">{{ record.fields|formatFieldValue:field }}</span>' +
+                        '        <span ng-switch-when="double">{{ record.fields|formatFieldValue:field:context }}</span>' +
+                        '        <span ng-switch-when="int">{{ record.fields|formatFieldValue:field:context }}</span>' +
+                        '        <span ng-switch-when="date">{{ record.fields|formatFieldValue:field:context }}</span>' +
+                        '        <span ng-switch-when="datetime">{{ record.fields|formatFieldValue:field:context }}</span>' +
                         '        <span ng-switch-when="file">' +
-                        '            <div ng-bind-html="record.fields|formatFieldValue:field"></div>' +
+                        '            <div ng-bind-html="record.fields|formatFieldValue:field:context"></div>' +
                         '        </span>' +
                         '       <span ng-switch-default ng-bind-html="record.fields[field.name]|prettyText|nofollow|safenewlines"></span>' +
                         '   </dd>' +
@@ -73,6 +72,8 @@
                         '<a href="{{ image.download_url }}"' +
                         '       target="_self"' +
                         '       ods-resource-download-conditions' +
+                        '       aria-label="Download {{ getRecordTitle(image.record) }} - {{ image.index + 1 }} out of {{ images.length }}"' +
+                        '       translate="aria-label"' +
                         '       class="ods-button">' +
                         '   <i class="fa fa-download" aria-hidden="true"></i>' +
                         '   <span translate>Download image</span>' +
@@ -85,29 +86,48 @@
             scope: {
                 context: '=',
                 displayedFields: '@',
-                imageFields: '@?',
-                displayMode: '@?'
+                imageFields: '@?'
             },
             replace: true,
-            template: '<div class="odswidget odswidget-media-gallery">' +
-                                ' <div class="odswidget-media-gallery__container" >' +
-                                '     <div style="vertical-align: top;" class="odswidget-images__internal-table" infinite-scroll="loadMore()" infinite-scroll-distance="1" infinite-scroll-disabled="fetching">' +
-                                '        <div class="odswidget-media-gallery__media-line" ng-repeat="line in lines track by $index">' +
-                                '            <div ng-class="{\'odswidget-media-gallery__media-container--selected\': image.selected}" class="odswidget-media-gallery__media-container" style="vertical-align: top; display: inline-block" ng-repeat="image in line.images track by $index" ng-click="onClick($event, image, line)" data-index="{{ image.index + 1 }}">' +
-                                '                <div style="overflow: hidden" ng-style="{width: image.width, height: image.height, marginTop: image.marginTop, marginBottom: image.marginBottom, marginRight: image.marginRight, marginLeft: image.marginLeft }">' +
-                                '                    <ods-record-image record="image.record" field="{{ image.fieldname }}" domain-url="{{context.domainUrl}}"></ods-record-image>' +
-                                '                    <div ng-if="getRecordTitle(image.record)" class="odswidget-media-gallery__media-container__title-container">{{ getRecordTitle(image.record) }}</div>' +
-                                '                    <ods-spinner ng-show="image.fetching" class="ods-media-gallery__image-spinner-overlay"></ods-spinner>' +
-                                '                </div>' +
-                                '            </div>' +
-                                '        </div>' +
-                                '     </div>' +
-                                '     <ods-spinner ng-if="!init && fetching"></ods-spinner>' +
-                                ' </div>' +
-                                ' <div class="odswidget-media-gallery__details"></div>' +
-                                ' <div class="odswidget-overlay" ng-if="done && !records"><span class="odswidget-overlay__message" translate>No results</span></div>' +
-                                ' <div class="odswidget-overlay" ng-if="fetching && !records"><ods-spinner></ods-spinner></div>' +
-                                '</div>',
+            template: '' +
+            '<div class="odswidget odswidget-media-gallery">' +
+            '   <div class="ods-aria-instructions" translate>Use left and right arrow to navigate the images, up and down arrows to open close the image inspector</div>' +
+            '   <div class="odswidget-media-gallery__container" >' +
+            '       <div style="vertical-align: top;" ' +
+            '            class="odswidget-images__internal-table" ' +
+            '            infinite-scroll="loadMore()" ' +
+            '            infinite-scroll-distance="1" ' +
+            '            infinite-scroll-disabled="fetching">' +
+            '           <div class="odswidget-media-gallery__media-line" ' +
+            '                ng-repeat="line in lines track by $index">' +
+            '               <div ng-class="{\'odswidget-media-gallery__media-container--selected\': image.selected}" ' +
+            '                    class="odswidget-media-gallery__media-container" ' +
+            '                    style="vertical-align: top; display: inline-block" ' +
+            '                    ng-repeat="image in line.images track by $index" ' +
+            '                    ng-click="onClick($event, image, line)"' +
+            '                    ng-style="{width: image.width, height: image.height, marginTop: image.marginTop, marginBottom: image.marginBottom, marginRight: image.marginRight, marginLeft: image.marginLeft }"' +
+            '                    data-index="{{ image.index + 1 }}">' +
+            '                       <ods-record-image record="image.record" ' +
+            '                                         ng-keydown="onKeyDown($event, image, line)"' +
+            '                                         role="button"' +
+            '                                         tabindex="0"' +
+            '                                         aria-label="{{ getRecordTitle(image.record) }} - {{ image.index + 1 }} out of {{ images.length }}"' +
+            '                                         translate="aria-label"' +
+            '                                         field="{{ image.fieldname }}" ' +
+            '                                         domain-url="{{context.domainUrl}}"></ods-record-image>' +
+            '                       <div ng-if="getRecordTitle(image.record)" ' +
+            '                            class="odswidget-media-gallery__media-container__title-container">{{ getRecordTitle(image.record) }}</div>' +
+            '                       <ods-spinner ng-show="image.fetching" ' +
+            '                                    class="ods-media-gallery__image-spinner-overlay"></ods-spinner>' +
+            '               </div>' +
+            '           </div>' +
+            '       </div>' +
+            '       <ods-spinner ng-if="!init && fetching"></ods-spinner>' +
+            '   </div>' +
+            '   <div class="odswidget-media-gallery__details"></div>' +
+            '   <div class="odswidget-overlay" ng-if="done && !records"><span class="odswidget-overlay__message" translate>No results</span></div>' +
+            '   <div class="odswidget-overlay" ng-if="fetching && !records"><ods-spinner></ods-spinner></div>' +
+            '</div>',
             require: ['odsMediaGallery', '?odsWidgetTooltip', '?odsAutoResize', '?refineOnClick'],
             controller: ['$scope', '$element', '$window', 'DebugLogger', '$filter', function($scope, $element, $window, DebugLogger, $filter) {
                 // Infinite scroll parameters
@@ -235,7 +255,9 @@
                         j;
 
 
-                    if ($scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.image_tooltip_html) {
+                    if ($scope.context.dataset.extra_metas.visualization &&
+                        $scope.context.dataset.extra_metas.visualization.image_tooltip_html_enabled &&
+                        $scope.context.dataset.extra_metas.visualization.image_tooltip_html) {
                         detailsTemplate = '<div>' + $scope.context.dataset.extra_metas.visualization.image_tooltip_html + '</div>';
                     } else {
                         detailsTemplate = defaultDetailsTemplate;
@@ -290,8 +312,11 @@
                 $scope.getRecordTitle = function (record) {
                     if ($scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.image_title) {
                         var titleField = $scope.context.dataset.extra_metas.visualization.image_title;
-                        if (angular.isDefined(record.fields[titleField]) && record.fields[titleField] !== '') {
-                            return $filter('formatFieldValue')(record.fields, $scope.context.dataset.getField(titleField));
+                        var field = $scope.context.dataset.getField(titleField);
+                        if (angular.isDefined(record.fields[titleField]) && record.fields[titleField] !== '' && field.type !== 'file') {
+                            return $filter('formatFieldValue')(record.fields, field, $scope.context);
+                        } else {
+                            return record.fields[titleField].filename;
                         }
                     }
                     return null;
@@ -308,7 +333,7 @@
                     autoResizeCtrl.onResize = function() {
                         scope.lines.splice(0, scope.lines.length);
                         scope.layout.reset();
-                        scope.layout.render(scope.lines, element.children()[0].getBoundingClientRect().width, scope.images.length);
+                        scope.layout.render(scope.lines, element.children()[1].getBoundingClientRect().width, scope.images.length);
                     };
                 }
 
@@ -337,19 +362,13 @@
                         customTooltipCtrl.configure({
                             'defaultTemplate': scope.detailsTemplate,
                             'displayedFields': displayed_fields,
-                            'fields': scope.context.dataset.fields
+                            'fields': scope.context.dataset.fields,
+                            'context': scope.context
                         });
                     }
                 });
 
                 var detailsContainer = element.find(".odswidget-media-gallery__details");
-
-                if (typeof scope.displayMode === "undefined") {
-                    scope.displayMode = "compact";
-                } else if (!layouts[scope.displayMode + "Layout"]) {
-                    console.warn("ods-media-gallery " + scope.displayMode + " displayMode is not valid.");
-                    scope.displayMode = "compact";
-                }
 
                 scope.max_height = 400;
                 var detailsScope, displayedImage;
@@ -393,18 +412,39 @@
                             }
 
                             image.selected = true;
-                            detailsContainer.html(customTooltipCtrl.render(image.record, {
+                            var renderHtml = customTooltipCtrl.render(image.record, {
                                 'image': angular.copy(image),
-                                'getRecordTitle': scope.getRecordTitle
-                            }, image.fieldname));
+                                'getRecordTitle': scope.getRecordTitle,
+                                'images': scope.images,
+                                'ctx': scope.context
+                            }, image.fieldname);
                             detailsContainer = detailsContainer.remove();
-                            detailsContainer.insertAfter(angular.element($event.currentTarget).parent('.odswidget-media-gallery__media-line'));
+                            detailsContainer.html(renderHtml);
+                            detailsContainer.insertAfter(angular.element($event.currentTarget).parents('.odswidget-media-gallery__media-line'));
                         }
                     });
                 };
 
+                scope.onKeyDown = function ($event, image, line) {
+                    // enter, up and down arrows
+                    if ($event.keyCode === 13 || $event.keyCode === 38 || $event.keyCode === 40) {
+                        scope.onClick($event, image, line);
+                        if ($event.keyCode === 38 || $event.keyCode === 40) {
+                            $event.preventDefault();
+                        }
+                    }
+
+                    // left and right arrows
+                    if ($event.keyCode === 37 || $event.keyCode === 39) {
+                        var currentIndex = $event.target.parentNode.dataset.index;
+                        var nextIndex = $event.keyCode === 37 ? --currentIndex : ++currentIndex;
+                        nextIndex = Math.min(Math.max(nextIndex, 1),scope.images.length);
+                        element.find('.odswidget-media-gallery__media-container[data-index='+nextIndex+'] .odswidget-record-image').focus();
+                    }
+                };
+
                 scope.lines = [];
-                scope.layout = layouts()[scope.displayMode + "Layout"]();
+                scope.layout = buildLayout();
                 scope.layout.resetImages();
 
                 scope.renderImages = function() {
@@ -414,14 +454,14 @@
                         scope.layout.addImage(image, scope.images.length);
                     }
                     scope.nextImage = i;
-                    scope.layout.render(scope.lines, element.children()[0].getBoundingClientRect().width, scope.images.length);
+                    scope.layout.render(scope.lines, element.children()[1].getBoundingClientRect().width, scope.images.length);
                 };
             }
         };
     }]);
 
 
-    var layouts = function() {
+    var buildLayout = function() {
         var ratioSum = 0,
             MAX_HEIGHT = 250,
             MARGIN = 1,
@@ -430,7 +470,7 @@
             lastRenderedImage = -1,
             rendering = false;
 
-        var layout = {
+        return {
             reset: function() {
                 ratioSum = 0;
                 previousLineOffset = 0;
@@ -443,151 +483,64 @@
             addImage: function addImage(image) {
                 var localImage = angular.copy(image);
                 images.push(localImage);
-            }
-        };
-
-        function extend(obj, src) {
-            Object.keys(src).forEach(function(key) { obj[key] = src[key]; });
-            return obj;
-        }
-
-        return {
-            largeLayout: function() {
-                return extend({
-                    render: function(lines, containerWidth, imagesCount) {
-                        if (rendering) {
-                            return;
-                        }
-                        rendering = true;
-                        var i, image, width, height, currentLine;
-                        if (lines.length === 0) {
-                            lines.push({
-                                'images': [],
-                                'height': MAX_HEIGHT,
-                                'offset': 0,
-                                'cumulated_width': 0
-                            });
-                        }
-
-                        for (i = lastRenderedImage + 1; i < images.length; i++) {
-                            image = images[i];
-                            currentLine = lines[lines.length - 1];
-                            if (image.realheight > MAX_HEIGHT - 20) {
-                                width = Math.floor(image.realwidth * (MAX_HEIGHT - 20) / image.realheight);
-                                height = (MAX_HEIGHT - 20);
-                            } else {
-                                width = image.realwidth;
-                                height = image.realheight;
-                            }
-
-                            if (width > containerWidth) {
-                                height = Math.floor(height * containerWidth / width);
-                                width = containerWidth;
-                            }
-                            if (currentLine.cumulated_width + width < containerWidth) {
-                                currentLine.images.push(
-                                    extend({
-                                        'width': width,
-                                        'height': height
-                                    }, image)
-                                );
-                                currentLine.cumulated_width += width;
-                            } else {
-                                // resolve previous line
-                                angular.forEach(currentLine.images, function (image, index) {
-                                    image.marginTop = image.marginBottom = (currentLine.height - image.height) / 2;
-                                    image.marginLeft = image.marginRight = Math.floor((containerWidth - currentLine.cumulated_width) / (currentLine.images.length * 2));
-                                });
-                                // create a new line
-                                lines.push({
-                                    'images': [],
-                                    'height': MAX_HEIGHT,
-                                    'offset': 0,
-                                    'cumulated_width': 0
-                                });
-                                lines[lines.length - 1].images.push(
-                                    extend({
-                                        'width': width,
-                                        'height': height
-                                    }, image)
-                                );
-                                lines[lines.length - 1].cumulated_width = width;
-                            }
-                            lastRenderedImage += 1;
-                        }
-
-                        if (lastRenderedImage === imagesCount - 1) {
-                            currentLine = lines[lines.length - 1];
-                            angular.forEach(currentLine.images, function (image, index) {
-                                image.marginTop = image.marginBottom = (currentLine.height - image.height) / 2;
-                                image.marginLeft = image.marginRight = Math.floor((containerWidth - currentLine.cumulated_width) / (currentLine.images.length * 2));
-                            });
-                        }
-                        rendering = false;
-                    }
-                }, layout);
             },
-            compactLayout: function() {
-                return extend({
-                    render: function(lines, containerWidth, imagesCount) {
-                        if (rendering) {
-                            return;
-                        }
-                        rendering = true;
-                        var i, image;
-                        if (lines.length === 0) {
-                            lines.push({
-                                'images': [],
-                                'height': MAX_HEIGHT,
-                                'offset': 0,
-                                'max_height': 0
+            render: function (lines, containerWidth, imagesCount) {
+                if (rendering) {
+                    return;
+                }
+                rendering = true;
+                var i, image;
+                if (lines.length === 0) {
+                    lines.push({
+                        'images': [],
+                        'height': MAX_HEIGHT,
+                        'offset': 0,
+                        'max_height': 0
+                    });
+                }
+                for (i = lastRenderedImage + 1; i < images.length; i++) {
+                    image = images[i];
+                    var ratio = image.realwidth / image.realheight;
+                    var currentLine = lines[lines.length - 1];
+                    currentLine.images.push(image);
+                    currentLine.max_height = Math.min(MAX_HEIGHT, Math.max(currentLine.max_height, image.realheight));
+                    ratioSum += ratio;
+                    currentLine.height = Math.min(Math.floor((containerWidth - MARGIN * (currentLine.images.length - 1)) / ratioSum), currentLine.max_height);
+
+                    if (currentLine.height < currentLine.max_height || image.index === imagesCount - 1) {
+                        // this line is done
+                        var lineWidth = 0;
+                        $.each(currentLine.images, function (index, image) {
+                            image.height = currentLine.height;
+                            image.width = Math.floor(image.realwidth * image.height / image.realheight);
+                            image.marginTop = image.marginBottom = image.marginRight = image.marginLeft = MARGIN + "px";
+                            lineWidth += image.width + 2 * MARGIN;
+                        });
+
+                        currentLine.offset = previousLineOffset + currentLine.max_height;
+
+                        while (lineWidth > containerWidth) {
+                            angular.forEach(currentLine.images, function (image, index) {
+                                if (lineWidth > containerWidth) {
+                                    image.width -= 1;
+                                    lineWidth -= 1;
+                                }
                             });
                         }
-                        for (i = lastRenderedImage + 1; i < images.length; i++) {
-                            image = images[i];
-                            var ratio = image.realwidth / image.realheight;
-                            var currentLine = lines[lines.length - 1];
-                            currentLine.images.push(image);
-                            currentLine.max_height = Math.min(MAX_HEIGHT, Math.max(currentLine.max_height, image.realheight));
-                            ratioSum += ratio;
-                            currentLine.height = Math.min(Math.floor((containerWidth - MARGIN * (currentLine.images.length - 1)) / ratioSum), currentLine.max_height);
-
-                            if (currentLine.height < currentLine.max_height || image.index === imagesCount - 1) {
-                                // this line is done
-                                var lineWidth = 0;
-                                $.each(currentLine.images, function (index, image) {
-                                    image.height = currentLine.height;
-                                    image.width = Math.floor(image.realwidth * image.height / image.realheight);
-                                    image.marginTop = image.marginBottom = image.marginRight = image.marginLeft = MARGIN + "px";
-                                    lineWidth += image.width + 2 * MARGIN;
-                                });
-
-                                currentLine.offset = previousLineOffset + currentLine.max_height;
-
-                                while (lineWidth > containerWidth) {
-                                    angular.forEach(currentLine.images, function (image, index) {
-                                        if (lineWidth > containerWidth) {
-                                            image.width -= 1;
-                                            lineWidth -= 1;
-                                        }
-                                    });
-                                }
-                            }
-                            if (currentLine.height < currentLine.max_height) {
-                                previousLineOffset += currentLine.height;
-                                lines.push({
-                                    'images': [],
-                                    'height': MAX_HEIGHT,
-                                    'offset': 0,
-                                    'max_height': 0
-                                });
-                                ratioSum = 0;
-                            }
-                            lastRenderedImage += 1;
-                        }
-                        rendering = false;
                     }
-                }, layout);
+                    if (currentLine.height < currentLine.max_height) {
+                        previousLineOffset += currentLine.height;
+                        lines.push({
+                            'images': [],
+                            'height': MAX_HEIGHT,
+                            'offset': 0,
+                            'max_height': 0
+                        });
+                        ratioSum = 0;
+                    }
+                    lastRenderedImage += 1;
+                }
+                rendering = false;
             }
         };
     };

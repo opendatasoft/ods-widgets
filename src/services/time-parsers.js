@@ -21,6 +21,23 @@
         };
     });
 
+    mod.factory('odsTimeboundParser', function () {
+        var parameterRE = /([\w]+)(<|>)="(.*)"/;
+
+        return function (parameterValue) {
+            var matches = parameterRE.exec(decodeURIComponent(parameterValue));
+
+            if (!matches) {
+                return {};
+            }
+
+            return {
+                field: matches[1],
+                date: matches[3]
+            };
+        };
+    });
+
     mod.factory('odsTimescaleParser', ['translate', function (translate) {
         var parameterRE = /([\w-]+)>=#now\((.*)=-(\w)\)/;
 

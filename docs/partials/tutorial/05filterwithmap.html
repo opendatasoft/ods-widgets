@@ -50,33 +50,5 @@ points (killings) contained within this state.</li>
     &lt;/div&gt;
 &lt;/ods-dataset-context&gt;
 </pre>
-<div class="well" ng-embed-app="ods-widgets">
-<ods-dataset-context    context="killings,killingslist,states"
-                        killings-domain="public"
-                        killingslist-domain="public"
-                        states-domain="public"
-                        killings-dataset="killings-by-law-enforcement-officers-in-the-usa"
-                        killingslist-dataset="killings-by-law-enforcement-officers-in-the-usa"
-                        states-dataset="natural-earth-us-states-provinces-1110m"
-                        killingslist-parameters="{'sort': 'date'}">
-    <ods-timerange context="[killings,killingslist]" default-from="2009-01-01" default-to="2014-12-09"></ods-timerange>
-    <div class="row-fluid">
-        <div class="span6">
-            <ods-map>
-                <ods-map-layer  context="killings"
-                                display="aggregation"
-                                join-context="states"
-                                local-key="state"
-                                remote-key="name"
-                                refine-on-click-context="killingslist"></ods-map-layer>
-            </ods-map>
-        </div>
-        <div class="span6">
-            <h4 id="tutorial-filter-data-using-zones-on-a-map_last-10-victims">Last 10 victims</h4>
-            <ods-result-enumerator context="killingslist">
-            <strong>{{item.fields.victim}}</strong> on {{item.fields.date|moment:&#39;LL&#39;}}
-            </ods-result-enumerator>
-        </div>
-    </div>
-</ods-dataset-context>
-</div></div></div>
+<iframe frameborder="0" frameborder="0" style="width: 800px; height: 510px; margin-left: -50px;"
+        src="/docs/examples/05filterwithmap.html"></iframe></div></div>

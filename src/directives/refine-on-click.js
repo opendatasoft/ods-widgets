@@ -37,7 +37,7 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <my-directive refine-on-click
-         *                        refine-on-click-context="mycontext, mycontext2"
+         *                        refine-on-click-context="mycontext,mycontext2"
          *                        refine-on-click-mycontext-replace-refine="true"
          *                        refine-on-click-mycontext-record-field="field1"
          *                        refine-on-click-mycontext-context-field="field2"

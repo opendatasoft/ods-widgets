@@ -54,13 +54,16 @@
          *  have to be lowercase, can only contain alphanumerical characters, and can't begin with a number, "data", or "x".
          *
          *  @example
-         *  <pre>
-         *  <ods-catalog-context context="public">
-         *      <ods-result-enumerator context="public">
-         *          <p>{{item.datasetid}}</p>
-         *      </ods-result-enumerator>
-         *  </ods-catalog-context>
-         *  </pre>
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
+         *              <pre>{{ public }}</pre>
+         *              <ods-result-enumerator context="public">
+         *                  <p>{{item.datasetid}}</p>
+         *              </ods-result-enumerator>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          */
 
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
@@ -99,17 +102,23 @@
                         'toggleRefine': function(facetName, path, replace) {
                             ODS.Context.toggleRefine(this, facetName, path, replace);
                         },
-                        'getActiveFilters':  function () {
+                        'getActiveFilters':  function (excludes) {
+                            excludes = excludes || [];
                             if (this.parameters) {
                                 var filters = Object.keys(this.parameters);
                                 var that = this;
                                 return filters.filter(function (filter) {
-                                    return (filter == 'q' && that.parameters.q && that.parameters.q.length > 0)
-                                        || filter == 'q.timerange'
-                                        || filter == 'geofilter.polygon'
-                                        || filter == 'geofilter.distance'
-                                        || filter.indexOf('refine.') === 0
-                                        || (filter == 'q.geographic_area' && that.parameters['q.geographic_area'] && that.parameters['q.geographic_area'].length > 0);
+                                    // For parameters that have or "q.someSuffix"
+                                    var queryPattern = /q\.[^\s]*/;
+                                    return (filter == 'q' && that.parameters.q && that.parameters.q.length > 0) ||
+                                            filter == 'q.timerange' ||
+                                            filter == 'geofilter.polygon' ||
+                                            filter == 'geofilter.distance' ||
+                                            filter.indexOf('refine.') === 0 ||
+                                            filter.match(queryPattern) ||
+                                            (filter == 'q.geographic_area' && that.parameters['q.geographic_area'] && that.parameters['q.geographic_area'].length > 0);
+                                }).filter(function(filter) {
+                                    return excludes.indexOf(filter) === -1;
                                 });
                             } else {
                                 return [];

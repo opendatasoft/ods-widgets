@@ -1,12 +1,13 @@
 .odswidget-table {
-    //.embeded & {
-    //    margin: 0;
-    //    height: 100%;
-    //}
     position: relative;
     overflow: hidden;
     height: 400px;
 }
+
+.odswidget-table__header {
+    position: relative;
+}
+
 .odswidget-table__records {
     height: 100%;
     overflow: auto;
@@ -18,7 +19,7 @@
 .odswidget-table__cell:first-child {
     color: rgba(0,0,0,0.5);
     font-family: monospace;
-    text-align: right;
+    .rtl-prop(text-align, right, left);
 }
 
 .odswidget-table__internal-header-table-header {
@@ -59,13 +60,12 @@
 }
 
 .odswidget-table__cell-container__right-aligned {
-    text-align: right;
+    .rtl-prop(text-align, right, left);
 }
 
 .odswidget-table__internal-table {
     font-size: 0.85em;
     width: 100%;
-    max-width: 100%;
 }
 
 .odswidget-table__internal-table-row {
@@ -81,13 +81,13 @@
 }
 
 .odswidget-table__header-cell {
-    text-align: left;
+    .rtl-prop(text-align, left, right);
     background-color: #e8e8e8;
     padding: 3px 1px;
     cursor: pointer;
 }
 .odswidget-table__header-cell--spinner {
-    text-align: right;
+    .rtl-prop(text-align, right, left);
 }
 .odswidget-table__sort-icons {
     font-size: 0.8em;

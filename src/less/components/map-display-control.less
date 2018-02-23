@@ -1,11 +1,9 @@
-@mapDisplayControl-gutterWidth: 10px;
-@mapDisplayControl-collapsedGutterWidth: 40px;
-@mapDisplayControl-collapseTransition: right 0.25s ease-in;
-@mapDisplayControl-width: 300px;
 
 .odswidget-map-display-control {
     position: absolute;
     top: @mapDisplayControl-gutterWidth;
+    box-shadow: @mapBuilder-boxShadow;
+    border-radius: @mapBuilder-borderRadius;
     transition: @mapDisplayControl-collapseTransition;
 
     @media (max-width: @screen-xs-max) {
@@ -35,30 +33,42 @@
     padding: 0;
     width: 1em;
     height: 2em;
-
+    border-radius: @mapBuilder-borderRadius 0 0 @mapBuilder-borderRadius;
+    box-shadow: @mapBuilder-boxShadow;
     @media (min-width: @screen-sm-min) {
         display: none;
     }
 }
 
+.odswidget-map-display-control__toggle:hover {
+    background-color: @mapBuilder-hoverBackgroundColor
+}
+
 .odswidget-map-display-control__groups {
     width: @mapDisplayControl-width;
-    overflow-y: scroll;
+    overflow-y: auto;
     margin: 0;
     padding: @mapDisplayControl-gutterWidth;
     background-color: @color-white;
     list-style: none;
     min-height: 150px;
     max-height: ~"calc(100% - 2*@{mapDisplayControl-gutterWidth})";
+    border-radius: @mapBuilder-borderRadius;
+    position: relative;
 }
 .odswidget-map-display-control__group {
-    //background-color: lightgreen;
     margin-left: 0;
     transition: margin-left 0.2s, border-left-width 0.2s, opacity 0.2s;
     border: solid 1px #E5E5E5;
     border-left-width: 5px;
     padding: @mapDisplayControl-gutterWidth / 2;
 }
+
+.odswidget-map-display-control__group:hover {
+    background-color: @mapBuilder-hoverBackgroundColor;
+}
+
+
 .odswidget-map-display-control__group:not(:last-child) {
     margin-bottom: @mapDisplayControl-gutterWidth;
 }

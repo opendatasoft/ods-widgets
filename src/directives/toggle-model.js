@@ -19,14 +19,29 @@
          * will be created to hold the values.
          *
          * @example
-         *  <pre>
-         *      <ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com">
-         *
-         *          <input type="checkbox" ods-toggle-model="catalog.parameters" ods-toggle-key="refine.publisher" ods-toggle-value="Government">
-         *          <input type="checkbox" ods-toggle-model="catalog.parameters" ods-toggle-key="refine.publisher" ods-toggle-value="World Bank">
-         *
-         *      </ods-catalog-context>
-         *  </pre>
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-catalog-context context="catalog"
+         *                               catalog-domain="public.opendatasoft.com"
+         *                               catalog-parameters="{'disjunctive.publisher':true}">
+         *              <input type="checkbox" ods-toggle-model="catalog.parameters" ods-toggle-key="refine.publisher" ods-toggle-value="OpenStreetMap"> OpenStreetMap
+         *              <input type="checkbox" ods-toggle-model="catalog.parameters" ods-toggle-key="refine.publisher" ods-toggle-value="Eurostat"> Eurostat
+         *              <div ods-results="items" ods-results-context="catalog" ods-results-max="10">
+         *                  {{items.length}}
+         *              <table>
+         *                  <tr>
+         *                      <td>Publisher</td>
+         *                      <td>Dataset</td>
+         *                  </tr>
+         *                  <tr ng-repeat="item in items">
+         *                      <td>{{item.metas.publisher}}</td>
+         *                      <td>{{item.datasetid}}</td>
+         *                  </tr>
+         *              </table>
+         *              </div>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
          *
          */
 

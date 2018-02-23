@@ -31,15 +31,13 @@
          * along with a link to the portal that shows the dataset, and the license attached to the data.
          *
          * @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *              <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
-         *                  <ods-dataset-card context="stations" style="height: 600px">
-         *                      <ods-map context="stations"></ods-map>
-         *                  </ods-dataset-card>
-         *              </ods-dataset-context>
-         *      </file>
-         *  </example>
+         *  <pre>
+         *      <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
+         *          <ods-dataset-card context="stations" style="height: 600px">
+         *              <ods-map context="stations"></ods-map>
+         *          </ods-dataset-card>
+         *      </ods-dataset-context>
+         *  </pre>
          */
         return {
             restrict: 'E',

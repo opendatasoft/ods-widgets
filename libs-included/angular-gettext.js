@@ -56,6 +56,15 @@ angular.module('gettext').service('translate', ["gettextCatalog", function (gett
     }
 }]);
 
+angular.module('gettext').service('translatePlural', ["gettextCatalog", function (gettextCatalog) {
+    return function(count, string, stringPlural) {
+        var scope = {
+            '$count': count
+        };
+        return gettextCatalog.getPlural(count, string, stringPlural, scope);
+
+    }
+}]);
 
 /**
  * @ngdoc service

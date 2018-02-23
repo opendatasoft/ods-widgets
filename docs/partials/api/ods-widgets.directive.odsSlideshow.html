@@ -27,18 +27,18 @@ You can also include a tooltip that can access the image&#39;s record through th
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsslideshow-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-29" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-30" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-29" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-29">
-    <ods-dataset-context context="streetart"
-                         streetart-domain="https://data.opendatasoft.com"
-                         streetart-dataset="liste-fresques-urbaines-roubaix@ville-de-roubaix">
-        <ods-slideshow context="streetart"
-                       image-field="photo"
-                       title-fields="nom_graffeur"
+<pre class="prettyprint linenums" ng-set-text="index.html-30" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-30">
+    <ods-dataset-context context="thetatecollection"
+                         thetatecollection-domain="public"
+                         thetatecollection-dataset="the-tate-collection">
+        <ods-slideshow context="thetatecollection"
+                       image-field="thumbnailurl"
+                       title-fields="artist"
                        style="height: 300px">
-            <strong>{{ record.fields.nom_graffeur }}</strong> <br>
+            <strong>{{ record.fields.artiste }}</strong> <br>
             Location:
             <ods-geotooltip coords="record.fields.geo">{{ record.fields.adresse }}</ods-geotooltip>
         </ods-slideshow>
@@ -46,6 +46,6 @@ You can also include a tooltip that can access the image&#39;s record through th
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-29" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-30" ng-eval-javascript=""></div>
 </div></div>
 </div>

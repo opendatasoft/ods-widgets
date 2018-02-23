@@ -70,6 +70,13 @@ module.exports = function(grunt) {
                 options: {
                     spawn: false
                 }
+            },
+            examples: {
+                files: ['src-docs/examples/*.html', 'src-docs/examples/*.css'],
+                tasks: ['copy:examples'],
+                options: {
+                    spawn: false
+                }
             }
         },
         concat: {
@@ -101,6 +108,12 @@ module.exports = function(grunt) {
                 expand: true,
                 src: ['libs/**'],
                 dest: 'dist/'
+            },
+            examples: {
+			    expand: true,
+                cwd: 'src-docs/examples/',
+			    src: ['*.html', '*.css'],
+                dest: 'docs/examples/'
             }
 		},
 		ngdocs: {
@@ -108,9 +121,9 @@ module.exports = function(grunt) {
 				dest: 'docs',
                 scripts: [
                     'https://code.jquery.com/jquery-2.1.4.min.js',
-                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.js',
-                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular-animate.js',
-                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular-sanitize.js',
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.js',
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-animate.js',
+                    'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-sanitize.js',
                     '../dist/ods-widgets.js',
                     '../docs-load-css.js'
                 ],
@@ -120,10 +133,11 @@ module.exports = function(grunt) {
                 ],
 				html5Mode: false,
 				image: 'assets/logo.png',
-				title: "ODS Widgets",
+				title: "OpenDataSoft's Widgets Documentation",
 				bestMatch: true,
                 startPage: '/api',
-                navTemplate: 'src-docs/navbar.html'
+                navTemplate: 'src-docs/navbar.html',
+                template: 'src-docs/templates/index.tmpl'
 			},
 			all: {
 				src: [
@@ -178,6 +192,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['dist']);
-    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'autoprefixer', 'copy:libs', 'ngdocs']);
+    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'autoprefixer', 'copy:libs', 'copy:examples', 'ngdocs']);
     grunt.registerTask('server', ['default', 'connect', 'watch']);
 };

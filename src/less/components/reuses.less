@@ -27,7 +27,7 @@
     padding-top: 5px;
 }
 .odswidget-reuses__creation-icon {
-    padding-left: 20px;
+    .rtl-prop(padding-left, padding-right, 20px, 0);
 }
 .odswidget-reuses__reuse:last-child {
     margin-bottom: 0;
@@ -43,8 +43,8 @@
     font-size: 0.7em;
 }
 .odswidget-reuses__reuse-thumbnail {
-    float: left;
-    margin: 0 10px 10px 0;
+    .rtl-prop(float, left, right);
+    .rtl-prop(margin, 0 10px 10px 0, 0 0 10px 10px);
     width: 100px;
     height: 100px;
     position: relative;
@@ -65,7 +65,7 @@
 
 .odswidget-reuses__reuse-thumbnail-image--no-thumbnail {
     position: absolute;
-    left: 10px;
+    .rtl-prop(left, right, 10px, auto);
     top: 10px;
     color: rgba(150,150,150,.4);
     font-size: 6em;

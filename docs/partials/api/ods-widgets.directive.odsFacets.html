@@ -48,16 +48,21 @@ to the category, including hierarchical levels) and <code>category.state</code> 
 you can select other possibles values that are all combined as &quot;or&quot;. For example, if you click &quot;red&quot;, then you can also click &quot;green&quot; and &quot;blue&quot;,
 and the resulting values can be green, red, or blue.</p>
 </li>
+<li><p><strong><code>timerangeFilter</code></strong> <a href="#" class="label type-hint type-hint-boolean">boolean</a> (optional) if &#39;true&#39;, then an option to filter with on a time range is displayed above the facets categories.
+Only works for date and datetime fields. Must be used with a context (see below).</p>
+</li>
+<li><p><strong><code>context</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional) name of the context to refine on. Mandatory with timerange filter.</p>
+</li>
 <li><p><strong><code>valueSearch</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional) if &#39;true&#39;, then a search box is displayed above the categories, so that you can search within them easily.
 If &#39;suggest&#39;, then the matching categories are not displayed until there is at least one character typed into the search box, effectively making it
 into a suggest-like search box.</p>
 </li>
-<li><p><strong><code>refineAlso</code></strong> <a href="#" class="label type-hint type-hint-datasetcontext">DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]</a> (optional) An 
-other context (or a list of contexts) that you want to filter based on your primary context&#39;s facets. This 
+<li><p><strong><code>refineAlso</code></strong> <a href="#" class="label type-hint type-hint-datasetcontext">DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]</a> (optional) An
+other context (or a list of contexts) that you want to filter based on your primary context&#39;s facets. This
 is especially usefull for contexts who share common data.</p>
 </li>
-<li><p><strong><code>mysecondarycontextFacetName</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional) The name of the facet in one of your secondary 
-contexts (defined through the <code>refineAlso</code> parameter) that you want to map your original&#39;s facet on. You can 
+<li><p><strong><code>mysecondarycontextFacetName</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional) The name of the facet in one of your secondary
+contexts (defined through the <code>refineAlso</code> parameter) that you want to map your original&#39;s facet on. You can
 see an example below of such a behaviour.</p>
 </li>
 </ul>
@@ -104,10 +109,10 @@ refine all 3 contexts simultaneously, we need to write the following.</p>
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-11" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-12" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-11" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-11">
+<pre class="prettyprint linenums" ng-set-text="index.html-12" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-12">
     <ods-dataset-context context="events"
                          events-domain="public.opendatasoft.com"
                          events-dataset="evenements-publics-cibul">
@@ -133,6 +138,6 @@ refine all 3 contexts simultaneously, we need to write the following.</p>
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-11" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-12" ng-eval-javascript=""></div>
 </div></div>
 </div>

@@ -111,9 +111,11 @@
                     }
                 }
             },
+
             /*                                  */
             /*          INTERACTIONS            */
             /*                                  */
+
             bindTooltip: function(map, feature, layerConfig, clusterShape, recordid, geoDigest, fieldValue) {
                 var service = this;
                 if (angular.isArray(clusterShape)) {
@@ -141,8 +143,10 @@
                             return;
                         }
                         var latLng, yOffset;
+
                         if (angular.isDefined(e.target.getLatLng)) {
                             latLng = e.target.getLatLng();
+                            yOffset = service.getMarkerTooltipYOffset(e.target, layerConfig);
                         } else {
                             latLng = e.latlng;
                             yOffset = 0; // Displayed where the user clicked
@@ -152,6 +156,7 @@
                     });
                 }
             },
+
             refineContextOnClick: function(layerConfig, shape, digest, fieldValue, recordid) {
                 var refineContext = function(refineConfig) {
                     var contextField = refineConfig.contextField;
@@ -176,7 +181,12 @@
                                 format: 'json'
                             };
                             if (digest) {
-                                options.geo_digest = digest;
+                                if (layerConfig.geoField) {
+                                    options['geo_digest.'+layerConfig.geoField] = digest;
+                                } else {
+                                    options.geo_digest = digest;
+                                }
+
                             } else if (recordid) {
                                 options.q = 'recordid:' + recordid;
                             } else {
@@ -236,9 +246,11 @@
                     .setContent($compile('<ods-map-tooltip tooltip-sort="'+(layerConfig.tooltipSort||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" grid-data="gridData" geo-digest="'+(geoDigest||'')+'"></ods-map-tooltip>')(newScope)[0]);
                 popup.openOn(map);
             },
+
             /*                              */
             /*          UTILITIES           */
             /*                              */
+
             formatNumber: function(number) {
                 /* Passed as a callback for the cluster markers, to allow them to format their displayed value */
                 // Limiting the digits
@@ -253,7 +265,7 @@
                     return cluster.serie1;
                 }
 
-                if (layerConfig.func !== 'COUNT' && this.isAnalyzeEnabledClustering(layerConfig)) {
+                if (['COUNT', null].indexOf(layerConfig.func) === -1 && this.isAnalyzeEnabledClustering(layerConfig)) {
                     if (cluster.series) {
                         return cluster.series.serie1;
                     } else {
@@ -269,7 +281,7 @@
                     return apiResult.aggregations.agg1.min;
                 }
 
-                if (layerConfig.func !== 'COUNT' && this.isAnalyzeEnabledClustering(layerConfig)) {
+                if (['COUNT', null].indexOf(layerConfig.func) === -1 && this.isAnalyzeEnabledClustering(layerConfig)) {
                     return apiResult.series.serie1.min;
                 } else if (apiResult.count) {
                     return apiResult.count.min;
@@ -281,7 +293,7 @@
                     return apiResult.aggregations.agg1.max;
                 }
 
-                if (layerConfig.func !== 'COUNT' && this.isAnalyzeEnabledClustering(layerConfig)) {
+                if (['COUNT', null].indexOf(layerConfig.func) === -1 && this.isAnalyzeEnabledClustering(layerConfig)) {
                     return apiResult.series.serie1.max;
                 } else if (apiResult.count) {
                     return apiResult.count.max;
@@ -294,7 +306,7 @@
                     for (i = 0; i < apiResult.results.length; i++) {
                         values.push(apiResult.results[i].serie1);
                     }
-                } else if (layerConfig.func !== 'COUNT' && this.isAnalyzeEnabledClustering(layerConfig)) {
+                } else if (['COUNT', null].indexOf(layerConfig.func) === -1 && this.isAnalyzeEnabledClustering(layerConfig)) {
                     for (i = 0; i < apiResult.clusters.length; i++) {
                         if (apiResult.clusters[i].series) {
                             values.push(apiResult.clusters[i].series.serie1);
@@ -320,6 +332,26 @@
                 } else {
                     return true;
                 }
+            },
+            getMarkerTooltipYOffset: function(targetElement, layerConfig) {
+                var yOffset = 0;
+                var verticalTargetSize = targetElement.options.icon.options.iconSize.y;
+                var distanceLeafletPopupTipToBottom = 10; // The .leaflet-popup-tip-container has 10 pixels underneath the top of the tip that are transparent but make room for the shadow.
+
+                var distanceMarkerFromIconToTop = targetElement.options.size + 1; // Same calculation as vectormarker.js
+                var verticalAnchorSize = targetElement.options.icon.options.iconAnchor.y;
+                // The Marker Display is a Marker
+                if (targetElement.options.marker) {
+                    yOffset = - verticalTargetSize + distanceMarkerFromIconToTop + distanceLeafletPopupTipToBottom;
+                } else {
+                    // Marker display is either a dot or a user selected icon.
+                    if (layerConfig.picto === "dot") {
+                        yOffset = 0; // Make an exception for the "dot" since it has a particularly large touch target.
+                    } else {
+                        yOffset = - verticalTargetSize + verticalAnchorSize + distanceLeafletPopupTipToBottom;
+                    }
+                }
+                return yOffset;
             },
             drawPoint: function(layerConfig, map, coords, record, targetLayer, geoDigest) {
                 var service = this;

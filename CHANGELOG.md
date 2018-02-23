@@ -2,6 +2,37 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.1.0 - 2018-02-23
+### Added
+- Better support for right to left languages support
+- `clearAllFilters`: accept an exception list to avoid clearing some specific parameters
+- `odsFilterSummary`: accept an exception list that will not be displayed
+- `odsFacets`: date facets can now display a date range picker for selection
+- `odsMap`: display an information message when the data displayed is not complete
+- `odsMediaGallery`: expose the `odsContext` to the tooltip as `ctx`
+- `odsSlideshow`: navigation with keyboard
+- `odsTextSearch`: added a `suffix` parameter to allow use of multiple `odsTextSearch` on the same context
+- `odsTimeRange`: added a `suffix` parameter to allow use of multiple `odsTimeRange` on the same context
+- ``
+
+### Fixed
+- Documentation should now be working correctly and the documentation has been updated
+- JS lint all the code
+- `odsDatasetContext`: Correctly initialize parameters for each context
+- `odsFilterSummary`: Fixed XSS security issue when displaying filters
+- `odsRedirectIfNotLoggedIn`: Now works as excepted
+- `odsInfiniteScrollResults`: the `scroll-top-when-refresh` option now works as excepted
+- `odsMap`: fullscreen is fixed
+- `odsMediaGallery`: correctly work with custom tooltips
+- `odsMediaGallery`: use the context to guess the image url instead of
+
+### Rewritten
+- `odsRangeInput`
+
+### Removed
+- the unmaintained breezometer widget has been removed
+
+
 ## 1.0.11 - 2017-08-21
 ### Added
 - `odsMap`: better support for thunderforest basemaps (now accepts API keys in conf) and support for tile format option for WMS basemaps

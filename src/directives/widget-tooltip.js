@@ -37,12 +37,14 @@
                 var template,
                     displayedFields,
                     fields,
+                    context,
                     that = this;
 
                 this.configure = function(options) {
                     template = options.defaultTemplate || '';
                     displayedFields = options.displayedFields || [];
                     fields = options.fields || [];
+                    context = options.context || {};
                 };
 
                 this.render = function(record, scopeCustomAttributes, currentField) {
@@ -52,6 +54,7 @@
                     newScope.record = angular.copy(record);
                     newScope.displayedFields = angular.copy(displayedFields);
                     newScope.fields = angular.copy(fields);
+                    newScope.context = angular.copy(context);
 
                     if (currentField) {
                         newScope.displayedFields =  newScope.displayedFields.filter(function(field) {

@@ -73,7 +73,7 @@
             aggregates_holder.aggregates = [];
 
             var options = {};
-            while (match = regex.exec(serie.expr)) {
+            while ((match = regex.exec(serie.expr))) {
                 var extended_match = params2regex.exec(match[0]);
                 if (extended_match && extended_match.length === 4) {
                     match = extended_match;
@@ -209,50 +209,49 @@
          *                      ods-analysis="analysis"
          *                      ods-analysis-context="tree"
          *                      ods-analysis-max="10"
-         *                      ods-analysis-x="family"
+         *                      ods-analysis-x="genre"
          *                      ods-analysis-x="espece"
-         *                      ods-analysis-sort="circonference"
-         *                      ods-analysis-serie-hauteur="AVG(hauteur)"
+         *                      ods-analysis-sort="circonferenceencm"
+         *                      ods-analysis-serie-hauteur="AVG(hauteurenm)"
          *                      ods-analysis-serie-hauteur-cumulative="false"
-         *                      ods-analysis-serie-circonference="AVG(circonf)"
-         *              >
+         *                      ods-analysis-serie-circonference="AVG(circonferenceencm)">
          *                 <div
          *                      ods-analysis-serie="analysis.results"
          *                      ods-analysis-serie-condition="y > 20"
          *                      ods-analysis-serie-name="hauteur"
-         *                      ods-analysis-serie-separate-on-x="family">
-         *                     Longest serie: {{ results.length }}
+         *                      ods-analysis-serie-separate-on-x="genre">
+         *                     {{ results }}
          *                 </div>
          *              </div>
-         *          </ods-catalog-context>
+         *          </ods-dataset-context>
          *      </file>
          *  </example>
          *
+         * reduce the results to the longest serie
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com">
-         *              <div
-         *                      ods-analysis="analysis"
-         *                      ods-analysis-context="tree"
-         *                      ods-analysis-max="10"
-         *                      ods-analysis-x="family"
-         *                      ods-analysis-x="espece"
-         *                      ods-analysis-sort="circonference"
-         *                      ods-analysis-serie-hauteur="AVG(hauteur)"
-         *                      ods-analysis-serie-hauteur-cumulative="false"
-         *                      ods-analysis-serie-circonference="AVG(circonf)"
-         *              >
-         *                 <div
-         *                      ods-analysis-serie="analysis.results"
-         *                      ods-analysis-serie-condition="y > 20"
-         *                      ods-analysis-serie-name="hauteur"
-         *                      ods-analysis-serie-separate-on-x="family">
-         *                      ods-analysis-serie-mode="reduce">
-         *                     Longest serie: {{ results.length }}
-         *                 </div>
+         *          <ods-dataset-context context="tree"
+         *                               tree-dataset="arbresremarquablesparis2011"
+         *                               tree-domain="parisdata.opendatasoft.com">
+         *              <div ods-analysis="analysis"
+         *                   ods-analysis-context="tree"
+         *                   ods-analysis-max="10"
+         *                   ods-analysis-x-genre="genre"
+         *                   ods-analysis-x-espece="espece"
+         *                   ods-analysis-sort="circonferenceencm"
+         *                   ods-analysis-serie-hauteur="AVG(hauteurenm)"
+         *                   ods-analysis-serie-hauteur-cumulative="false"
+         *                   ods-analysis-serie-circonference="AVG(circonferenceencm)">
+         *                  <div ods-analysis-serie="analysis.results"
+         *                       ods-analysis-serie-condition="y > 20"
+         *                       ods-analysis-serie-name="hauteur"
+         *                       ods-analysis-serie-separate-on-x="genre"
+         *                       ods-analysis-serie-mode="reduce">
+         *                      Longest serie: {{ results.global.length }}
+         *                  </div>
          *              </div>
-         *          </ods-catalog-context>
+         *          </ods-dataset-context>
          *      </file>
          *  </example>
          */
@@ -365,27 +364,25 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com">
-         *                      <div
-         *                              ods-analysis="analysis"
-         *                              ods-analysis-context="tree"
-         *                              ods-analysis-max="10"
-         *                              ods-analysis-x="family"
-         *                              ods-analysis-x="espece"
-         *                              ods-analysis-sort="circonference"
-         *                              ods-analysis-serie-hauteur="AVG(hauteur)"
-         *                              ods-analysis-serie-hauteur-cumulative="false"
-         *                              ods-analysis-serie-circonference="AVG(circonf)"
-         *                      >
-         *                          <div
-         *                                  ods-subaggregation="analysis.results"
-         *                                  ods-subaggregation-serie-maxhauteur="MAX(hauteur)"
-         *                                  ods-subaggregation-serie-avgcirc="AVG(circonference)"
-         *                          >
-         *                              max height: {{ results[0].maxhauteur|number:2 }}<br>
-         *                              average circonference: {{ results[0].avgcirc }}
-         *                          </div>
-         *                      </div>
-         *          </ods-catalog-context>
+         *              <div
+         *                  ods-analysis="analysis"
+         *                  ods-analysis-context="tree"
+         *                  ods-analysis-max="10"
+         *                  ods-analysis-x-genre="genre"
+         *                  ods-analysis-x-espace="espece"
+         *                  ods-analysis-sort="circonferenceencm"
+         *                  ods-analysis-serie-hauteur="AVG(hauteurenm)"
+         *                  ods-analysis-serie-hauteur-cumulative="false"
+         *                  ods-analysis-serie-circonference="AVG(circonferenceencm)">
+         *                  <div
+         *                      ods-subaggregation="analysis.results"
+         *                      ods-subaggregation-serie-maxhauteur="MAX(hauteur)"
+         *                      ods-subaggregation-serie-avgcirc="AVG(circonference)">
+         *                      max height: {{ results[0].maxhauteur|number:2 }}<br>
+         *                      average circonference: {{ results[0].avgcirc }}
+         *                  </div>
+         *              </div>
+         *          </ods-dataset-context>
          *      </file>
          *  </example>
          */
@@ -400,7 +397,7 @@
             aggregates_holder.aggregates = [];
 
             var options = {};
-            while (match = regex.exec(serie.expr)) {
+            while ((match = regex.exec(serie.expr))) {
                 var extended_match = params2regex.exec(match[0]);
                 if (extended_match && extended_match.length === 4) {
                     match = extended_match;

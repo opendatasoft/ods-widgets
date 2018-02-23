@@ -39,6 +39,10 @@
     padding: 0.33em 0.67em;
 }
 
+.ods-slideshow__image-index__item {
+    display: inline-block;
+}
+
 .ods-slideshow__image-title {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -46,8 +50,8 @@
 }
 
 .ods-slideshow__toggles {
-    margin-left: auto;
     white-space: nowrap;
+    .rtl-prop(margin-left, margin-right, auto, 0);
 }
 
 .ods-slideshow__tooltip-toggle,
@@ -64,7 +68,7 @@
 .ods-slideshow__tooltip-wrapper {
     position: absolute;
     bottom: 1em;
-    right: 1em;
+    .rtl-prop(right, left, 1em, auto);
     width: ~"calc(100% - 2em)";
     height: ~"calc(100% - 2em)";
 }
@@ -75,7 +79,7 @@
     height: 1em;
     width: 1em;
     position: absolute;
-    right: 2em;
+    .rtl-prop(right, left, 2em, auto);
     bottom: -1em;
     border-width: 1em 0.5em 0 0.5em;
     border-style: solid;
@@ -86,7 +90,7 @@
 .ods-slideshow__tooltip {
     position: absolute;
     bottom: 0;
-    right: 0;
+    .rtl-prop(right, left, 0, auto);
     overflow: auto;
     padding: 0.67em;
     border: 1px solid @color-slideshowTooltip-border;
@@ -123,13 +127,13 @@
 }
 
 .ods-slideshow__previous-button {
-    left: 1rem;
-    padding-right: 0.1em;
+    .rtl-prop(left, right, 1rem, auto);
+    .rtl-prop(padding-right, padding-left , 0.1em, 0);
 }
 
 .ods-slideshow__next-button {
-    right: 1rem;
-    padding-left: 0.1em;
+    .rtl-prop(right, left, 1rem, auto);
+    .rtl-prop(padding-left, padding-right, 0.1em, 0);
 }
 
 .ods-slideshow .odswidget-spinner {

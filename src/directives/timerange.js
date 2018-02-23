@@ -14,10 +14,13 @@
          * @param {string} [defaultTo=none] Default datetime for the "to" field: either "yesterday", "now" or a string representing a date
          * @param {string} [displayTime=true] Define if the date selector displays the time selector as well
          * @param {string} [dateFormat='YYYY-MM-DD HH:mm'] Define the format for the date displayed in the inputs
+         * @param {string} [suffix='fieldname'] (optional) Add a suffix to the q.timerange, q.from_date or q.to_date parameter. This prevents widgets from overriding each other.
          * @param {string} [labelFrom='From'] Set the label before the first input
          * @param {string} [labelTo='to'] Set the label before the second input
          * @param {string} [placeholderFrom=''] Set the label before the first input
          * @param {string} [placeholderTo=''] Set the label before the second input
+         * @param {string} [to=none] Set a variable that will get the iso formatted value of the first input
+         * @param {string} [from=none] Set a variable that will get the iso formatted value of the second input
          * @description
          * This widget displays two fields to select the two bounds of a date and time range.
          *
@@ -26,23 +29,11 @@
          *      <file name="index.html">
          *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
          *              <ods-timerange context="cibul" default-from="yesterday" default-to="now"></ods-timerange>
-         *              <ods-map context="cibul"></ods-map>
+         *              <ods-table context="cibul"></ods-table>
          *          </ods-dataset-context>
          *     </file>
          * </example>
          *
-         * Example with multiple contexts set by ods-timerange
-         *  @example
-         *  <ods-dataset-context
-         *          context="cibul,medecins"
-         *          cibul-domain="public.opendatasoft.com"
-         *          cibul-dataset="evenements-publics-cibul"
-         *          medecins-domain="public.opendatasoft.com"
-         *          medecins-dataset="donnees-sur-les-medecins-accredites">
-         *      <ods-timerange context="[cibul,medecins]" default-from="yesterday" default-to="now"></ods-timerange>
-         *      <ods-map context="cibul"></ods-map>
-         *      <ods-map context="medecins"></ods-map>
-         *  </ods-dataset-context>
          */
          // TODO merge controller with timescale
         var romeOptions = {
@@ -112,6 +103,7 @@
                 defaultTo: '@?',
                 displayTime: '@?',
                 dateFormat: '@?',
+                suffix: '@?',
                 to: '=?',
                 from: '=?',
                 labelFrom: '@?',
@@ -122,15 +114,23 @@
             template: '' +
             '<div class="odswidget odswidget-timerange">' +
             '    <div class="odswidget-timerange__from">' +
-            '        <span ng-bind="labelFrom"></span> ' +
-            '        <input type="text" placeholder="{{ placeholderFrom }}">' +
+            '        <span class="odswidget-timerange__label" ng-bind="labelFrom"></span>' +
+            '        <input type="text" placeholder="{{ placeholderFrom }}" class="odswidget-timerange__input">' +
+            '        <button type="reset" class="odswidget-timerange__reset" ng-show="from" ng-click="resetSearchFrom()" aria-label="Reset search" translate="aria-label">' +
+            '           <i class="fa fa-times-circle" aria-hidden="true"></i>' +
+            '        </button>' +
             '    </div>' +
             '    <div class="odswidget-timerange__to">' +
-            '        <span ng-bind="labelTo"></span> ' +
-            '        <input type="text" placeholder="{{ placeholderTo }}">' +
+            '        <span class="odswidget-timerange__label" ng-bind="labelTo"></span>' +
+            '        <input type="text" placeholder="{{ placeholderTo }}" class="odswidget-timerange__input">' +
+            '        <button type="reset" class="odswidget-timerange__reset" ng-show="to" ng-click="resetSearchTo()" aria-label="Reset search" translate="aria-label">' +
+            '           <i class="fa fa-times-circle" aria-hidden="true"></i>' +
+            '        </button>' +
             '    </div>' +
             '</div>',
             link: function(scope, element, attrs) {
+                var formattedSuffix = !angular.isUndefined(scope.suffix) ? ('.' + scope.suffix) : '';
+
                 scope.labelFrom = angular.isDefined(scope.labelFrom) ? scope.labelFrom : translate('From');
                 scope.labelTo = angular.isDefined(scope.labelTo) ? scope.labelTo : translate('to');
                 var inputs = element.find('input');
@@ -146,7 +146,7 @@
                     var parameterName =  attrs[context.name + "ParameterName"] || 'q';
                     if (['q', 'rq'].indexOf(parameterName) > -1) {
                         // Naming the parameter to prevent overwriting between widgets
-                        parameterName = parameterName + '.timerange';
+                        parameterName = parameterName + '.timerange' + formattedSuffix ;
                     }
                     return parameterName;
                 };
@@ -212,23 +212,62 @@
                         });
                     });
 
-                    var areAllParametersEmpty = function () {
+                    var isFromRangeParametersEmpty = function () {
+                        var isEmpty = true;
                         var contexts = angular.isArray(scope.context) ? scope.context : [scope.context];
-                        return contexts.reduce(function (allEmpty, context) {
-                            return allEmpty && !context.parameters[getParameterName(context)];
-                        }, true);
+                        angular.forEach(contexts, function(context){
+                             angular.forEach(context.parameters, function(query, parameter){
+                                if (parameter.indexOf('from_date') !== -1 || parameter.indexOf('timerange') !== -1){
+                                    isEmpty = false;
+                                }
+                            });
+                        });
+                        return isEmpty;
                     };
 
-                    scope.$watch(areAllParametersEmpty, function (nv, ov) {
+                    var isToRangeParametersEmpty = function () {
+                        var isEmpty = true;
+                        var contexts = angular.isArray(scope.context) ? scope.context : [scope.context];
+                        angular.forEach(contexts, function(context){
+                             angular.forEach(context.parameters, function(query, parameter){
+                                if (parameter.indexOf('to_date') !== -1 || parameter.indexOf('timerange') !== -1){
+                                    isEmpty = false;
+                                }
+                            });
+                        });
+                        return isEmpty;
+                    };
+
+                    scope.$watch(isFromRangeParametersEmpty, function (nv, ov) {
                         if (nv && !ov) {
-                            inputs.val(null);
+                            scope.resetSearchFrom();
                         }
                     }, true);
+
+                    scope.$watch(isToRangeParametersEmpty, function (nv, ov) {
+                        if (nv && !ov) {
+                            scope.resetSearchTo();
+                        }
+                    }, true);
+
+                    scope.resetSearchFrom = function(){
+                        inputs[0].value = null;
+                        scope.from = undefined;
+                    };
+
+                    scope.resetSearchTo = function(){
+                        inputs[1].value = null;
+                        scope.to = undefined;
+                    };
+
+
                 });
             },
             controller: ['$scope', '$attrs', '$q', '$compile', '$rootScope', '$parse', function($scope, $attrs, $q, $compile, $rootScope, $parse) {
                 var contexts = [],
                     conf = {};
+
+                var formattedSuffix = !angular.isUndefined($scope.suffix) ? ('.' + $scope.suffix) : '';
 
                 // We need to gather the time field before applying our filter
                 var getTimeField = function(dataset) {
@@ -275,9 +314,13 @@
                     }
                 });
 
+
+
                 var react = function(contexts, configurations) {
+                    var dates;
                     $scope.$watch('[from, to]', function(nv) {
                         if (nv[0] && nv[1]) {
+                            dates = ['from_date', 'to_date'];
                             angular.forEach(contexts, function(context) {
                                 var parameterName = configurations[context.name]['parameter'];
                                 var evaluationScope = {};
@@ -286,12 +329,44 @@
                                 evaluationScope.$field = configurations[context.name]['timefield'];
                                 if (['q', 'rq'].indexOf(parameterName) > -1) {
                                     // Naming the parameter to prevent overwriting between widgets
-                                    parameterName = parameterName + '.timerange';
+                                    parameterName = parameterName + '.timerange' + formattedSuffix ;
                                 }
                                 context.parameters[parameterName] = configurations[context.name]['formatter'](evaluationScope);
+
+                                // if a single date in range was used, remove it
+                                deleteUsedDate(context, configurations, dates);
+                            });
+                        } else if (nv[0] && !nv[1]) {
+                            dates = ['to_date', 'timerange'];
+                            angular.forEach(contexts, function(context){
+                                context.parameters[getParameterName(context, configurations, 'from_date')] = configurations[context.name]['timefield'] + '>="' + nv[0] + '"';
+                                deleteUsedDate(context, configurations, dates);
+                            });
+                        } else if (nv[1] && !nv[0]) {
+                            dates = ['from_date', 'timerange'];
+                            angular.forEach(contexts, function(context){
+                                context.parameters[getParameterName(context, configurations, 'to_date')] = configurations[context.name]['timefield'] + '<="' + nv[1] + '"';
+                                deleteUsedDate(context, configurations, dates);
+                            });
+                        } else {
+                            dates = ['from_date', 'to_date', 'timerange'];
+                            angular.forEach(contexts, function(context) {
+                                deleteUsedDate(context, configurations, dates);
                             });
                         }
                     }, true);
+                };
+
+                var deleteUsedDate = function(context, configurations, dates){
+                    angular.forEach(dates, function(date){
+                        if (context.parameters[getParameterName(context, configurations, date)]) {
+                            delete context.parameters[getParameterName(context, configurations, date)];
+                        }
+                    });
+                };
+
+                var getParameterName = function(context, configurations, type){
+                  return configurations[context.name]['parameter'] + '.' + type + formattedSuffix ;
                 };
 
                 if (contexts.length == 1 && contexts[0].type == 'catalog') {

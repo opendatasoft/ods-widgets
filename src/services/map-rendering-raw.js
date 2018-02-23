@@ -34,6 +34,13 @@
                 parameters.fields = includedFields.join(',');
 
                 ODSAPI.records.download(layerConfig.context, parameters, timeout.promise).success(function (data) {
+                    // _incomplete parameter allows to show warning of partial data.
+                    layerConfig._incomplete = false;
+                    if(data.length >= parameters.rows) {
+                        // If it hits the limit then we assume that the returned data is partial
+                        layerConfig._incomplete = true;
+                    }
+
                     for (var i = 0; i < data.length; i++) {
                         var record = data[i];
                         var geoJSON;

@@ -1,16 +1,14 @@
-@mapLegend-gutterWidth: 20px;
 .odswidget-map-legend {
-    width: 250px;
+    width: @mapLegend-width;
     //height: 100px;
     position: absolute;
-    bottom: @mapDisplayControl-gutterWidth;
-    right: @mapDisplayControl-gutterWidth;
+    bottom: 20px; // To make room for the leaflet attributions
+    right: @mapLegend-gutterWidth;
     background-color: white;
     //transition: width .25s ease-in, height .25s ease-in;
-    padding-top: 5px;
-    padding-left: 5px;
-    padding-right: 5px;
-    padding-bottom: 25px;
+    padding: 5px 5px 25px 5px;
+    border-radius: @mapBuilder-borderRadius;
+    box-shadow: @mapBuilder-boxShadow;
 }
 
 .odswidget-map-legend--extended {
@@ -66,7 +64,7 @@
 .odswidget-map-legend__categories__item-color {
     flex-grow: 0;
     flex-shrink: 0;
-    margin-right: 5px;
+    .rtl-prop(margin-right, margin-left, 5px, 0);
 }
 .odswidget-map-legend__categories__item-value {
     flex-grow: 1;
@@ -74,7 +72,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    text-align: left;
+    .rtl-prop(text-align, left, right);
 }
 .odswidget-map-legend__categories__item-value--remaining {
     font-style: italic;
@@ -83,7 +81,7 @@
 .odswidget-map-legend__choropleth__item-value--remaining {
     font-style: italic;
     font-size: .9rem;
-    text-align: right;
+    .rtl-prop(text-align, right, left);
     width: 100%;
 }
 
@@ -96,12 +94,12 @@
 }
 .odswidget-map-legend__choropleth__item {
     display: flex;
-    padding: 0px 2px;
+    padding: 0 2px;
 }
 .odswidget-map-legend__choropleth__item-color {
     flex-grow: 0;
     flex-shrink: 0;
-    margin-right: 5px;
+    .rtl-prop(margin-right, margin-left, 5px, 0);
 }
 .odswidget-map-legend__choropleth__item-range {
     flex-grow: 1;
@@ -112,11 +110,11 @@
 .odswidget-map-legend__choropleth__item-range__bound {
     flex-grow: 1;
     flex-shrink: 1;
-    text-align: right;
+    .rtl-prop(text-align, right, left);
     width: 50%;
 }
 .odswidget-map-legend__choropleth__item-range__bound-arrow {
-    margin-left: 10px;
+    .rtl-prop(margin-left, margin-right, 10px, 0);
 }
 
 .odswidget-map-legend__default-container {
@@ -139,7 +137,7 @@
     height: 16px;
     border: solid 1px black;
     display: inline-block;
-    margin-right: 5px;
+    .rtl-prop(margin-right, margin-left, 5px, 0);
 }
 
 .odswidget-map-legend__simple__color-block {
@@ -163,12 +161,12 @@
 
 .odswidget-map-legend__simple__color-block-subtext-left {
     width: 50%;
-    text-align: left;
+    .rtl-prop(text-align, left, right);
 }
 
 .odswidget-map-legend__simple__color-block-subtext-right {
     width: 50%;
-    text-align: right;
+    .rtl-prop(text-align, right, left);
 }
 .odswidget-map-legend__title {
     position: relative;
@@ -203,6 +201,12 @@
     bottom: 0;
     border: none;
     background-color: transparent;
+    color: @color-grey;
+    border-radius: .4rem;
+}
+
+.odswidget-map-legend__title-toggle:hover {
+    color: @color-darkergrey;
 }
 
 .odswidget-map-legend__pagination {
@@ -210,11 +214,20 @@
     bottom: 5px;
     right: 5px;
 }
+
 .odswidget-map-legend__pagination-button {
     background-color: transparent;
     border: none;
     outline: none;
+    color: @mapLegend-paginationButton-color;
+    border-radius: @mapBuilder-borderRadius;
 }
+
+.odswidget-map-legend__pagination-button:hover {
+    color: @mapLegend-paginationButton-hover-color;
+    background-color: @color-lightestgrey;
+}
+
 .odswidget-map-legend__pagination-button.ng-hide {
     /* Use visibility instead of display none, so that the block doesn't move when the button is hidden */
     display: inline-block !important;

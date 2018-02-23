@@ -38,7 +38,7 @@
                     deferred.resolve();
                 };
 
-                if (layerConfig.context.dataset === null) {
+                if (layerConfig.context.error) {
                     console.log('ERROR: Unknown dataset "' + layerConfig.title + '"');
                 } else if (layerConfig.display === 'tiles') {
                     // TODO

@@ -16,11 +16,9 @@
          * Integrates a Hubspot form given a portal ID and the form ID.
          *
          * @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *          <ods-hubspot-form portal-id="1234567" form-id="d1234564-987987987-4564654-7897-456465465"></ods-hubspot-form>
-         *      </file>
-         *  </example>
+         *     <pre>
+         *         <ods-hubspot-form portal-id="1234567" form-id="d1234564-987987987-4564654-7897-456465465"></ods-hubspot-form>
+         *     </pre>
          */
         return {
             restrict: 'E',

@@ -9,7 +9,7 @@
 
     mod.factory("requestData", ['ODSAPI', '$q', 'ChartHelper', 'AggregationHelper', function(ODSAPI, $q, ChartHelper, AggregationHelper) {
         var buildTimescaleX = ODS.DateFieldUtils.getTimescaleX;
-        
+
         var buildSearchOptions = function(query, timeSerieMode, precision, periodic) {
             var i, breakdown,
                 xs,
@@ -206,7 +206,8 @@
                                          '$rootScope',
                                          'odsNotificationService',
                                          '$q',
-        function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsNotificationService, $q) {
+                                         'config',
+        function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsNotificationService, $q, config) {
         // parameters : {
         //     timescale: year, month, week, day, hour, month year, day year, day month, day week
         //     xLabel:
@@ -280,14 +281,13 @@
         };
 
         var getGlobalOptions = function(parameters, precision, periodic, chartplaceholder, domain) {
-            var height = chartplaceholder.height();
-            var width = chartplaceholder.width();
+            var datasetid;
 
             if (parameters.queries.length === 0) {
                 parameters.xLabel = '';
             } else {
                 if (!angular.isDefined(parameters.xLabel)) {
-                    var datasetid = getDatasetUniqueId(parameters.queries[0].config.dataset, domain);
+                    datasetid = getDatasetUniqueId(parameters.queries[0].config.dataset, domain);
                     parameters.xLabel = ChartHelper.getXLabel(datasetid, parameters.queries[0].xAxis, parameters.timescale);
                 }
             }
@@ -295,6 +295,7 @@
             if (angular.isUndefined(parameters.displayLegend)) {
                 parameters.displayLegend = true;
             }
+            var serieTitle = translate('<span style="color:{series.color}">{series.name}</span>:');
             var options = {
                 chart: {},
                 title: {text: ''},
@@ -308,7 +309,8 @@
                         step: 1,
                         rotation: -45,
                         align: 'right',
-                        useHTML: true
+                        useHTML: true,
+                        style: {direction: 'initial'}
                     },
                     startOfWeek: 1,
                     minPadding: 0,
@@ -326,7 +328,9 @@
                     // endOnTick: true,
                 },
                 legend: {
-                    enabled: !!parameters.displayLegend
+                    enabled: !!parameters.displayLegend,
+                    useHTML: true,
+                    rtl: config.LANGUAGE === 'ar'
                 },
                 // legend: {
                 //     align: 'right',
@@ -348,12 +352,12 @@
                         groupPadding: 0,
                         borderWidth: 0,
                         tooltip: {
-                            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
+                            pointFormat: serieTitle + ' <b>{point.low}</b> - <b>{point.high}</b>'
                         }
                     },
                     boxplot: {
                         tooltip: {
-                            pointFormat: '<span style="color:{series.color}">{series.name}</span>:<br>' +
+                            pointFormat: serieTitle + '<br>' +
                                             translate('Maximum:') + ' {point.high}<br>' +
                                             translate('Upper quartile:') + ' {point.q3}<br>' +
                                             translate('Median:') + ' {point.median}<br>' +
@@ -363,32 +367,38 @@
                     },
                     arearange: {
                         tooltip: {
-                            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
+                            pointFormat: serieTitle + ' <b>{point.low}</b> - <b>{point.high}</b>'
                         }
                     },
                     areasplinerange: {
                         tooltip: {
-                            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.low}</b> - <b>{point.high}</b>'
+                            pointFormat: serieTitle + ' <b>{point.low}</b> - <b>{point.high}</b>'
                         }
                     },
                     pie: {
                         tooltip: {
-                            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y} ({point.percentage:.1f}%)</b>'
+                            pointFormat: serieTitle + ' <b>{point.y} ({point.percentage:.1f}%)</b>'
                         }
                     },
                     treemap: {
                         tooltip: {
                             headerFormat: '',
-                            pointFormat: '<span style="color:{series.color}">{point.name}</span>: {point.value}</b>'
+                            pointFormat: translate('<span style="color:{series.color}">{point.name}</span>:') + '<b>{point.value}</b>'
                         },
                         layoutAlgorithm: 'squarified',
-                        colorByPoint: true
+                        colorByPoint: true,
+                        dataLabels: {
+                            style: {
+                                textOutline: 'none'
+                            }
+                        }
                     }
                 },
                 tooltip: {
+                    useHTML: true,
                     valueDecimals: 2,
                     headerFormat: '{point.key}<br>',
-                    pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b>',
+                    pointFormat: serieTitle + ' <b style="display: inline-block">{point.y}</b>',
                     formatter: function (tooltip) {
                         var items = this.points || angular.isArray(this) ? this : [this],
                             series = items[0].series,
@@ -405,6 +415,12 @@
                         });
                         // footer
                         s.push(tooltip.options.footerFormat || '');
+
+                        // Add this in RTL to prevent the text-align:left on .highcharts-container added by highcharts to counter the direction
+                        if (config.LANGUAGE === 'ar'){
+                            s.unshift('<div style="text-align:right">');
+                            s.push('</div>');
+                        }
 
                         return s.join('');
                     }
@@ -555,7 +571,7 @@
                 },
                 shadow: false,
                 tooltip: {},
-                // zIndex: 
+                // zIndex:
                 data: [],
                 stacking: query.stacked ? query.stacked : null
             }, serie.extras);
@@ -625,42 +641,59 @@
 
             function getTooltipFormatterFunction(functionName) {
                 var formatterFunction;
+                var template = translate('<span style="color: {color}">{name}</span>: <b style="display: inline-block">{value}</b>');
                 if (functionName === 'treemap') {
                     formatterFunction = function areaTooltip() {
                         var formattedValue = formatValue(this.value, decimals, serie.displayUnits ? unit : false);
-
-                        return '<span style="color:' + this.series.color + '">' + this.series.name + '</span>: <b>' + formattedValue + '</b>';
+                        return format_string(template, {
+                            name: this.series.name,
+                            color: this.series.color,
+                            value: formattedValue
+                        });
                     };
                 } else if (functionName === 'arearange' || functionName === 'areasplinerange' || functionName === 'columnrange') {
                     formatterFunction = function areaTooltip() {
                         var formattedLow = formatValue(this.low, decimals, serie.displayUnits ? unit : false);
                         var formattedHigh = formatValue(this.high, decimals, serie.displayUnits ? unit : false);
-
-                        return '<span style="color:' + this.series.color + '">' + this.series.name + '</span>: <b>' + formattedLow + ' - ' + formattedHigh + '</b>';
+                        return format_string(template, {
+                            name: this.series.name,
+                            color: this.series.color,
+                            value: formattedLow + ' - ' + formattedHigh
+                        });
                     };
                 } else if (functionName === 'pie') {
                     formatterFunction = function singleValueTooltip() {
                         var formattedValue = formatValue(this.y, decimals, serie.displayUnits ? unit : false);
-
-                        return '<span style="color:' + this.series.color + '">' + this.series.name + '</span>: <b>' + formattedValue + ' (' + Highcharts.numberFormat(this.percentage, 1) + '%)</b>';
+                        return format_string(template, {
+                            name: this.series.name,
+                            color: this.series.color,
+                            value: formattedValue + ' (' + Highcharts.numberFormat(this.percentage, 1) + '%)'
+                        });
                     };
                 } else if (functionName === 'boxplot') {
                     formatterFunction = function boxTooltip() {
                         var _format = function(value) {
-                            return formatValue(value, decimals, serie.displayUnits ? unit : false);
+                            return '<span style="display:inline-block">' + formatValue(value, decimals, serie.displayUnits ? unit : false) + '</span>';
                         };
-                        return '<span style="color:' + this.series.color + '">' + this.series.name + '</span>: <b><br>' +
-                                translate('Maximum:') + ' ' + _format(this.high) + '<br>' +
-                                translate('Upper quartile:') + ' ' + _format(this.q3) + '<br>' +
-                                translate('Median:') + ' ' + _format(this.median) + '<br>' +
-                                translate('Lower quartile:') + ' ' + _format(this.q1) + '<br>' +
-                                translate('Minimum:') + ' ' + _format(this.low) + '<br>';
+                        return format_string(template, {
+                            name: this.series.name,
+                            color: this.series.color,
+                            value: '' +
+                            '<br>' + translate('Maximum:') + ' ' + _format(this.high) +
+                            '<br>' + translate('Upper quartile:') + ' ' + _format(this.q3) +
+                            '<br>' + translate('Median:') + ' ' + _format(this.median) +
+                            '<br>' + translate('Lower quartile:') + ' ' + _format(this.q1) +
+                            '<br>' + translate('Minimum:') + ' ' + _format(this.low)
+                        });
                     };
                 } else {
                     formatterFunction = function singleValueTooltip() {
                         var formattedValue = formatValue(this.y, decimals, serie.displayUnits ? unit : false);
-
-                        return '<span style="color:' + this.series.color + '">' + this.series.name + '</span>: <b>' + formattedValue + '</b>';
+                        return format_string(template, {
+                            name: this.series.name,
+                            color: this.series.color,
+                            value: formattedValue
+                        });
                     };
                 }
                 return formatterFunction;
@@ -673,6 +706,19 @@
                     events: {
                         'click': function(event) {
                             var value = this.category || this.name;
+                            // if value is a timestamp then format it so that the API can understand it
+                            var formats = {
+                                'year': 'YYYY',
+                                'month': 'YYYY/MM',
+                                'day': 'YYYY/MM/DD',
+                                'hour': 'YYYY/MM/DD HH',
+                                'minute': 'YYYY/MM/DD HH:mm'
+                            };
+                            if (query.timescale && formats[query.timescale]) {
+                                value = Highcharts.getOptions().global.useUTC ? moment.utc(value) : moment(value);
+                                value = value.format(formats[query.timescale]);
+                            }
+                            // refine context
                             serie.refineOnClickCtrl.refineOnValue(value);
                             scope.$apply();
                         }
@@ -700,7 +746,7 @@
 
             return tooltip;
         };
-        
+
         var updateXAxisOptionsFromData = function(x, options, timeSerieMode) {
             if (timeSerieMode && angular.isObject(x)) {
                 if ('second' in x){
@@ -733,7 +779,8 @@
                 },
                 labels: {
                     style: {
-                        color: chart.color
+                        color: chart.color,
+                        direction: 'initial'
                     }
                 },
                 type: chart.scale || 'linear',
@@ -762,7 +809,6 @@
                 delete(yAxis.title);
                 delete(yAxis.labels);
             } else if (chart.type === 'polar') {
-                min: 0,
                 yAxis.endOnTick = false;
                 yAxis.showLastLabel = true;
                 delete(yAxis.title);
@@ -985,7 +1031,7 @@
                                 if (!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])) {
                                     // we dont yet have an axis for this column :
                                     // Create axis and register it in yAxisesIndexes
-                                    var yAxis = buildYAxis(yLabel, chart, !!(options.yAxis.length % 2), !!(chart.displayStackValues));
+                                    var yAxis = buildYAxis(yLabel, chart, Boolean(options.yAxis.length % 2), Boolean(chart.displayStackValues));
                                     yAxisesIndexes[datasetid][yLabel] = options.yAxis.push(yAxis) - 1;
                                 }
 
@@ -1122,7 +1168,7 @@
                                             serie.data[categoryIndex] = valueY;
                                         }
                                     }
-    
+
                                     if (thresholds.length > 0) {
                                         for (i = thresholds.length - 1; i >= 0; i--) {
                                             if (valueY >= thresholds[i].value) {
@@ -1355,15 +1401,21 @@
                                     if (query.charts[i].aggregates) {
                                         var serie = query.charts[i];
                                         var valueY = compileAggrValue($scope, serie.compiled_expr, accumulations_y, serie.aggregates);
-                                        for (var j = 0; j < accumulations_x.length; j++) {
+                                        for (j = 0; j < accumulations_x.length; j++) {
                                             handleSerie("aggr" + index + "-" + i, parameters, options, serie_options, query, serie, accumulations_x[j], valueY);
                                         }
                                     }
                                 }
                             });
 
+                            for (i = options.series.length - 1; i >= 0; i--) {
+                                if (options.series[i] === false) {
+                                    options.series.splice(i, 1);
+                                }
+                            }
+
                             var categories = options.xAxis.categories;
-                            
+
                             if (categories) {
                                 for (i = 0; i < options.series.length; i++) {
                                     for (var k = 0; k < categories.length; k++) {
@@ -1372,10 +1424,7 @@
                                         }
                                     }
                                 }
-                            }
 
-
-                            if (categories) {
                                 if (categories.length === 1) {
                                     for (i = 0; i < options.series.length; i++) {
                                         if (["line", "spline", "area", "arearange"].indexOf(options.series[i].type) !== -1) {
@@ -1386,8 +1435,8 @@
                                 }
                             } else {
                                 for (i = 0; i < options.series.length; i++) {
-                                    if (["line", "spline", "area", "arearange"].indexOf(options.series[i].type) !== -1
-                                        && options.series[i].data.length === 1) {
+                                    if (["line", "spline", "area", "arearange"].indexOf(options.series[i].type) !== -1 &&
+                                        options.series[i].data.length === 1) {
                                         options.series[i].marker = options.series[i].marker || {};
                                         options.series[i].marker.enabled = true;
                                     }
@@ -1465,7 +1514,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="hurricanes" hurricanes-domain="public.opendatasoft.com" hurricanes-dataset="hurricane-tracks-1851-20071">
+         *          <ods-dataset-context context="hurricanes" hurricanes-domain="public.opendatasoft.com" hurricanes-dataset="hurricane-tracks-1851-2007">
          *              <ods-highcharts context="hurricanes" field-x="track_date" chart-type="line" timescale="year" function-y="COUNT"></ods-highcharts>
          *          </ods-dataset-context>
          *      </file>
@@ -2034,7 +2083,7 @@
          * @param {string} [colorThresholds] an array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the defined color is used. The format for this parameter is color-thresholds="[{'value': 5, 'color': '#00ff00'},{'value': 10, 'color': '#ffff00'}]"
          * @param {string} [subsets] used when functionY is set to 'QUANTILES' to define the wanted quantile
          * @param {boolean} [subseries] an array containing 2 objects. TODO add explanation for this...
-         * @param {string} [refineOnClickContext] context name or array of of contexts name on which to refine when the serie is clicked on.
+         * @param {string} [refineOnClickContext] context name or array of of contexts name on which to refine when the serie is clicked on. Won't work properly if the fieldX attribute of the parent odsChartQuery is a date or datetime field and if the associated timescale is not one of 'year', 'month', 'day', 'hour', 'minute'
          * @param {string} [refineOnClick[context]ContextField] name of the field that will be refined for each context.
          *
          * @description

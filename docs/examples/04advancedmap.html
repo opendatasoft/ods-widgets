@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ODS Widgets</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../../docs/css/docs.css">
+        <link rel="stylesheet" href="../../dist/ods-widgets.css">
+        <link rel="stylesheet" href="example.css">
+    </head>
+    <body class="content">
+        <div class="container-fluid well" ng-app="ods-widgets">
+            <ods-dataset-context context="chicagoincidents"
+                                 chicagoincidents-domain="public"
+                                 chicagoincidents-dataset="killings-by-law-enforcement-officers-in-the-usa"
+            >
+                <ods-timerange context="chicagoincidents" default-from="2009-01-01" default-to="2014-12-09"></ods-timerange>
+                <label><input type="checkbox" ng-model="heatmapMode"> Show heatmap</label>
+                <div class="row-fluid">
+                    <div class="span4">
+                        <ods-facets context="chicagoincidents"></ods-facets>
+                    </div>
+                    <div class="span8">
+                        <ods-map>
+                            <ods-map-layer context="chicagoincidents"></ods-map-layer>
+                            <ods-map-layer context="chicagoincidents" display="heatmap" show-if="heatmapMode"></ods-map-layer>
+                        </ods-map>
+                    </div>
+                </div>
+            </ods-dataset-context>
+        </div>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular-sanitize.min.js"></script>
+        <script type="text/javascript" src="../../dist/ods-widgets.js"></script>
+    </body>
+</html>

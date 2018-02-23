@@ -60,16 +60,21 @@
          * you can select other possibles values that are all combined as "or". For example, if you click "red", then you can also click "green" and "blue",
          * and the resulting values can be green, red, or blue.
          *
+         * - **`timerangeFilter`** {@type boolean} (optional) if 'true', then an option to filter with on a time range is displayed above the facets categories.
+         * Only works for date and datetime fields. Must be used with a context (see below).
+         *
+         * - **`context`** {@type string} (optional) name of the context to refine on. Mandatory with timerange filter.
+         *
          * - **`valueSearch`** {@type string} (optional) if 'true', then a search box is displayed above the categories, so that you can search within them easily.
          * If 'suggest', then the matching categories are not displayed until there is at least one character typed into the search box, effectively making it
          * into a suggest-like search box.
-         * 
-         * - **`refineAlso`** {@type DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]} (optional) An 
-         * other context (or a list of contexts) that you want to filter based on your primary context's facets. This 
+         *
+         * - **`refineAlso`** {@type DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]} (optional) An
+         * other context (or a list of contexts) that you want to filter based on your primary context's facets. This
          * is especially usefull for contexts who share common data.
          *
-         * - **`mysecondarycontextFacetName`** {@type string} (optional) The name of the facet in one of your secondary 
-         * contexts (defined through the `refineAlso` parameter) that you want to map your original's facet on. You can 
+         * - **`mysecondarycontextFacetName`** {@type string} (optional) The name of the facet in one of your secondary
+         * contexts (defined through the `refineAlso` parameter) that you want to map your original's facet on. You can
          * see an example below of such a behaviour.
          *
          * <pre>
@@ -145,12 +150,15 @@
                     'title="'+(facet.title && facet.title.replace(/"/g, '&quot;') || facet.name)+'" ' +
                     'sort="'+(facet.sort || '')+'" ' +
                     'disjunctive="'+(facet.disjunctive || '')+'" ' +
+                    'timerange-filter="'+(facet.timerangeFilter || '')+'" ' +
                     'hide-if-single-category="'+(facet.hideIfSingleCategory ? 'true' : 'false')+'" ' +
                     'hide-category-if="'+(facet.hideCategoryIf || '')+'"' +
                     'value-formatter="'+(facet.valueFormatter || '')+'"' +
+                    'context="'+(scope.context.name || '')+'"' +
                     '>'+(facet.template || '')+'</ods-facet>';
             });
             var tags = angular.element(html);
+
             element.append(tags);
             $compile(tags)(scope);
 
@@ -213,6 +221,9 @@
                                                 }
                                                 if (annotation.name === 'disjunctive') {
                                                     f.disjunctive = true;
+                                                }
+                                                if (annotation.name === 'timerangeFilter') {
+                                                    f.timerangeFilter = true;
                                                 }
                                             });
                                             if (f.type == 'datetime' || f.type == 'date') {
@@ -381,6 +392,8 @@
                         mapping.context.toggleRefine(mapping.facetName, path);
                     });
                 };
+
+                this.context = $scope.context;
             }]
         };
     }]);
@@ -396,19 +409,24 @@
                 hideIfSingleCategory: '@',
                 hideCategoryIf: '@',
                 sort: '@',
-                disjunctive: '@',
+                disjunctive: '=',
+                timerangeFilter: '=',
                 valueSearch: '@',
                 valueFormatter: '@',
-                refineAlso: '=?'
+                refineAlso: '=?',
+                context: '='
             },
             template: function(tElement) {
                 tElement.data('facet-template', tElement.html().trim());
                 return '' +
-                    '<div ng-class="{\'odswidget\': true, \'odswidget-facet\': true, \'odswidget-facet--disjunctive\': isDisjunctive()}">' +
+                    '<div ng-class="{\'odswidget\': true, \'odswidget-facet\': true, \'odswidget-facet--disjunctive\': disjunctive}">' +
                     '    <h3 class="odswidget-facet__facet-title" ' +
-                    '        ng-if="title && categories.length && visible()">' +
+                    '        ng-if="(title && categories.length && visible()) || hasTimerangeFilter()  ">' +
                     '        {{ title }}' +
                     '    </h3>' +
+                    '    <div class="odswidget-facet__date-range" ng-if="timerangeFilter">' +
+                    '        <ods-timerange context="context" time-field="{{ name }}" display-time="false" suffix="{{ name }}"></ods-timerange>' +
+                    '    </div>'+
                     '    <ods-facet-category-list ng-if="visible()" ' +
                     '                             facet-name="{{ name }}" ' +
                     '                             value-search="{{ valueSearch }}" ' +
@@ -425,15 +443,14 @@
                 }
                 scope.categories = facetsCtrl.registerFacet(scope.name, scope.sort, scope.refineAlso, attrs);
                 scope.facetsCtrl = facetsCtrl;
-                if (scope.isDisjunctive()) {
+                if (scope.disjunctive) {
                     facetsCtrl.setDisjunctive(scope.name);
                 }
+
+                scope.context =  scope.context || facetsCtrl.context;
+
             },
             controller: ['$scope', '$element', function($scope, $element) {
-                $scope.isDisjunctive = function() {
-                    return angular.isString($scope.disjunctive) && $scope.disjunctive.toLowerCase() === 'true';
-                };
-
                 $scope.visibleItemsNumber = $scope.visibleItems || 6;
 
                 this.toggleRefinement = function(path) {
@@ -461,7 +478,8 @@
                 facetName: '@',
                 hideCategoryIf: '@',
                 valueSearch: '@',
-                valueFormatter: '@'
+                valueFormatter: '@',
+                context: '='
             },
             require: '^odsFacet',
             template: '' +
@@ -548,15 +566,7 @@
                 template: '@',
                 valueFormatter: '@'
             },
-            template: '' +
-            '<div class="odswidget odswidget-facet-category">' +
-            '   <a class="odswidget-facet__category" ' +
-            '      href="#" ' +
-            '      ng-click="toggleRefinement($event, category.path)" ' +
-            '      ng-class="{\'odswidget-facet__category--refined\': category.state === \'refined\'}" ' +
-            '      title="{{ category.name }}">' +
-            '   </a>' +
-            '</div>',
+            template: '<div class="odswidget odswidget-facet-category"></div>',
             link: function(scope, element, attrs, ctrls) {
                 var facetCtrl = ctrls[0];
                 var categoryList = ctrls[1];
@@ -568,8 +578,14 @@
                 var defaultTemplate = '' +
                     '<span class="odswidget-facet__category-count">{{ category.count|number }}</span> ' +
                     '<span class="odswidget-facet__category-name" ng-bind-html="formatCategory(category.name, category.path)"></span>';
-                var template = scope.template || defaultTemplate;
-                element.find('a').append($compile(template)(scope));
+                var template = scope.template || defaultTemplate;
+                template = '' +
+                    '<a class="odswidget-facet__category" ' +
+                    '   href="#" ' +
+                    '   ng-click="toggleRefinement($event, category.path)" ' +
+                    '   ng-class="{\'odswidget-facet__category--refined\': category.state === \'refined\'}" ' +
+                    '   title="{{ category.name }}">' + template + '</a>';
+                element.append($compile(template)(scope));
 
                 if (scope.category.facets) {
                     var sublist = angular.element('<ods-facet-category-list categories="category.facets" template="{{template}}" value-formatter="{{valueFormatter}}"></ods-facet-category-list>');

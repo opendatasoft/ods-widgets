@@ -9,16 +9,15 @@
 
     @media (max-width: @screen-xs-max) {
         width: 100px;
-        padding-right: 20px;
     }
     @media (min-width: @screen-sm-min) {
-        width: 435px;
+        width: 420px;
     }
 }
 
 .odswidget-map-search-box--expanded {
     @media (max-width: @screen-xs-max) {
-        width: ~"calc(100% - 10px)";
+        width: 100%;
     }
 }
 
@@ -26,15 +25,15 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 100%;
+    right: @mapBuilder-borderRadius;
     background-color: white;
-    border: 1px solid #ccc;
-    border-left-width: 0;
+    border: none;
     width: 20px;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 1.33rem;
 
     @media (min-width: @screen-sm-min) {
         display: none;
@@ -47,9 +46,9 @@
 }
 .odswidget-map-search-box__box-wrapper:before  {
     font-family: 'FontAwesome';
-    content: '\f002';
+    content: '\f002'; // Search icon
     position: absolute;
-    left: 5px;
+    .rtl-prop(left, right, 5px, auto);
     top: 0;
     bottom: 0;
     line-height: 2;
@@ -64,6 +63,9 @@
     line-height: 2;
     outline: none;
     transition: border-color 0.1s;
+    border-radius: @mapBuilder-borderRadius;
+    box-shadow: @mapBuilder-boxShadow;
+    border: none;
 }
 
 .odswidget-map-search-box__box--datasearch {
@@ -72,7 +74,7 @@
 
 .odswidget-map-search-box__box-cancel {
     position: absolute;
-    right: 5px;
+    .rtl-prop(right, left, 5px, auto);
     top: 0;
     bottom: 0;
     border: none;
@@ -173,12 +175,9 @@
     list-style: none;
     padding-left: 20px;
     padding-right: 20px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    border-top: solid 1px #90A4AE;
-    margin-left: -10px;
-    margin-right: -10px;
     padding-top: 10px;
+    margin: 10px -10px 10px -10px;
+    border-top: solid 1px #90A4AE;
 }
 .odswidget-map-search-box__data-search__dataset--active {
     color: #EC643C;

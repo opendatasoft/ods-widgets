@@ -3,6 +3,19 @@
 
     var mod = angular.module('ods-widgets');
 
+    var getScrollParent = function (element, $window) {
+        // This code is copied from ng-infinite-scroll.js so the scrollParent is the same in both our and their directives
+        var $scrollParent;
+        $scrollParent = element.parents().filter(function() {
+            return /(auto|scroll)/.test($.css(this, 'overflow') + $.css(this, 'overflow-y'));
+        }).eq(0);
+
+        if ($scrollParent.length === 0) {
+            $scrollParent = angular.element($window);
+        }
+        return $scrollParent;
+    };
+
     mod.directive('odsInfiniteScrollResults', function() {
         /**
          * @ngdoc directive
@@ -69,12 +82,14 @@
                 scrollTopWhenRefresh: '='
             },
             transclude: true,
-            controller: ['$scope', '$window', '$q', 'ODSAPI', function($scope, $window, $q, ODSAPI) {
+            controller: ['$scope', '$window', '$q', 'ODSAPI', '$element', function($scope, $window, $q, ODSAPI, $element) {
                 var page = 0;
                 var noMoreResults = false;
                 $scope.fetching = false;
                 $scope.results = [];
                 var initialRequest = $q.defer();
+                var $scrollParent = getScrollParent($element, $window);
+
                 var fetchResults = function(init) {
                     if (noMoreResults) {
                         return;
@@ -93,13 +108,13 @@
                         // requires it, and we can't pre-set the context parameters since it is urlsync'd,
                         // but we may be able to find something less "hardcoded".
                         ODSAPI.datasets.search($scope.context, {rows: 10, start: start, extrametas: true, interopmetas: true}).success(function(data) {
-                            noMoreResults = data.datasets.length == 0;
+                            noMoreResults = data.datasets.length === 0;
                             renderResults(data.datasets, init);
                         });
                     } else {
                         var params = angular.extend({}, $scope.context.parameters, {rows: 10, start: start});
                         ODSAPI.records.search($scope.context, params).success(function(data) {
-                            noMoreResults = data.records.length == 0;
+                            noMoreResults = data.records.length === 0;
                             renderResults(data.records, init);
                             initialRequest.resolve();
                         });
@@ -113,10 +128,10 @@
                     $scope.results = $scope.results.concat(results);
                     $scope.fetching = false;
                     if (init && $scope.scrollTopWhenRefresh) {
-                        $window.scrollTo($window.scrollX, 0);
+                        $scrollParent[0].scrollTo(0, 0);
                     }
                     if (init) {
-                        angular.element($window).trigger('scroll');
+                        $scrollParent.trigger('scroll');
                     }
                 };
 

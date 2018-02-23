@@ -13,6 +13,7 @@
          * {@link ods-widgets.directive:odsCatalogContext Catalog Context} or 
          * {@link ods-widgets.directive:odsDatasetContext Dataset Context} to display the filters of, or list of 
          * contexts.
+         * @param {String[]} except an array of parameters to exclude from the clearing
          * 
          * @description
          * This widget displays a button which will clear all active filters in the given context.
@@ -21,7 +22,8 @@
             restrict: 'E',
             replace: true,
             scope: {
-                context: '='
+                context: '=',
+                except: '='
             },
             template: '' +
             '<a class="odswidget-clear-all-filters" href="" ng-click="clearAll()">' +
@@ -29,13 +31,15 @@
             '    <span translate>Clear all</span>' +
             '</a>',
             controller: ['$scope', function ($scope) {
+
                 $scope.clearAll = function () {
+                    var excepts = $scope.except ? $scope.except : [];
                     var contexts = $scope.context;
                     if (!angular.isArray($scope.context)) {
                         contexts = [$scope.context];
                     }
                     angular.forEach(contexts, function (context) {
-                        angular.forEach(context.getActiveFilters(), function (k) {
+                        angular.forEach(context.getActiveFilters(excepts), function (k) {
                             delete context.parameters[k];
                         });
                     });

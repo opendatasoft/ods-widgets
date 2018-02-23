@@ -39,7 +39,7 @@
      When persisting, the context can be serialized as a datasetid and searchparameters. We trust Cartograph to make the
      transformation in both direction.
      */
-    mod.directive('odsMap', ['URLSynchronizer', 'MapHelper', 'ModuleLazyLoader', 'ODSWidgetsConfig', 'MapLayerRenderer', 'translate', '$q', '$timeout', function(URLSynchronizer, MapHelper, ModuleLazyLoader, ODSWidgetsConfig, MapLayerRenderer, translate, $q, $timeout) {
+    mod.directive('odsMap', ['URLSynchronizer', 'MapHelper', 'ModuleLazyLoader', 'ODSWidgetsConfig', 'MapLayerRenderer', 'translate', 'translatePlural', '$q', '$timeout', function(URLSynchronizer, MapHelper, ModuleLazyLoader, ODSWidgetsConfig, MapLayerRenderer, translate, translatePlural, $q, $timeout) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsMap
@@ -54,6 +54,8 @@
          * the map will try to fit all the displayed data when initializing.
          * @param {string} [basemap] The identifier of the basemap to use by default, as defined in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.basemaps}. By default,
          * the first available basemap will be used.
+         * @param {string} [tooltipSort] The identifier of the field used to define the tooltips rendering order at a same spot. Use "field" for default sort, use "-field" for reversed sort.
+         * By default, numeric fields are sorted in decreasing order, date and datetime are sorted chronologically, and text fields are sorted alphanumerically.
          * @param {boolean} [staticMap] If "true", then users won't be able to move or zoom on the map. They will still be able to click on markers.
          * @param {boolean} [noRefit] By default, the map refits its view whenever the displayed data changes.
          * If "true", then the map will stay at the same location instead.
@@ -174,15 +176,7 @@
          * An additional `colorFunction` property can contain the `log` value to use logarithmic scales (instead of the default linear scale) for generating the color scale. Available for `aggregation` and with `color` and `colorScale` display modes (or when none is specified).
          *
          * On top of color configuration, the icon used as a marker on the map can be configured through the `picto`
-         * property. The property supports the following keywords:
-         * star, circle, bike, bus, train, plane, roadblock, coffee, college, flag, policeman, envelope, restaurant,
-         * flower, tree, tree2, tennis, soccer, ski, baby, bed, playground, christianism, judaism, islam, car,
-         * wheelchair, recycling, cinema, danger, science, gas-station, anchor, parking, toilets, dog, cross, hospital,
-         * drop, music, plus, minus, question, information, wrench, trash, heart, thumbs-up, thumbs-down, check,
-         * cross-alt, fire-extinguisher, flame, man, man-alt, woman, glass, beer, house, truck, briefcase, camera,
-         * luggage, phone, road, video-game, lightning, trophy, cow, factory, boat, wifi, light, windsurfing, gym,
-         * shopping-cart, building, calendar, administration, culture, economy, leaf, justice, health, sport
-         *
+         * property. The property supports the keywords listed in the <a href="http://docs.opendatasoft.com/en/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a>          
          *
          * When displaying shapes, you can also use `borderColor` and `opacity` to configure the color of the shape border and the opacity of the shape's fill.
          *
@@ -281,6 +275,7 @@
             '    <div class="odswidget-map__loading" ng-show="loading">' +
             '        <ods-spinner></ods-spinner>' +
             '    </div>' +
+            '    <div class="ods-message-box ods-message-box--warning odswidget-map__limited-data-warning" ng-if="partialDataLayersArray.length > 0"><i class="fa fa-fw fa-warning"></i><span translate><a ods-tooltip="{{ partialDataLayers }}" ods-tooltip-direction="top">Some layers</a> show partial results for performance reasons. Try zooming in.</span></div>' +
             '    <ods-map-display-control ng-if="displayControl && allContextsInitialized" single-layer="displayControlSingleLayer" map-config="mapConfig"></ods-map-display-control>' +
             '    <ods-map-search-box ng-if="searchBox"></ods-map-search-box>' +
             '    <ods-map-legend ng-if="displayLegend && allContextsInitialized" map-config="mapConfig"></ods-map-legend>' +
@@ -292,6 +287,42 @@
                 if (attrs.id) { mapElement.attr('id', attrs.id); }
                 if (attrs.style) { mapElement.attr('style', attrs.style); }
                 if (attrs['class']) { mapElement.addClass(attrs['class']); }
+                if (attrs.odsAutoResize === 'true' || attrs.odsAutoResize === '') {scope.autoResize = 'true'; }
+
+
+                /* fullscreen handling */
+                var fullscreenchange;
+
+                if ('onfullscreenchange' in document) {
+                    fullscreenchange = 'fullscreenchange';
+                } else if ('onmozfullscreenchange' in document) {
+                    fullscreenchange = 'mozfullscreenchange';
+                } else if ('onwebkitfullscreenchange' in document) {
+                    fullscreenchange = 'webkitfullscreenchange';
+                } else if ('onmsfullscreenchange' in document) {
+                    fullscreenchange = 'MSFullscreenChange';
+                }
+
+                var enableFullscreen = function() {
+                    element.addClass('odswidget-map__fullscreen');
+                    resizeMap();
+                };
+
+                var disableFullscreen = function() {
+                    element.removeClass('odswidget-map__fullscreen');
+                    resizeMap();
+                };
+
+                if (fullscreenchange) {
+                    document.addEventListener(fullscreenchange, function(e) {
+                        if (document.fullscreenElement || document.msFullscreenElement ||
+                            document.webkitFullscreenElement || document.mozFullScreenElement) {
+                            enableFullscreen();
+                        } else {
+                            disableFullscreen();
+                        }
+                    });
+                }
 
                 var isStatic = scope.staticMap && scope.staticMap.toLowerCase() === 'true';
                 var noRefit = scope.noRefit && scope.noRefit.toLowerCase() === 'true';
@@ -473,7 +504,7 @@
                         try {
                             if (window.self === window.top) {
                                 // We are NOT in an iframe
-                                map.addControl(new L.Control.Fullscreen({
+                                map.addControl(new L.Control.ODSMapFullscreen({
                                     title: {
                                         'false': translate('View Fullscreen'),
                                         'true': translate('Exit Fullscreen')
@@ -730,6 +761,7 @@
                                     if (layerConfig._loading) {
                                         pending++;
                                     }
+
                                 });
                             });
                             return pending;
@@ -789,14 +821,11 @@
                                     // Internal runtime properties
                                     return undefined;
                                 }
-                                if (key === 'context' && value.dataset !== null) {
-                                    // Serialize the context object
+                                if (key === 'context') {
                                     return {
                                         datasetId: value.dataset.datasetid,
                                         parameters: value.parameters,
                                     };
-                                } else {
-                                    return undefined;
                                 }
                                 // Things we want to discard, that don't impact the display
                                 if (['mapPresets', 'singleLayer', 'toolbarGeolocation', 'toolbarFullscreen',
@@ -813,6 +842,10 @@
                         });
 
                     };
+
+
+
+
                     var stopConfigWatcher = function() {
                         //console.log('Stop config watcher');
                         if (configWatcher) {
@@ -870,10 +903,13 @@
                          */
                         fitView = !noRefit && fitView;
                         var renderData = function(locationChangedOnly) {
-                            //console.log('renderdata');
                             var promises = [];
                             var newlyRenderedLayers = {};
                             var masterLayerGroup = new L.LayerGroup();
+
+                            scope.partialDataLayers = '';
+                            scope.partialDataLayersArray = [];
+
                             angular.forEach(scope.mapConfig.groups, function(layerGroup) {
                                 if (!layerGroup.displayed) {
                                     angular.forEach(layerGroup.layers, function(layer) {
@@ -938,6 +974,23 @@
                                 }
                                 scope.map.addLayer(masterLayerGroup);
                                 previousMasterLayerGroup = masterLayerGroup;
+
+                                // Show a warning in Preview mode if the dataset has over a 1000 records and the view type is choropleth or categories
+                                // (currently the map can only show up to 1000 points at a time so it can be confusing for users)
+                                angular.forEach(renderedLayers, function(layerGroup) {
+                                    if(layerGroup._incomplete) {
+                                        var layerTitle = layerGroup.title || layerGroup.context.dataset.metas.title;
+                                        var maxTitleLength = 50;
+                                        // Trim the title if it's extremely long
+                                        if (layerTitle.length > maxTitleLength) {
+                                            layerTitle = layerTitle.substr(0, maxTitleLength - 1) + '&hellip;';
+                                        }
+                                        scope.partialDataLayersArray.push('&bull; ' + layerTitle);
+                                        scope.partialDataLayers = scope.partialDataTooltipMessage(scope.partialDataLayersArray);
+
+                                    }
+                                });
+
                             });
                         };
 
@@ -964,6 +1017,18 @@
                         } else {
                             renderData();
                         }
+                    };
+
+                    scope.partialDataTooltipMessage = function(layerList) {
+                        var layerCountLimit = 5;
+                        // Cut off list if there are too many layers
+                        if (layerList.length > layerCountLimit) {
+                            var otherLayerCount = layerList.length - layerCountLimit;
+                            layerList.splice(0, layerCountLimit);
+                            var text = translatePlural(otherLayerCount, '... and {{ $count }} more layer', '... and {{ $count }} more layers');
+                            layerList.push('<em>' + text + '</em>');
+                        }
+                        return layerList.join("<br>");
                     };
 
                     scope.$on('mapRefresh', function(e, bounds) {
@@ -1134,8 +1199,6 @@
                     var contexts = MapHelper.MapConfiguration.getActiveContextList(scope.mapConfig);
                     var promises = contexts.map(function(context) { return context.wait(); });
 
-
-
                     var resolvedPromises = function(promises){
                         $q.all(promises).then(function(){
                             syncGeofilterToDrawing();
@@ -1145,7 +1208,7 @@
                                 return promise.$$state.status !== 2;
                             });
                             resolvedPromises(promises);
-                        })
+                        });
                     };
 
                     resolvedPromises(promises);
@@ -1364,6 +1427,7 @@
                 colorCategories: '=',
                 colorCategoriesOther: '@',
                 colorNumericRanges: '=',
+                colorNumericRangeMin: '=',
                 colorGradient: '=',
                 colorByField: '@',
                 colorFunction: '@',
@@ -1394,6 +1458,8 @@
                 captionPictoIcon: "@",
                 title: '@',
                 description: '@',
+
+                geoField: '@',
 
                 excludeFromRefit: '=?'
             },
@@ -1459,6 +1525,9 @@
                         field: scope.colorByField,
                         ranges: scope.colorNumericRanges
                     };
+                    if (scope.colorNumericRangeMin){
+                        color.minValue = scope.colorNumericRangeMin;
+                    }
                 } else if (scope.colorByField) {
                     color = {
                         type: 'field',
@@ -1497,7 +1566,8 @@
                     'size': scope.size,
                     'minSize': scope.sizeMin,
                     'maxSize': scope.sizeMax,
-                    'sizeFunction': scope.sizeFunction
+                    'sizeFunction': scope.sizeFunction,
+                    'geoField': scope.geoField
                 };
                 var layer = MapHelper.MapConfiguration.createLayerConfiguration(customTemplate, config);
                 var layerGroup;

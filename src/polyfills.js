@@ -207,7 +207,7 @@
       };
     }
 
-    // slightly adapted from 
+    // slightly adapted from
     // https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith
     // removed Object.defineProperty reference as it is not IE8 compatible
     if (!String.prototype.endsWith) {
@@ -272,7 +272,7 @@
     window.format_string = function() {
         // The string containing the format items (e.g. "{0}")
         // will and always has to be the first argument.
-        var str = arguments[0];
+        var regEx, str = arguments[0];
         if (arguments[1] !== null && typeof arguments[1] === 'object') {
             var args = arguments[1];
             // start with the second argument (i = 1)
@@ -280,7 +280,7 @@
                 if (args.hasOwnProperty(property)) {
                     // "gm" = RegEx options for Global search (more than one instance)
                     // and for Multiline search
-                    var regEx = new RegExp("\\{" + property + "\\}", "gm");
+                    regEx = new RegExp("\\{" + property + "\\}", "gm");
                     str = str.replace(regEx, args[property]);
                 }
             }
@@ -289,7 +289,7 @@
             for (var i = 1; i < arguments.length; i++) {
                 // "gm" = RegEx options for Global search (more than one instance)
                 // and for Multiline search
-                var regEx = new RegExp("\\{" + (i - 1) + "\\}", "gm");
+                regEx = new RegExp("\\{" + (i - 1) + "\\}", "gm");
                 str = str.replace(regEx, arguments[i]);
             }
         }
@@ -297,10 +297,13 @@
         return str;
     };
 
+    window.isNullOrUndefined = function(value){
+        return typeof(value) === "undefined" || value === null ;
+    };
+
     if (typeof Object.assign !== 'function') {
       Object.assign = function(target, varArgs) { // .length of function is 2
-        'use strict';
-        if (target == null) { // TypeError if undefined or null
+        if (isNullOrUndefined(target)) { // TypeError if undefined or null
           throw new TypeError('Cannot convert undefined or null to object');
         }
 
@@ -309,7 +312,7 @@
         for (var index = 1; index < arguments.length; index++) {
           var nextSource = arguments[index];
 
-          if (nextSource != null) { // Skip over if undefined or null
+          if (!isNullOrUndefined(nextSource)) { // Skip over if undefined or null
             for (var nextKey in nextSource) {
               // Avoid bugs when hasOwnProperty is shadowed
               if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
@@ -321,4 +324,15 @@
         return to;
       };
     }
+
+    /**
+     * Escape chars so to that a given string can be used within a regex safely
+     * https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
+     */
+    RegExp.escape = function (s) {
+        if (s) {
+            return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        }
+        return s;
+    };
 }());

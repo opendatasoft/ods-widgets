@@ -20,23 +20,16 @@ Then a {@link api/ods-widgets.directive:odsResultEnumerator odsResultEnumerator}
 <ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com" catalog-parameters="{'sort': 'modified'}">
     <ods-result-enumerator context="catalog" max="5" show-hits-counter="true">
         <div>
-            <h3>{{item.metas.title}}</h3>
+            <h4>{{item.metas.title}}</h4>
             <p>License: {{item.metas.license}}</p>
         </div>
     </ods-result-enumerator>
 </ods-catalog-context>
 </pre>
 
-<div class="well" ng-embed-app="ods-widgets">
-<ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com" catalog-parameters="{'sort': 'modified'}">
-    <ods-result-enumerator context="catalog" max="5" show-hits-counter="true">
-        <div>
-            <h3>{{item.metas.title}}</h3>
-            <p>License: {{item.metas.license}}</p>
-        </div>
-    </ods-result-enumerator>
-</ods-catalog-context>
-</div>
+<iframe frameborder="0" style="width: 800px; height: 500px; margin-left: -50px;"
+        src="/docs/examples/03searchdatasets-01.html"></iframe>
+
 
 Now we can add two important features: a full-text search and a faceted search (categories to filter on). We can do that
 using two widgets: {@link api/ods-widgets.directive:odsTextSearch odsTextSearch} and {@link api/ods-widgets.directive:odsFacets odsFacets}.
@@ -58,7 +51,7 @@ only display the themes for now.
       <ods-text-search context="catalog" style="text-align: center;"></ods-text-search>
       <ods-result-enumerator context="catalog" max="5" show-hits-counter="true">
         <div>
-          <h3>{{item.metas.title}}</h3>
+          <h4>{{item.metas.title}}</h4>
           <p>License: {{item.metas.license}}</p>
         </div>
       </ods-result-enumerator>
@@ -67,23 +60,5 @@ only display the themes for now.
 </ods-catalog-context>
 </pre>
 
-<div class="well" ng-embed-app="ods-widgets">
-<ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com" catalog-parameters="{'sort': 'modified'}">
-  <div class="row-fluid">
-    <div class="span4">
-      <ods-facets context="catalog">
-        <ods-facet name="theme"></ods-facet>
-      </ods-facets>
-    </div>
-    <div class="span8">
-      <ods-text-search context="catalog" style="text-align: center;"></ods-text-search>
-      <ods-result-enumerator context="catalog" max="5" show-hits-counter="true">
-        <div>
-          <h3>{{item.metas.title}}</h3>
-          <p>License: {{item.metas.license}}</p>
-        </div>
-      </ods-result-enumerator>
-    </div>
-  </div>
-</ods-catalog-context>
-</div>
+<iframe frameborder="0" style="width: 800px; height: 610px; margin-left: -50px;"
+        src="/docs/examples/03searchdatasets-02.html"></iframe>

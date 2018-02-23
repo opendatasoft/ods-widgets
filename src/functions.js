@@ -330,9 +330,16 @@
                      .replace(/'/g, "&#039;");
             },
             getRandomUUID: function(length) {
-                length = length || 7;
-                length = Math.min(length, 36);
-                return Math.random().toString(36).substring(length);
+                // make sure the UUID length is at most 36 chars with a default of 7
+                length = Math.min(length || 7, 36);
+
+                // generate UUID
+                var acceptedChars = "abcdefghijklmnopqrstuvwxyz0123456789";
+                var UUID = '';
+                for (var i = 0; i < length; i++) {
+                    UUID += acceptedChars.charAt(Math.floor(Math.random() * acceptedChars.length));
+                }
+                return UUID;
             }
         },
         ArrayUtils: {
@@ -678,7 +685,7 @@
                         'ddd': 'ddd'
                     }
                 }[mode];
-                
+
                 return function (object) {
                     var datePattern = '';
                     if (angular.isObject(object) && ('year' in object || 'month' in object || 'day' in object || 'hour' in object || 'minute' in object || 'weekday' in object)) {
@@ -778,7 +785,7 @@
                     return details[timescale];
                 }
                 return null;
-                
+
             },
             getTimescaleX: function(x, timescale) {
                 /**

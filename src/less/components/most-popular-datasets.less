@@ -2,7 +2,7 @@
 
 .odswidget-most-popular-datasets__datasets {
     list-style-type: none;
-    padding-left: 0;
+    padding: 0;
     margin-bottom: 0;
 }
 
@@ -24,13 +24,13 @@
 }
 
 .odswidget-most-popular-datasets__dataset-details {
-    margin-left: 40px;
+    .rtl-prop(margin-left, margin-right, 40px, 0);
 }
 
 .odswidget-most-popular-datasets__theme-picto {
     width: 32px;
     height: 32px;
-    float: left;
+    .rtl-prop(float, left, right);
     margin-top: 5px;
     opacity: 0.5;
 }

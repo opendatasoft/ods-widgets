@@ -22,7 +22,7 @@
             'leaflet': {
                 'css': [
                     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css",
-                    "https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.3/leaflet.fullscreen.css",
+                    "libs/ods-map-fullscreen/ods-map-fullscreen.css",
                     "https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.css",
                     "libs/leaflet-control-geocoder/Control.Geocoder.css",
                     "libs/ods-vectormarker/vectormarker.css",
@@ -35,7 +35,7 @@
                         "L@https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"
                     ],
                     [
-                        "L.Control.FullScreen@https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.3/Leaflet.fullscreen.min.js",
+                        "L.Control.ODSMapFullscreen@libs/ods-map-fullscreen/ods-map-fullscreen.js",
                         "L.Control.Locate@https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.24.0/L.Control.Locate.js",
                         "L.Label@libs/leaflet-label/leaflet.label.js",
                         "L.ODSMap@libs/ods-map/ods-map.js",
@@ -95,6 +95,12 @@
             'qtip': {
                 'css': ['libs/qtip/jquery.qtip.min.css'],
                 'js': ['libs/qtip/jquery.qtip.min.js']
+            },
+            'simple-statistics': {
+                'css': [],
+                'js': [
+                    'ss@https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.js'
+                ]
             }
         };
 
@@ -127,9 +133,9 @@
                     var deferred = $q.defer();
                     loading[url] = deferred;
                     // If it is a relative URL, make it relative to ODSWidgetsConfig.basePath
-                    var realURL =  url.substring(0, 1) === '/'
-                                || url.substring(0, 7) === 'http://'
-                                || url.substring(0, 8) === 'https://' ? url : ODSWidgetsConfig.basePath + url;
+                    var realURL =  url.substring(0, 1) === '/' ||
+                                   url.substring(0, 7) === 'http://' ||
+                                   url.substring(0, 8) === 'https://' ? url : ODSWidgetsConfig.basePath + url;
                     LazyLoad[type](realURL, function() {
                         deferred.resolve();
                         loaded.push(url);
@@ -220,10 +226,29 @@
     }]);
 
     mod.factory("odsNotificationService", function() {
-        var callbacks = [];
+        var callbacks = {'high': [], 'normal': []};
         return {
-            registerForNotifications: function(callback) {
-                callbacks.push(callback);
+            registerForNotifications: function(callback, priority) {
+                if (priority === 'high') {
+                    callbacks['high'].push(callback);
+                } else {
+                    callbacks['normal'].push(callback);
+                }
+            },
+            unregisterForNotifications: function (callback) {
+                var index;
+
+                // high priority callbacks
+                index = callbacks['high'].indexOf(callback);
+                if (index > -1) {
+                    callbacks['high'].splice(index, 1);
+                }
+
+                // normal priority callbacks
+                index = callbacks['normal'].indexOf(callback);
+                if (index > -1) {
+                    callbacks['normal'].splice(index, 1);
+                }
             },
             sendNotification: function(notification) {
                 if (angular.isString(notification)) {
@@ -233,8 +258,10 @@
                         message: notification
                     };
                 }
-                angular.forEach(callbacks, function(callback) {
-                    callback(notification);
+                angular.forEach(['high', 'normal'], function (priority) {
+                    angular.forEach(callbacks[priority], function(callback) {
+                        callback(notification);
+                    });
                 });
             },
             markNotificationAsHandled: function(notification) {

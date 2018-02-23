@@ -14,6 +14,11 @@
                 });
                 ODSAPI.records.geopreview(layerConfig.context, parameters, timeout.promise).success(function (data) {
                     var shape;
+                    if(data.length >= parameters.rows) {
+                        layerConfig._incomplete = true;
+                    } else {
+                        layerConfig._incomplete = false;
+                    }
                     for (var i = 0; i < data.length; i++) {
                         shape = data[i];
                         if (shape.geometry.type === 'Point') {

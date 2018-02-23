@@ -14,6 +14,10 @@
                     'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
                 });
 
+                if (layerConfig.geoField) {
+                    parameters['geo_field'] = layerConfig.geoField;
+                }
+
                 if (layerConfig.func !== 'COUNT' && MapLayerHelper.isAnalyzeEnabledClustering(layerConfig)) {
                     parameters['y.serie1.expr'] = layerConfig.expr;
                     parameters['y.serie1.func'] = layerConfig.func;

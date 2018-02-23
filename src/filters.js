@@ -10,7 +10,7 @@
          *
          * @function
          * @param {string} html A string of html code.
-         * @return {string} The input html code with all link tags now including the attributes `target="_blank"` and 
+         * @return {string} The input html code with all link tags now including the attributes `target="_blank"` and
          * `rel="nofollow"`
          */
         return function(value) {
@@ -46,7 +46,12 @@
             if (re.test(value)) {
                 return encodeEntities(value);
             } else {
-                return $filter('linky')(value, '_blank');
+                try {
+                    return $filter('linky')(value, '_blank');
+                } catch (InvalidArgument) {
+                    return encodeEntities(value);
+                }
+
             }
         };
     }]);
@@ -270,7 +275,7 @@
                     formattedValue = $filter('number')(value);
                 }
                 if (unit) {
-                    if (unit === '$') {
+                    if (unit === '$' || unit === '£') {
                         formattedValue = unit + formattedValue;
                     } else {
                         formattedValue = formattedValue + ' ' + unit;
@@ -299,17 +304,32 @@
                 return $filter('moment')(value, 'LLL');
             } else if (field.type === 'file') { // it's 'file' type really
                 if (angular.isObject(value)) {
-                    // Ugly hack to fix https://github.com/opendatasoft/platform/issues/4019
-                    // The idea is that once we have API V2, we'll have an absolute link
-                    // https://opendatasoft.clubhouse.io/story/423
-                    var datasetID
-                    if (typeof context !== "undefined"){
+                    var datasetID,
+                        domainURL = '';
+
+                    // get domainUrl, without trailing slash
+                    if (context && context.domainUrl) {
+                        domainURL = context.domainUrl.replace(/\/+$/, '');
+                    }
+
+                    // get datasetID
+                    if (context && context.dataset){
                         datasetID = context.dataset.datasetid;
                     } else {
-                        datasetID = DATASETID_RE.exec(decodeURIComponent(window.location.pathname))[3];
+                        // infer datasetID from URL
+                        var matches = DATASETID_RE.exec(decodeURIComponent(window.location.pathname));
+                        if (matches) {
+                            datasetID = matches[3];
+                        }
                     }
-                    var url = '/explore/dataset/' + datasetID + '/files/'+value.id+'/download/';
-                    return $sce.trustAsHtml('<a target="_self" href="' + url + '">' + (value.filename || record.filename) + '</a>');
+
+                    // return link to file if available
+                    if (datasetID) {
+                        var url = domainURL + '/explore/dataset/' + datasetID + '/files/' + value.id + '/download/';
+                        return $sce.trustAsHtml('<a target="_self" href="' + url + '">' + (value.filename || record.filename) + '</a>');
+                    }
+
+                    return value.filename || record.filename;
                 } else {
                     return ''+value;
                 }
@@ -342,7 +362,7 @@
          * @function
          * @param {string} text Original text to truncate.
          * @param {number} length Max length of the truncated text.
-         * @return {string} The `length` first chars of the input `text`, or the full input `text` if it is shorter 
+         * @return {string} The `length` first chars of the input `text`, or the full input `text` if it is shorter
          * than `length`.
          */
         return function(text, length) {
@@ -364,7 +384,7 @@
          * @function
          * @param {string[]} fieldNames A list of field names.
          * @param {Object[]} fields A list of fields as returned by the API.
-         * @return {Object[]} A sublist of the `fields` input, containing only fields which are referenced in the 
+         * @return {Object[]} A sublist of the `fields` input, containing only fields which are referenced in the
          * `fieldNames` attribute.
          */
         return function(fields, config){
@@ -409,11 +429,11 @@
          *
          * @function
          * @param {string|Date|Number|Array|Moment} date A date
-         * @param {string} precision A unit describing the type of the `number` parameter. Can be any of `years`, 
+         * @param {string} precision A unit describing the type of the `number` parameter. Can be any of `years`,
          * `quarters`, `months`, `weeks`, `days`, `hours`, `minutes`, `seconds` or `milliseconds`.
-         * @param {number} number How many years, hours, minutes (depending on `precision`) should be added. Can be a 
-         * negative number. 
-         * @return {Moment} A date 
+         * @param {number} number How many years, hours, minutes (depending on `precision`) should be added. Can be a
+         * negative number.
+         * @return {Moment} A date
          */
         return function(isoDate, precision, number) {
             if (isoDate) {
@@ -429,7 +449,7 @@
          *
          * @function
          * @param {string|Date|Number|Array|Moment} date A date
-         * @return {string} A fully localized string describing the time between the input date and now. For example: 
+         * @return {string} A fully localized string describing the time between the input date and now. For example:
          * "A few seconds ago"
          */
         return function(isoDate) {
@@ -517,7 +537,7 @@
          * @function
          * @param {string} text Some text
          * @param {number} length The maximum length of the summary
-         * @return {string} A short summary from the given text, usually the first paragraph. If longer than the 
+         * @return {string} A short summary from the given text, usually the first paragraph. If longer than the
          * required length, an ellipsis will be made.
          */
         return function(summary, length) {
@@ -624,7 +644,7 @@
          *
          * @function
          * @param {Array} array An array of anything
-         * @return {String|Number|Boolean|Array|Object} If the input value is an array, returns the first of its 
+         * @return {String|Number|Boolean|Array|Object} If the input value is an array, returns the first of its
          * values, otherwise return the value itself.
          */
         return function(value) {
@@ -707,9 +727,9 @@
          * @name ods-widgets.filter:themeColor
          *
          * @function
-         * @param {string} theme A theme's slug (that is, its name normalized, see 
+         * @param {string} theme A theme's slug (that is, its name normalized, see
          * {@link ods-widgets.filter:themeSlug themeSlug})
-         * @return {string} The hexadecimal color code for this theme, as defined through 
+         * @return {string} The hexadecimal color code for this theme, as defined through
          * {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig}'s `theme` setting.
          */
         return function(theme) {
@@ -728,10 +748,10 @@
         /**
          * @ngdoc filter
          * @name ods-widgets.filter:isBefore
-         * 
+         *
          * @function
          * @param {string|Date|Number|Array|Moment} date1 A date
-         * @param {string|Date|Number|Array|Moment} date2 Another date, which doesn't need to be in the same format as 
+         * @param {string|Date|Number|Array|Moment} date2 Another date, which doesn't need to be in the same format as
          * date1.
          * @return {Boolean} Whether date1 is strictly before date2 or not, down to the millisecond.
          */
@@ -744,10 +764,10 @@
         /**
          * @ngdoc filter
          * @name ods-widgets.filter:isAfter
-         * 
+         *
          * @function
          * @param {string|Date|Number|Array|Moment} date1 A date
-         * @param {string|Date|Number|Array|Moment} date2 Another date, which doesn't need to be in the same format as 
+         * @param {string|Date|Number|Array|Moment} date2 Another date, which doesn't need to be in the same format as
          * date1.
          * @return {Boolean} Whether date1 is strictly after date2 or not, down to the millisecond.
          */

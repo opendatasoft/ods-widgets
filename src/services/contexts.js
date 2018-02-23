@@ -6,7 +6,7 @@
     var schemaCache = {};
     var loadingSchemas = {};
 
-    mod.factory('ContextHelper', ['ODSAPI', '$q', function (ODSAPI, $q) {
+    mod.factory('ContextHelper', ['ODSAPI', '$q', 'QueryParameters', function (ODSAPI, $q, QueryParameters) {
         return {
             getDatasetContext: function(contextName, domainId, datasetId, contextParameters, source, apikey, schema) {
                 var deferred = $q.defer();
@@ -27,18 +27,25 @@
                     'toggleRefine': function(facetName, path, replace) {
                         ODS.Context.toggleRefine(this, facetName, path, replace);
                     },
-                    'getActiveFilters':  function () {
+                    'getActiveFilters':  function (excludes) {
+                        excludes = excludes || [];
                         if (this.parameters) {
                             var filters = Object.keys(this.parameters);
                             var that = this;
                             return filters.filter(function (filter) {
-                                return (filter == 'q' && that.parameters.q && that.parameters.q.length > 0)
-                                    || filter == 'q.timerange'
-                                    || filter == 'q.timescale'
-                                    || filter == 'q.mapfilter'
-                                    || filter == 'geofilter.polygon'
-                                    || filter == 'geofilter.distance'
-                                    || filter.indexOf('refine.') === 0
+                                var allowedQueryParameters = QueryParameters;
+
+                                // For parameters that have a user defined suffix (i.e: "q.someSuffix")
+                                var queryPattern = /q\.[^\s]*/;
+
+                                return (filter == 'q' && that.parameters.q && that.parameters.q.length > 0) ||
+                                       (allowedQueryParameters.indexOf(filter) > -1) ||
+                                       filter == 'geofilter.polygon' ||
+                                       filter == 'geofilter.distance' ||
+                                       filter.indexOf('refine.') === 0 ||
+                                       filter.match(queryPattern);
+                            }).filter(function(filter) {
+                                return excludes.indexOf(filter) === -1;
                             });
                         } else {
                             return [];
@@ -51,7 +58,8 @@
                     'apikey': apikey,
                     'dataset': null,
                     'parameters': contextParameters,
-                    'source': (contextParameters && contextParameters.source) || source || null
+                    'source': (contextParameters && contextParameters.source) || source || null,
+                    'error': false
                 };
 
                 if (schema) {
@@ -83,6 +91,7 @@
                             context.dataset = new ODS.Dataset(data);
                             deferred.resolve(context.dataset);
                         }).error(function (data) {
+                            context.error = true;
                             deferred.reject("Failed to fetch " + contextName + " context.");
                         });
                     }

@@ -235,7 +235,6 @@
                             if (scope.showFilters === 'true') {
                                 map.addControl(new L.Control.FilterByView());
                             }
-                            map.addControl(new L.Control.Fullscreen());
                         }
 
                         if (!staticMap) {

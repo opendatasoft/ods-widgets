@@ -26,20 +26,5 @@ using a checkbox that will toggle a heatmap layer and a clustered layer using th
     &lt;/div&gt;
 &lt;/ods-dataset-context&gt;
 </pre>
-<div class="well" ng-embed-app="ods-widgets">
-<ods-dataset-context context="chicagoincidents" chicagoincidents-domain="public" chicagoincidents-dataset="killings-by-law-enforcement-officers-in-the-usa">
-    <ods-timerange context="chicagoincidents" default-from="2009-01-01" default-to="2014-12-09"></ods-timerange>
-    <label><input type="checkbox" ng-model="heatmapMode"> Show heatmap</label>
-    <div class="row-fluid">
-        <div class="span4">
-            <ods-facets context="chicagoincidents"></ods-facets>
-        </div>
-        <div class="span8">
-            <ods-map>
-                <ods-map-layer context="chicagoincidents"></ods-map-layer>
-                <ods-map-layer context="chicagoincidents" display="heatmap" show-if="heatmapMode"></ods-map-layer>
-            </ods-map>
-        </div>
-    </div>
-</ods-dataset-context>
-</div></div></div>
+<iframe frameborder="0" style="width: 800px; height: 1050px; margin-left: -50px;"
+        src="/docs/examples/04advancedmap.html"></iframe></div></div>

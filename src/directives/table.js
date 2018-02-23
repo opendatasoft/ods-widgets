@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsTable', ['ODSWidgetsConfig', '$sce', function(ODSWidgetsConfig, $sce) {
+    mod.directive('odsTable', function() {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsTable
@@ -35,7 +35,7 @@
             },
             replace: true,
             transclude: true,
-            require: ['odsTable','?odsAutoResize', '?autoResize'],
+            require: ['?odsAutoResize', '?autoResize'],
             template: '<div class="records records-table odswidget odswidget-table">' +
                        ' <div class="odswidget-table__header" ng-show="records.length">' +
                        '     <table class="odswidget-table__internal-table">' +
@@ -92,7 +92,6 @@
                        ' <div class="odswidget-overlay" ng-hide="(!fetching || records) && !working"><ods-spinner></ods-spinner></div>' +
                     '</div>',
             controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', '$transclude', '$q', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile, $transclude, $q) {
-                var ctrl = this;
                 $scope.displayedFieldsArray = null;
 
                 $scope.displayDatasetFeedback = false;
@@ -112,12 +111,10 @@
                 $scope.done = false;
 
                 // Needed to construct the table
-                var datasetFields, recordsHeader = $element.find('.odswidget-table__header'), recordsBody = $element.find('.odswidget-table__records-tbody');
-
-                var initScrollLeft = recordsHeader.offset().left;
-                var prevScrollLeft = 0; // Use to know if it is a horizontal or vertical scroll
-                var lastScrollLeft = 0; // To keep the horizontal scrollbar position when refining or sorting
-                var forceScrollLeft = false; // Only reset the horizontal scrollbar position when refining or sorting
+                var datasetFields,
+                    recordsHeader = $element.find('.odswidget-table__header'),
+                    recordsArea = $element.find('.odswidget-table__records'),
+                    recordsBody = $element.find('.odswidget-table__records-tbody');
 
                 // Use to keep track of the records currently visible for the users
                 var lastStartIndex = 0, lastEndIndex = 0;
@@ -193,6 +190,8 @@
                         lastLoadedPage = page;
 
                         $timeout(function() {
+                            restoreScrollLeft();
+
                             // The rendering code can only handle 40 records at one go right now, so we need to let the
                             // previous page render first.
                             // We could change the rendering code, but no time today for that battle. :/
@@ -206,7 +205,7 @@
                     }
 
                     ODSAPI.records.search($scope.context, options, timeout.promise).
-                        success(function(data, status, headers, config) {
+                        success(function(data) {
                             var responsePage = data.parameters.start / data.parameters.rows;
                             if (lastLoadedPage === null && responsePage === 0 || angular.isNumber(lastLoadedPage) && responsePage === lastLoadedPage + 1) {
                                 handleResponse(data, responsePage);
@@ -214,7 +213,7 @@
                                 pagesWaitingHandling[responsePage] = {'callback': handleResponse, 'data': data};
                             }
                         }).
-                        error(function(data, status, headers, config) {
+                        error(function(data) {
                             if (data) {
                                 // Errors without data are cancelled requests
                                 $scope.error = data.error;
@@ -255,11 +254,11 @@
                     // Not all the sorts are supported yet
                     if($scope.isFieldSortable(field)){
                         // Reversing an existing sort
-                        if($scope.context.parameters.sort == field.name){
+                        if($scope.context.parameters.sort === field.name){
                             $scope.context.parameters.sort = '-' + field.name;
                             return;
                         }
-                        if($scope.context.parameters.sort == '-' + field.name){
+                        if($scope.context.parameters.sort === '-' + field.name){
                             $scope.context.parameters.sort = field.name;
                             return;
                         }
@@ -334,7 +333,7 @@
 
                     for (var j=0; j<datasetFields.length; j++) {
                         var field = datasetFields[j];
-                        var fieldValue = $filter('formatFieldValue')(record.fields, field);
+                        var fieldValue = $filter('formatFieldValue')(record.fields, field, $scope.context);
 
                         td = document.createElement('td');
                         td.className = 'odswidget-table__cell';
@@ -363,9 +362,11 @@
                             if (field && field.type === 'geo_point_2d') {
                                 newScope.fieldValue = fieldValue;
                                 node = $compile('<ods-geotooltip width="300" height="300" coords="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
+                                div.dir = 'ltr';
                             } else if (field && field.type === 'geo_shape') {
                                 newScope.fieldValue = $filter('truncate')(fieldValue);
                                 node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
+                                div.dir = 'ltr';
                             } else if (field && field.type === 'file') {
                                 var html = $filter('nofollow')($filter('prettyText')(fieldValue)).toString();
                                 html = html.replace(/<a /, '<a ods-resource-download-conditions ');
@@ -375,10 +376,14 @@
                                     node = $compile(html)(newScope)[0];
                                     node.title = record.fields[field.name] ? record.fields[field.name].filename : '';
                                 }
+                                div.dir = 'ltr';
                             } else {
                                 node = document.createElement('span');
                                 node.title = fieldValue;
                                 node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
+                                if (field && field.type === 'text') {
+                                    div.dir = $scope.context.dataset.metas.language === 'ar' ? 'rtl' : 'ltr';
+                                }
                             }
                         }
                         div.appendChild(node);
@@ -405,8 +410,8 @@
                 };
 
                 var displayRecords = function() {
-                    var offsetHeight = $element.find('.odswidget-table__records')[0].offsetHeight;
-                    var scrollTop = $element.find('.odswidget-table__records')[0].scrollTop;
+                    var offsetHeight = recordsArea[0].offsetHeight;
+                    var scrollTop = recordsArea[0].scrollTop;
                     var recordHeight = recordsBody.find('tr').eq(1).height(); // First row is the placeholder
 
                     // Compute the index of the records that will be visible = that we have in the DOM
@@ -565,7 +570,7 @@
 
                     refreshRecords(true);
 
-                    $scope.$watch('context.parameters', function(newValue, oldValue) {
+                    $scope.$watch('context.parameters', function() {
                         // Don't fire at initialization time
 
                         DebugLogger.log('table -> searchOptions watch -> refresh records');
@@ -573,8 +578,9 @@
                         // Reset all variables for next time
                         $scope.layout = []; // Reset layout (layout depends on records data)
                         $scope.working = true;
-                        lastScrollLeft = $element.find('.odswidget-table__records')[0].scrollLeft; // Keep scrollbar position
-                        forceScrollLeft = true;
+
+                        // remember position so that it can be restored after
+                        rememberScrollLeft();
 
                         recordsBody.empty();
 
@@ -584,32 +590,65 @@
                 });
 
 
+                // synchronize scroll between header and body
 
-                ctrl.resetScroll = function() {
-                    $element.find('.odswidget-table__records').scrollLeft(0);
-                    recordsHeader.css({left: 'auto'});
-                    initScrollLeft = $element.find('.odswidget-table__header').offset().left;
+                var isRtl = ($element.css('direction') === 'rtl');
+                var rtlScrollType = $.support.rtlScrollType;
+
+                var synchronizeHeaderPosition;
+                if (!isRtl) {
+                    synchronizeHeaderPosition = function () {
+                        recordsHeader.css({left: -recordsArea.scrollLeft()});
+                    };
+                } else if (rtlScrollType === 'reverse') {
+                    synchronizeHeaderPosition = function () {
+                        recordsHeader.css({left: recordsArea.scrollLeft()});
+                    };
+                } else if (rtlScrollType === 'default') {
+                    synchronizeHeaderPosition = function () {
+                        var maxScrollLeft = recordsArea[0].scrollWidth - recordsArea[0].clientWidth;
+                        recordsHeader.css({left: maxScrollLeft - recordsArea.scrollLeft()});
+                    };
+                } else if (rtlScrollType === 'negative') {
+                    synchronizeHeaderPosition = function () {
+                        recordsHeader.css({left: -recordsArea.scrollLeft()});
+                    };
+                }
+
+                var lastScrollLeft;
+                var rememberScrollLeft = function () {
+                    // do not remember position if the table is empty
+                    if (!endIndex) {
+                        return;
+                    }
+                    lastScrollLeft = recordsArea.scrollLeft();
+                };
+                var restoreScrollLeft = function () {
+                    if (!lastScrollLeft) {
+                        return;
+                    }
+                    // restore position
+                    recordsArea.scrollLeft(lastScrollLeft);
+                    // forget position once restored
+                    lastScrollLeft = undefined;
                 };
 
                 var lastRecordDisplayed = 0;
-                $element.find('.odswidget-table__records').on('scroll', function() {
-                    if (this.scrollLeft !== prevScrollLeft) {
-                        // Horizontal scroll
-                        recordsHeader.offset({left: initScrollLeft - this.scrollLeft});
-                        prevScrollLeft = this.scrollLeft;
-                    } else {
-                        // Vertical scroll
-                        forceScrollLeft = false;
-                        var recordDisplayed = Math.max(Math.floor(($element.find('.odswidget-table__records')[0].scrollTop) / recordsBody.find('tr').eq(1).height()), 0);
+                recordsArea.on('scroll', function() {
+                    synchronizeHeaderPosition();
 
-                        if (Math.abs(recordDisplayed-lastRecordDisplayed) < extraRecords && recordDisplayed > startIndex) {
-                            return;
-                        }
+                    // Vertical scroll
+                    var recordDisplayed = Math.max(Math.floor((recordsArea[0].scrollTop) / recordsBody.find('tr').eq(1).height()), 0);
 
-                        lastRecordDisplayed = recordDisplayed;
-                        displayRecords();
+                    if (Math.abs(recordDisplayed-lastRecordDisplayed) < extraRecords && recordDisplayed > startIndex) {
+                        return;
                     }
+
+                    lastRecordDisplayed = recordDisplayed;
+                    displayRecords();
                 });
+
+                // end synchronize scroll
 
                 var computeStyle = function(tableId, disableMaxWidth) {
                     var styles = '';
@@ -626,9 +665,6 @@
 
                 $scope.computeLayout = function() {
                     var elementHeight;
-                    var rows = $element.find('.odswidget-table__internal-table-row');
-
-                    var padding = 22; // 22 = 2*paddingDiv + 2*paddingTh = 2*10 + 2*1
 
                     if (!$scope.layout.length && $scope.records.length) {
                         if (!$element.attr('id')) {
@@ -645,10 +681,7 @@
                         if ($scope.displayDatasetFeedback) {
                             bodyOffset = $element.find('.table-feedback-new').height() + 5;
                         }
-                        $element.find('.odswidget-table__records').height(elementHeight - 25 - bodyOffset); // Horizontal scrollbar height
-
-                        var recordHeight = recordsBody.find('tr').eq(1).height();
-                        var bodyHeight = (rows.length-2)*recordHeight; // Don't take in account placeholders
+                        recordsArea.height(elementHeight - 25 - bodyOffset); // Horizontal scrollbar height
 
                         // Remove previous style
                         var node = document.getElementById(styleSheetId);
@@ -667,35 +700,8 @@
                         });
                         $scope.layout[0] = 30; // First column is the record number
 
-                        // WARNING: The following lines are commented because they caused the bug in CH #1401
-                        // Commenting them doesn't seem to change anything to the expected behaviour, but the code is
-                        // left here nonetheless should issues appear.
-
-                        //var tableWidth = $element.find('.odswidget-table__internal-table').width();
-                        //var tableFewColumns = (totalWidth + padding * $scope.layout.length) < $element.width();
-                        //
-                        //if (tableFewColumns) {
-                        //    var toAdd = Math.floor(tableWidth / $scope.layout.length);
-                        //    var remaining = tableWidth - toAdd * $scope.layout.length;
-                        //
-                        //    // Dispatch the table width between the other columns
-                        //    for (var i = 1; i < $scope.layout.length; i++) {
-                        //        $scope.layout[i] = toAdd - padding;
-                        //    }
-                        //    $scope.layout[$scope.layout.length - 1] += remaining;
-                        //
-                        //    // Scrollbar is here: too many records
-                        //    if (bodyHeight > 500) {
-                        //        $element.find('.odswidget-table__internal-header-table').width(tableWidth);
-                        //    } else {
-                        //        $element.find('.odswidget-table__internal-header-table').width('');
-                        //    }
-                        //}
-
                         // Append new style
                         var css = document.createElement('style');
-                        // WARNING: goes with the commented block above
-                        //var styles = computeStyle(tableId, tableFewColumns);
                         var styles = computeStyle(tableId, false);
 
                         css.id = styleSheetId;
@@ -712,20 +718,6 @@
                         // Switch between the default header and the fake header
                         $element.find('.odswidget-table__internal-table-header').hide().attr('role', 'representation');
                         $element.find('.odswidget-table__internal-header-table-header').show().removeAttr('role');
-
-                        if (!forceScrollLeft) {
-                            $timeout(function () {
-                                ctrl.resetScroll();
-                            }, 0);
-                        }
-                    }
-
-                    // Restore previous horizontal scrollbar position
-                    if (forceScrollLeft) {
-                        if (!lastScrollLeft) {
-                            recordsHeader.css({left: 'auto'});
-                        }
-                        $element.find('.odswidget-table__records')[0].scrollLeft = lastScrollLeft;
                     }
 
                     if ($scope.layout.length) {
@@ -735,17 +727,14 @@
 
             }],
             link: function(scope, element, attrs, ctrls) {
-                var ctrl = ctrls[0],
-                    autoResizeCtrl = ctrls[1] || ctrls[2];
+                var autoResizeCtrl = ctrls[0] || ctrls[1];
                 if (angular.isDefined(autoResizeCtrl) && autoResizeCtrl !== null) {
                     autoResizeCtrl.onResize = function() {
-                        ctrl.resetScroll();
                         scope.layout = [];
                         scope.computeLayout();
                     };
                 }
             }
         };
-    }]);
-
+    });
 }());

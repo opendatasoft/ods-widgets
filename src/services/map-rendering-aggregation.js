@@ -213,7 +213,7 @@
                                         };
                                         for (var prop in optionsMap) {
                                             if (optionsMap.hasOwnProperty(prop) && angular.isDefined(layerConfig[prop])) {
-                                                opts[optionsMap[prop]] = layerConfig[prop]
+                                                opts[optionsMap[prop]] = layerConfig[prop];
                                             }
                                         }
 

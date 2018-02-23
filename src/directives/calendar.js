@@ -114,8 +114,8 @@
                         scope.availableCalendarViews = scope.availableCalendarViews.split(/\s*,\s*/);
                     }
                     if (!angular.isDefined(scope.calendarView)) {
-                        if (visualization_metas.calendar_default_view
-                            && scope.availableCalendarViews.indexOf(visualization_metas.calendar_default_view) > -1) {
+                        if (visualization_metas.calendar_default_view &&
+                            scope.availableCalendarViews.indexOf(visualization_metas.calendar_default_view) > -1) {
                             scope.calendarView = visualization_metas.calendar_default_view;
                         } else {
                             scope.calendarView = scope.availableCalendarViews[0];
@@ -173,7 +173,7 @@
                     scope.fullcalendar.fullCalendar({
                         lazyFetching: false,
                         header: {
-                            left: 'prevYear,prev,next,nextYear, today',
+                            left: $(element).css('direction') === 'rtl' ? 'nextYear,next,prev,prevYear, today' : 'prevYear,prev,next,nextYear, today',
                             center: 'title',
                             right: scope.availableCalendarViews.join(',')
                         },
@@ -249,6 +249,7 @@
                         var newScope = scope.$new(true);
                         newScope.record = record;
                         newScope.dataset = scope.context.dataset;
+                        newScope.ctx = scope.context;
                         var content;
                         if (scope.context.dataset.extra_metas.visualization.calendar_tooltip_html_enabled && scope.context.dataset.extra_metas.visualization.calendar_tooltip_html) {
                             content = $compile('<div>' + scope.context.dataset.extra_metas.visualization.calendar_tooltip_html + '</div>')(newScope);
@@ -313,24 +314,24 @@
             '        <debug data="record.fields[field.name]"></debug>' +
             '        <span ng-switch-when="geo_point_2d">' +
             '            <ods-geotooltip width="300" height="300" coords="record.fields[field.name]">'+
-            '                {{ record.fields|formatFieldValue:field }}'+
+            '                {{ record.fields|formatFieldValue:field:ctx }}'+
             '            </ods-geotooltip>' +
             '        </span>' +
             '        <span ng-switch-when="geo_shape">' +
             '            <ods-geotooltip width="300" height="300" geojson="record.fields[field.name]">'+
-            '                {{ record.fields|formatFieldValue:field }}'+
+            '                {{ record.fields|formatFieldValue:field:ctx }}'+
             '            </ods-geotooltip>' +
             '        </span>' +
             '        <span ng-switch-when="file">' +
             '            <div ng-if="!dataset.isFieldAnnotated(field, \'has_thumbnails\')"'+
-            '                 ng-bind-html="record.fields|formatFieldValue:field"></div>' +
+            '                 ng-bind-html="record.fields|formatFieldValue:field:ctx"></div>' +
             '            <div ng-if="dataset.isFieldAnnotated(field, \'has_thumbnails\')"'+
             '                 ng-bind-html="record.fields[field.name]|displayImageValue:dataset.datasetid"'+
             '                 style="text-align: center;"></div>' +
             '        </span>' +
             '        <span ng-switch-default ' +
-            '              title="{{record.fields|formatFieldValue:field}}" ' +
-            '              ng-bind-html="record.fields|formatFieldValue:field|imagify|videoify|prettyText|nofollow">'+
+            '              title="{{record.fields|formatFieldValue:field:ctx}}" ' +
+            '              ng-bind-html="record.fields|formatFieldValue:field:ctx|imagify|videoify|prettyText|nofollow">'+
             '        </span>' +
             '    </dd>' +
             '</dl>'

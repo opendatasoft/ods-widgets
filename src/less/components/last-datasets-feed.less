@@ -2,9 +2,8 @@
 
 .odswidget-last-datasets-feed__datasets {
     list-style-type: none;
-    padding-left: 0;
+    padding: 0;
     margin-bottom: 0;
-
 }
 
 .odswidget-last-datasets-feed__dataset {
@@ -16,7 +15,7 @@
 }
 
 .odswidget-last-datasets-feed__dataset-details {
-    margin-left: 40px;
+    .rtl-prop(margin-left, margin-right, 40px, 0);
 }
 
 .odswidget-last-datasets-feed__dataset-details-title {
@@ -30,7 +29,7 @@
 .odswidget-last-datasets-feed__theme-picto {
     width: 32px;
     height: 32px;
-    float: left;
+    .rtl-prop(float, left, right);
     margin-top: 5px;
     opacity: 0.5;
 }

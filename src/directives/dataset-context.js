@@ -156,6 +156,8 @@
             replace: true,
             controller: ['$scope', '$attrs', function($scope, $attrs) {
                 var contextNames = $attrs.context.split(',');
+                var datasetID, domain, apikey, sort, source, schema;
+
                 for (var i=0; i<contextNames.length; i++) {
                     // Note: we interpolate ourselves because we need the attributes value at the time of the controller's
                     // initialization, which is before the standard interpolation occurs.
@@ -166,29 +168,41 @@
                         console.log('ERROR : Context ' + contextName + ' : Missing dataset parameter');
                     }
 
-                    var datasetID, domain, apikey, sort, source, schema;
-
                     if ($attrs[contextName+'Dataset']) {
                         datasetID = $interpolate($attrs[contextName + 'Dataset'])($scope);
+                    } else {
+                        datasetID = '';
                     }
 
                     // Do we have a domain ID?
                     if ($attrs[contextName+'Domain']) {
                         domain = $interpolate($attrs[contextName + 'Domain'])($scope);
+                    } else {
+                        domain = '';
                     }
 
                     if ($attrs[contextName + 'Apikey']) {
                         apikey = $interpolate($attrs[contextName + 'Apikey'])($scope);
+                    } else {
+                        apikey = '';
                     }
+
                     if ($attrs[contextName+'Sort']) {
                         sort = $interpolate($attrs[contextName + 'Sort'])($scope);
+                    } else {
+                        sort = '';
                     }
+
                     if ($attrs[contextName+'Source']) {
                         source = $interpolate($attrs[contextName + 'Source'])($scope);
+                    } else {
+                        source = '';
                     }
 
                     if ($attrs[contextName+'DatasetSchema']) {
                         schema = angular.fromJson($attrs[contextName + 'DatasetSchema'].replace(/\\{/g, '{').replace(/\\}/g, '}'));
+                    } else {
+                        schema = undefined;
                     }
 
                     var parameters = $scope.$eval($attrs[contextName+'Parameters']) || {};

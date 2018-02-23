@@ -38,7 +38,7 @@
         };
     });
 
-    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'ODSParamSerializer', function($http, ODSWidgetsConfig, odsNotificationService, ODSParamSerializer) {
+    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'ODSParamSerializer', 'translate', function($http, ODSWidgetsConfig, odsNotificationService, ODSParamSerializer, translate) {
         /**
          * This service exposes OpenDataSoft APIs.
          *
@@ -133,7 +133,7 @@
                     return request(context, '/api/records/1.0/analyze/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout)
                         .success(function(data, status, headers, config) {
                             if (headers()['ods-analyze-truncated']) {
-                                odsNotificationService.sendNotification("An analysis request hit the maximum number of results limit. Returned data is incomplete and not trustworthy.");
+                                odsNotificationService.sendNotification(translate("An analysis request hit the maximum number of results limit. Returned data is incomplete and not trustworthy."));
                             }
                         });
                 },

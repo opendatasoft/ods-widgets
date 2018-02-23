@@ -181,7 +181,7 @@
                     angular.forEach(config.groups, function (group) {
                         if (group.displayed) {
                             angular.forEach(group.layers, function (datasetConfig) {
-                                if (!datasetConfig.unknown && datasetConfig.context.dataset !== null){
+                                if (!datasetConfig.context.error) {
                                     if (!options.geoOnly || datasetConfig.context.dataset.hasGeoField()) {
                                         if (!(datasetConfig.excludeFromRefit && options.skipExcludedFromRefit)) {
                                             contexts.push(datasetConfig.context);
@@ -220,10 +220,8 @@
                         config = {};
                     }
                     var display = config.display || 'auto';
-                    if (display === 'clusters') {
-                        display = 'polygon';
-                    }
-                    if (display === 'clustersforced') {
+                    if (display === 'clusters' || display === 'clustersforced') {
+                        // 'clusters' is the new name (Mapbuilder v2) for forced clusterization
                         display = 'polygonforced';
                     }
                     if (display === 'raw') {
@@ -268,7 +266,8 @@
                         "showZoomMax": config.showZoomMax || null,
                         "minSize": config.minSize || null,
                         "maxSize": config.maxSize || null,
-                        "sizeFunction": config.sizeFunction || null
+                        "sizeFunction": config.sizeFunction || null,
+                        "geoField": config.geoField
                     };
 
                     if (!layer.func && ['shape', 'aggregation'].indexOf(layer.display) > -1) {
@@ -330,6 +329,8 @@
                     });
                     return layerIds;
                 },
+
+
                 createLayerId: function (layer) {
                     if (angular.isUndefined(layer._runtimeId)) {
                         layer._runtimeId = ODS.StringUtils.getRandomUUID();

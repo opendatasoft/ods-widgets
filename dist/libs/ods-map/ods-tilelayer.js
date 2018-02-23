@@ -114,12 +114,17 @@ L.ODSTileLayer = L.TileLayer.extend({
             L.TileLayer.prototype.initialize.call(this, stamenUrl, layerOptions);
         } else if (basemap.provider.startsWith('jawg.') || basemap.provider === 'mapquest') {
             var jawgUrl = 'https://tiles.jawg.io/';
+            var jawgMap;
 
             if (basemap.provider !== 'mapquest') {
-                var jawgMap = basemap.provider.substring(5);
-                if (jawgMap !== 'streets') {
-                    jawgUrl += jawgMap + '/';
-                }
+                jawgMap = basemap.provider.substring(5);
+            } else {
+                jawgMap = 'streets';
+            }
+
+            if (jawgMap !== 'streets') {
+                // The streets layer is at the root
+                jawgUrl += 'jawg-' + jawgMap + '/';
             }
 
             jawgUrl += '{z}/{x}/{y}';

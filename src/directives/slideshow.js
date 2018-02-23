@@ -23,14 +23,14 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="streetart"
-         *                               streetart-domain="https://data.opendatasoft.com"
-         *                               streetart-dataset="liste-fresques-urbaines-roubaix@ville-de-roubaix">
-         *              <ods-slideshow context="streetart"
-         *                             image-field="photo"
-         *                             title-fields="nom_graffeur"
+         *          <ods-dataset-context context="thetatecollection"
+         *                               thetatecollection-domain="public"
+         *                               thetatecollection-dataset="the-tate-collection">
+         *              <ods-slideshow context="thetatecollection"
+         *                             image-field="thumbnailurl"
+         *                             title-fields="artist"
          *                             style="height: 300px">
-         *                  <strong>{{ record.fields.nom_graffeur }}</strong> <br>
+         *                  <strong>{{ record.fields.artiste }}</strong> <br>
          *                  Location:
          *                  <ods-geotooltip coords="record.fields.geo">{{ record.fields.adresse }}</ods-geotooltip>
          *              </ods-slideshow>
@@ -114,7 +114,7 @@
             '        </button>' +
             '    </div>' +
             '    <div class="ods-slideshow__image-legend">' +
-            '        <div class="ods-slideshow__image-index">{{ currentIndex|number:0 }}/{{ lastIndex|number:0 }}</div>' +
+            '        <div class="ods-slideshow__image-index"><div class="ods-slideshow__image-index__item">{{ currentIndex|number:0 }}</div><div class="ods-slideshow__image-index__item">/</div><div class="ods-slideshow__image-index__item">{{ lastIndex|number:0 }}</div></div>' +
             '        <div class="ods-slideshow__image-title" title="{{ imageTitle }}" ng-bind="imageTitle"></div>' +
             '        <div class="ods-slideshow__toggles">' +
             '            <button class="ods-slideshow__tooltip-toggle"' +
@@ -265,16 +265,34 @@
                     if (scope.loading) {
                         return;
                     }
-                    // right arrow: load next image
-                    if ($event.keyCode == 39) {
-                        scope.loadNextImage();
-                        return;
+
+                    var elementDirection = $(element).css('direction');
+
+                    // Check if HTML is RTL or LTR to map keys appropriately (controls are inverted)
+                    if(elementDirection === "rtl") {
+                        // right arrow: load previous image
+                        if ($event.keyCode == 37) {
+                            scope.loadNextImage();
+                            return;
+                        }
+                        // left arrow: load next image
+                        if ($event.keyCode == 39) {
+                            scope.loadPreviousImage();
+                            return;
+                        }
+                    } else {
+                        // right arrow: load next image
+                        if ($event.keyCode == 39) {
+                            scope.loadNextImage();
+                            return;
+                        }
+                        // left arrow: load previous image
+                        if ($event.keyCode == 37) {
+                            scope.loadPreviousImage();
+                            return;
+                        }
                     }
-                    // left arrow: load previous image
-                    if ($event.keyCode == 37) {
-                        scope.loadPreviousImage();
-                        return;
-                    }
+
                 };
 
                 $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function (event) {

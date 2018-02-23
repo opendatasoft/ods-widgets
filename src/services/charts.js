@@ -274,7 +274,7 @@
                         if (field.annotations) {
                             for (var a=0; a<field.annotations.length; a++) {
                                 var anno = field.annotations[a];
-                                if (anno.name == 'facet') {
+                                if (anno.name === 'facet' || anno.name === 'analyse') {
                                     availableX.push(field);
                                 }
                             }
@@ -335,7 +335,7 @@
                 availableY[datasetid] = y;
             },
             resolvePosition: function(position) {
-                if (typeof position == undefined) {
+                if (isNullOrUndefined(position)) {
                     position = "center";
                 }
                 if (!(position in positions)) {
@@ -383,7 +383,8 @@
             },
             setChartDefaultValues: function(datasetid, chart, conservative, advanced) {
                 var cumulatedQueriesTimescale = '',
-                    xType;
+                    xType,
+                    i;
 
                 if (typeof conservative === "undefined") {
                     conservative = false;
@@ -392,7 +393,7 @@
                     advanced = false;
                 }
 
-                for (var i = 0; i < chart.queries.length; i++) {
+                for (i = 0; i < chart.queries.length; i++) {
                     xType = this.getFieldType(datasetid, chart.queries[i].xAxis);
                     if (chart.queries[i].timescale && (xType === 'date' || xType === "datetime")) {
                         cumulatedQueriesTimescale = chart.queries[i].timescale;
@@ -407,7 +408,7 @@
 
                 // apply global timescale to queries that eventually might not anything set
                 if (chart.timescale) {
-                    for (var i = 0; i < chart.queries.length; i++) {
+                    for (i = 0; i < chart.queries.length; i++) {
                         if (!chart.queries[i].timescale) {
                             chart.queries[i].timescale = chart.timescale;
                         }
@@ -536,7 +537,7 @@
                 } else {
                     // there is an yAxis defined, we need to check if it still exists
                     if (!conservative && ['COUNT', 'CONSTANT', 'CUSTOM'].indexOf(chart.func) === -1) {
-                        if ($.grep(availableY, function(y) {return y.name === chart.yAxis}).length === 0) {
+                        if ($.grep(availableY, function(y) {return y.name === chart.yAxis;}).length === 0) {
                             // the currently defined y does not seem to exists anymore, fallback on the first available one
                             chart.yAxis = availableY[0].name;
                         }

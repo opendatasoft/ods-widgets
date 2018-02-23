@@ -24,7 +24,7 @@
                     var records = data.clusters;
                     for (var i = 0; i < records.length; i++) {
                         var record = records[i];
-                        if (record.count === 1 && layerConfig.display !== 'polygonforced') {
+                        if  (record.count === 1 && layerConfig.display !== 'polygonforced' && layerConfig.display !== 'clusters') {
                             MapLayerHelper.drawPoint(layerConfig, map, record.cluster_center, record, layerGroup);
                             //layerGroup.addLayer(new L.Marker(record.cluster_center)); // Uncomment to debug pointer alignment
                         } else {

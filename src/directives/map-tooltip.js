@@ -9,17 +9,21 @@
             transclude: true,
             template: '' +
                 '<div class="odswidget-map-tooltip">' +
-                '   <ods-spinner class="odswidget-map-tooltip__spinner" ng-hide="records"></ods-spinner>' +
-                '   <h2 ng-show="records.length > 1" class="odswidget-map-tooltip__scroll-control ng-leaflet-tooltip-cloak">' +
-                '       <i class="odswidget-map-tooltip__scroll-left fa fa-chevron-left" ng-click="moveIndex(-1)"></i>' +
-                '       <span ng-bind="(selectedIndex+1)+\'/\'+records.length" ng-click="moveIndex(1)"></span>' +
-                '       <i class="odswidget-map-tooltip__scroll-right fa fa-chevron-right" ng-click="moveIndex(1)"></i>' +
-                '   </h2>' +
+                '   <ods-spinner class="odswidget-map-tooltip__spinner" ng-hide="records.length > 0"></ods-spinner>' +
                 '   <div class="ng-leaflet-tooltip-cloak odswidget-map-tooltip__limited-results-warning" ng-show="records && records.length == RECORD_LIMIT" translate>(limited to the first {{RECORD_LIMIT}} records)</div>' +
                 '   <div ng-repeat="record in records" ng-if="$index == selectedIndex" class="odswidget-map-tooltip__record">' +
                 '       <div ng-if="!template" ng-include src="\'default-tooltip\'"></div>' +
                 '       <div ng-if="template" ng-include src="\'custom-tooltip-\'+context.dataset.datasetid"></div>' +
                 '   </div>' +
+                '   <nav role="navigation" ng-show="records.length > 1" class="odswidget-map-tooltip__scroll-control ng-leaflet-tooltip-cloak">' +
+                '       <button class="odswidget-map-tooltip__scroll-left" ng-click="moveIndex(-1)">' +
+                '           <i class=" fa fa-chevron-left"  aria-hidden="true"></i>' +
+                '       </button>' +
+                '       <div class="odswidget-map-tooltip__scroll-amount" ng-bind="(selectedIndex+1)+\' / \'+records.length"></div>' +
+                '       <button class="odswidget-map-tooltip__scroll-right" ng-click="moveIndex(1)">' +
+                '          <i class="fa fa-chevron-right"></i>' +
+                '       </button>' +
+                '   </nav>' +
                 '</div>',
             scope: {
                 shape: '=',
@@ -33,6 +37,7 @@
             },
             replace: true,
             link: function(scope, element, attrs) {
+                scope.ctx = scope.context;
                 var destroyPopup = function(e) {
                     if (e.popup._content === element[0]) {
                         if (scope.selectedShapeLayer) {
@@ -51,7 +56,9 @@
                     $templateCache.put('custom-tooltip-' + scope.context.dataset.datasetid, attrs.template);
                 } else {
                     $templateCache.put('default-tooltip', '<div class="infoPaneLayout">' +
-                        '<h2 class="odswidget-map-tooltip__header" ng-show="!!getTitle(record)" ng-bind="getTitle(record)"></h2>' +
+                        '<h2 class="odswidget-map-tooltip__header" ng-show="!!getTitle(record)">' +
+                        '   <span ng-bind="getTitle(record) | shortSummary: 100"></span> ' +
+                        '</h2>' +
                         '<dl class="odswidget-map-tooltip__record-values">' +
                         '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields" ' +
                         '        ng-show="record.fields[field.name]|isDefined"' +
@@ -63,16 +70,16 @@
                         '        ng-show="record.fields[field.name]|isDefined"' +
                         '        class="odswidget-map-tooltip__field-value">' +
                         '        <span ng-switch-when="geo_point_2d">' +
-                        '            <ods-geotooltip width="300" height="300" coords="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
+                        '            <ods-geotooltip width="300" height="300" coords="record.fields[field.name]">{{ record.fields|formatFieldValue:field:context }}</ods-geotooltip>' +
                         '        </span>' +
                         '        <span ng-switch-when="geo_shape">' +
-                        '            <ods-geotooltip width="300" height="300" geojson="record.fields[field.name]">{{ record.fields|formatFieldValue:field }}</ods-geotooltip>' +
+                        '            <ods-geotooltip width="300" height="300" geojson="record.fields[field.name]">{{ record.fields|formatFieldValue:field:context }}</ods-geotooltip>' +
                         '        </span>' +
                         '        <span ng-switch-when="file">' +
-                        '            <div ng-if="!context.dataset.isFieldAnnotated(field, \'has_thumbnails\')" ng-bind-html="record.fields|formatFieldValue:field"></div>' +
+                        '            <div ng-if="!context.dataset.isFieldAnnotated(field, \'has_thumbnails\')" ng-bind-html="record.fields|formatFieldValue:field:context"></div>' +
                         '            <div ng-if="context.dataset.isFieldAnnotated(field, \'has_thumbnails\')" ng-bind-html="record.fields[field.name]|displayImageValue:context.dataset.datasetid" style="text-align: center;"></div>' +
                         '        </span>' +
-                        '        <span ng-switch-default title="{{record.fields|formatFieldValue:field}}" ng-bind-html="record.fields|formatFieldValue:field|imagify|videoify|prettyText|nofollow"></span>' +
+                        '        <span ng-switch-default title="{{record.fields|formatFieldValue:field:context}}" ng-bind-html="record.fields|formatFieldValue:field|imagify|videoify|prettyText|nofollow"></span>' +
                         '    </dd>' +
                         '</dl>' +
                     '</div>');

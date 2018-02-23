@@ -63,12 +63,20 @@ as attribute<pre class="prettyprint linenums">&lt;ANY ods-catalog-context
 configured using specific attributes, as described below.</p>
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
-<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odscatalogcontext-page"><pre class="prettyprint linenums">
-&lt;ods-catalog-context context="public"&gt;
-    &lt;ods-result-enumerator context="public"&gt;
-        &lt;p&gt;{{item.datasetid}}&lt;/p&gt;
-    &lt;/ods-result-enumerator&gt;
-&lt;/ods-catalog-context&gt;
-</pre>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odscatalogcontext-page"><h4 id="example_source">Source</h4>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-5" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="index.html">
+<pre class="prettyprint linenums" ng-set-text="index.html-5" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-5">
+    <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
+        <pre>{{ public }}</pre>
+        <ods-result-enumerator context="public">
+            <p>{{item.datasetid}}</p>
+        </ods-result-enumerator>
+    </ods-catalog-context>
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-5" ng-eval-javascript=""></div>
 </div></div>
 </div>

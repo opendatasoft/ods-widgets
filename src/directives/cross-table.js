@@ -470,6 +470,7 @@
 
         return {
             restrict: 'E',
+            replace: true,
             scope: {
                 context: '=',
                 column: '@',

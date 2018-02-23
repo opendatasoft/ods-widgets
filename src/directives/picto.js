@@ -15,7 +15,17 @@
          * @description
          * This widget displays a "picto" specified by a url and force a fill color on it.
          * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
+         *
+         * All parameters expect javascript variables or litterals. If you want to provide hardcoded strings you'll have to wrap them in quotes, as shown in the example below.
          * @todo implement defs and use in svg
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <ods-picto url="'../src/img/opendatasoft-logo.svg'"
+         *                     color="'#33629C'"></ods-picto>
+         *      </file>
+         *  </example>
          */
         return {
             restrict: 'E',
@@ -25,6 +35,7 @@
                 color: '=',
                 classes: '='
             },
+
             template: '<div class="odswidget odswidget-picto {{ classes }}"></div>',
             link: function(scope, element) {
                 var svgContainer;
