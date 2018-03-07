@@ -467,7 +467,7 @@
                         keyboard: !isStatic,
                         prependAttribution: ODSWidgetsConfig.mapPrependAttribution,
                         appendAttribution: ODSWidgetsConfig.mapAppendAttribution,
-                        maxBounds: [[-90, -180], [90, 180]],
+                        maxBounds: [[-90, -240], [90, 240]],
                         zoomControl: false,
                         scrollWheelZoom: scope.scrollWheelZoom !== 'false'
                     };

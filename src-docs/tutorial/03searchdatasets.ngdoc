@@ -28,7 +28,7 @@ Then a {@link api/ods-widgets.directive:odsResultEnumerator odsResultEnumerator}
 </pre>
 
 <iframe frameborder="0" style="width: 800px; height: 500px; margin-left: -50px;"
-        src="/docs/examples/03searchdatasets-01.html"></iframe>
+        src="../docs/examples/03searchdatasets-01.html"></iframe>
 
 
 Now we can add two important features: a full-text search and a faceted search (categories to filter on). We can do that
@@ -61,4 +61,4 @@ only display the themes for now.
 </pre>
 
 <iframe frameborder="0" style="width: 800px; height: 610px; margin-left: -50px;"
-        src="/docs/examples/03searchdatasets-02.html"></iframe>
+        src="../docs/examples/03searchdatasets-02.html"></iframe>

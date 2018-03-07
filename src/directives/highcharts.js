@@ -206,8 +206,8 @@
                                          '$rootScope',
                                          'odsNotificationService',
                                          '$q',
-                                         'config',
-        function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsNotificationService, $q, config) {
+                                         'ODSWidgetsConfig',
+        function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsNotificationService, $q, ODSWidgetsConfig) {
         // parameters : {
         //     timescale: year, month, week, day, hour, month year, day year, day month, day week
         //     xLabel:
@@ -330,7 +330,7 @@
                 legend: {
                     enabled: !!parameters.displayLegend,
                     useHTML: true,
-                    rtl: config.LANGUAGE === 'ar'
+                    rtl: ODSWidgetsConfig.language === 'ar'
                 },
                 // legend: {
                 //     align: 'right',
@@ -417,7 +417,7 @@
                         s.push(tooltip.options.footerFormat || '');
 
                         // Add this in RTL to prevent the text-align:left on .highcharts-container added by highcharts to counter the direction
-                        if (config.LANGUAGE === 'ar'){
+                        if (ODSWidgetsConfig.language === 'ar'){
                             s.unshift('<div style="text-align:right">');
                             s.push('</div>');
                         }

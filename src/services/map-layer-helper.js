@@ -152,6 +152,7 @@
                             yOffset = 0; // Displayed where the user clicked
                         }
                         // FIXME: We assume that if the event contains a data, it is a gridData
+
                         service.showPopup(map, layerConfig, latLng, clusterShape, recordid, geoDigest, yOffset, e.data || null);
                     });
                 }
@@ -204,6 +205,7 @@
                 // This layer is configured to refine another context on click
                 angular.forEach(layerConfig.refineOnClick, refineContext);
             },
+
             bindZoomable: function(map, feature, layerConfig) {
                 // Binds on a feature (marker, shape) so that when clicked, it attemps to zoom on it, or show a regular
                 // tooltip if at maximum zoom
@@ -218,9 +220,21 @@
                     }
                 });
             },
+
+            /**
+             * Displays a popup on the marker where the user has clicked.
+             * @param map
+             * @param layerConfig
+             * @param latLng
+             * @param shape
+             * @param recordid
+             * @param geoDigest
+             * @param yOffset
+             * @param gridData
+             */
             showPopup: function(map, layerConfig, latLng, shape, recordid, geoDigest, yOffset, gridData) {
+                var service = this;
                 // TODO: How to pass custom template?
-                // Displays a popup
                 var newScope = $rootScope.$new(true);
                 if (recordid) {
                     newScope.recordid = recordid;
@@ -231,19 +245,26 @@
                 if (gridData) {
                     newScope.gridData = gridData;
                 }
+
                 var dataset = layerConfig.context.dataset;
                 newScope.map = map;
                 newScope.template = layerConfig.tooltipTemplate || dataset.extra_metas && dataset.extra_metas.visualization && dataset.extra_metas.visualization.map_tooltip_html_enabled && dataset.extra_metas.visualization.map_tooltip_html || '';
+                newScope.context = layerConfig.context;
+
                 var popupOptions = {
                     offset: [0, angular.isDefined(yOffset) ? yOffset : -30],
                     maxWidth: 250,
                     minWidth: 250
-                    //autoPanPaddingTopLeft: [50, 305]
                 };
-                newScope.context = layerConfig.context;
+                var popupHeight = 330;
+                var tooltipTemplate = '<ods-map-tooltip tooltip-sort="'+(layerConfig.tooltipSort||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" grid-data="gridData" geo-digest="'+(geoDigest||'')+'"></ods-map-tooltip>';
+                var compiledTemplate = $compile(tooltipTemplate)(newScope)[0];
+
+                service._handleTopOverflow(map, popupOptions, latLng, popupHeight);
+                service._handleBoundsOverflow(map, popupOptions, latLng, popupHeight);
+
                 // TODO: Move the custom template detection from the dataset inside odsMapTooltip? (the dataset object is available in the context)
-                var popup = new L.Popup(popupOptions).setLatLng(latLng)
-                    .setContent($compile('<ods-map-tooltip tooltip-sort="'+(layerConfig.tooltipSort||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" grid-data="gridData" geo-digest="'+(geoDigest||'')+'"></ods-map-tooltip>')(newScope)[0]);
+                var popup = new L.Popup(popupOptions).setLatLng(latLng).setContent(compiledTemplate);
                 popup.openOn(map);
             },
 
@@ -467,6 +488,40 @@
                 }
                 return dashArray.join(', ');
             },
+
+            /*                              */
+            /*      POPUP OVERFLOW FIXES    */
+            /*                              */
+            _handleTopOverflow: function(map, popupOptions, latLng, popupMaxHeight) {
+                var markerPixelPosition = map.latLngToContainerPoint(latLng);
+                var markerVerticalOffset = Math.abs(popupOptions.offset[1]); // so we don't use negative values
+                var totalHeight = popupMaxHeight + markerVerticalOffset;
+                var distanceToTop = markerPixelPosition.y - totalHeight; // difference between where the marker is in px and the total height a popup can have
+                if (distanceToTop < 0) {
+                    map.panBy([0, distanceToTop - 5]); // move the map just enough to show the tooltip as if it were fixed height. the 5 is for a little extra top padding
+                }
+            },
+
+            /**
+             * Checks if the popup is positioned too close to the East, West or North bounds of the map.
+             * If it's too close to the East or West bounds, they are enlarged so that the map can pan and show the whole tooltip.
+             * If it's too close to the North bounds, the popup opens up "inverted" pointing downwards.
+             * @param map
+             * @param popupOptions
+             * @param latLng
+             * @param popupMaxHeight
+             * @private
+             */
+            _handleBoundsOverflow: function(map, popupOptions, latLng, popupMaxHeight) {
+                var markerPixelPosition = map.project(latLng);
+                var NorthOverflow = markerPixelPosition.y < popupMaxHeight;
+                if (NorthOverflow) {
+                    // If tooltip is too far north, prevent overflow by inversing tooltip.
+                    popupOptions.className =  'odswidget-map-tooltip--reverse';
+                    popupOptions.offset = [0, 10]; // height of the popup tip.
+                }
+
+            }
         };
     }]);
 }());

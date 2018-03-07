@@ -37,6 +37,8 @@ Domain value can be:</p>
 </li>
 <li><p><strong><code>parameters</code></strong> <a href="#" class="label type-hint type-hint-object">Object</a> (optional) An object holding parameters to apply to the context when it is created. Any parameter from the API can be used here (such as <code>q</code>, <code>refine.FIELD</code> ...)</p>
 </li>
+<li><p><strong><code>refresh-delay</code></strong> <a href="#" class="label type-hint type-hint-number">Number</a> (optional) The number of milliseconds to wait before refreshing the context. If this parameter is omitted, the context does not automatically refresh. Minimum delay is 10000ms.</p>
+</li>
 <li><p><strong><code>parametersFromContext</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional) The name of a context to replicate the parameters from. Any change of the parameters
 in this context or the original context will be applied to both.</p>
 </li>

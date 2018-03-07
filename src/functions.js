@@ -290,7 +290,7 @@
                 } else if (spatial.type === 'Point') {
                     parameters["geofilter.distance"] = spatial.coordinates[1]+','+spatial.coordinates[0];
                 } else {
-                   parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
+                    parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
                 }
             }
         },
@@ -323,11 +323,11 @@
             },
             escapeHTML: function(text) {
                 return text
-                     .replace(/&/g, "&amp;")
-                     .replace(/</g, "&lt;")
-                     .replace(/>/g, "&gt;")
-                     .replace(/"/g, "&quot;")
-                     .replace(/'/g, "&#039;");
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
             },
             getRandomUUID: function(length) {
                 // make sure the UUID length is at most 36 chars with a default of 7
@@ -371,6 +371,8 @@
             cleanupAPIParams: function(params) {
                 params = angular.copy(params);
 
+                delete params['_refreshTimestamp'];
+
                 function unnameParameter(prefix, parameterName, parameterValue) {
                     // Transforms a "named" parameter (e.g. q.myname) to put its value into the unnamed base parameter (q)
                     if (parameterName.startsWith(prefix+'.')) {
@@ -397,12 +399,12 @@
                 var qs = [];
                 options = this.cleanupAPIParams(options);
                 angular.forEach(options, function(value, key) {
-                    if (angular.isString(value)) {
-                        qs.push(key+'='+encodeURIComponent(value));
-                    } else {
+                    if (angular.isArray(value)) {
                         angular.forEach(value, function(singleVal) {
                             qs.push(key+'='+encodeURIComponent(singleVal));
                         });
+                    } else {
+                        qs.push(key+'='+encodeURIComponent(value));
                     }
                 });
                 return qs.join('&');

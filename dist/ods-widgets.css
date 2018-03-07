@@ -789,6 +789,18 @@ html[dir=rtl] .odswidget-last-datasets-feed__theme-picto {
 .odswidget-map__map .leaflet-popup-content {
   margin: 2rem 0 1rem 0;
 }
+.odswidget-map-tooltip--reverse {
+  height: 0;
+}
+.odswidget-map-tooltip--reverse .leaflet-popup-tip-container {
+  position: absolute;
+  -webkit-transform: rotate(180deg);
+      -ms-transform: rotate(180deg);
+          transform: rotate(180deg);
+  top: -20px;
+  left: 0;
+  right: 0;
+}
 .odswidget-map {
   position: relative;
   min-height: 400px;

@@ -62,4 +62,4 @@ widget which metadata to use (here, we need the keywords).
 
 
 <iframe frameborder="0" style="width: 800px; height: 930px; margin-left: -50px;"
-        src="/docs/examples/02catalogpage.html"></iframe>
+        src="../docs/examples/02catalogpage.html"></iframe>

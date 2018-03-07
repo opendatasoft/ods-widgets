@@ -117,3 +117,16 @@
 .odswidget-map__map .leaflet-popup-content {
     margin: @mapTooltip-content-margin;
 }
+
+// Tooltip with the "arrow" pointing upwards.
+.odswidget-map-tooltip--reverse {
+    height: 0; // the content will have the right height. This is used so the tooltip is placed correctly next to the marker.
+}
+
+.odswidget-map-tooltip--reverse .leaflet-popup-tip-container {
+    position: absolute;
+	transform: rotate(180deg);
+	top: -20px;
+    left: 0;
+    right: 0;
+}

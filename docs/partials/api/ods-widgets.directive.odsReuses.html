@@ -7,17 +7,15 @@
 <div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsreuses-page"><p>This widget displays all reuses published on a domain, in a infinite list of large boxes that presents them
 in a clear display. The lists show the more recent reuses first.</p>
 <p>You can optionally insert HTML code inside the <code>&lt;ods-reuses&gt;&lt;/ods-reuses&gt;</code> element, in which case it will be used
-as a template for each displayed reuse. The following variables are available in the template:</p>
-<ul>
-<li>`reuse.url: URL to the reuse&#39;s dataset page</li>
-<li><code>reuse.title</code>: Title of the reuse</li>
-<li><code>reuse.thumbnail</code>: URL to the thumbnail of the reuse</li>
-<li><code>reuse.description</code>: Description of the reuse</li>
-<li><code>reuse.created_at</code>: ISO datetime of reuse&#39;s original submission (can be used as <code>reuse.created_at|moment:&#39;LLL&#39;</code> to format it)</li>
-<li><code>reuse.dataset.title</code>: Title of the reuse&#39;s dataset</li>
-<li><code>reuse.user.last_name</code>: Last name of the reuse&#39;s submitter</li>
-<li><code>reuse.user.first_name</code>: First name of the reuse&#39;s submitter</li>
-</ul>
+as a template for each displayed reuse. The following variables are available in the template:
+<em> `reuse.url: URL to the reuse&#39;s dataset page
+</em> <code>reuse.title</code>: Title of the reuse
+<em> <code>reuse.thumbnail</code>: URL to the thumbnail of the reuse
+</em> <code>reuse.description</code>: Description of the reuse
+<em> <code>reuse.created_at</code>: ISO datetime of reuse&#39;s original submission (can be used as <code>reuse.created_at|moment:&#39;LLL&#39;</code> to format it)
+</em> <code>reuse.dataset.title</code>: Title of the reuse&#39;s dataset
+<em> <code>reuse.user.last_name</code>: Last name of the reuse&#39;s submitter
+</em> <code>reuse.user.first_name</code>: First name of the reuse&#39;s submitter</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-reuses

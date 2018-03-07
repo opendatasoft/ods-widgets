@@ -38,7 +38,7 @@
         };
     });
 
-    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'ODSParamSerializer', 'translate', function($http, ODSWidgetsConfig, odsNotificationService, ODSParamSerializer, translate) {
+    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'ODSParamSerializer', 'odsHttpErrorMessages', function($http, ODSWidgetsConfig, odsNotificationService, ODSParamSerializer, odsHttpErrorMessages) {
         /**
          * This service exposes OpenDataSoft APIs.
          *
@@ -76,9 +76,11 @@
             if (!context.domainUrl || Modernizr.cors) {
                 return $http.
                     get(url, options).
-                    error(function(data) {
+                    error(function(data, status) {
                         if (data) {
                             odsNotificationService.sendNotification(data);
+                        } else if (status >= 400) {
+                            odsNotificationService.sendNotification(odsHttpErrorMessages.getForStatus(status));
                         }
                     });
             } else {

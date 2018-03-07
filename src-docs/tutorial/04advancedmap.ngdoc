@@ -33,5 +33,5 @@ We also want our users to be able to refine the data chronologically, and using 
 </pre>
 
 <iframe frameborder="0" style="width: 800px; height: 1050px; margin-left: -50px;"
-        src="/docs/examples/04advancedmap.html"></iframe>
+        src="../docs/examples/04advancedmap.html"></iframe>
 

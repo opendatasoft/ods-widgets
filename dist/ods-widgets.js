@@ -6990,7 +6990,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '1.1.0';
+    var version = '1.2.0';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -7187,7 +7187,7 @@ mod.directive('infiniteScroll', [
         };
     });
 
-    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'ODSParamSerializer', 'translate', function($http, ODSWidgetsConfig, odsNotificationService, ODSParamSerializer, translate) {
+    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'ODSParamSerializer', 'odsHttpErrorMessages', function($http, ODSWidgetsConfig, odsNotificationService, ODSParamSerializer, odsHttpErrorMessages) {
         /**
          * This service exposes OpenDataSoft APIs.
          *
@@ -7225,9 +7225,11 @@ mod.directive('infiniteScroll', [
             if (!context.domainUrl || Modernizr.cors) {
                 return $http.
                     get(url, options).
-                    error(function(data) {
+                    error(function(data, status) {
                         if (data) {
                             odsNotificationService.sendNotification(data);
+                        } else if (status >= 400) {
+                            odsNotificationService.sendNotification(odsHttpErrorMessages.getForStatus(status));
                         }
                     });
             } else {
@@ -8417,6 +8419,40 @@ mod.directive('infiniteScroll', [
         };
     }]);
 }());;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.service('odsHttpErrorMessages', function(translate) {
+        this.getForStatus = function(httpStatus) {
+            switch (httpStatus) {
+            case 400:
+                return translate('Bad request: please retry the request later or contact the administrator.');
+            case 401:
+                return translate('Request unauthorized: authentication is required.');
+            case 403:
+                return translate('Request forbidden: you may not have the necessary permissions for the requested ' +
+                    'resource.');
+            case 404:
+                return translate('Resource not found: if you have followed a valid link, ' +
+                    'please contact the administrator.');
+            case 408:
+                return translate('Request timeout: please retry the request later or contact the administrator.');
+            case 429:
+                return translate('Too many requests or API calls quota has been exceeded: ' +
+                    'please retry the request later or contact the administrator.');
+            case 503:
+            case 504:
+                return translate('The service is unavailable: please retry the request later or contact the ' +
+                    'administrator.');
+            default:
+                return translate('The server encountered an internal error. Please retry the request or contact the ' +
+                    'administrator.');
+            }
+        };
+    });
+})();
+;(function() {
     "use strict";
 
     var mod = angular.module('ods-widgets');
@@ -8985,6 +9021,7 @@ mod.directive('infiniteScroll', [
                             yOffset = 0; // Displayed where the user clicked
                         }
                         // FIXME: We assume that if the event contains a data, it is a gridData
+
                         service.showPopup(map, layerConfig, latLng, clusterShape, recordid, geoDigest, yOffset, e.data || null);
                     });
                 }
@@ -9037,6 +9074,7 @@ mod.directive('infiniteScroll', [
                 // This layer is configured to refine another context on click
                 angular.forEach(layerConfig.refineOnClick, refineContext);
             },
+
             bindZoomable: function(map, feature, layerConfig) {
                 // Binds on a feature (marker, shape) so that when clicked, it attemps to zoom on it, or show a regular
                 // tooltip if at maximum zoom
@@ -9051,9 +9089,21 @@ mod.directive('infiniteScroll', [
                     }
                 });
             },
+
+            /**
+             * Displays a popup on the marker where the user has clicked.
+             * @param map
+             * @param layerConfig
+             * @param latLng
+             * @param shape
+             * @param recordid
+             * @param geoDigest
+             * @param yOffset
+             * @param gridData
+             */
             showPopup: function(map, layerConfig, latLng, shape, recordid, geoDigest, yOffset, gridData) {
+                var service = this;
                 // TODO: How to pass custom template?
-                // Displays a popup
                 var newScope = $rootScope.$new(true);
                 if (recordid) {
                     newScope.recordid = recordid;
@@ -9064,19 +9114,26 @@ mod.directive('infiniteScroll', [
                 if (gridData) {
                     newScope.gridData = gridData;
                 }
+
                 var dataset = layerConfig.context.dataset;
                 newScope.map = map;
                 newScope.template = layerConfig.tooltipTemplate || dataset.extra_metas && dataset.extra_metas.visualization && dataset.extra_metas.visualization.map_tooltip_html_enabled && dataset.extra_metas.visualization.map_tooltip_html || '';
+                newScope.context = layerConfig.context;
+
                 var popupOptions = {
                     offset: [0, angular.isDefined(yOffset) ? yOffset : -30],
                     maxWidth: 250,
                     minWidth: 250
-                    //autoPanPaddingTopLeft: [50, 305]
                 };
-                newScope.context = layerConfig.context;
+                var popupHeight = 330;
+                var tooltipTemplate = '<ods-map-tooltip tooltip-sort="'+(layerConfig.tooltipSort||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" grid-data="gridData" geo-digest="'+(geoDigest||'')+'"></ods-map-tooltip>';
+                var compiledTemplate = $compile(tooltipTemplate)(newScope)[0];
+
+                service._handleTopOverflow(map, popupOptions, latLng, popupHeight);
+                service._handleBoundsOverflow(map, popupOptions, latLng, popupHeight);
+
                 // TODO: Move the custom template detection from the dataset inside odsMapTooltip? (the dataset object is available in the context)
-                var popup = new L.Popup(popupOptions).setLatLng(latLng)
-                    .setContent($compile('<ods-map-tooltip tooltip-sort="'+(layerConfig.tooltipSort||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" grid-data="gridData" geo-digest="'+(geoDigest||'')+'"></ods-map-tooltip>')(newScope)[0]);
+                var popup = new L.Popup(popupOptions).setLatLng(latLng).setContent(compiledTemplate);
                 popup.openOn(map);
             },
 
@@ -9300,6 +9357,40 @@ mod.directive('infiniteScroll', [
                 }
                 return dashArray.join(', ');
             },
+
+            /*                              */
+            /*      POPUP OVERFLOW FIXES    */
+            /*                              */
+            _handleTopOverflow: function(map, popupOptions, latLng, popupMaxHeight) {
+                var markerPixelPosition = map.latLngToContainerPoint(latLng);
+                var markerVerticalOffset = Math.abs(popupOptions.offset[1]); // so we don't use negative values
+                var totalHeight = popupMaxHeight + markerVerticalOffset;
+                var distanceToTop = markerPixelPosition.y - totalHeight; // difference between where the marker is in px and the total height a popup can have
+                if (distanceToTop < 0) {
+                    map.panBy([0, distanceToTop - 5]); // move the map just enough to show the tooltip as if it were fixed height. the 5 is for a little extra top padding
+                }
+            },
+
+            /**
+             * Checks if the popup is positioned too close to the East, West or North bounds of the map.
+             * If it's too close to the East or West bounds, they are enlarged so that the map can pan and show the whole tooltip.
+             * If it's too close to the North bounds, the popup opens up "inverted" pointing downwards.
+             * @param map
+             * @param popupOptions
+             * @param latLng
+             * @param popupMaxHeight
+             * @private
+             */
+            _handleBoundsOverflow: function(map, popupOptions, latLng, popupMaxHeight) {
+                var markerPixelPosition = map.project(latLng);
+                var NorthOverflow = markerPixelPosition.y < popupMaxHeight;
+                if (NorthOverflow) {
+                    // If tooltip is too far north, prevent overflow by inversing tooltip.
+                    popupOptions.className =  'odswidget-map-tooltip--reverse';
+                    popupOptions.offset = [0, 10]; // height of the popup tip.
+                }
+
+            }
         };
     }]);
 }());
@@ -12485,7 +12576,7 @@ mod.directive('infiniteScroll', [
                 } else if (spatial.type === 'Point') {
                     parameters["geofilter.distance"] = spatial.coordinates[1]+','+spatial.coordinates[0];
                 } else {
-                   parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
+                    parameters["geofilter.polygon"] = this.getGeoJSONPolygonAsPolygonParameter(spatial);
                 }
             }
         },
@@ -12518,11 +12609,11 @@ mod.directive('infiniteScroll', [
             },
             escapeHTML: function(text) {
                 return text
-                     .replace(/&/g, "&amp;")
-                     .replace(/</g, "&lt;")
-                     .replace(/>/g, "&gt;")
-                     .replace(/"/g, "&quot;")
-                     .replace(/'/g, "&#039;");
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
             },
             getRandomUUID: function(length) {
                 // make sure the UUID length is at most 36 chars with a default of 7
@@ -12566,6 +12657,8 @@ mod.directive('infiniteScroll', [
             cleanupAPIParams: function(params) {
                 params = angular.copy(params);
 
+                delete params['_refreshTimestamp'];
+
                 function unnameParameter(prefix, parameterName, parameterValue) {
                     // Transforms a "named" parameter (e.g. q.myname) to put its value into the unnamed base parameter (q)
                     if (parameterName.startsWith(prefix+'.')) {
@@ -12592,12 +12685,12 @@ mod.directive('infiniteScroll', [
                 var qs = [];
                 options = this.cleanupAPIParams(options);
                 angular.forEach(options, function(value, key) {
-                    if (angular.isString(value)) {
-                        qs.push(key+'='+encodeURIComponent(value));
-                    } else {
+                    if (angular.isArray(value)) {
                         angular.forEach(value, function(singleVal) {
                             qs.push(key+'='+encodeURIComponent(singleVal));
                         });
+                    } else {
+                        qs.push(key+'='+encodeURIComponent(value));
                     }
                 });
                 return qs.join('&');
@@ -15179,7 +15272,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsDatasetContext', ['ODSAPI', '$q', '$interpolate', 'URLSynchronizer', 'ContextHelper', function(ODSAPI, $q, $interpolate, URLSynchronizer, ContextHelper) {
+    mod.directive('odsDatasetContext', ['ODSAPI', '$q', '$interpolate', '$interval', 'URLSynchronizer', 'ContextHelper', function(ODSAPI, $q, $interpolate, $interval, URLSynchronizer, ContextHelper) {
         /**
          *
          *  @ngdoc directive
@@ -15221,6 +15314,8 @@ mod.directive('infiniteScroll', [
          *  * **`sort`** {@type string} (optional) Sort expression to apply initially (*field* or *-field*)
          *
          *  * **`parameters`** {@type Object} (optional) An object holding parameters to apply to the context when it is created. Any parameter from the API can be used here (such as `q`, `refine.FIELD` ...)
+         *
+         *  * **`refresh-delay`** {@type Number} (optional) The number of milliseconds to wait before refreshing the context. If this parameter is omitted, the context does not automatically refresh. Minimum delay is 10000ms.
          *
          *  * **`parametersFromContext`** {@type string} (optional) The name of a context to replicate the parameters from. Any change of the parameters
          *  in this context or the original context will be applied to both.
@@ -15279,12 +15374,13 @@ mod.directive('infiniteScroll', [
          *  </pre>
          */
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
-        var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext, source, urlSync, schema) {
+        var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext, source, urlSync, schema, refreshDelay) {
             var contextParams;
+
             if (!angular.equals(parameters, {})) {
                 contextParams = parameters;
                 if (urlSync) {
-                    console.log('WARNING : Context ' + contextName + ' : There are specific parameters defined, but URL sync is enabled, so the parameters will be ignored.');
+                    console.warn('Context ' + contextName + ' : There are specific parameters defined, but URL sync is enabled, so the parameters will be ignored.');
                 }
             } else if (parametersFromContext) {
                 var unwatch = scope.$watch(parametersFromContext, function(nv, ov) {
@@ -15314,6 +15410,12 @@ mod.directive('infiniteScroll', [
 
             scope[contextName] = ContextHelper.getDatasetContext(contextName, domain, datasetID, contextParams, source, apikey, schema);
 
+            if (refreshDelay) {
+                $interval(function() {
+                    scope[contextName]['parameters']['_refreshTimestamp'] = new Date().getTime();
+                }, refreshDelay);
+            }
+
             if (urlSync) {
                 // Param
                 /* FIXME V4
@@ -15332,7 +15434,7 @@ mod.directive('infiniteScroll', [
             replace: true,
             controller: ['$scope', '$attrs', function($scope, $attrs) {
                 var contextNames = $attrs.context.split(',');
-                var datasetID, domain, apikey, sort, source, schema;
+                var datasetID, domain, apikey, sort, source, schema, refreshDelay;
 
                 for (var i=0; i<contextNames.length; i++) {
                     // Note: we interpolate ourselves because we need the attributes value at the time of the controller's
@@ -15341,7 +15443,7 @@ mod.directive('infiniteScroll', [
 
                     // We need a dataset ID or a schema
                     if (!$attrs[contextName+'Dataset'] && !$attrs[contextName+'DatasetSchema']) {
-                        console.log('ERROR : Context ' + contextName + ' : Missing dataset parameter');
+                        console.error('Context ' + contextName + ' : Missing dataset parameter');
                     }
 
                     if ($attrs[contextName+'Dataset']) {
@@ -15381,6 +15483,17 @@ mod.directive('infiniteScroll', [
                         schema = undefined;
                     }
 
+                    if (angular.isDefined($attrs[contextName+'RefreshDelay'])) {
+                        refreshDelay = parseInt($interpolate($attrs[contextName + 'RefreshDelay'])($scope), 10);
+                        if (!isFinite(refreshDelay)) {
+                            console.warn(contextName + '-refresh-delay: Is not a valid integer. Fallbacking to 10000ms.');
+                            refreshDelay = 10000;
+                        } else if (refreshDelay < 10000) {
+                            console.warn(contextName + '-refresh-delay: Is too small (10000ms minimum). Fallbacking to 10000ms.');
+                            refreshDelay = 10000;
+                        }
+                    }
+
                     var parameters = $scope.$eval($attrs[contextName+'Parameters']) || {};
                     var parametersFromContext = $attrs[contextName+'ParametersFromContext'];
 
@@ -15390,7 +15503,7 @@ mod.directive('infiniteScroll', [
 
                     var urlSync = $scope.$eval($attrs[contextName+'Urlsync']);
 
-                    exposeContext(domain, datasetID, $scope, contextName, apikey, parameters, parametersFromContext, source, urlSync, schema);
+                    exposeContext(domain, datasetID, $scope, contextName, apikey, parameters, parametersFromContext, source, urlSync, schema, refreshDelay);
                 }
             }]
         };
@@ -17019,33 +17132,6 @@ mod.directive('infiniteScroll', [
         };
     }]);
 }());
-;(function() {
-    'use strict';
-
-    var mod = angular.module('ods-widgets');
-
-    mod.directive('odsRedirectIfNotLoggedIn', ['config', '$window', '$timeout', function(config, $window, $timeout) {
-        /**
-         * @ngdoc directive
-         * @name ods-widgets.directive:odsRedirectIfNotLoggedIn
-         * @scope
-         * @restrict A
-         * @description
-         * This widget forces a redirect to the login page of the domain if the user is not logged in
-         *
-         */
-        return {
-            restrict: 'A',
-            controller: function() {
-                if (config.USER === "" || config.USER === null) {
-                    $timeout(function() {
-                        $window.location.href = '/login';
-                    }, 0);
-                }
-            }
-        };
-    }]);
-}());
 ;(function () {
     'use strict';
 
@@ -17754,8 +17840,8 @@ mod.directive('infiniteScroll', [
                                          '$rootScope',
                                          'odsNotificationService',
                                          '$q',
-                                         'config',
-        function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsNotificationService, $q, config) {
+                                         'ODSWidgetsConfig',
+        function(colorScale, requestData, translate, ModuleLazyLoader, AggregationHelper, ChartHelper, $rootScope, odsNotificationService, $q, ODSWidgetsConfig) {
         // parameters : {
         //     timescale: year, month, week, day, hour, month year, day year, day month, day week
         //     xLabel:
@@ -17878,7 +17964,7 @@ mod.directive('infiniteScroll', [
                 legend: {
                     enabled: !!parameters.displayLegend,
                     useHTML: true,
-                    rtl: config.LANGUAGE === 'ar'
+                    rtl: ODSWidgetsConfig.language === 'ar'
                 },
                 // legend: {
                 //     align: 'right',
@@ -17965,7 +18051,7 @@ mod.directive('infiniteScroll', [
                         s.push(tooltip.options.footerFormat || '');
 
                         // Add this in RTL to prevent the text-align:left on .highcharts-container added by highcharts to counter the direction
-                        if (config.LANGUAGE === 'ar'){
+                        if (ODSWidgetsConfig.language === 'ar'){
                             s.unshift('<div style="text-align:right">');
                             s.push('</div>');
                         }
@@ -22642,7 +22728,7 @@ mod.directive('infiniteScroll', [
                         keyboard: !isStatic,
                         prependAttribution: ODSWidgetsConfig.mapPrependAttribution,
                         appendAttribution: ODSWidgetsConfig.mapAppendAttribution,
-                        maxBounds: [[-90, -180], [90, 180]],
+                        maxBounds: [[-90, -240], [90, 240]],
                         zoomControl: false,
                         scrollWheelZoom: scope.scrollWheelZoom !== 'false'
                     };
@@ -24489,6 +24575,50 @@ mod.directive('infiniteScroll', [
 
 }());
 ;(function() {
+    'use strict';
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('odsPageRefresh', ['$window', '$interval', function($window, $interval) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsPageRefresh
+         * @scope
+         * @restrict AE
+         * @param {Number} [delay=10000] The number of milliseconds to wait before refreshing the page. Minimum value is 10000ms.
+         *
+         * @description
+         * This widget can be used to periodically refresh the page.
+         *
+         */
+        return {
+            restrict: 'AE',
+            scope: {
+                delay: '=',
+            },
+            link: function (scope, elem, $attrs) {
+                var delay = 10000;
+                var reloading = false;
+
+                if (angular.isDefined($attrs['delay'])) {
+                    if (!scope.delay || typeof scope.delay !== 'number' || !isFinite(scope.delay)) {
+                        console.warn('ods-page-refresh: delay is not a valid integer: fallbacking to default value (10000ms)');
+                    } else if (scope.delay < 10000) {
+                        console.warn('ods-page-refresh: delay is too small (10000ms minimum): fallbacking to default value (10000ms)');
+                    } else {
+                        delay = scope.delay;
+                    }
+                }
+
+                $interval(function() {
+                    if (!reloading) {
+                        reloading = true;
+                        $window.location.reload();
+                    }
+                }, delay);
+            },
+        };
+    }]);
+}());;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');

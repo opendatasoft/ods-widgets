@@ -128,7 +128,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "A &quot;dataset context&quot; represents a dataset, and a set of parameters used to query its data. A context can be used",
-      "keywords": "absolute access accessible active additional address ae allow alphanum alphanumerical angularjs api apikey applied apply arbresalignementparis2010 assume attribute attributes based behavior bike boolean build call case change characters child clocks clocks-dataset clocks-domain comma commas configure configured construct context contexts contract_name conventions create created creates csv current currently data dataset declare default defaultdomain described dict dictionary directive directives directly displayed displays domain domainurl download element enable enabled example export exposed exposes expression field fields filter filters find format fr full geojson getdownloadurl getquerystringurl holding horloges_exterieures_et_interieures hostname http identifier including indicate initialize initially inside jcdecaux_bike_data json key links list local lowercase map method mycontext-domain mydomain named names naming nest note number object ods-widgets odsdatasetcontext odswidgetsconfig odswidgetsconfigprovider opendatasoft optional options original parameter parameters parametersfromcontext paris pass path place places plugged prefixed properties public queries query refine refinement replicate represents retrieved returns root scope separated set settings share simple single sort specific stations stations-dataset stations-domain stations-parameters string suffix synchronization table time trees trees-dataset trees-domain trees-in-paris unpredictable url urlsync use_labels_for_header user variable view won"
+      "keywords": "absolute access accessible active additional address ae allow alphanum alphanumerical angularjs api apikey applied apply arbresalignementparis2010 assume attribute attributes automatically based behavior bike boolean build call case change characters child clocks clocks-dataset clocks-domain comma commas configure configured construct context contexts contract_name conventions create created creates csv current currently data dataset declare default defaultdomain delay described dict dictionary directive directives directly displayed displays domain domainurl download element enable enabled example export exposed exposes expression field fields filter filters find format fr full geojson getdownloadurl getquerystringurl holding horloges_exterieures_et_interieures hostname http identifier including indicate initialize initially inside jcdecaux_bike_data json key links list local lowercase map method milliseconds minimum mycontext-domain mydomain named names naming nest note number object ods-widgets odsdatasetcontext odswidgetsconfig odswidgetsconfigprovider opendatasoft optional options original parameter parameters parametersfromcontext paris pass path place places plugged prefixed properties public queries query refine refinement refresh refresh-delay refreshing replicate represents retrieved returns root scope separated set settings share simple single sort specific stations stations-dataset stations-domain stations-parameters string suffix synchronization table time trees trees-dataset trees-domain trees-in-paris unpredictable url urlsync use_labels_for_header user variable view wait won"
     },
     {
       "section": "api",
@@ -338,6 +338,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsPageRefresh",
+      "shortName": "odsPageRefresh",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget can be used to periodically refresh the page.",
+      "keywords": "ae api directive milliseconds minimum number ods-widgets periodically refresh refreshing wait widget"
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsPaginationBlock",
       "shortName": "odsPaginationBlock",
       "type": "directive",
@@ -371,15 +380,6 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "Displays an image from a record",
       "keywords": "api base context current dataset default directive displays domain field file image ods-widgets record url"
-    },
-    {
-      "section": "api",
-      "id": "ods-widgets.directive:odsRedirectIfNotLoggedIn",
-      "shortName": "odsRedirectIfNotLoggedIn",
-      "type": "directive",
-      "moduleName": "ods-widgets",
-      "shortDescription": "This widget forces a redirect to the login page of the domain if the user is not logged in",
-      "keywords": "api directive domain forces logged login ods-widgets redirect user widget"
     },
     {
       "section": "api",

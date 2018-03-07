@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsDatasetContext', ['ODSAPI', '$q', '$interpolate', 'URLSynchronizer', 'ContextHelper', function(ODSAPI, $q, $interpolate, URLSynchronizer, ContextHelper) {
+    mod.directive('odsDatasetContext', ['ODSAPI', '$q', '$interpolate', '$interval', 'URLSynchronizer', 'ContextHelper', function(ODSAPI, $q, $interpolate, $interval, URLSynchronizer, ContextHelper) {
         /**
          *
          *  @ngdoc directive
@@ -45,6 +45,8 @@
          *  * **`sort`** {@type string} (optional) Sort expression to apply initially (*field* or *-field*)
          *
          *  * **`parameters`** {@type Object} (optional) An object holding parameters to apply to the context when it is created. Any parameter from the API can be used here (such as `q`, `refine.FIELD` ...)
+         *
+         *  * **`refresh-delay`** {@type Number} (optional) The number of milliseconds to wait before refreshing the context. If this parameter is omitted, the context does not automatically refresh. Minimum delay is 10000ms.
          *
          *  * **`parametersFromContext`** {@type string} (optional) The name of a context to replicate the parameters from. Any change of the parameters
          *  in this context or the original context will be applied to both.
@@ -103,12 +105,13 @@
          *  </pre>
          */
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
-        var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext, source, urlSync, schema) {
+        var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext, source, urlSync, schema, refreshDelay) {
             var contextParams;
+
             if (!angular.equals(parameters, {})) {
                 contextParams = parameters;
                 if (urlSync) {
-                    console.log('WARNING : Context ' + contextName + ' : There are specific parameters defined, but URL sync is enabled, so the parameters will be ignored.');
+                    console.warn('Context ' + contextName + ' : There are specific parameters defined, but URL sync is enabled, so the parameters will be ignored.');
                 }
             } else if (parametersFromContext) {
                 var unwatch = scope.$watch(parametersFromContext, function(nv, ov) {
@@ -138,6 +141,12 @@
 
             scope[contextName] = ContextHelper.getDatasetContext(contextName, domain, datasetID, contextParams, source, apikey, schema);
 
+            if (refreshDelay) {
+                $interval(function() {
+                    scope[contextName]['parameters']['_refreshTimestamp'] = new Date().getTime();
+                }, refreshDelay);
+            }
+
             if (urlSync) {
                 // Param
                 /* FIXME V4
@@ -156,7 +165,7 @@
             replace: true,
             controller: ['$scope', '$attrs', function($scope, $attrs) {
                 var contextNames = $attrs.context.split(',');
-                var datasetID, domain, apikey, sort, source, schema;
+                var datasetID, domain, apikey, sort, source, schema, refreshDelay;
 
                 for (var i=0; i<contextNames.length; i++) {
                     // Note: we interpolate ourselves because we need the attributes value at the time of the controller's
@@ -165,7 +174,7 @@
 
                     // We need a dataset ID or a schema
                     if (!$attrs[contextName+'Dataset'] && !$attrs[contextName+'DatasetSchema']) {
-                        console.log('ERROR : Context ' + contextName + ' : Missing dataset parameter');
+                        console.error('Context ' + contextName + ' : Missing dataset parameter');
                     }
 
                     if ($attrs[contextName+'Dataset']) {
@@ -205,6 +214,17 @@
                         schema = undefined;
                     }
 
+                    if (angular.isDefined($attrs[contextName+'RefreshDelay'])) {
+                        refreshDelay = parseInt($interpolate($attrs[contextName + 'RefreshDelay'])($scope), 10);
+                        if (!isFinite(refreshDelay)) {
+                            console.warn(contextName + '-refresh-delay: Is not a valid integer. Fallbacking to 10000ms.');
+                            refreshDelay = 10000;
+                        } else if (refreshDelay < 10000) {
+                            console.warn(contextName + '-refresh-delay: Is too small (10000ms minimum). Fallbacking to 10000ms.');
+                            refreshDelay = 10000;
+                        }
+                    }
+
                     var parameters = $scope.$eval($attrs[contextName+'Parameters']) || {};
                     var parametersFromContext = $attrs[contextName+'ParametersFromContext'];
 
@@ -214,7 +234,7 @@
 
                     var urlSync = $scope.$eval($attrs[contextName+'Urlsync']);
 
-                    exposeContext(domain, datasetID, $scope, contextName, apikey, parameters, parametersFromContext, source, urlSync, schema);
+                    exposeContext(domain, datasetID, $scope, contextName, apikey, parameters, parametersFromContext, source, urlSync, schema, refreshDelay);
                 }
             }]
         };

@@ -2,6 +2,20 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.2.0 - 2018-03-07
+
+### Added
+- `odsDatasetContext`: new `refresh-delay` parameter to automatically refresh the context's data at a fixed interval
+- new `odsPageRefresh` directive trigering a full refresh of the page at a given interval  
+- added notifications when XHR requests fail
+
+### Fixed
+- `odsHighcharts`: fixed dependency on undocumented `config` object, now relying on `ODSWidgetsConfig`
+- `odsMap`: pan map so that tooltip fits in
+
+### Removed
+- `odsRedirectIfNotLoggedIn` having no use outside of dashboards hosted on OpenDataSoft, it's been moved out of this library
+
 ## 1.1.0 - 2018-02-23
 ### Added
 - Better support for right to left languages support
@@ -13,7 +27,6 @@ This log tries to follow the good principles of [Keep a CHANGELOG](http://keepac
 - `odsSlideshow`: navigation with keyboard
 - `odsTextSearch`: added a `suffix` parameter to allow use of multiple `odsTextSearch` on the same context
 - `odsTimeRange`: added a `suffix` parameter to allow use of multiple `odsTimeRange` on the same context
-- ``
 
 ### Fixed
 - Documentation should now be working correctly and the documentation has been updated
