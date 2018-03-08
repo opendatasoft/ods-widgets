@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 .ods__documentation-header {
-	height: 200px;
+	height: 100px;
 	width: 100%;
 	position: fixed; 
 	top: 0;
@@ -16,8 +16,6 @@
         display: flex;
         flex-direction: row;
         justify-content: flex-start;
-		border: 1px solid green;
-		height: 100px;
 	}
 }
 
@@ -25,7 +23,7 @@
 	display: flex;
 	flex-direction: row;
 	justify-content: space-around;
-	height: 199px;
+	height: 99px;
 	width: 100%;
 	button {
 		border: none;
@@ -33,8 +31,8 @@
 		background-color: white;
 		color: @blue-light;
 		border-radius: 4px;
-		padding: 20px 35px;
-		font-size: 30px;
+		padding: 5px 10px;
+		font-size: 16px;
 		font-weight: 500;
 		&.open {
 			background-color: @blue-hover;
@@ -48,23 +46,28 @@
 	button:focus {
 		outline: none;
 	}
-	img {
-		height: 150px;
-		margin: 20px 0 0 0;
+	a {
+    	padding-top: 12px
 	}
+  	a > img {
+		height: 70px;
+		margin: auto 0;
+  	}
 }
 @media (min-width: @screen-md-min) {
 	.ods__documentation-header-logo {
         height: 99px;
         width: auto;
-        padding-left: 45px;
-        img {
-			height: 80px;
-			margin: 8px 0 0 0;
-        }
+        padding-left: 40px;
         button {
             display: none;
-        }
+		}
+		a {
+      		padding-top: 8px;
+    	}
+    	a > img {
+      		height: 80px;
+    	}
 	}
 }
 
@@ -74,16 +77,16 @@
 @media (min-width: @screen-md-min) {
 	.ods__documentation-header-nav {
         display: flex;
-        margin-left: 30px;
+        margin-left: 103px;
 	}
 }
 
 .ods__documentation-help-hub-sidebar {
 	position: fixed;
-	top: 200px;
-	right: -450px;
+	top: 100px;
+	right: -380px;
 	height: 100%;
-	width: 450px;
+	width: 380px;
 	padding-top: 40px;
 	background-color: @blue-light;
 	border-top: 1px solid lighten(@grey-dark, 60%);
@@ -100,10 +103,10 @@
 
 .ods__documentation-help-hub-sidebar-item {
 	text-align: center;
-	margin: 50px 0;
+	margin: 30px 0;
 	a {
 		color: white;
-		font-size: 30px;
+		font-size: 25px;
 		text-decoration: none;
 		font-weight: 500;
 		padding: 5px;
@@ -114,8 +117,12 @@
 	right: 0;
 }
 
+.ods__documentation-help-hub-sidebar-active {
+  right: 0;
+}
+
 .ods__documentation-header-nav-item-active > a {
-	border-bottom: 5px solid white;
+	border-bottom: 2px solid white;
 }
 @media (min-width: @screen-md-min) {
 	.ods__documentation-header-nav-item-active > a {
@@ -123,16 +130,13 @@
 	}
 }
 
-.ods__documentation-help-hub-sidebar-active {
-  right: 0;
-}
-
 @media (min-width: @screen-md-min) {
     .ods__documentation-header-nav-item {
-        margin: auto 20px;
+		margin: auto 20px;
+		transition: 0.5s;
     }
     .ods__documentation-header-nav-item:first-child {
-        margin-left: 50px;
+        margin-left: 0px;
     }
     .ods__documentation-header-nav-item:last-child {
         margin-right: 0px;
@@ -140,12 +144,14 @@
     .ods__documentation-header-nav-item > a {
         color: white;
         font-size: 18px;
-        font-weight: 0;
         text-decoration: none;
-        padding: 5px;
+        padding: 5px 0;
         border-bottom: 2px solid transparent;
 	}
     .ods__documentation-header-nav-item > a:hover {
         border-bottom: 2px solid white;
-    }
+	}
+	.ods__documentation-header-nav-item-active > a {
+    	border-bottom: 2px solid white;
+  	}
 }
