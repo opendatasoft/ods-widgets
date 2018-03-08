@@ -1,14 +1,10 @@
 //- ODS Custom Theme
 (function () {
-    var clickHandler = function () {
-        console.log('Hello');
-    };
-
-    var itemMenu = document.getElementsByClassName("ng-binding");
-    for (var i = 0; i < itemMenu.length; i++) {
-        var current = itemMenu[i];
-        current.addEventListener('click', clickHandler, false);
-    }
+    document.body.addEventListener("click", function (event) {
+        if (event.target.className.includes('ng-binding')) {
+            toggle(menuSidebar, menuActive, btnMenu, headerBtnActive, 1);
+        }
+    });
 })();
 
 var helpHubSidebar  = "ods__documentation-help-hub-sidebar"
@@ -18,48 +14,41 @@ var helpHubSidebar  = "ods__documentation-help-hub-sidebar"
     btnHelpHub      = "help-hub-button"
     btnMenu         = "nav-button"
     headerBtnActive = "ods__documentation-header-btn-active";
-//- Help hub sidebar
-function openHelpHub() {
-    document.getElementsByClassName(helpHubSidebar)[0].classList.add(helpHubActive);
-    document.getElementById(btnHelpHub).classList.add(headerBtnActive);
-}
-function closeHelpHub() {
-    document.getElementsByClassName(helpHubSidebar)[0].classList.remove(helpHubActive);
-    document.getElementById(btnHelpHub).classList.remove(headerBtnActive);
-}
-//- Menu sidebar
-function openMenu() {
-    var elementOpenMenu = document.getElementsByClassName(menuSidebar)
-        btnOpenMenu     = document.getElementById(btnMenu);
-    elementOpenMenu[0].classList.add(menuActive);
-    btnOpenMenu.classList.add(headerBtnActive);
-}
-function closeMenu() {
-    var elementCloseMenu = document.getElementsByClassName(menuSidebar)
-        btnCloseMenu     = document.getElementById(btnMenu);
-    elementCloseMenu[0].classList.remove(menuActive);
-    btnCloseMenu.classList.remove(headerBtnActive);
-}
-//- Main
-var sidebar = document.getElementsByClassName(helpHubSidebar)
-    menu    = document.getElementsByClassName(menuSidebar);
-function toggleHelpHub() {
-    if (sidebar[0].className.includes(helpHubActive) && !menu[0].className.includes(menuActive)) {
-        closeHelpHub();
-    } else if (!sidebar[0].className.includes(helpHubActive) && menu[0].className.includes(menuActive)) {
-        openHelpHub();
-        closeMenu();
-    } else if (!sidebar[0].className.includes(helpHubActive) && !menu[0].className.includes(menuActive)) {
-        openHelpHub();
+
+function toggle (a, b, c, d, e) {
+    if (e == 0) {
+        document.getElementsByClassName(a)[0].classList.add(b);
+        document.getElementById(c).classList.add(d);
+    } else if (e == 1) {
+        document.getElementsByClassName(a)[0].classList.remove(b);
+        document.getElementById(c).classList.remove(d);
     }
 }
+
+function toggleHelpHub() {
+    var sidebar = document.getElementsByClassName(helpHubSidebar)[0].className
+        menu    = document.getElementsByClassName(menuSidebar)[0].className;
+    
+    if (sidebar.includes(helpHubActive) && !menu.includes(menuActive)) {
+        toggle(helpHubSidebar, helpHubActive, btnHelpHub, headerBtnActive, 1);
+    } else if (!sidebar.includes(helpHubActive) && menu.includes(menuActive)) {
+        toggle(helpHubSidebar, helpHubActive, btnHelpHub, headerBtnActive, 0);
+        toggle(menuSidebar, menuActive, btnMenu, headerBtnActive, 1);
+    } else if (!sidebar.includes(helpHubActive) && !menu.includes(menuActive)) {
+        toggle(helpHubSidebar, helpHubActive, btnHelpHub, headerBtnActive, 0);
+    }
+}
+
 function toggleMenu() {
-    if (menu[0].className.includes(menuActive) && !sidebar[0].className.includes(helpHubActive)) {
-        closeMenu();
-    } else if (!menu[0].className.includes(menuActive) && sidebar[0].className.includes(helpHubActive)) {
-        openMenu();
-        closeHelpHub();
-    } else if (!menu[0].className.includes(menuActive) && !sidebar[0].className.includes(helpHubActive)) {
-        openMenu();
+    var sidebar = document.getElementsByClassName(helpHubSidebar)[0].className
+        menu    = document.getElementsByClassName(menuSidebar)[0].className;
+
+    if (!menu.includes(menuActive) && !sidebar.includes(helpHubActive)) {
+        toggle(menuSidebar, menuActive, btnMenu, headerBtnActive, 0);
+    } else if (!menu.includes(menuActive) && sidebar.includes(helpHubActive)) {
+        toggle(menuSidebar, menuActive, btnMenu, headerBtnActive, 0);
+        toggle(helpHubSidebar, helpHubActive, btnHelpHub, headerBtnActive, 1);
+    } else if (menu.includes(menuActive) && !sidebar.includes(helpHubActive)) {
+        toggle(menuSidebar, menuActive, btnMenu, headerBtnActive, 1);
     }
 }
