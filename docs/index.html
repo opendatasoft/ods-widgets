@@ -40,7 +40,7 @@
                 
                     addTag('link', { rel: 'stylesheet', href: 'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css', type: 'text/css' }, sync);
                 
-                addTag('script', { src: 'js/google-code-prettify.js' }, sync);
+                    addTag('script', { src: 'js/google-code-prettify.js' }, sync);
                 addTag('script', { src: 'js/marked.js' }, sync);
                 
                     addTag('script', { src: 'https://code.jquery.com/jquery-2.1.4.min.js' }, sync);
@@ -83,55 +83,6 @@
                         })(node);
                 }
             })();
-
-            //- ODS Custom Theme
-            var helpHubSidebar = "ods__documentation-help-hub-sidebar";
-            var menuSidebar = "ods__theme-sidebar";
-            //- Help hub sidebar
-            function openHelpHub() {
-                var element = document.getElementsByClassName(helpHubSidebar);
-                var btn = document.querySelector("#help-hub-button");
-                element[0].classList.add("help-hub-active");
-                btn[0].classList.add("ods__documentation-header-btn-active");
-            }
-            function closeHelpHub() {
-                var element = document.getElementsByClassName(helpHubSidebar);
-                var btn = document.querySelector("#help-hub-button");
-                element[0].classList.remove("help-hub-active");
-                btn[0].classList.remove("ods__documentation-header-btn-active");
-            }
-            //- Menu sidebar
-            function openMenu() {
-                var element = document.getElementsByClassName(menuSidebar);
-                var btn = document.querySelector("#nav-button");
-                element[0].classList.add("menu-active");
-                btn[0].classList.add("ods__documentation-header-btn-active");
-            }
-            function closeMenu() {
-                var element = document.getElementsByClassName(menuSidebar);
-                var btn = document.querySelector("#nav-button");
-                element[0].classList.remove("menu-active");
-                btn[0].classList.remove("ods__documentation-header-btn-active");
-            }
-            //- Main
-            var sidebar = document.getElementsByClassName(helpHubSidebar)
-                menu = document.getElementsByClassName(menuSidebar);
-            function toggleHelpHub() {
-                if (sidebar[0].className.includes("help-hub-active") && !menu[0].className.includes("menu-active")) {
-                    closeHelpHub();
-                } else if (!sidebar[0].className.includes("help-hub-active") && menu[0].className.includes("menu-active")) {
-                    openHelpHub();
-                    closeMenu();
-                } else openHelpHub();
-            }
-            function toggleMenu() {
-                if (menu[0].className.includes("menu-active") && !sidebar[0].className.includes("help-hub-active")) {
-                    closeMenu();
-                } else if (!menu[0].className.includes("menu-active") && sidebar[0].className.includes("help-hub-active")) {
-                    openMenu();
-                    closeHelpHub();
-                } else openMenu();
-            }
         </script>
     </head>
 
@@ -149,13 +100,13 @@
 
             <div class="ods__documentation-header-nav">
                 <div class="ods__documentation-header-nav-item">
-                    <a href="">Platform</a>
+                    <a href="https://docs.opendatasoft.com/fr/">Platform</a>
                 </div>
                 <div class="ods__documentation-header-nav-item">
-                    <a href="">Discovery</a>
+                    <a href="https://discovery.opendatasoft.com/pages/home/">Discovery</a>
                 </div>
                 <div class="ods__documentation-header-nav-item">
-                    <a href="">FAQ</a>
+                    <a href="https://docs.opendatasoft.com/en/faq.html">FAQ</a>
                 </div>
                 <div class="ods__documentation-header-nav-item ods__documentation-header-nav-item-active">
                     <a href="#/api">Widgets</a>
@@ -164,7 +115,7 @@
                     <a href="#/tutorial">Widgets Tutorial</a>
                 </div>
                 <div class="ods__documentation-header-nav-item">
-                    <a href="">API</a>
+                    <a href="https://docs.opendatasoft.com/api/explore/v2.html#search-api-v2">API</a>
                 </div>
             </div>
     
@@ -172,13 +123,13 @@
 
         <div class="ods__documentation-help-hub-sidebar">
             <div class="ods__documentation-help-hub-sidebar-item">
-                <a href="" onclick="toggleHelpHub()">Platform</a>
+                <a href="https://docs.opendatasoft.com/fr/" onclick="toggleHelpHub()">Platform</a>
             </div>
             <div class="ods__documentation-help-hub-sidebar-item">
-                <a href="" onclick="toggleHelpHub()">Discovery</a>
+                <a href="https://discovery.opendatasoft.com/pages/home/" onclick="toggleHelpHub()">Discovery</a>
             </div>
             <div class="ods__documentation-help-hub-sidebar-item">
-                <a href="" onclick="toggleHelpHub()">FAQ</a>
+                <a href="https://docs.opendatasoft.com/en/faq.html" onclick="toggleHelpHub()">FAQ</a>
             </div>
             <div class="ods__documentation-help-hub-sidebar-item ods__documentation-header-nav-item-active">
                 <a href="#/api" onclick="toggleHelpHub()">Widgets</a>
@@ -187,7 +138,7 @@
                 <a href="#/tutorial" onclick="toggleHelpHub()">Widgets Tutorial</a>
             </div>
             <div class="ods__documentation-help-hub-sidebar-item">
-                <a href="" onclick="toggleHelpHub()">API</a>
+                <a href="https://docs.opendatasoft.com/api/explore/v2.html#search-api-v2" onclick="toggleHelpHub()">API</a>
             </div>
         </div>
 
@@ -294,6 +245,8 @@
 
             </div>
         </div>
+
+        <script type="text/javascript" src="./js/script.min.js"></script>
 
     </body>
 

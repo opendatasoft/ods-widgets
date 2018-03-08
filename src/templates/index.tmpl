@@ -38,7 +38,7 @@
                 <% _.forEach(styles, function (url) { %>
                     addTag('link', { rel: 'stylesheet', href: '<%= url %>', type: 'text/css' }, sync);
                 <% }); %>
-                addTag('script', { src: 'js/google-code-prettify.js' }, sync);
+                    addTag('script', { src: 'js/google-code-prettify.js' }, sync);
                 addTag('script', { src: 'js/marked.js' }, sync);
                 <% _.forEach(scripts, function (url) { %>
                     addTag('script', { src: '<%= url %>' }, sync);
@@ -71,55 +71,6 @@
                         })(node);
                 }
             })();
-
-            //- ODS Custom Theme
-            var helpHubSidebar = "ods__documentation-help-hub-sidebar";
-            var menuSidebar = "ods__theme-sidebar";
-            //- Help hub sidebar
-            function openHelpHub() {
-                var element = document.getElementsByClassName(helpHubSidebar);
-                var btn = document.querySelector("#help-hub-button");
-                element[0].classList.add("help-hub-active");
-                btn[0].classList.add("ods__documentation-header-btn-active");
-            }
-            function closeHelpHub() {
-                var element = document.getElementsByClassName(helpHubSidebar);
-                var btn = document.querySelector("#help-hub-button");
-                element[0].classList.remove("help-hub-active");
-                btn[0].classList.remove("ods__documentation-header-btn-active");
-            }
-            //- Menu sidebar
-            function openMenu() {
-                var element = document.getElementsByClassName(menuSidebar);
-                var btn = document.querySelector("#nav-button");
-                element[0].classList.add("menu-active");
-                btn[0].classList.add("ods__documentation-header-btn-active");
-            }
-            function closeMenu() {
-                var element = document.getElementsByClassName(menuSidebar);
-                var btn = document.querySelector("#nav-button");
-                element[0].classList.remove("menu-active");
-                btn[0].classList.remove("ods__documentation-header-btn-active");
-            }
-            //- Main
-            var sidebar = document.getElementsByClassName(helpHubSidebar)
-                menu = document.getElementsByClassName(menuSidebar);
-            function toggleHelpHub() {
-                if (sidebar[0].className.includes("help-hub-active") && !menu[0].className.includes("menu-active")) {
-                    closeHelpHub();
-                } else if (!sidebar[0].className.includes("help-hub-active") && menu[0].className.includes("menu-active")) {
-                    openHelpHub();
-                    closeMenu();
-                } else openHelpHub();
-            }
-            function toggleMenu() {
-                if (menu[0].className.includes("menu-active") && !sidebar[0].className.includes("help-hub-active")) {
-                    closeMenu();
-                } else if (!menu[0].className.includes("menu-active") && sidebar[0].className.includes("help-hub-active")) {
-                    openMenu();
-                    closeHelpHub();
-                } else openMenu();
-            }
         </script>
     </head>
 
@@ -291,6 +242,8 @@
 
             </div>
         </div>
+
+        <script type="text/javascript" src="./js/script.min.js"></script>
 
     </body>
 

@@ -23,8 +23,13 @@ module.exports = function(grunt) {
                     report: 'gzip'
                 },
                 files: {
-                    'dist/ods-widgets.min.js': JS_FILES
+                    'dist/ods-widgets.min.js': JS_FILES,
                 }
+            },
+            script: {
+                files: [{
+                    src : 'src/templates/js/script.js', dest : 'docs/js/script.min.js'
+                }]
             }
         },
         less: {
@@ -180,6 +185,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['dist']);
-    grunt.registerTask('dist', ['clean', 'uglify:dist', 'less:dist', 'less:dev', 'concat', 'autoprefixer', 'copy', 'ngdocs']);
+    grunt.registerTask('dist', ['clean', 'uglify:dist', 'uglify:script', 'less:dist', 'less:dev', 'concat', 'autoprefixer', 'copy', 'ngdocs']);
     grunt.registerTask('server', ['default', 'connect', 'watch']);
 };
