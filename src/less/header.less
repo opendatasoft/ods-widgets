@@ -2,7 +2,7 @@
 // ODS DOCUMENTATION HEADER
 ////////////////////////////////////////////////////////////////////////////////
 
-.ods__documentation-header {
+.ods-header {
 	height: 100px;
 	width: 100%;
 	position: fixed; 
@@ -12,14 +12,14 @@
 	background-color: @blue-light;
 }
 @media (min-width: @screen-md-min) {
-    .ods__documentation-header {
+    .ods-header {
         display: flex;
         flex-direction: row;
         justify-content: flex-start;
 	}
 }
 
-.ods__documentation-header-logo {
+.ods-header__logo {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-around;
@@ -38,7 +38,7 @@
 			background-color: @blue-hover;
 			color: white;
 		}
-		&.ods__documentation-header-btn-active {
+		&.ods-header__btn--active {
 			background-color: @blue-hover;
 			color: white;
 		}
@@ -55,7 +55,7 @@
   	}
 }
 @media (min-width: @screen-md-min) {
-	.ods__documentation-header-logo {
+	.ods-header__logo {
         height: 99px;
         width: auto;
         padding-left: 40px;
@@ -71,22 +71,22 @@
 	}
 }
 
-.ods__documentation-header-nav {
+.ods-header__nav {
   	display: none;
 }
 @media (min-width: @screen-md-min) {
-	.ods__documentation-header-nav {
+	.ods-header__nav {
         display: flex;
         margin-left: 103px;
 	}
 }
 
-.ods__documentation-help-hub-sidebar {
+.ods-helphub {
 	position: fixed;
 	top: 100px;
-	right: -380px;
+	right: -300px;
 	height: 100%;
-	width: 380px;
+	width: 300px;
 	padding-top: 40px;
 	background-color: @blue-light;
 	border-top: 1px solid lighten(@grey-dark, 60%);
@@ -96,62 +96,58 @@
 	transition: 0.5s;
 }
 @media (min-width: @screen-md-min) {
-	.ods__documentation-help-hub-sidebar {
+	.ods-helphub {
         display: none;
 	}
 }
 
-.ods__documentation-help-hub-sidebar-item {
+.ods-helphub__item {
 	text-align: center;
-	margin: 30px 0;
+	margin: 15px 0;
 	a {
 		color: white;
-		font-size: 25px;
+		font-size: 16px;
 		text-decoration: none;
 		font-weight: 500;
 		padding: 5px;
 	}
 }
 
-.help-hub-active {
+.ods-helphub--active {
 	right: 0;
 }
 
-.ods__documentation-help-hub-sidebar-active {
-  right: 0;
-}
-
-.ods__documentation-header-nav-item-active > a {
+.ods-header__nav-item--active > a {
 	border-bottom: 2px solid white;
 }
 @media (min-width: @screen-md-min) {
-	.ods__documentation-header-nav-item-active > a {
+	.ods-header__nav-item--active > a {
 		border-bottom: 2px solid white;
 	}
 }
 
 @media (min-width: @screen-md-min) {
-    .ods__documentation-header-nav-item {
+    .ods-header__nav-item {
 		margin: auto 20px;
 		transition: 0.5s;
     }
-    .ods__documentation-header-nav-item:first-child {
+    .ods-header__nav-item:first-child {
         margin-left: 0px;
     }
-    .ods__documentation-header-nav-item:last-child {
+    .ods-header__nav-item:last-child {
         margin-right: 0px;
     }
-    .ods__documentation-header-nav-item > a {
+    .ods-header__nav-item > a {
         color: white;
         font-size: 18px;
         text-decoration: none;
         padding: 5px 0;
         border-bottom: 2px solid transparent;
 	}
-    .ods__documentation-header-nav-item > a:hover {
+    .ods-header__nav-item > a:hover {
         border-bottom: 2px solid white;
 	}
-	.ods__documentation-header-nav-item-active > a {
+	.ods-header__nav-item-active > a {
     	border-bottom: 2px solid white;
   	}
 }

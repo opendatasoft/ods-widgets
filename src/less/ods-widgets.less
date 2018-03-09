@@ -49,8 +49,8 @@
 @import "components/slideshow";
 
 body {
-    font-size: 25px;
-    line-height: 35px;
+    font-size: 16px;
+    line-height: 25px;
     font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
 }
 @media (min-width: @screen-md-min) {
@@ -85,27 +85,26 @@ body {
 ////////////////////////////////////////////////////////////////////////////////
 // ODS CUSTOM THEME
 ////////////////////////////////////////////////////////////////////////////////
-//- Mobile
-.ods__theme-container {
+.ods-container {
     margin: 100px 0 0 0;
-    width: auto;
+    width: 100%;
 }
 @media (min-width: @screen-md-min) {
-    .ods__theme-container {
+    .ods-container {
         margin: 100px 0 0 0;
     }
 }
 
 //- Sidebar 
-.ods__theme-sidebar {
-    // border: 1px solid red;
+.ods-sidebar {
     border-right: 1px solid lighten(@grey-dark, 30%);
-    padding-top: 40px;
+    padding: 25px 0;
     position: absolute;
     top: 100px;
-    left: -382px;
+    left: -302px;
     z-index: 2;
-    width: 380px;
+    width: 300px;
+    height: auto;
     background-color: white;
     transition: 0.5s;
 }
@@ -113,24 +112,23 @@ body {
     margin-left: 0;
 }
 @media (min-width: @screen-md-min) {
-    .ods__theme-sidebar {
+    .ods-sidebar {
         position: static;
-        // margin-left: 35px;
         width: 300px;
         padding-top: 25px;
     }
 }
 
-.menu-active {
+.ods-sidebar--active {
 	left: 0;
 }
 
 .form-search .search-query {
-    width: 310px;
-    height: 40px;
-    font-size: 20px;
+    width: 240px;
+    height: 25px;
+    font-size: 13px;
     border: 1px solid lighten(@grey-dark, 30%);
-    margin-left: 19px;
+    margin: 0 15px;
 }
 @media (min-width: @screen-md-min) {
     .form-search .search-query {
@@ -150,10 +148,6 @@ body {
     padding: 3px 0;
 }
 
-.nav-list > li > a {
-    padding: 10px 25px;
-}
-
 .form-search .well {
     border: none;
     background-color: white;
@@ -161,7 +155,7 @@ body {
 
 .form-search > ul.nav > li.section {
     background-color: white;
-    margin: 25px 0;
+    margin: 25px 0 20px 0;
 }
 @media (min-width: @screen-md-min) {
     .form-search > ul.nav > li.section {
@@ -170,7 +164,7 @@ body {
 }
 
 .form-search > ul.nav > li {
-    width: 380px;
+    width: 300px;
 }
 @media (min-width: @screen-md-min) {
     .form-search > ul.nav > li {
@@ -181,7 +175,7 @@ body {
 .form-search .well .guide {
     float: left;
     color: black!important;
-    font-size: 30px;
+    font-size: 25px;
 }
 @media (min-width: @screen-md-min) {
     .form-search .well .guide {
@@ -191,8 +185,9 @@ body {
 
 .ng-binding {
     color: @grey-dark;
-    font-size: 25px;
-    line-height: 35px;
+    font-size: 16px;
+    line-height: 30px;
+    font-weight: 500;
 }
 @media (min-width: @screen-md-min) {
     .ng-binding {
@@ -229,7 +224,7 @@ body {
 
 .icon-cog {
     color: @blue-hover;
-    line-height: 35px;
+    line-height: 30px;
     font-size: 25px;
 }
 @media (min-width: @screen-md-min) {
@@ -240,14 +235,16 @@ body {
 }
 
 //- Content principal
-.ods__theme-content-principal {
-    // border: 1px solid red;
-    padding: 25px 10px 0 10px;
-    margin: 0 70px;
-    width: 87%;
+.ods-content {
+    padding: 25px 5px 0 5px;
+    position: absolute;
+    left: 0;
+    top: 100px;
+    margin: 0;
+    width: 100%;
 }
 @media (min-width: @screen-md-min) {    
-    .ods__theme-content-principal {
+    .ods-content {
         margin-left: 35px;
         width: 60%;
     }
@@ -273,8 +270,8 @@ body {
 }
 
 .breadcrumb > li > .divider {
-    font-size: 25px;
-    margin-top: 3px;
+    font-size: 16px;
+    margin-top: 0;
 }
 @media (min-width: @screen-md-min) {
     .breadcrumb > li > .divider {
@@ -285,6 +282,7 @@ body {
 
 .content h1 {
     font-size: 50px;
+    word-wrap: break-word;
 }
 @media (min-width: @screen-md-min) {
     .content h1 {
@@ -328,7 +326,9 @@ code {
 }
 
 .table td {
-    line-height: 35px;
+    line-height: 25px;
+    max-width: 100px;
+    word-wrap: break-word;
 }
 @media (min-width: @screen-md-min) {
     .table td {
@@ -336,9 +336,13 @@ code {
     }
 }
 
+.variables-matrix td {
+    padding: 3px;
+}
+
 ol.linenums li {
-    font-size: 20px;
-    line-height: 30px;
+    font-size: 16px;
+    line-height: 25px;
 }
 @media (min-width: @screen-md-min) {
     ol.linenums li {
