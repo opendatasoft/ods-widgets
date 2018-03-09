@@ -33,7 +33,7 @@ function toggleHelpHub() {
 }
 
 //- Resize sidebar
-function resizeSidebar() {
+function resizeSidebarMobile() {
     var contentHeight = document.getElementById("content-principal").offsetHeight
         sidebarHeight = document.getElementById('sidebar-nav').offsetHeight;
 
@@ -43,7 +43,7 @@ function resizeSidebar() {
 }
 
 function toggleMenu() {
-    resizeSidebar();
+    resizeSidebarMobile();
 
     var sidebar = document.getElementsByClassName(helpHubSidebar)[0].className
         menu    = document.getElementsByClassName(menuSidebar)[0].className;
@@ -60,8 +60,8 @@ function toggleMenu() {
 
 //- Activ link in sidebar help hub (widgets / tutorial widgets)
 var itemActiv = "ods-header__nav-item--active"
-    widgets   = document.getElementById("link_widgets")
-    tutorial  = document.getElementById("link_tutorial");
+    widgets   = document.getElementsByClassName("link_widgets")
+    tutorials = document.getElementsByClassName("link_tutorials");
 
 function toggleLinkActiv(a, b, c) {
     if (a.className.includes(c)) return null;
@@ -81,9 +81,16 @@ function toggleLinkHelpHub(a) {
 
 function assignHelpHubActiv() {
     var url = window.location.href.split("#")[1];
-    
-    if (url == "/api") widgets.parentElement.classList.add(itemActiv);
-    else if (url == "/tutorial") tutorial.parentElement.classList.add(itemActiv);
+
+    if (url.includes("/api")) {
+        for (var i = 0; i < widgets.length; i++) {
+            widgets[i].parentElement.classList.add(itemActiv);
+        }
+    } else if (url.includes("/tutorial")) {
+        for (var i = 0; i < tutorials.length; i++) {
+            tutorials[i].parentElement.classList.add(itemActiv);
+        }
+    }
 }
 
 (function () { 
