@@ -64,7 +64,8 @@ var itemActiv = "ods-header__nav-item--active"
     tutorial  = document.getElementById("link_tutorial");
 
 function toggleLinkActiv(a, b, c) {
-    if (!a.className.includes(c)) {
+    if (a.className.includes(c)) return null;
+    else {
         a.classList.add(c);
         b.parentElement.classList.remove(c);
     }
