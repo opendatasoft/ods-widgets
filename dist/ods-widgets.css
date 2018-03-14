@@ -2927,6 +2927,9 @@ body {
   border: none;
   background-color: white;
 }
+.well {
+  box-shadow: none;
+}
 .form-search > ul.nav > li.section {
   background-color: white;
   margin: 25px 0 20px 0;
