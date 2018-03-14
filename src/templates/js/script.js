@@ -1,20 +1,29 @@
 //- ODS Custom Theme
 //- Sidebar Menu / Sidebar Help Hub
-var helpHubSidebar  = "ods-helphub"
-    menuSidebar     = "ods-sidebar"
-    helpHubActive   = "ods-helphub--active"
-    menuActive      = "ods-sidebar--active"
-    btnHelpHub      = "helphub-button"
-    btnMenu         = "sidebar-button"
-    headerBtnActive = "ods-header__btn--active";
+var helpHubSidebar   = "ods-helphub"
+    menuSidebar      = "ods-sidebar"
+    helpHubActive    = "ods-helphub--active"
+    menuActive       = "ods-sidebar--active"
+    btnHelpHub       = "helphub-button"
+    btnMenu          = "sidebar-button"
+    headerBtnActive  = "ods-header__btn--active"
+    contentPrincipal = "ods-content";
 
 function toggle (a, b, c, d, e) {
+    var sidebarHeight = sidebarHeight = document.getElementById('sidebar-nav').clientHeight;
+
     if (e == 0) {
         document.getElementsByClassName(a)[0].classList.add(b);
         document.getElementById(c).classList.add(d);
+        
+        document.getElementsByClassName(contentPrincipal)[0].style.height = (sidebarHeight - 25) + "px";
+        document.getElementsByClassName(contentPrincipal)[0].style.overflowY = "hidden";
     } else if (e == 1) {
         document.getElementsByClassName(a)[0].classList.remove(b);
         document.getElementById(c).classList.remove(d);
+
+        document.getElementsByClassName(contentPrincipal)[0].style.height = "auto";
+        document.getElementsByClassName(contentPrincipal)[0].style.overflowY = "visible";
     }
 }
 
@@ -32,19 +41,7 @@ function toggleHelpHub() {
     }
 }
 
-//- Resize sidebar
-function resizeSidebarMobile() {
-    var contentHeight = document.getElementById("content-principal").offsetHeight
-        sidebarHeight = document.getElementById('sidebar-nav').offsetHeight;
-
-    if (sidebarHeight < contentHeight) {
-        document.getElementById("sidebar-nav").style.height = contentHeight + "px";
-    }
-}
-
 function toggleMenu() {
-    resizeSidebarMobile();
-
     var sidebar = document.getElementsByClassName(helpHubSidebar)[0].className
         menu    = document.getElementsByClassName(menuSidebar)[0].className;
 

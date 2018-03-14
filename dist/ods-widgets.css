@@ -2890,10 +2890,13 @@ body {
 }
 @media (min-width: 992px) {
   .ods-sidebar {
-    position: absolute;
+    position: fixed;
+    overflow-y: scroll;
     left: 0;
+    top: 100px;
+    height: 85vh;
     width: 300px;
-    padding-top: 25px;
+    padding: 25px 0;
   }
 }
 .ods-sidebar--active {
