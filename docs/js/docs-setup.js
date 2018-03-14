@@ -11,7 +11,7 @@ NG_DOCS={
       "type": "overview",
       "moduleName": "index",
       "shortDescription": "This documentation contains the complete reference of available ODS Widgets, including examples.",
-      "keywords": "api complete discover documentation examples including left list ods overview reference search widgets",
+      "keywords": "api class complete discover documentation examples github href http icon-github-sign including left link_github list ods overview reference search widgets",
       "isDeprecated": false
     },
     {

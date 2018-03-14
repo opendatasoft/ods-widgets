@@ -63,19 +63,21 @@ var itemActiv = "ods-header__nav-item--active"
     widgets   = document.getElementsByClassName("link_widgets")
     tutorials = document.getElementsByClassName("link_tutorials");
 
-function toggleLinkActiv(a, b, c) {
-    if (a.className.includes(c)) return null;
+function toggleLinkActiv(a, b) {
+    if (a.className.includes(itemActiv)) return null;
     else {
-        a.classList.add(c);
-        b.parentElement.classList.remove(c);
+        a.classList.add(itemActiv);
+        for (var u = 0; u < b.length; u++) {
+            b[u].parentElement.classList.remove(itemActiv);
+        }
     }
 }
 
 function toggleLinkHelpHub(a) {
-    if (event.target.id == "link_widgets") {
-        toggleLinkActiv(event.target.parentElement, tutorial, itemActiv);
-    } else if (event.target.id == "link_tutorial") {
-        toggleLinkActiv(event.target.parentElement, widgets, itemActiv);
+    if (a.className == "link_widgets") {
+        toggleLinkActiv(a.parentElement, tutorials);
+    } else if (a.className == "link_tutorials") {
+        toggleLinkActiv(a.parentElement, widgets);
     }
 }
 
@@ -99,8 +101,8 @@ function assignHelpHubActiv() {
         if (event.target.className.includes("ng-binding")) {
             toggle(menuSidebar, menuActive, btnMenu, headerBtnActive, 1);
         }
-        if (event.target.id.includes('link_widgets') ||
-            event.target.id.includes('link_tutorial')) {
+        if (event.target.className.includes('link_widgets') ||
+            event.target.className.includes('link_tutorial')) {
             toggleLinkHelpHub(event.target);
         }
     });

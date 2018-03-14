@@ -3108,3 +3108,11 @@ li {
     line-height: 20px;
   }
 }
+.link_github {
+  color: #7b7b7b;
+  text-decoration: none;
+}
+.link_github:hover {
+  color: #7b7b7b;
+  outline: none;
+}
