@@ -521,9 +521,7 @@
             return options;
         };
 
-        var colors = {};
-        var colorsIndex = 0;
-        var getSerieOptions = function(parameters, yAxisesIndexes, query, serie, suppXValue, domain, scope) {
+        var getSerieOptions = function(parameters, yAxisesIndexes, query, serie, suppXValue, domain, scope, colorsIndex) {
             var datasetid = ChartHelper.getDatasetId({dataset: {datasetid: query.config.dataset}, domain: domain});
             var yLabel = ChartHelper.getYLabel(datasetid, serie);
             var serieColor;
@@ -542,11 +540,7 @@
 
                 serie.extras.colors = colorScale.getColors(serie.color);
             } else {
-                if (!colors[suppXValue + serie.color]) {
-                    colors[suppXValue + serie.color] = colorScale.getColorAtIndex(serie.color, colorsIndex);
-                    colorsIndex++;
-                }
-                serieColor = colors[suppXValue + serie.color];
+                serieColor = colorScale.getColorAtIndex(serie.color, colorsIndex);
             }
 
             var type = 'line',
@@ -1220,16 +1214,30 @@
                                     }
                                 }
                             }
+                            var colors = {};
+                            var colorIndex = 0;
                             var handleSerie = function(serieHash, parameters, options, serie_options, query, serie, valueX, valueY, rawValueX) {
                                 var serieIndex = registered_series.indexOf(serieHash);
-                                var color = serie.colorScale(valueY).hex();
+                                var serieColorIndex = 0;
                                 var categoryIndex;
 
+                                if (rawValueX) {
+                                    if ((rawValueX + serie.color) in colors) {
+                                        serieColorIndex = colors[rawValueX + serie.color];
+                                    } else {
+                                        serieColorIndex = colorIndex;
+                                        colors[rawValueX + serie.color] = serieColorIndex;
+                                        colorIndex++;
+                                    }
+                                } else {
+                                    serieColorIndex = colorIndex;
+                                    colorIndex++;
+                                }
                                 if (serieIndex === -1) {
-                                    options.series.push(getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope));
+                                    options.series.push(getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope, serieColorIndex));
                                     serieIndex = registered_series.push(serieHash) - 1;
                                 } else if (!options.series[serieIndex]) {
-                                    options.series[serieIndex] = getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope);
+                                    options.series[serieIndex] = getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope, serieColorIndex);
                                 }
 
                                 if (options.xAxis.type === "category" && (categoryIndex = options.xAxis.categories.indexOf(valueX)) === -1) {

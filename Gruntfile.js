@@ -133,7 +133,7 @@ module.exports = function(grunt) {
                 ],
 				html5Mode: false,
 				image: 'assets/logo.png',
-				title: "OpenDataSoft's Widgets Documentation",
+				title: "ODS-Widgets Documentation",
 				bestMatch: true,
                 startPage: '/api',
                 navTemplate: 'src-docs/navbar.html',
@@ -147,7 +147,7 @@ module.exports = function(grunt) {
                     'src/ods-widgets.js',
                     'src-docs/widgets/*.ngdoc'
                 ],
-				title: 'Reference Documentation'
+				title: 'Reference'
 			},
             tutorial: {
                 src: ['src-docs/tutorial/*.ngdoc'],

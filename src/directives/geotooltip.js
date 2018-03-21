@@ -79,7 +79,6 @@
                     map = new L.ODSMap(container[0], {
                         zoomControl: false,
                         basemapsList: [ODSWidgetsConfig.basemaps[0]],
-                        minZoom: 1,
                         maxZoom: 16
                     });
                 } else if (resized) {

@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.2.1 - 2018-03-21
+
+### Added
+- `odsMap`: added support for min & max zoom levels in Custom WMS basemaps
+
+### Fixed
+- `odsHighchart`: made color series management local to each chart
+- `odsDatasetContext`: fixed `getDownloadUrl()` method issue with null/undefined values
+- `odsMap`: fixed whitespace in tooltips and fullscreen mode
+- `odsTimerange`: fixed reset button position/style
+
 ## 1.2.0 - 2018-03-07
 
 ### Added

@@ -45,7 +45,7 @@ L.Control.ODSMapFullscreen = L.Control.extend({
 
     toggleFullscreen: function () {
         var container = this._map.getContainer();
-        var odsMapContainer = container.parentElement.parentElement;
+        var odsMapContainer = container.parentElement;
 
         if (this.isFullscreen()) {
             if (document.exitFullscreen) {
@@ -58,7 +58,7 @@ L.Control.ODSMapFullscreen = L.Control.extend({
                 document.msExitFullscreen();
             } else {
                 this.setFullscreen(false);
-                L.DomUtil.removeClass(odsMapContainer, 'odswidget-map__pseudo-fullscreen');
+                L.DomUtil.removeClass(odsMapContainer, 'odswidget-map__map--fullscreen');
             }
         } else {
             if (odsMapContainer.requestFullscreen) {
@@ -71,9 +71,10 @@ L.Control.ODSMapFullscreen = L.Control.extend({
                 odsMapContainer.msRequestFullscreen();
             } else {
                 this.setFullscreen(true);
-                L.DomUtil.addClass(odsMapContainer, 'odswidget-map__pseudo-fullscreen');
+                L.DomUtil.addClass(odsMapContainer, 'odswidget-map__map--fullscreen');
             }
         }
+        window.dispatchEvent(new Event('resize'))
     },
     isFullscreen: function() {
         return this._isFullscreen || false;

@@ -46,6 +46,9 @@ L.ODSMap = L.Map.extend({
                     attributionSeparator: attributionSeparator
                 });
             }
+            if (typeof layer.options.minZoom !== 'number') {
+                layer.options.minZoom = 2;
+            }
             layer.basemapLabel = basemap.label;
             layer.basemapId = basemap.id;
             layers.push(layer);

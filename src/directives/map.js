@@ -176,7 +176,7 @@
          * An additional `colorFunction` property can contain the `log` value to use logarithmic scales (instead of the default linear scale) for generating the color scale. Available for `aggregation` and with `color` and `colorScale` display modes (or when none is specified).
          *
          * On top of color configuration, the icon used as a marker on the map can be configured through the `picto`
-         * property. The property supports the keywords listed in the <a href="http://docs.opendatasoft.com/en/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a>          
+         * property. The property supports the keywords listed in the <a href="http://docs.opendatasoft.com/en/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a>
          *
          * When displaying shapes, you can also use `borderColor` and `opacity` to configure the color of the shape border and the opacity of the shape's fill.
          *
@@ -288,41 +288,6 @@
                 if (attrs.style) { mapElement.attr('style', attrs.style); }
                 if (attrs['class']) { mapElement.addClass(attrs['class']); }
                 if (attrs.odsAutoResize === 'true' || attrs.odsAutoResize === '') {scope.autoResize = 'true'; }
-
-
-                /* fullscreen handling */
-                var fullscreenchange;
-
-                if ('onfullscreenchange' in document) {
-                    fullscreenchange = 'fullscreenchange';
-                } else if ('onmozfullscreenchange' in document) {
-                    fullscreenchange = 'mozfullscreenchange';
-                } else if ('onwebkitfullscreenchange' in document) {
-                    fullscreenchange = 'webkitfullscreenchange';
-                } else if ('onmsfullscreenchange' in document) {
-                    fullscreenchange = 'MSFullscreenChange';
-                }
-
-                var enableFullscreen = function() {
-                    element.addClass('odswidget-map__fullscreen');
-                    resizeMap();
-                };
-
-                var disableFullscreen = function() {
-                    element.removeClass('odswidget-map__fullscreen');
-                    resizeMap();
-                };
-
-                if (fullscreenchange) {
-                    document.addEventListener(fullscreenchange, function(e) {
-                        if (document.fullscreenElement || document.msFullscreenElement ||
-                            document.webkitFullscreenElement || document.mozFullScreenElement) {
-                            enableFullscreen();
-                        } else {
-                            disableFullscreen();
-                        }
-                    });
-                }
 
                 var isStatic = scope.staticMap && scope.staticMap.toLowerCase() === 'true';
                 var noRefit = scope.noRefit && scope.noRefit.toLowerCase() === 'true';
@@ -461,7 +426,6 @@
                     var mapOptions = {
                         basemapsList: ODSWidgetsConfig.basemaps,
                         worldCopyJump: true,
-                        minZoom: 2,
                         basemap: scope.mapContext.basemap,
                         dragging: !isStatic,
                         keyboard: !isStatic,

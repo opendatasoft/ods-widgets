@@ -3,42 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    function encodeUriQuery(val, pctEncodeSpaces) {
-      return encodeURIComponent(val).
-                 replace(/%40/gi, '@').
-                 replace(/%3A/gi, ':').
-                 replace(/%24/g, '$').
-                 replace(/%2C/gi, ',').
-                 replace(/%20/g, (pctEncodeSpaces ? '%20' : '+'));
-    }
-
-    function serializeValue(v) {
-      if (angular.isObject(v)) {
-        return angular.isDate(v) ? v.toISOString() : angular.toJson(v);
-      }
-      return v;
-    }
-
-    mod.service('ODSParamSerializer', function() {
-        return function ngParamSerializer(params) {
-          if (!params) return '';
-          var parts = [];
-            angular.forEach(params, function(value, key) {
-            if (value === null || angular.isUndefined(value)) return;
-            if (angular.isArray(value)) {
-              angular.forEach(value, function(v, k) {
-                parts.push(encodeUriQuery(key)  + '=' + encodeUriQuery(serializeValue(v)));
-              });
-            } else {
-              parts.push(encodeUriQuery(key) + '=' + encodeUriQuery(serializeValue(value)));
-            }
-          });
-
-          return parts.join('&');
-        };
-    });
-
-    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'ODSParamSerializer', 'odsHttpErrorMessages', function($http, ODSWidgetsConfig, odsNotificationService, ODSParamSerializer, odsHttpErrorMessages) {
+    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'odsHttpErrorMessages', function($http, ODSWidgetsConfig, odsNotificationService, odsHttpErrorMessages) {
         /**
          * This service exposes OpenDataSoft APIs.
          *
@@ -59,7 +24,9 @@
             }
             var options = {
                 params: params,
-                paramSerializer: ODSParamSerializer
+                paramSerializer: function(params) {
+                    return ODS.URLUtils.getAPIQueryString(params);
+                }
             };
             if (timeout) {
                 options.timeout = timeout;

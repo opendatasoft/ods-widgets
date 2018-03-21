@@ -5,14 +5,6 @@
    which is used by this widget.
    ========================================================================== */
 
-@timeRange-borderRadius: .2rem;
-@timeRange-zIndex: @zIndex-10;
-@timeRange-padding: .72rem;
-@timeRange-boxShadow: @boxShadow-2;
-@timeRange-item-padding: .45rem;
-@timeRange-item-borderRadius: .4rem;
-@timeRange-item-margin: .72rem;
-
 .odswidget-timerange {
     text-align: center;
 }
@@ -23,24 +15,35 @@
     position: relative;
 }
 
+.odswidget-timerange__input {
+    order: 1;
+}
+// Hide the IE10-11 Clear button from inputs
+.odswidget-timerange__input::-ms-clear {
+    display: none;
+}
+
 .odswidget-timerange__reset {
-    color: @color-textSearch-submit;
+    color: @timeRange-reset-color;
     background: none;
     border: none;
-    padding: 0;
     position: absolute;
     top: 0;
+    bottom: 0;
     right: 0;
-    padding: 2px;
+    padding: 0 5px;
+    &:hover {
+        color: @timeRange-reset-color-hover;
+    }
 }
 
 // Rome.js Overrides
 
 .odswidgets-rd-container.rd-container {
-    background-color: @color-timeRange-background;
+    background-color: @timeRange-background;
     padding: @timeRange-padding;
     border-radius: @timeRange-borderRadius;
-    border: 1px solid @color-timeRange-border;
+    border: 1px solid @timeRange-border;
     box-shadow: @timeRange-boxShadow;
     z-index: @timeRange-zIndex;
 }
@@ -60,8 +63,8 @@
 .odswidgets-rd-container .rd-time-selected,
 .odswidgets-rd-container .rd-time-option:hover,
 .odswidgets-rd-container .rd-day-body:hover{
-    background-color: @color-timeRange-active-background;
-    color: contrast(@color-timeRange-active-background);
+    background-color: @timeRange-active-background;
+    color: contrast(@timeRange-active-background);
 }
 
 .odswidgets-rd-container .rd-day-head {
@@ -76,7 +79,7 @@
 
 .odswidgets-rd-container .rd-day-prev-month,
 .odswidgets-rd-container .rd-day-next-month {
-    color: @color-timeRange-otherMonth-text;
+    color: @timeRange-otherMonth-text;
 }
 
 .odswidgets-rd-container .rd-back,

@@ -16,15 +16,6 @@
     text-shadow: 0.1em 0.1em 0.3em rgba(0,0,0,0.5);
 }
 
-.leaflet-vectormarker svg#svg-vectormarker-marker, .leaflet-vectormarker .leaflet-vectormarker-singleicon svg {
-    -webkit-filter: drop-shadow( 0.1em 0.1em 0.1em rgba(0,0,0,0.5) );
-    /*filter: drop-shadow( 0.1em 0.1em 0.1em rgba(0,0,0,0.5) );*/
-}
-
-.leaflet-vectormarker svg#svg-vectormarker-marker {
-    overflow: visible; /* To prevent weird clipping of the round borders */
-}
-
 .leaflet-vectormarker .leaflet-vectormarker-singleicon #dot-icon {
     /* Special treatment for the dot icon: a white border */
     stroke: white;

@@ -6990,7 +6990,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by OpenDataSoft
     //  License: MIT
-    var version = '1.2.0';
+    var version = '1.2.1';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -7152,42 +7152,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    function encodeUriQuery(val, pctEncodeSpaces) {
-      return encodeURIComponent(val).
-                 replace(/%40/gi, '@').
-                 replace(/%3A/gi, ':').
-                 replace(/%24/g, '$').
-                 replace(/%2C/gi, ',').
-                 replace(/%20/g, (pctEncodeSpaces ? '%20' : '+'));
-    }
-
-    function serializeValue(v) {
-      if (angular.isObject(v)) {
-        return angular.isDate(v) ? v.toISOString() : angular.toJson(v);
-      }
-      return v;
-    }
-
-    mod.service('ODSParamSerializer', function() {
-        return function ngParamSerializer(params) {
-          if (!params) return '';
-          var parts = [];
-            angular.forEach(params, function(value, key) {
-            if (value === null || angular.isUndefined(value)) return;
-            if (angular.isArray(value)) {
-              angular.forEach(value, function(v, k) {
-                parts.push(encodeUriQuery(key)  + '=' + encodeUriQuery(serializeValue(v)));
-              });
-            } else {
-              parts.push(encodeUriQuery(key) + '=' + encodeUriQuery(serializeValue(value)));
-            }
-          });
-
-          return parts.join('&');
-        };
-    });
-
-    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'ODSParamSerializer', 'odsHttpErrorMessages', function($http, ODSWidgetsConfig, odsNotificationService, ODSParamSerializer, odsHttpErrorMessages) {
+    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'odsHttpErrorMessages', function($http, ODSWidgetsConfig, odsNotificationService, odsHttpErrorMessages) {
         /**
          * This service exposes OpenDataSoft APIs.
          *
@@ -7208,7 +7173,9 @@ mod.directive('infiniteScroll', [
             }
             var options = {
                 params: params,
-                paramSerializer: ODSParamSerializer
+                paramSerializer: function(params) {
+                    return ODS.URLUtils.getAPIQueryString(params);
+                }
             };
             if (timeout) {
                 options.timeout = timeout;
@@ -12373,6 +12340,22 @@ mod.directive('infiniteScroll', [
         {'base':'z','letters':/[\u007A\u24E9\uFF5A\u017A\u1E91\u017C\u017E\u1E93\u1E95\u01B6\u0225\u0240\u2C6C\uA763]/g}
     ];
 
+    function encodeUriQuery(val, pctEncodeSpaces) {
+      return encodeURIComponent(val).
+                 replace(/%40/gi, '@').
+                 replace(/%3A/gi, ':').
+                 replace(/%24/g, '$').
+                 replace(/%2C/gi, ',').
+                 replace(/%20/g, (pctEncodeSpaces ? '%20' : '+'));
+    }
+
+    function serializeValue(v) {
+      if (angular.isObject(v)) {
+        return angular.isDate(v) ? v.toISOString() : angular.toJson(v);
+      }
+      return v;
+    }
+
     var ODS = {
         Context: {
             toggleRefine: function(context, facetName, path, replace) {
@@ -12682,18 +12665,23 @@ mod.directive('infiniteScroll', [
                 return params;
             },
             getAPIQueryString: function(options) {
-                var qs = [];
-                options = this.cleanupAPIParams(options);
+                options = this.cleanupAPIParams(angular.extend({}, options || {}));
+                if (!options) return '';
+                var parts = [];
                 angular.forEach(options, function(value, key) {
+                    if (isNullOrUndefined(value)) {
+                        return;
+                    }
                     if (angular.isArray(value)) {
-                        angular.forEach(value, function(singleVal) {
-                            qs.push(key+'='+encodeURIComponent(singleVal));
+                        angular.forEach(value, function(v) {
+                            parts.push(encodeUriQuery(key)  + '=' + encodeUriQuery(serializeValue(v)));
                         });
                     } else {
-                        qs.push(key+'='+encodeURIComponent(value));
+                        parts.push(encodeUriQuery(key) + '=' + encodeUriQuery(serializeValue(value)));
                     }
                 });
-                return qs.join('&');
+
+                return parts.join('&');
             }
         },
         DatasetUtils: {
@@ -17484,7 +17472,6 @@ mod.directive('infiniteScroll', [
                     map = new L.ODSMap(container[0], {
                         zoomControl: false,
                         basemapsList: [ODSWidgetsConfig.basemaps[0]],
-                        minZoom: 1,
                         maxZoom: 16
                     });
                 } else if (resized) {
@@ -18155,9 +18142,7 @@ mod.directive('infiniteScroll', [
             return options;
         };
 
-        var colors = {};
-        var colorsIndex = 0;
-        var getSerieOptions = function(parameters, yAxisesIndexes, query, serie, suppXValue, domain, scope) {
+        var getSerieOptions = function(parameters, yAxisesIndexes, query, serie, suppXValue, domain, scope, colorsIndex) {
             var datasetid = ChartHelper.getDatasetId({dataset: {datasetid: query.config.dataset}, domain: domain});
             var yLabel = ChartHelper.getYLabel(datasetid, serie);
             var serieColor;
@@ -18176,11 +18161,7 @@ mod.directive('infiniteScroll', [
 
                 serie.extras.colors = colorScale.getColors(serie.color);
             } else {
-                if (!colors[suppXValue + serie.color]) {
-                    colors[suppXValue + serie.color] = colorScale.getColorAtIndex(serie.color, colorsIndex);
-                    colorsIndex++;
-                }
-                serieColor = colors[suppXValue + serie.color];
+                serieColor = colorScale.getColorAtIndex(serie.color, colorsIndex);
             }
 
             var type = 'line',
@@ -18854,16 +18835,30 @@ mod.directive('infiniteScroll', [
                                     }
                                 }
                             }
+                            var colors = {};
+                            var colorIndex = 0;
                             var handleSerie = function(serieHash, parameters, options, serie_options, query, serie, valueX, valueY, rawValueX) {
                                 var serieIndex = registered_series.indexOf(serieHash);
-                                var color = serie.colorScale(valueY).hex();
+                                var serieColorIndex = 0;
                                 var categoryIndex;
 
+                                if (rawValueX) {
+                                    if ((rawValueX + serie.color) in colors) {
+                                        serieColorIndex = colors[rawValueX + serie.color];
+                                    } else {
+                                        serieColorIndex = colorIndex;
+                                        colors[rawValueX + serie.color] = serieColorIndex;
+                                        colorIndex++;
+                                    }
+                                } else {
+                                    serieColorIndex = colorIndex;
+                                    colorIndex++;
+                                }
                                 if (serieIndex === -1) {
-                                    options.series.push(getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope));
+                                    options.series.push(getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope, serieColorIndex));
                                     serieIndex = registered_series.push(serieHash) - 1;
                                 } else if (!options.series[serieIndex]) {
-                                    options.series[serieIndex] = getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope);
+                                    options.series[serieIndex] = getSerieOptions(parameters, yAxisesIndexes, query, serie, rawValueX, query.config.domain || domain, $scope, serieColorIndex);
                                 }
 
                                 if (options.xAxis.type === "category" && (categoryIndex = options.xAxis.categories.indexOf(valueX)) === -1) {
@@ -22437,7 +22432,7 @@ mod.directive('infiniteScroll', [
          * An additional `colorFunction` property can contain the `log` value to use logarithmic scales (instead of the default linear scale) for generating the color scale. Available for `aggregation` and with `color` and `colorScale` display modes (or when none is specified).
          *
          * On top of color configuration, the icon used as a marker on the map can be configured through the `picto`
-         * property. The property supports the keywords listed in the <a href="http://docs.opendatasoft.com/en/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a>          
+         * property. The property supports the keywords listed in the <a href="http://docs.opendatasoft.com/en/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a>
          *
          * When displaying shapes, you can also use `borderColor` and `opacity` to configure the color of the shape border and the opacity of the shape's fill.
          *
@@ -22549,41 +22544,6 @@ mod.directive('infiniteScroll', [
                 if (attrs.style) { mapElement.attr('style', attrs.style); }
                 if (attrs['class']) { mapElement.addClass(attrs['class']); }
                 if (attrs.odsAutoResize === 'true' || attrs.odsAutoResize === '') {scope.autoResize = 'true'; }
-
-
-                /* fullscreen handling */
-                var fullscreenchange;
-
-                if ('onfullscreenchange' in document) {
-                    fullscreenchange = 'fullscreenchange';
-                } else if ('onmozfullscreenchange' in document) {
-                    fullscreenchange = 'mozfullscreenchange';
-                } else if ('onwebkitfullscreenchange' in document) {
-                    fullscreenchange = 'webkitfullscreenchange';
-                } else if ('onmsfullscreenchange' in document) {
-                    fullscreenchange = 'MSFullscreenChange';
-                }
-
-                var enableFullscreen = function() {
-                    element.addClass('odswidget-map__fullscreen');
-                    resizeMap();
-                };
-
-                var disableFullscreen = function() {
-                    element.removeClass('odswidget-map__fullscreen');
-                    resizeMap();
-                };
-
-                if (fullscreenchange) {
-                    document.addEventListener(fullscreenchange, function(e) {
-                        if (document.fullscreenElement || document.msFullscreenElement ||
-                            document.webkitFullscreenElement || document.mozFullScreenElement) {
-                            enableFullscreen();
-                        } else {
-                            disableFullscreen();
-                        }
-                    });
-                }
 
                 var isStatic = scope.staticMap && scope.staticMap.toLowerCase() === 'true';
                 var noRefit = scope.noRefit && scope.noRefit.toLowerCase() === 'true';
@@ -22722,7 +22682,6 @@ mod.directive('infiniteScroll', [
                     var mapOptions = {
                         basemapsList: ODSWidgetsConfig.basemaps,
                         worldCopyJump: true,
-                        minZoom: 2,
                         basemap: scope.mapContext.basemap,
                         dragging: !isStatic,
                         keyboard: !isStatic,

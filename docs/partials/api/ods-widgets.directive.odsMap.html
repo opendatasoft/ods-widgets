@@ -82,14 +82,14 @@ function, usually the name of a field (<code>expression</code> is not required w
 <p>Apart from <code>heatmap</code>, all display modes support color configuration. Three types of configurations are available, depending on the display mode.</p>
 <ul>
 <li><code>color</code>: a simple color, as an hex code (#FF0F05) or a simple CSS color name like &quot;red&quot;. Available for any mode except <code>heatmap</code>.</li>
-<li><code>colorScale</code>: the name of a ColorBrewer [<a href="http://colorbrewer2.org/">http://colorbrewer2.org/</a>] scheme, like &quot;YlGnBu&quot;. Available for <code>aggregation</code>.</li>
+<li><code>colorScale</code>: the name of a ColorBrewer [<a href="http://colorbrewer2.org/]">http://colorbrewer2.org/]</a> scheme, like &quot;YlGnBu&quot;. Available for <code>aggregation</code>.</li>
 <li><code>colorRanges</code>: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example &quot;red;20;orange;40;#00CE00&quot; to color anything between
 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a decimal or integer field name in <code>colorByField</code> to configure which field will be
 used to decide on the color (for <code>raw</code>) or with <code>function</code> and <code>expression</code> to determine the calculation used for the color (for <code>aggregation</code>). Available for <code>raw</code> and <code>aggregation</code>.</li>
 </ul>
 <p>An additional <code>colorFunction</code> property can contain the <code>log</code> value to use logarithmic scales (instead of the default linear scale) for generating the color scale. Available for <code>aggregation</code> and with <code>color</code> and <code>colorScale</code> display modes (or when none is specified).</p>
 <p>On top of color configuration, the icon used as a marker on the map can be configured through the <code>picto</code>
-property. The property supports the keywords listed in the <a href="http://docs.opendatasoft.com/en/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a>          </p>
+property. The property supports the keywords listed in the <a href="http://docs.opendatasoft.com/en/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a></p>
 <p>When displaying shapes, you can also use <code>borderColor</code> and <code>opacity</code> to configure the color of the shape border and the opacity of the shape&#39;s fill.</p>
 <p>If you are displaying data where multiple points or shapes are stacked, you can configure the order in which the items will be
 displayed in the tooltip, using <code>tooltipSort</code> and the name of a field, prefixed by <code>-</code> to have a reversed sort.

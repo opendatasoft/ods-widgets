@@ -62,7 +62,7 @@ L.ODSTileLayer = L.TileLayer.extend({
             }
             L.TileLayer.prototype.initialize.call(this, thunderforestUrl,
                 {
-                    minZoom: 1,
+                    minZoom: 2,
                     maxNativeZoom: 18,
                     maxZoom: 19,
                     attribution: !disableAttribution ? attrib : '',
@@ -72,7 +72,7 @@ L.ODSTileLayer = L.TileLayer.extend({
             attrib = this._addAttributionPart(attrib, 'Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
             layerOptions = {
-                minZoom: 1,
+                minZoom: 2,
                 maxZoom: 21,
                 attribution: !disableAttribution ? attrib : '',
                 subdomains: "abcd"
@@ -82,7 +82,7 @@ L.ODSTileLayer = L.TileLayer.extend({
             attrib = this._addAttributionPart(attrib, 'Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
             layerOptions = {
-                minZoom: 1,
+                minZoom: 2,
                 maxZoom: 21,
                 attribution: !disableAttribution ? attrib : '',
                 subdomains: "abcd"
@@ -105,7 +105,7 @@ L.ODSTileLayer = L.TileLayer.extend({
             }
             attrib = this._addAttributionPart(attrib, appendAttribution);
             layerOptions = {
-                minZoom: 1,
+                minZoom: 2,
                 maxNativeZoom: 18,
                 maxZoom: 19,
                 attribution: !disableAttribution ? attrib : '',
@@ -143,7 +143,7 @@ L.ODSTileLayer = L.TileLayer.extend({
             attrib = this._addAttributionPart(attrib, appendAttribution);
 
             layerOptions = {
-                minZoom: 1,
+                minZoom: 2,
                 maxZoom: 22,
                 attribution: !disableAttribution ? attrib : ''
             };
@@ -152,9 +152,7 @@ L.ODSTileLayer = L.TileLayer.extend({
             if (basemap.subdomains) {
                 layerOptions.subdomains = basemap.subdomains;
             }
-            if (basemap.minZoom) {
-                layerOptions.minZoom = basemap.minZoom;
-            }
+            layerOptions.minZoom = basemap.minZoom || 2;
             if (basemap.maxZoom) {
                 layerOptions.maxZoom = basemap.maxZoom;
             }
@@ -192,6 +190,10 @@ L.ODSWMSTileLayer = L.TileLayer.WMS.extend({
         }
         if (basemap.tile_format){
             layerOptions.format = basemap.tile_format;
+        }
+        layerOptions.minZoom = basemap.minZoom || 2;
+        if (basemap.maxZoom) {
+            layerOptions.maxZoom = basemap.maxZoom;
         }
 
         attrib = this._addAttributionPart(attrib, basemap.attribution);

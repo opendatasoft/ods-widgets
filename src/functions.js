@@ -87,6 +87,22 @@
         {'base':'z','letters':/[\u007A\u24E9\uFF5A\u017A\u1E91\u017C\u017E\u1E93\u1E95\u01B6\u0225\u0240\u2C6C\uA763]/g}
     ];
 
+    function encodeUriQuery(val, pctEncodeSpaces) {
+      return encodeURIComponent(val).
+                 replace(/%40/gi, '@').
+                 replace(/%3A/gi, ':').
+                 replace(/%24/g, '$').
+                 replace(/%2C/gi, ',').
+                 replace(/%20/g, (pctEncodeSpaces ? '%20' : '+'));
+    }
+
+    function serializeValue(v) {
+      if (angular.isObject(v)) {
+        return angular.isDate(v) ? v.toISOString() : angular.toJson(v);
+      }
+      return v;
+    }
+
     var ODS = {
         Context: {
             toggleRefine: function(context, facetName, path, replace) {
@@ -396,18 +412,23 @@
                 return params;
             },
             getAPIQueryString: function(options) {
-                var qs = [];
-                options = this.cleanupAPIParams(options);
+                options = this.cleanupAPIParams(angular.extend({}, options || {}));
+                if (!options) return '';
+                var parts = [];
                 angular.forEach(options, function(value, key) {
+                    if (isNullOrUndefined(value)) {
+                        return;
+                    }
                     if (angular.isArray(value)) {
-                        angular.forEach(value, function(singleVal) {
-                            qs.push(key+'='+encodeURIComponent(singleVal));
+                        angular.forEach(value, function(v) {
+                            parts.push(encodeUriQuery(key)  + '=' + encodeUriQuery(serializeValue(v)));
                         });
                     } else {
-                        qs.push(key+'='+encodeURIComponent(value));
+                        parts.push(encodeUriQuery(key) + '=' + encodeUriQuery(serializeValue(value)));
                     }
                 });
-                return qs.join('&');
+
+                return parts.join('&');
             }
         },
         DatasetUtils: {
