@@ -1,0 +1,31 @@
+language: node_js
+env:
+  global:
+  - secure: "JonR5GJedv/SbYQrYAhjFBUsF02GSUq8Fuk0wQRaOY1E/aBxfqLLVp6efaYYG9YMPkklHOu+HWSwVO0X6AeKblEb+4/h8oCUC4Q4KwXTF5xznVp/Bs98hPtqMmYT3XAIe13HeV5hbV4tKMtVYpwm8h4ZVhs1eUpnNpiVgUyWRqE="
+  - secure: "nbOagqTMyLRwN5E3zNuqkuq6IMmHRFKqcWNQauSICzZ629woRhLkofqPeLI9sJNvF13GT6BWJfroE45+juKSgbs27rtRp6/cN90/r+Jv1+STInobowcqJM2HoG2bGQ08Vx/P1PYJQF8X6ai6xFmTEuOhrew95S97ZUmu1adNsq4="
+  - secure: "Tye6/rssYfBQp+euo7fnSs7S+/hmCkBT1u0CWzW5R0mHRRpZf5MQRonqHwXrypFtHoZuLlqmJC7woy5T+yuyNZoGNL5r19kSlOWCcFDvDCZD/qghq9DoKN+u9AAoIu7phSNa0ve86NZM91hvad8evkRoIaHM2umjkx8fSmMRjkY="
+  - DEPLOY_BETA_PATH=/var/www/betahelp/widgets/
+  - DEPLOY_PROD_PATH=/var/www/help/widgets/
+node_js:
+  - 8
+before_script:
+  - npm install grunt-cli -g
+script:
+  - grunt
+before_deploy:
+  - cd dist/ && zip -r ods-widgets.zip . && cd ..
+deploy:
+  provider: releases
+  api_key:
+    secure: "$API_KEY_GITHUB"
+  file: ./dist/ods-widgets.zip
+  skip_cleanup: true
+  on:
+    branch: master
+    tags: true
+after_deploy:
+  - openssl aes-256-cbc -K $encrypted_17bd2ea19db8_key -iv $encrypted_17bd2ea19db8_iv -in .travis.deploy.enc -out .travis.deploy -d
+  - chmod 600 .travis.deploy
+  - cp ./docs-load-css.js ./docs
+  - 'test $TRAVIS_BRANCH == "develop" && rsync -avz -e "ssh -i .travis.deploy -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --delete -P ./docs/ "$DEPLOY_USER"@"$DEPLOY_IP":"$DEPLOY_BETA_PATH"'
+  - 'test $TRAVIS_BRANCH == "master" && rsync -avz -e "ssh -i .travis.deploy -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --delete -P ./docs/ "$DEPLOY_USER"@"$DEPLOY_IP":"$DEPLOY_PROD_PATH"'
