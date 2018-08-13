@@ -1,1 +1,3 @@
 node_modules
+.travis.deploy
+.DS_Store
