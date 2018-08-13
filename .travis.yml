@@ -28,4 +28,4 @@ after_deploy:
   - chmod 600 .travis.deploy
   - cp ./docs-load-css.js ./docs
   - 'test $TRAVIS_BRANCH == "develop" && rsync -avz -e "ssh -i .travis.deploy -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --delete -P ./docs/ "$DEPLOY_USER"@"$DEPLOY_IP":"$DEPLOY_BETA_PATH"'
-  - 'test $TRAVIS_BRANCH == "master" && rsync -avz -e "ssh -i .travis.deploy -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --delete -P ./docs/ "$DEPLOY_USER"@"$DEPLOY_IP":"$DEPLOY_PROD_PATH"'
+  - 'test $TRAVIS_BRANCH == $TRAVIS_TAG && rsync -avz -e "ssh -i .travis.deploy -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --delete -P ./docs/ "$DEPLOY_USER"@"$DEPLOY_IP":"$DEPLOY_PROD_PATH"'
