@@ -22432,7 +22432,7 @@ mod.directive('infiniteScroll', [
          * An additional `colorFunction` property can contain the `log` value to use logarithmic scales (instead of the default linear scale) for generating the color scale. Available for `aggregation` and with `color` and `colorScale` display modes (or when none is specified).
          *
          * On top of color configuration, the icon used as a marker on the map can be configured through the `picto`
-         * property. The property supports the keywords listed in the <a href="http://docs.opendatasoft.com/en/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a>
+         * property. The property supports the keywords listed in the <a href="https://help.opendatasoft.com/platform/en/other_resources/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a>
          *
          * When displaying shapes, you can also use `borderColor` and `opacity` to configure the color of the shape border and the opacity of the shape's fill.
          *
