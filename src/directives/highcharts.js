@@ -90,6 +90,12 @@
             if (serie.func === "CUSTOM") {
                 return parseCustomExpression(serie, 'y.' + serie_name, parent_for_subseries);
             }
+
+            if (['CONSTANT', 'COUNT'].indexOf(serie.func) === -1 && !(serie.yAxis || serie.expr)) {
+                // invalid configuration, do not make the call to analyze API
+                return {};
+            }
+
             options['y.' + serie_name + '.expr'] = serie.yAxis || serie.expr;
 
             options['y.' + serie_name + '.func'] = serie.func;
@@ -187,8 +193,18 @@
                     parameters: {}
                 };
 
-                search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, search_parameters, query.config.options, search_options), canceller.promise));
-                charts_by_query.push(charts);
+                var has_y = false;
+
+                angular.forEach(search_options, function(value, key) {
+                    if (key.match(/y\..*\.func/)) {
+                        has_y = true;
+                    }
+                });
+
+                if (has_y) {
+                    search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, search_parameters, query.config.options, search_options), canceller.promise));
+                    charts_by_query.push(charts);
+                }
             });
             return {
                 promise: $q.all(search_promises),
@@ -286,8 +302,8 @@
             if (parameters.queries.length === 0) {
                 parameters.xLabel = '';
             } else {
+                datasetid = getDatasetUniqueId(parameters.queries[0].config.dataset, domain);
                 if (!angular.isDefined(parameters.xLabel)) {
-                    datasetid = getDatasetUniqueId(parameters.queries[0].config.dataset, domain);
                     parameters.xLabel = ChartHelper.getXLabel(datasetid, parameters.queries[0].xAxis, parameters.timescale);
                 }
             }
@@ -295,7 +311,11 @@
             if (angular.isUndefined(parameters.displayLegend)) {
                 parameters.displayLegend = true;
             }
-            var serieTitle = translate('<span style="color:{series.color}">{series.name}</span>:');
+
+            parameters.labelsXLength = parameters.labelsXLength || 12;
+
+
+            var serieTitle = '<span style="color:{series.color}">{series.name}</span>:';
             var options = {
                 chart: {},
                 title: {text: ''},
@@ -378,19 +398,39 @@
                     pie: {
                         tooltip: {
                             pointFormat: serieTitle + ' <b>{point.y} ({point.percentage:.1f}%)</b>'
+                        },
+                        dataLabels: {
+                            formatter: function() {
+                                if (this.key.length > parameters.labelsXLength) {
+                                    return '<span title="' + this.key.replace('"', '') + '" alt="' + this.key.replace('"', '') + '">' + this.key.substring(0, parameters.labelsXLength - 3) + '...' + "</span>";
+                                } else {
+                                    return this.key;
+                                }
+                            },
+                            style: {
+                                textOutline: 'none'
+                            },
+                            useHTML: true
                         }
                     },
                     treemap: {
                         tooltip: {
-                            headerFormat: '',
-                            pointFormat: translate('<span style="color:{series.color}">{point.name}</span>:') + '<b>{point.value}</b>'
+                            pointFormat: '<span style="color:{series.color}">{point.name}</span>:' + '<b>{point.value}</b>'
                         },
                         layoutAlgorithm: 'squarified',
                         colorByPoint: true,
                         dataLabels: {
                             style: {
                                 textOutline: 'none'
-                            }
+                            },
+                            formatter: function() {
+                                if (this.key.length > parameters.labelsXLength) {
+                                    return '<span title="' + this.key.replace('"', '') + '" alt="' + this.key.replace('"', '') + '">' + this.key.substring(0, parameters.labelsXLength - 3) + '...' + "</span>";
+                                } else {
+                                    return this.key;
+                                }
+                            },
+                            useHTML: true
                         }
                     }
                 },
@@ -435,7 +475,8 @@
                     }
                 },
                 lang: {
-                    noData: translate("No data available yet")
+                    noData: translate("No data available yet"),
+                    resetZoom: translate('Reset zoom')
                 }
             };
 
@@ -471,8 +512,8 @@
 
             if (!precision) {
                 options.xAxis.labels.formatter = function() {
-                    if (this.value.length > 12) {
-                        return '<span title="' + this.value.replace('"', '') + '" alt="' + this.value.replace('"', '') + '">' + this.value.substring(0, 9) + '...' + "</span>";
+                    if (this.value.length > parameters.labelsXLength) {
+                        return '<span title="' + this.value.replace('"', '') + '" alt="' + this.value.replace('"', '') + '">' + this.value.substring(0, parameters.labelsXLength - 3) + '...' + "</span>";
                     } else {
                         return this.value;
                     }
@@ -500,7 +541,7 @@
                         options.chart.polar = true;
                         options.xAxis.lineWidth = 0;
                         options.xAxis.tickmarkPlacement = 'on';
-                        options.xAxis.labels = {};
+                        options.xAxis.labels.rotation = 0;
                         options.xAxis.title = {};
                     }
 
@@ -531,16 +572,23 @@
                 if (!serie.extras) {
                     serie.extras = {};
                 }
+
                 if (serie.innersize) {
                     serie.extras.innerSize = serie.innersize;
                 }
                 if (serie.labelsposition === 'inside') {
-                    serie.extras.dataLabels = {distance:  -50};
+                    serie.extras.dataLabels = {
+                        distance: -50
+                    };
                 }
 
                 serie.extras.colors = colorScale.getColors(serie.color);
             } else {
-                serieColor = colorScale.getColorAtIndex(serie.color, colorsIndex);
+                if (query.categoryColors && query.categoryColors[suppXValue]) {
+                    serieColor = query.categoryColors[suppXValue];
+                } else {
+                    serieColor = colorScale.getColorAtIndex(serie.color, colorsIndex);
+                }
             }
 
             var type = 'line',
@@ -683,6 +731,9 @@
                 } else {
                     formatterFunction = function singleValueTooltip() {
                         var formattedValue = formatValue(this.y, decimals, serie.displayUnits ? unit : false);
+                        if (this.series.userOptions.stacking == 'percent') {
+                            formattedValue = formattedValue + ' (' + Highcharts.numberFormat(this.percentage, 1) + '%)';
+                        }
                         return format_string(template, {
                             name: this.series.name,
                             color: this.series.color,
@@ -823,8 +874,8 @@
 
         var getDateFromXObject = ODS.DateFieldUtils.getDateFromXObject;
 
-        function getXValue(dateFormatFunction, datePattern, x, minDate, xAxisType) {
-            var date = getDateFromXObject(x, minDate),
+        function getXValue(dateFormatFunction, datePattern, x, minDate, xAxisType, alignMonth) {
+            var date = getDateFromXObject(x, minDate, alignMonth),
                 xValue;
 
             if (date && xAxisType === "datetime") {
@@ -1052,8 +1103,8 @@
                         });
 
 
-                        function pushValues(serie, categoryIndex, scale, valueX, valueY, color, thresholds) {
-                            var i, j, data, nullify = false;
+                        function pushValues(serie, categoryIndex, scale, valueX, valueY, colorForCategory, thresholds) {
+                            var i, j, nullify = false, data = {};
                             if (options.xAxis.type === 'datetime' || options.xAxis.type === 'linear') {
                                 if (typeof valueY === 'object') {
                                     data = [valueX];
@@ -1110,6 +1161,13 @@
                                             valueY
                                         ]);
                                     }
+                                    if (colorForCategory) {
+                                        serie.data[serie.data.length - 1] = {
+                                            'x': serie.data[serie.data.length - 1][0],
+                                            'y': serie.data[serie.data.length - 1][1],
+                                            'color': colorForCategory
+                                        };
+                                    }
                                     if (thresholds.length > 0) {
                                         for (i = thresholds.length - 1; i >= 0; i--) {
                                             if (valueY >= thresholds[i].value) {
@@ -1130,11 +1188,18 @@
                                         name: formatRowX(valueX),
                                         y: valueY
                                     };
+                                    if (colorForCategory) {
+                                        serie.data[categoryIndex].color = colorForCategory;
+                                    }
                                 } else if (serie.type == 'treemap') {
                                     serie.data[categoryIndex] = {
                                         name: formatRowX(valueX),
                                         value: valueY
                                     };
+
+                                    if (colorForCategory) {
+                                        serie.data[categoryIndex].color = colorForCategory;
+                                    }
                                 } else {
                                     if (typeof valueY === 'object') {
                                         data = [];
@@ -1163,6 +1228,12 @@
                                         }
                                     }
 
+                                    if (colorForCategory) {
+                                        serie.data[categoryIndex] = {
+                                            'y': serie.data[categoryIndex],
+                                            'color': colorForCategory
+                                        };
+                                    }
                                     if (thresholds.length > 0) {
                                         for (i = thresholds.length - 1; i >= 0; i--) {
                                             if (valueY >= thresholds[i].value) {
@@ -1225,9 +1296,13 @@
                                     if ((rawValueX + serie.color) in colors) {
                                         serieColorIndex = colors[rawValueX + serie.color];
                                     } else {
-                                        serieColorIndex = colorIndex;
-                                        colors[rawValueX + serie.color] = serieColorIndex;
-                                        colorIndex++;
+                                        if (query.categoryColors && query.categoryColors[rawValueX]) {
+                                            colors[rawValueX + serie.color] = query.categoryColors[rawValueX];
+                                        } else {
+                                            serieColorIndex = colorIndex;
+                                            colors[rawValueX + serie.color] = serieColorIndex;
+                                            colorIndex++;
+                                        }
                                     }
                                 } else {
                                     serieColorIndex = colorIndex;
@@ -1246,10 +1321,16 @@
                                 }
 
                                 angular.extend(options.series[serieIndex].tooltip, serie_options);
+
+                                var colorForCategory;
+                                if (query.categoryColors) {
+                                    colorForCategory = query.categoryColors[valueX];
+                                }
+
                                 if (!rawValueX && serie.type !== 'pie') {
-                                    pushValues(options.series[serieIndex], categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, serie.colorScale(valueY).hex(), serie.thresholds || []);
+                                    pushValues(options.series[serieIndex], categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, colorForCategory, serie.thresholds || []);
                                 } else {
-                                    pushValues(options.series[serieIndex], categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, options.series[serieIndex].color, serie.thresholds || []);
+                                    pushValues(options.series[serieIndex], categoryIndex, parameters.singleAxisScale || serie.scale, valueX, valueY, colorForCategory, serie.thresholds || []);
                                 }
                             };
 
@@ -1333,7 +1414,7 @@
                                 for (i = 0; i < results.length; i++) {
                                     var row = results[i];
                                     angular.extend({}, query.defaultValues, row);
-                                    var valueX = getXValue(Highcharts.dateFormat, serie_options.xDateFormat, multipleXs ? row.x[xAxis]: row.x, minDate, options.xAxis.type);
+                                    var valueX = getXValue(Highcharts.dateFormat, serie_options.xDateFormat, multipleXs ? row.x[xAxis]: row.x, minDate, options.xAxis.type, parameters.alignMonth);
                                     j = 0;
                                     // iterate on all entries in the row...
                                     angular.forEach(row, function(rawValueY, keyY) {
@@ -1376,7 +1457,7 @@
                                             } else {
                                                 angular.forEach(row.x, function(rawValueX, keyX) {
                                                     if (keyX !== xAxis) {
-                                                        rawValueX = getXValue(Highcharts.dateFormat, buildDatePattern(rawValueX), rawValueX, minDate, false);
+                                                        rawValueX = getXValue(Highcharts.dateFormat, buildDatePattern(rawValueX), rawValueX, minDate, false, parameters.alignMonth);
 
                                                         handleSerie("" + serie_name + keyX + rawValueX, parameters, options, serie_options, query, serie, valueX, valueY, rawValueX);
                                                         if (series_to_accumulate.indexOf(serie_name) >= 0) {
@@ -1552,7 +1633,7 @@
 
                 var colors = ODSWidgetsConfig.chartColors || defaultColors;
                 if ($scope.color) {
-                    colors = $scope.color.split(',').map(function(item) { return item.trim(); });
+                    colors = ODS.ArrayUtils.fromCSVString($scope.color);
                 }
 
                 var unwatch = $scope.$watch('context.dataset', function(nv) {
@@ -1732,6 +1813,8 @@
          * @param {boolean} [scientificDisplay=true] When set to false, force the full display of the numbers on the Y axis. Active only when singleYAxis is true.
          * @param {boolean} [logarithmic=false] Use a logarithmic scale for Y axis. Active only when singleYAxis is true.
          * @param {boolean} [displayLegend=true] enable or disable the display of series legend. Active only when singleYAxis is true.
+         * @param {boolean} [alignMonth=true] Align the month values with the month label. The old behaviour was to align values with the middle of the month, setting this parameter to false reverts to the old behaviour.
+         * @param {integer} [labelsXLength=12] Set the maximum number of characters displayed for the X axis labels.
          *
          * @description
          * This widget is the base widget allowing to display charts from OpenDataSoft datasets.
@@ -1791,6 +1874,8 @@
                 scientificDisplay: '@',
                 logarithmic: '@',
                 displayLegend: '@',
+                labelsXLength: '@',
+                alignMonth: '@',
 
                 // old syntax can still be used for simple chart
                 context: '=?',
@@ -1830,7 +1915,9 @@
                         yRangeMax: angular.isDefined($scope.max) && $scope.max !== "" ? parseFloat($scope.max) : undefined,
                         yStep: angular.isDefined($scope.step) && $scope.step !== "" ? parseFloat($scope.step) : undefined,
                         scientificDisplay: angular.isDefined($scope.scientificDisplay) && $scope.scientificDisplay !== "" ? $scope.scientificDisplay === "true" : true,
-                        displayLegend: angular.isDefined($scope.displayLegend) && $scope.displayLegend === "false" ? false : true
+                        displayLegend: angular.isDefined($scope.displayLegend) && $scope.displayLegend === "false" ? false : true,
+                        labelsXLength: angular.isDefined($scope.labelsXLength) && $scope.labelsXLength !== "" ? parseInt($scope.labelsXLength) : undefined,
+                        alignMonth: angular.isDefined($scope.alignMonth) && $scope.alignMonth === "false" ? false : true,
                     };
                 }
 
@@ -1845,7 +1932,7 @@
                     (function() {
                         var colors = ODSWidgetsConfig.chartColors || defaultColors;
                         if ($scope.color) {
-                            colors = $scope.color.split(',').map(function(item) { return item.trim(); });
+                            colors = ODS.ArrayUtils.fromCSVString($scope.color);
                         }
 
                         var unwatch = $scope.$watch('context.dataset', function(nv) {
@@ -2003,7 +2090,8 @@
                             timescale: attrs.timescale,
                             stacked: attrs.stacked,
                             seriesBreakdown: attrs.seriesBreakdown,
-                            seriesBreakdownTimescale: attrs.seriesBreakdownTimescale
+                            seriesBreakdownTimescale: attrs.seriesBreakdownTimescale,
+                            categoryColors: attrs.categoryColors ? scope.$eval(attrs.categoryColors) : undefined
                         };
 
                         query.sort = '';

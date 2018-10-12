@@ -358,7 +358,25 @@
                 return UUID;
             }
         },
+        NumberUtils: {
+            limitDecimalsFloor: function limitDecimals(number, decimals) {
+                return Math.floor(number * Math.pow(10, decimals)) / Math.pow(10, decimals);
+            },
+            limitDecimalsCeil: function limitDecimals(number, decimals) {
+                return Math.ceil(number * Math.pow(10, decimals)) / Math.pow(10, decimals);
+            },
+            limitDecimals: function limitDecimals(number, decimals) {
+                return Math.round(number * Math.pow(10, decimals)) / Math.pow(10, decimals);
+            }
+        },
         ArrayUtils: {
+            fromCSVString: function (arrayAsCSV){
+                return arrayAsCSV
+                    .split(',')
+                    .map(function (item) {
+                        return item.trim()
+                    });
+            },
             transpose: function(input) {
                 if (angular.isArray(input)) {
                     return input.reduce(function (resultObject, key) {
@@ -752,7 +770,10 @@
                     return datePattern;
                 };
             },
-            getDateFromXObject: function (x, minDate) {
+            getDateFromXObject: function (x, minDate, alignMonth) {
+                if (typeof alignMonth === "undefined") {
+                    alignMonth = false;
+                }
                 var minYear = minDate ? minDate.getUTCFullYear() : 2000;
                 var minMonth = minDate ? minDate.getUTCMonth() : 0;
                 var minDay = minDate ? minDate.getUTCDate() : 1;
@@ -784,7 +805,11 @@
                         }
                     } else {
                         if ('month' in x) {
-                            date.setUTCDate(16);
+                            if (alignMonth) {
+                                date.setUTCDate(1);
+                            } else {
+                                date.setUTCDate(16);
+                            }
                         }
                     }
                     return date;

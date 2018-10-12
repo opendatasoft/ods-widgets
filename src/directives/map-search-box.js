@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsMapSearchBox', ['AlgoliaPlaces', 'MapHelper', function (AlgoliaPlaces, MapHelper) {
+    mod.directive('odsMapSearchBox', ['$timeout', 'AlgoliaPlaces', 'MapHelper', 'PictoHelper', 'SVGInliner', function ($timeout, AlgoliaPlaces, MapHelper, PictoHelper, SVGInliner) {
         return {
             restrict: 'E',
             template: '' +
@@ -108,10 +108,12 @@
             require: '^odsMap',
             scope: {},
             link: function(scope, element, attrs, mapCtrl) {
+                var searchMarkers = [];
                 scope.suggestions = [];
                 scope.selectedIndex = 0;
                 scope.expanded = false;
                 scope.runQuery = function(userQuery) {
+                    scope.removeSearchMarkers();
                     var loc = MapHelper.getLocationStructure(mapCtrl.getCurrentPosition());
                     AlgoliaPlaces(userQuery, loc.center.join(',')).then(
                         function success(response) {
@@ -132,6 +134,35 @@
                     $('.odswidget-map-search-box__box').blur();
                     scope.expanded = false;
                 };
+
+                scope.addSearchMarker = function(coords) {
+                    SVGInliner.getPromise(PictoHelper.mapPictoToURL('ods-circle'), 'white').then(function (svg) {
+                        var marker = new L.VectorMarker(coords, {
+                            clickable: false,
+                            color: '#F06644',
+                            icon: svg,
+                            zIndexOffset: 9999,
+                            extraClasses: 'ods-widget__ods-search-marker',
+                        });
+                        marker.addTo(mapCtrl.getMap());
+                        $timeout(function() {
+                            marker.setOpacity(1);
+                        });
+                        searchMarkers.push(marker);
+                    });
+                };
+
+                scope.removeSearchMarkers = function() {
+                    angular.forEach(searchMarkers, function (marker) {
+                        marker.setOpacity(0);
+                        $timeout(function () {
+                            mapCtrl.getMap().removeLayer(marker)
+                        }, 300);
+                    });
+                    searchMarkers = [];
+                };
+
+                scope.$on('odsMapInteractiveClick', scope.removeSearchMarkers);
 
                 // Reset search
 
@@ -161,6 +192,8 @@
                     } else {
                         zoom = 21;
                     }
+
+                    scope.addSearchMarker(suggestion._geoloc);
                     mapCtrl.moveMap(suggestion._geoloc, zoom);
                     scope.collapseSearchBox();
                     scope.resetSearch();
@@ -203,26 +236,26 @@
                 };
                 $scope.handleKeyDown = function($event) {
                     switch ($event.keyCode) {
-                        case keyCodes.UPARROW:
-                            $scope.selectedIndex = Math.max(0, $scope.selectedIndex - 1);
-                            $event.preventDefault();
-                            break;
-                        case keyCodes.DOWNARROW:
-                            $scope.selectedIndex = Math.min($scope.suggestions.length, $scope.selectedIndex + 1);
-                            $event.preventDefault();
-                            break;
-                        case keyCodes.ESCAPE:
-                            $scope.resetSearch();
-                            $event.preventDefault();
-                            break;
-                        case keyCodes.RETURNKEY:
-                            if ($scope.selectedIndex === 0) {
-                                $scope.runDataSearch($scope.userQuery);
-                            } else {
-                                $scope.moveToSuggestion($scope.suggestions[$scope.selectedIndex-1]);
-                            }
-                            $event.preventDefault();
-                            break;
+                    case keyCodes.UPARROW:
+                        $scope.selectedIndex = Math.max(0, $scope.selectedIndex - 1);
+                        $event.preventDefault();
+                        break;
+                    case keyCodes.DOWNARROW:
+                        $scope.selectedIndex = Math.min($scope.suggestions.length, $scope.selectedIndex + 1);
+                        $event.preventDefault();
+                        break;
+                    case keyCodes.ESCAPE:
+                        $scope.resetSearch();
+                        $event.preventDefault();
+                        break;
+                    case keyCodes.RETURNKEY:
+                        if ($scope.selectedIndex === 0) {
+                            $scope.runDataSearch($scope.userQuery);
+                        } else {
+                            $scope.moveToSuggestion($scope.suggestions[$scope.selectedIndex-1]);
+                        }
+                        $event.preventDefault();
+                        break;
 
                     }
                 };
@@ -279,7 +312,7 @@
                     $scope.selectedResult = result;
                     $scope.currentResultsStartIndex = 0;
 
-                   getResultRecords(result);
+                    getResultRecords(result);
                 };
                 var getResultRecords = function(result) {
                     if (selectionQueryTimeout) {
@@ -374,7 +407,7 @@
                     '       <div class="odswidget-map-search-box__data-search__result-preview-value">{{item.value}}</div>' +
                     '   </li>' +
                     '</ul>' +
-                '';
+                    '';
                 $scope.getResultPreviewTemplate = function(dataset, record) {
                     var values = [];
                     dataset.fields.forEach(function(f) {
@@ -400,8 +433,8 @@
         var options = {};
         if (ODSWidgetsConfig.algoliaPlacesApplicationId) {
             options.headers = {
-                    'X-Algolia-Application-Id': ODSWidgetsConfig.algoliaPlacesApplicationId,
-                    'X-Algolia-API-Key': ODSWidgetsConfig.algoliaPlacesAPIKey
+                'X-Algolia-Application-Id': ODSWidgetsConfig.algoliaPlacesApplicationId,
+                'X-Algolia-API-Key': ODSWidgetsConfig.algoliaPlacesAPIKey
             };
         }
         return function(query, aroundLatLng) {

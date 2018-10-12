@@ -43,6 +43,9 @@
             scope: true,
             priority: 1001, // ng-repeat need to be executed when the results is in the scope.
             controller: ['$scope', '$attrs', function($scope, $attrs) {
+                var dataset_search = ODSAPI.uniqueCall(ODSAPI.records.search),
+                    catalog_search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
+
                 $scope.$watch($attrs.odsFacetResultsContext, function(nv) {
                     var query;
                     var facetName = $attrs.odsFacetResultsFacetName;
@@ -55,9 +58,9 @@
                     var options = angular.extend({}, nv.parameters, {'rows': 0, 'facet': facetName}, sort);
                     var variable = $attrs.odsFacetResults || 'results';
                     if (nv.type === 'dataset' && nv.dataset) {
-                        query = ODSAPI.records.search(nv, options);
+                        query = dataset_search(nv, options);
                     } else if (nv.type === 'catalog') {
-                        query = ODSAPI.datasets.search(nv, options);
+                        query = catalog_search(nv, options);
                     } else {
                         return;
                     }

@@ -44,8 +44,7 @@
                         '</h2>' +
                         '<dl>' +
                         '   <dt ng-repeat-start="field in displayedFields"' +
-                        '           ng-show="record.fields[field.name]|isDefined"' +
-                        '           class="ods-dataset-images__infopane-field-name">' +
+                        '       ng-show="record.fields[field.name]|isDefined">' +
                         '       {{ field.label }}' +
                         '   </dt>' +
                         '   <dd ng-repeat-end ng-switch="field.type"' +
@@ -203,6 +202,9 @@
                                 for (j = 0; j < $scope.imageFields.length; j++) {
                                     if (data.records[i].fields[$scope.imageFields[j]]) {
                                         image = data.records[i].fields[$scope.imageFields[j]];
+                                        if (image.thumbnail === false) {
+                                            continue;
+                                        }
                                         if (image.url) {
                                             url = image.url;
                                             placeholder = false;

@@ -166,6 +166,7 @@
                     }
                 };
 
+                var search = ODSAPI.uniqueCall(ODSAPI.records.search);
                 var loadImage = function (index) {
                     var searchParameters = angular.extend({}, scope.context.parameters, {
                         rows: 1,
@@ -173,7 +174,7 @@
                         q: 'NOT #null(' + scope.imageField + ')'
                     });
                     scope.loading = true;
-                    ODSAPI.records.search(scope.context, searchParameters)
+                    search(scope.context, searchParameters)
                         .success(function (response) {
                             // update index
                             if (!scope.lastIndex) {

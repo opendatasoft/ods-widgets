@@ -57,11 +57,26 @@
             callbacks = {},
             initialized = [],
             positions = {
-                'top left': {center: ['15%', '20%'], size: '25%'},
-                'top right': {center: ['85%', '20%'], size: '25%'},
-                'bottom left': {center: ['15%', '80%'], size: '25%'},
-                'bottom right': {center: ['85%', '80%'], size: '25%'},
-                'center': {}
+                'top left': {
+                    'label': translate('top left'),
+                    'position': {center: ['15%', '20%'], size: '25%'}
+                },
+                'top right': {
+                    'label': translate('top right'),
+                    'position': {center: ['85%', '20%'], size: '25%'}
+                },
+                'bottom left': {
+                    'label': translate('bottom left'),
+                    'position': {center: ['15%', '80%'], size: '25%'}
+                },
+                'bottom right': {
+                    'label': translate('bottom right'),
+                    'position': {center: ['85%', '80%'], size: '25%'}
+                },
+                'center': {
+                    'label': translate('center'),
+                    'position': {}
+                }
             },
             defaultColors = ODSWidgetsConfig.chartColors || chroma.brewer.Set2,
             availableCharts = [
@@ -341,10 +356,10 @@
                 if (!(position in positions)) {
                     position = "center";
                 }
-                return positions[position];
+                return positions[position].position;
             },
             getPieChartPositions: function() {
-                return $.map(positions, function(v,k) {return k;});
+                return $.map(positions, function(v,k) {return {'label': v.label, 'value': k};});
             },
             getDefaultColors: function() {
                 return defaultColors;
@@ -379,6 +394,7 @@
             },
             getSerieTemplate: function() {
                 return angular.copy({
+                    alignMonth: true
                 });
             },
             setChartDefaultValues: function(datasetid, chart, conservative, advanced) {
@@ -420,6 +436,15 @@
                     delete(chart.yRangeMin);
                     delete(chart.yRangeMax);
                 }
+
+                if (typeof chart.displayLegend === "undefined") {
+                    chart.displayLegend = true;
+                }
+
+                if (typeof chart.alignMonth === "undefined") {
+                    chart.alignMonth = true;
+                }
+
                 // cleanup unwanted values
                 if (!conservative) {
                     delete chart.xLabel;
@@ -548,16 +573,27 @@
                     chart.func = 'COUNT';
                     subsets = [5, 95];
                     if (!chart.charts) {
-                        chart.charts = [
-                            {
-                                func: 'MIN',
-                                yAxis: chart.yAxis
-                            },
-                            {
-                                func: 'MAX',
-                                yAxis: chart.yAxis
-                            }
-                        ];
+                        if (chart.yAxis) {
+                            chart.charts = [
+                                {
+                                    func: 'MIN',
+                                    yAxis: chart.yAxis
+                                },
+                                {
+                                    func: 'MAX',
+                                    yAxis: chart.yAxis
+                                }
+                            ];
+                        } else {
+                            chart.charts = [
+                                {
+                                    func: 'COUNT'
+                                },
+                                {
+                                    func: 'COUNT'
+                                }
+                            ];
+                        }
                     }
                     if (chart.charts.length === 5) {
                         chart.charts[1] = angular.copy(chart.charts[4]);

@@ -4,13 +4,14 @@ L.VectorMarker = L.Marker.extend({
         icon: null,
         marker: true,
         opacity: 1,
-        size: 5 // From 1 to 10, default 5
+        size: 5, // From 1 to 10, default 5
+        extraClasses: '',
     },
     initialize: function(latlng, options) {
         L.Util.setOptions(this, options);
         // Create divicon
         if (Modernizr.inlinesvg) {
-            this.options.icon = this._getVectorIcon(this.options.color, this.options.icon, this.options.marker, this.options.opacity);
+            this.options.icon = this._getVectorIcon(this.options.color, this.options.icon, this.options.marker, this.options.opacity, this.options.extraClasses);
         } else {
             this.options.icon = new L.Icon.Default();
         }
@@ -27,7 +28,7 @@ L.VectorMarker = L.Marker.extend({
             return ' style="'+styles.join('; ')+'"';
         }
     },
-    _getVectorIcon: function(color, icon, marker, opacity) {
+    _getVectorIcon: function(color, icon, marker, opacity, extraClasses) {
         var sizeMultiplier = this.options.size + 1;
         var baseWidth = 5;
         var baseHeight = 9;
@@ -86,7 +87,7 @@ L.VectorMarker = L.Marker.extend({
             iconAnchor = L.point([realWidth / 2, realHeight / 2]);
         }
         return L.divIcon({
-            className: 'leaflet-vectormarker',
+            className: 'leaflet-vectormarker' + ' ' + extraClasses,
             iconSize: L.point([realWidth, realHeight]),
             iconAnchor: iconAnchor,
             html: html

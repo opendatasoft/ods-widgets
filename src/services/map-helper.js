@@ -242,6 +242,7 @@
                         "marker": null,
                         "size": config.size || null,
                         "radius": config.radius || null,
+                        "tooltipDisabled": angular.isDefined(config.tooltipDisabled) ? config.tooltipDisabled : false,
                         "tooltipTemplate": template,
                         "localKey": config.localKey || null,
                         "remoteKey": config.remoteKey || null,

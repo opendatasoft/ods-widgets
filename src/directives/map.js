@@ -39,7 +39,7 @@
      When persisting, the context can be serialized as a datasetid and searchparameters. We trust Cartograph to make the
      transformation in both direction.
      */
-    mod.directive('odsMap', ['URLSynchronizer', 'MapHelper', 'ModuleLazyLoader', 'ODSWidgetsConfig', 'MapLayerRenderer', 'translate', 'translatePlural', '$q', '$timeout', function(URLSynchronizer, MapHelper, ModuleLazyLoader, ODSWidgetsConfig, MapLayerRenderer, translate, translatePlural, $q, $timeout) {
+    mod.directive('odsMap', ['URLSynchronizer', 'MapHelper', 'ModuleLazyLoader', 'ODSWidgetsConfig', 'MapLayerRenderer', 'translate', 'translatePlural', '$q', '$timeout', '$location', function(URLSynchronizer, MapHelper, ModuleLazyLoader, ODSWidgetsConfig, MapLayerRenderer, translate, translatePlural, $q, $timeout, $location) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsMap
@@ -205,6 +205,16 @@
          *    </ods-map>
          * </pre>
          *
+         *
+         * If tooltips are not relevant for your data, you can disable them by using the `tooltip-disabled="true"` option.
+         *
+         * <pre>
+         *    <ods-map>
+         *        <ods-map-layer context="mycontext" tooltip-disabled="true"></ods-map-layer>
+         *    </ods-map>
+         * </pre>
+         *
+         *
          * If your layer is displayed as `raw` or `aggregation`, you can configure a layer so that a click on an item triggers a refine on another context, using `refineOnClickContext`.
          * One or more contexts can be defined:
          * <pre>
@@ -348,6 +358,9 @@
 
                     scope.context.wait().then(function (nv) {
                         if (nv) {
+                            if (scope.context.dataset.extra_metas && scope.context.dataset.extra_metas.visualization) {
+                                layer.tooltipDisabled = Boolean(scope.context.dataset.extra_metas.visualization.map_tooltip_disabled);
+                            }
                             MapHelper.MapConfiguration.setLayerDisplaySettingsFromDefault(layer);
                         }
                     });
@@ -404,7 +417,7 @@
                     // We can't safely have more than one addSynchronizedObject so we target explicitely what we want,
                     // because the context could also use addSynchronizedObject
                     URLSynchronizer.addSynchronizedValue(scope, 'mapContext.location', 'location', true);
-                    URLSynchronizer.addSynchronizedValue(scope, 'mapContext.basemap', 'basemap');
+                    URLSynchronizer.addSynchronizedValue(scope, 'mapContext.basemap', 'basemap', true);
                 }
 
                 if (scope.location) {
@@ -432,9 +445,13 @@
                         prependAttribution: ODSWidgetsConfig.mapPrependAttribution,
                         appendAttribution: ODSWidgetsConfig.mapAppendAttribution,
                         maxBounds: [[-90, -240], [90, 240]],
-                        zoomControl: false,
-                        scrollWheelZoom: scope.scrollWheelZoom !== 'false'
+                        zoomControl: false
                     };
+                    if (scope.syncToUrl === 'true' && 'scrollWheelZoom' in $location.search()) {
+                        mapOptions.scrollWheelZoom = $location.search()['scrollWheelZoom'] !== 'false';
+                    } else {
+                        mapOptions.scrollWheelZoom = scope.scrollWheelZoom !== 'false';
+                    }
 
                     if (scope.minZoom) {
                         mapOptions.minZoom = scope.minZoom;
@@ -641,7 +658,7 @@
                     var setInitialMapView = function(location) {
                         var deferred = $q.defer();
 
-                        if (location) {
+                        if (location && typeof location !== 'boolean') {
                             var loc = MapHelper.getLocationStructure(location);
                             scope.map.setView(loc.center, loc.zoom);
                             waitForVisibleContexts().then(function() {
@@ -1263,6 +1280,10 @@
                     $scope.map.setView(coords, zoom);
                 };
 
+                this.getMap = function(obj) {
+                    return $scope.map;
+                };
+
                 this.fitMapToShape = function(geoJson) {
                     var layer = L.geoJson(geoJson);
                     $scope.map.fitBounds(layer.getBounds());
@@ -1390,6 +1411,8 @@
                 colorRanges: '@',
                 colorCategories: '=',
                 colorCategoriesOther: '@',
+                colorUndefined: '@',
+                colorOutOfBounds: '@',
                 colorNumericRanges: '=',
                 colorNumericRangeMin: '=',
                 colorGradient: '=',
@@ -1408,6 +1431,7 @@
                 expression: '@',
 
                 tooltipSort: '@',
+                tooltipDisabled: '@?',
                 hoverField: '@',
 
                 refineOnClickContext: '=',
@@ -1425,7 +1449,7 @@
 
                 geoField: '@',
 
-                excludeFromRefit: '=?'
+                excludeFromRefit: '=?',
             },
             template: function(tElement) {
                 var tpl = '';
@@ -1444,6 +1468,7 @@
                     mapCtrl         = controllers[1];
                 var tplHolder = angular.element(element.children()[0]);
                 var customTemplate = tplHolder.attr('tooltiptemplate');
+                var tooltipDisabled = angular.isDefined(scope.tooltipDisabled) && scope.tooltipDisabled.toLowerCase() !== 'false';
 
                 var color;
                 if (scope.color) {
@@ -1492,6 +1517,12 @@
                     if (scope.colorNumericRangeMin){
                         color.minValue = scope.colorNumericRangeMin;
                     }
+                    if (scope.colorUndefined) {
+                        color.undefinedColor = scope.colorUndefined;
+                    }
+                    if (scope.colorOutOfBounds) {
+                        color.outOfBoundsColor = scope.colorOutOfBounds;
+                    }
                 } else if (scope.colorByField) {
                     color = {
                         type: 'field',
@@ -1531,7 +1562,8 @@
                     'minSize': scope.sizeMin,
                     'maxSize': scope.sizeMax,
                     'sizeFunction': scope.sizeFunction,
-                    'geoField': scope.geoField
+                    'geoField': scope.geoField,
+                    'tooltipDisabled': tooltipDisabled,
                 };
                 var layer = MapHelper.MapConfiguration.createLayerConfiguration(customTemplate, config);
                 var layerGroup;
@@ -1555,6 +1587,9 @@
                         nv.wait().then(function() {
                             if (scope.showMarker) {
                                 layer.marker = (scope.showMarker.toLowerCase() === 'true');
+                            }
+                            if (!angular.isDefined(scope.tooltipDisabled)) {
+                                layer.tooltipDisabled = Boolean(scope.context.dataset.extra_metas.visualization.map_tooltip_disabled);
                             }
                             MapHelper.MapConfiguration.setLayerDisplaySettingsFromDefault(layer);
                         });

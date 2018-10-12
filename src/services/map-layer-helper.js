@@ -45,30 +45,45 @@
                         return '#000000';
                     }
                 } else if (layerConfig.color.type === 'choropleth') {
+                    var rangesUpperBounds = Object
+                            .keys(layerConfig.color.ranges)
+                            .sort(function (a, b) { return parseFloat(a) - parseFloat(b); }),
+                        highestBoundColor = layerConfig.color.ranges[rangesUpperBounds[rangesUpperBounds.length - 1]],
+                        splitComplementaryColors = this.getSplitComplementaryColors(highestBoundColor);
+
                     if (layerConfig.func) {
                         // This is an aggregation, the record is already the value itself
                         value = record;
                     } else {
                         value = record && record.fields && record.fields[layerConfig.color.field];
                     }
+
+                    // limit the number of decimals of the value so that it matches the rangesUpperBounds values
+                    value = ODS.NumberUtils.limitDecimals(value, 5);
+
+                    // undefined values
                     if (angular.isUndefined(value)) {
-                        return '#000000';
+                        return layerConfig.color.undefinedColor || splitComplementaryColors[1];
                     }
                     if (!angular.isNumber(value)) {
                         // TODO: Handle using an "other values" option?
                         console.warn(value, 'is not a numeric value to display in choropleth mode.');
-                        return '#000000';
+                        return layerConfig.color.undefinedColor || splitComplementaryColors[1];
                     }
-                    var rangesUpperBounds = Object.keys(layerConfig.color.ranges)
-                            .sort(function(a, b) { return parseFloat(a) - parseFloat(b); });
+
+
+                    // out of bounds values
+                    if (value < layerConfig.color.minValue || value > rangesUpperBounds[rangesUpperBounds.length - 1]) {
+                        return layerConfig.color.outOfBoundsColor || splitComplementaryColors[0];
+                    }
+
+                    // within bounds values
                     var i;
-                    for (i=0; i<rangesUpperBounds.length; i++) {
-                        if (value <= parseFloat(rangesUpperBounds[i])) {
+                    for (i = 0; i < rangesUpperBounds.length; i++) {
+                        if (value <= rangesUpperBounds[i]) {
                             return layerConfig.color.ranges[rangesUpperBounds[i]];
                         }
                     }
-                    // If higher than the last option, use it anyway
-                    return layerConfig.color.ranges[rangesUpperBounds[rangesUpperBounds.length-1]];
                 } else {
                     // Scale is not supported for records (yet?)
                     console.error('Scale coloring is not supported for simple records');
@@ -126,18 +141,20 @@
                 }
                 if (layerConfig.refineOnClick) {
                     feature.on('click', function(e) {
+                        $rootScope.$broadcast('ods-map-interactive-click');
                         if (map.isDrawing) {
                             return;
                         }
                         // TODO: Support tiles and refineOnClick
                         service.refineContextOnClick(layerConfig, clusterShape, geoDigest, fieldValue, recordid);
                     });
-                } else {
+                } else if (!layerConfig.tooltipDisabled) {
                     // Binds on a feature (marker, shape) so that it shows a popup on click
                     feature.on('click', function(e) {
                         if (map.isDrawing) {
                             return;
                         }
+                        $rootScope.$broadcast('odsMapInteractiveClick');
                         if (!clusterShape && !recordid && !geoDigest && !e.data) {
                             // An UTFGrid event with no grid data
                             return;
@@ -207,14 +224,15 @@
             },
 
             bindZoomable: function(map, feature, layerConfig) {
+                var that = this;
                 // Binds on a feature (marker, shape) so that when clicked, it attemps to zoom on it, or show a regular
                 // tooltip if at maximum zoom
                 feature.on('click', function(e) {
                     if (map.isDrawing) {
                         return;
                     }
-                    if (map.getZoom() === map.getMaxZoom()) {
-                        this.showPopup(map, layerConfig, e.target.getLatLng(), e.target.getClusterShape());
+                    if (map.getZoom() === map.getMaxZoom() && !layerConfig.tooltipDisabled) {
+                        that.showPopup(map, layerConfig, e.target.getLatLng(), e.target.getClusterShape());
                     } else {
                         map.setView(e.latlng, map.getZoom()+2);
                     }
@@ -248,7 +266,7 @@
 
                 var dataset = layerConfig.context.dataset;
                 newScope.map = map;
-                newScope.template = layerConfig.tooltipTemplate || dataset.extra_metas && dataset.extra_metas.visualization && dataset.extra_metas.visualization.map_tooltip_html_enabled && dataset.extra_metas.visualization.map_tooltip_html || '';
+                newScope.template = layerConfig.tooltipTemplate || dataset.extra_metas && dataset.extra_metas.visualization && !dataset.extra_metas.visualization.map_tooltip_disabled && dataset.extra_metas.visualization.map_tooltip_html_enabled && dataset.extra_metas.visualization.map_tooltip_html || '';
                 newScope.context = layerConfig.context;
 
                 var popupOptions = {
@@ -377,27 +395,33 @@
             drawPoint: function(layerConfig, map, coords, record, targetLayer, geoDigest) {
                 var service = this;
                 SVGInliner.getPromise(PictoHelper.mapPictoToURL(layerConfig.picto, layerConfig.context), layerConfig.marker ? 'white' : service.getRecordColor(record, layerConfig)).then(function (svg) {
+                    var clickable = layerConfig.refineOnClick || (angular.isDefined(layerConfig.tooltipDisabled) ? !layerConfig.tooltipDisabled : true);
                     var singleMarker = new L.VectorMarker(coords, {
                         color: service.getRecordColor(record, layerConfig),
                         icon: svg,
                         marker: layerConfig.marker,
                         opacity: layerConfig.pointOpacity,
-                        size: layerConfig.size
+                        size: layerConfig.size,
+                        clickable: clickable,
                     });
 
                     targetLayer.addLayer(singleMarker);
                     //targetLayer.addLayer(new L.Marker(coords)); // Uncomment to debug pointer alignment
-                    if (angular.isObject(record)) {
-                        service.bindTooltip(map, singleMarker, layerConfig, coords, record.recordid);
-                    } else {
-                        service.bindTooltip(map, singleMarker, layerConfig, coords, null, geoDigest);
+                    if (clickable) {
+                        if (angular.isObject(record)) {
+                            service.bindTooltip(map, singleMarker, layerConfig, coords, record.recordid);
+                        } else {
+                            service.bindTooltip(map, singleMarker, layerConfig, coords, null, geoDigest);
+                        }
                     }
                 });
             },
             drawShape: function(layerConfig, map, geoJSON, record, targetLayer, geoDigest) {
                 var service = this;
+                var clickable = layerConfig.refineOnClick || (angular.isDefined(layerConfig.tooltipDisabled) ? !layerConfig.tooltipDisabled : true);
 
                 var shapeLayer = new L.GeoJSON(geoJSON, {
+                    clickable: clickable,
                     style: function (feature) {
                         var opts = {};
                         opts.radius = 3;
@@ -446,10 +470,12 @@
                 });
 
                 // TODO: Document the cases
-                if (angular.isObject(record)) {
-                    service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, record.recordid);
-                } else {
-                    service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, null, geoDigest);
+                if (clickable) {
+                    if (angular.isObject(record)) {
+                        service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, record.recordid);
+                    } else {
+                        service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, null, geoDigest);
+                    }
                 }
 
                 targetLayer.addLayer(shapeLayer);
@@ -487,6 +513,25 @@
                         break;
                 }
                 return dashArray.join(', ');
+            },
+            _splitComplimentaryColors: {},
+            _generateSplitComplimentaryColors: function (baseColor) {
+                var angles = [150, 210]; // 180° +/- 30°
+                var colors = [];
+                var color;
+                for (var i = 0; i < angles.length; i++) {
+                    color = chroma(baseColor).hsl();
+                    color.splice(0, 1, color[0] + angles[i]);
+                    color = chroma.apply(null, color.concat(['hsl']));
+                    colors.push(color.hex());
+                }
+                return colors;
+            },
+            getSplitComplementaryColors: function (baseColor) {
+                if (!this._splitComplimentaryColors[baseColor]) {
+                    this._splitComplimentaryColors[baseColor] = this._generateSplitComplimentaryColors(baseColor);
+                }
+                return this._splitComplimentaryColors[baseColor]
             },
 
             /*                              */

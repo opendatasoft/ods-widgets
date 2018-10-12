@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'odsHttpErrorMessages', function($http, ODSWidgetsConfig, odsNotificationService, odsHttpErrorMessages) {
+    mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'odsHttpErrorMessages', '$q', function($http, ODSWidgetsConfig, odsNotificationService, odsHttpErrorMessages, $q) {
         /**
          * This service exposes OpenDataSoft APIs.
          *
@@ -57,9 +57,33 @@
                 url += 'callback=JSON_CALLBACK';
                 return $http.jsonp(url, options);
             }
-
         };
         return {
+            'uniqueCall': function(func) {
+                /*
+                   generate an API call that automatically cancels the previous one to avoid
+                   race conditions in the result return (first call result arriving after the second one).
+                 */
+                var canceller;
+                return function() {
+                    var args = Array.prototype.slice.call(arguments);
+                    var http_promise;
+                    if (canceller) {
+                        canceller.resolve();
+                        canceller = undefined;
+                    }
+
+                    canceller = $q.defer();
+
+                    http_promise = func.apply(null, args.concat(canceller.promise));
+
+                    http_promise.finally(function() {
+                        canceller = undefined;
+                    });
+
+                    return http_promise;
+                };
+            },
             'getDomainURL': function(domain) {
                 var root = null;
                 if (angular.isUndefined(domain) || domain === null || domain === '') {
@@ -83,15 +107,16 @@
                 return root;
             },
             'datasets': {
-                'get': function(context, datasetID, parameters) {
-                    return request(context, '/api/datasets/1.0/'+datasetID+'/', parameters);
+                'get': function(context, datasetID, parameters, timeout) {
+                    return request(context, '/api/datasets/1.0/'+datasetID+'/', parameters, timeout);
                 },
-                'search': function(context, parameters) {
+                'search': function(context, parameters, timeout) {
                     var queryParameters = angular.extend({}, context.parameters, parameters);
-                    return request(context, '/api/datasets/1.0/search/', queryParameters);
+                    return request(context, '/api/datasets/1.0/search/', queryParameters, timeout);
                 },
-                'facets': function(context, facetName) {
-                    return this.search(context, {'rows': 0, 'facet': facetName});
+                'facets': function(context, facetName, timeout) {
+                    var queryParameters = angular.extend({}, context.parameters, {'rows': 0, 'facet': facetName});
+                    return request(context, '/api/datasets/1.0/search/', queryParameters, timeout);
                 }
             },
             'records': {
@@ -125,8 +150,8 @@
                     return request(context, '/api/records/1.0/geopolygon/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout);
                 }
             },
-            'reuses': function(context, parameters) {
-                return request(context, '/api/reuses/', parameters);
+            'reuses': function(context, parameters, timeout) {
+                return request(context, '/api/reuses/', parameters, timeout);
             }
         };
     }]);

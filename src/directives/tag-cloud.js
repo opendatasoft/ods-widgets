@@ -119,6 +119,9 @@
                 contextToRefine: '=?'
             },
             controller: ['$scope', function ($scope) {
+                var dataset_search = ODSAPI.uniqueCall(ODSAPI.records.search),
+                    catalog_search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
+
                 $scope.refine = function (tagName) {
                     if ($scope.redirectTo) {
                         var refine_param = 'refine.' + $scope.facetName + '=' + tagName;
@@ -138,10 +141,10 @@
                         'facet': $scope.facetName
                     };
                     if ($scope.context.type === 'catalog') {
-                        query = ODSAPI.datasets.search($scope.context, queryParams);
+                        query = catalog_search($scope.context, queryParams);
                     } else {
                         queryParams = $.extend({}, $scope.context.parameters, queryParams);
-                        query = ODSAPI.records.search($scope.context, queryParams);
+                        query = dataset_search($scope.context, queryParams);
                     }
                     query.success(function (data) {
                         if (data.facet_groups) {

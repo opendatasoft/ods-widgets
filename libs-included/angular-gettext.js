@@ -487,7 +487,9 @@ angular.module('gettext').directive('translate', ["gettextCatalog", "$parse", "$
                             }
 
                             // Swap in the translation
-                            var newWrapper = angular.element('<span>' + translated + '</span>');
+                            // {{ $count }} in translated strings are replaced by {{ count$ }} in rtl languages so
+                            // we need to switch the $ back to it's place for compilation to work
+                            var newWrapper = angular.element('<span>' + translated.replace(/{{( *)count\$( *)}}/, "{{$1$$count$2}}") + '</span>');
                             $compile(newWrapper.contents())(scope);
                             var newContents = newWrapper.contents();
 

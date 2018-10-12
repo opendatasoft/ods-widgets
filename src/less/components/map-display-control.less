@@ -44,18 +44,29 @@
     background-color: @mapBuilder-hoverBackgroundColor
 }
 
-.odswidget-map-display-control__groups {
+.odswidget-map-display-control__groups,
+.odswidget-map-display-control__no-groups {
     width: @mapDisplayControl-width;
     overflow-y: auto;
     margin: 0;
     padding: @mapDisplayControl-gutterWidth;
     background-color: @color-white;
-    list-style: none;
     min-height: 150px;
     max-height: ~"calc(100% - 2*@{mapDisplayControl-gutterWidth})";
     border-radius: @mapBuilder-borderRadius;
+}
+
+.odswidget-map-display-control__groups {
+    list-style: none;
     position: relative;
 }
+
+.odswidget-map-display-control__no-groups {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .odswidget-map-display-control__group {
     margin-left: 0;
     transition: margin-left 0.2s, border-left-width 0.2s, opacity 0.2s;

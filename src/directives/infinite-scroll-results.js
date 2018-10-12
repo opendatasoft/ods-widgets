@@ -89,6 +89,8 @@
                 $scope.results = [];
                 var initialRequest = $q.defer();
                 var $scrollParent = getScrollParent($element, $window);
+                var dataset_search = ODSAPI.uniqueCall(ODSAPI.records.search),
+                    catalog_search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
 
                 var fetchResults = function(init) {
                     if (noMoreResults) {
@@ -107,13 +109,13 @@
                         // FIXME: the extrametas parameter has been added here because the only place we use this directive
                         // requires it, and we can't pre-set the context parameters since it is urlsync'd,
                         // but we may be able to find something less "hardcoded".
-                        ODSAPI.datasets.search($scope.context, {rows: 10, start: start, extrametas: true, interopmetas: true}).success(function(data) {
+                        catalog_search($scope.context, {rows: 10, start: start, extrametas: true, interopmetas: true}).success(function(data) {
                             noMoreResults = data.datasets.length === 0;
                             renderResults(data.datasets, init);
                         });
                     } else {
                         var params = angular.extend({}, $scope.context.parameters, {rows: 10, start: start});
-                        ODSAPI.records.search($scope.context, params).success(function(data) {
+                        dataset_search($scope.context, params).success(function(data) {
                             noMoreResults = data.records.length === 0;
                             renderResults(data.records, init);
                             initialRequest.resolve();
@@ -132,6 +134,13 @@
                     }
                     if (init) {
                         $scrollParent.trigger('scroll');
+                    }
+
+                    // trigger window resize event
+                    try {
+                        window.dispatchEvent(new Event('resize'));
+                    } catch (error) {
+                        $(window).trigger('resize');
                     }
                 };
 

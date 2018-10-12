@@ -15,6 +15,9 @@
                         return deferred.promise;
                     },
                     'getDownloadURL': function(format, parameters) {
+                        if (!this.dataset || !this.dataset.datasetid) {
+                            return;
+                        }
                         format = format || 'csv';
                         var url = this.domainUrl + '/explore/dataset/' + this.dataset.datasetid + '/download/?format=' + format;
                         url += this.getQueryStringURL(parameters);
@@ -26,6 +29,19 @@
                     },
                     'toggleRefine': function(facetName, path, replace) {
                         ODS.Context.toggleRefine(this, facetName, path, replace);
+                    },
+                    getFacetValues: function(fieldName) {
+                        var deferred = $q.defer();
+                        var apiParams = angular.extend({}, this.parameters, {'rows': 0, 'facet': fieldName});
+                        ODSAPI.records.search(this, apiParams).success(function(data) {
+                            var values = data.facet_groups[0]
+                                                .facets
+                                                .map(function (category) {
+                                                    return category.name;
+                                                });
+                            deferred.resolve(values);
+                        });
+                        return deferred.promise;
                     },
                     'getActiveFilters':  function (excludes) {
                         excludes = excludes || [];

@@ -43,10 +43,11 @@
             },
             controller: ['$scope', function($scope) {
                 $scope.max = $scope.max || 5;
+                var search = ODSAPI.datasets.search;
                 var refresh = function() {
-                    ODSAPI.datasets.search($scope.context, {'rows': $scope.max, 'sort': 'modified'}).
-                        success(function(data) {
-                            $scope.datasets = data.datasets;
+                    search($scope.context, {'rows': $scope.max, 'sort': 'modified'}).
+                        then(function(response) {
+                            $scope.datasets = response.data.datasets;
                         });
                 };
                 $scope.$watch('context', function() {

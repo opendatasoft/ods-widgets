@@ -111,6 +111,12 @@ a <code>fields</code> object with all the values associated with the clicked poi
        &lt;/ods-map-layer&gt;
    &lt;/ods-map&gt;
 </pre>
+<p>If tooltips are not relevant for your data, you can disable them by using the <code>tooltip-disabled=&quot;true&quot;</code> option.</p>
+<pre class="prettyprint linenums">
+   &lt;ods-map&gt;
+       &lt;ods-map-layer context="mycontext" tooltip-disabled="true"&gt;&lt;/ods-map-layer&gt;
+   &lt;/ods-map&gt;
+</pre>
 <p>If your layer is displayed as <code>raw</code> or <code>aggregation</code>, you can configure a layer so that a click on an item triggers a refine on another context, using <code>refineOnClickContext</code>.
 One or more contexts can be defined:
 <pre class="prettyprint linenums">

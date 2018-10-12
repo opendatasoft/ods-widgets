@@ -13,6 +13,17 @@ var JS_FILES = [
 
 module.exports = function(grunt) {
 
+    // Condition to switch resources files path (js, css) in dev or prod
+    var distPath;
+    var assetsPath;
+    if (process.env.TRAVIS) {
+        distPath = 'https://static.opendatasoft.com/';
+        assetsPath = 'docs/';
+    } else {
+        distPath = '../dist/';
+        assetsPath = '../docs/';
+    }
+
     // Project configuration.
     grunt.initConfig({
         uglify: {
@@ -22,8 +33,13 @@ module.exports = function(grunt) {
                     report: 'gzip'
                 },
                 files: {
-                    'dist/ods-widgets.min.js': JS_FILES
+                    'dist/ods-widgets.min.js': JS_FILES,
                 }
+            },
+            script: {
+                files: [{
+                    src : 'src-docs/templates/js/script.js', dest : 'docs/js/script.min.js'
+                }]
             }
         },
         less: {
@@ -33,7 +49,8 @@ module.exports = function(grunt) {
                     cleancss: false
                 },
                 files: {
-                    "dist/ods-widgets.css": "src/less/ods-widgets.less"
+                    "dist/ods-widgets.css": "src/less/ods-widgets.less",
+                    "docs/css/ods-theme.css": "src-docs/templates/less/ods-theme.less"
                 }
             },
             dist: {
@@ -42,13 +59,17 @@ module.exports = function(grunt) {
                     cleancss: true
                 },
                 files: {
-                    "dist/ods-widgets.min.css": "src/less/ods-widgets.less"
+                    "dist/ods-widgets.min.css": "src/less/ods-widgets.less",
+                    "docs/css/ods-theme.min.css": "src-docs/templates/less/ods-theme.less"                    
                 }
             }
         },
         watch: {
             styles: {
-                files: ['src/*.less'], // which files to watch
+                files: [
+                    'src/less/**/*.less',
+                    'src-docs/templates/less/*.less'
+                ], // which files to watch
                 tasks: ['less'],
                 options: {
                     spawn: false
@@ -70,13 +91,6 @@ module.exports = function(grunt) {
                 options: {
                     spawn: false
                 }
-            },
-            examples: {
-                files: ['src-docs/examples/*.html', 'src-docs/examples/*.css'],
-                tasks: ['copy:examples'],
-                options: {
-                    spawn: false
-                }
             }
         },
         concat: {
@@ -93,26 +107,31 @@ module.exports = function(grunt) {
                 browsers: ['> 1%', 'ie > 8']
             },
             "dist/ods-widgets.css": "dist/ods-widgets.css",
-            "dist/ods-widgets.min.css": "dist/ods-widgets.min.css"
+            "dist/ods-widgets.min.css": "dist/ods-widgets.min.css",
+            "docs/css/ods-theme.css": "docs/css/ods-theme.css",
+            "docs/css/ods-theme.min.css": "docs/css/ods-theme.min.css"
         },
 		// copies logo.png to be used in the doc website header
 		// must be run before 'ngdocs'
 		copy: {
-			docs: {
-				expand: true,
-				cwd: '../ods/img/',
-				src: 'logo.png',
-				dest: 'assets/'
-			},
+            docs: {
+                expand: true,
+                cwd: 'assets/',
+                src: [
+                    'ODS_logo_widgets_blanc.svg',
+                    'ods-favicon.ico'
+                ],
+                dest: 'docs/assets'
+            },
             libs: {
                 expand: true,
                 src: ['libs/**'],
                 dest: 'dist/'
             },
             examples: {
-			    expand: true,
+                expand: true,
                 cwd: 'src-docs/examples/',
-			    src: ['*.html', '*.css'],
+                src: ['*.html', '*.css'],
                 dest: 'docs/examples/'
             }
 		},
@@ -124,25 +143,24 @@ module.exports = function(grunt) {
                     'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.js',
                     'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-animate.js',
                     'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-sanitize.js',
-                    '../dist/ods-widgets.js',
+                    distPath + 'ods-widgets.js',
                     '../docs-load-css.js'
                 ],
                 styles: [
-                    '../dist/ods-widgets.css',
+                    distPath + 'ods-widgets.css',
+                    assetsPath + 'css/ods-theme.min.css',
                     'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
                 ],
-				html5Mode: false,
-				image: 'assets/logo.png',
-				title: "ODS-Widgets Documentation",
-				bestMatch: true,
-                startPage: '/api',
-                navTemplate: 'src-docs/navbar.html',
-                template: 'src-docs/templates/index.tmpl'
+                template: 'src-docs/templates/index.tmpl',
+                html5Mode: false,
+                image: 'assets/ODS_logo_widgets_blanc.svg',
+				title: "ODS-Widgets",
+				bestMatch: false,
+                startPage: '/api'
 			},
 			all: {
 				src: [
                     'src/directives/*.js',
-                    'src/services/*.js',
                     'src/filters.js',
                     'src/ods-widgets.js',
                     'src-docs/widgets/*.ngdoc'
@@ -192,6 +210,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['dist']);
-    grunt.registerTask('dist', ['uglify:dist', 'less:dist', 'less:dev', 'concat', 'autoprefixer', 'copy:libs', 'copy:examples', 'ngdocs']);
+    grunt.registerTask('dist', ['clean', 'uglify:dist', 'uglify:script', 'less:dist', 'less:dev', 'concat', 'autoprefixer', 'copy', 'ngdocs']);
     grunt.registerTask('server', ['default', 'connect', 'watch']);
 };

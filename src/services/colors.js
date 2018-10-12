@@ -83,18 +83,23 @@
             return brewName;
         }
         function getScaleFromString(colorString) {
-            var brewName = getBrewName(colorString),
-                colorScale;
-
-            if (brewName) {
-                colorScale = chroma.scale(brewName);
+            var colors = getColorArray(colorString);
+            return chroma.scale().range(colors);
+        }
+        function getColorArray(string) {
+            var brewName;
+            if (string[0] === '[') {
+                return JSON.parse(string);
             } else {
-                colorString = colorString.replace('custom-', '');
-                colorString = colorString.replace('single-', '');
-                colorScale = chroma.scale().range([colorString, colorString]);
+                brewName = getBrewName(string);
+                if (brewName) {
+                    return chroma.brewer[brewName];
+                } else {
+                    string = string.replace('custom-', '');
+                    string = string.replace('single-', '');
+                    return [string, string];
+                }
             }
-
-            return colorScale;
         }
         return {
             getScale: function(colorString, min, max) {
@@ -109,22 +114,11 @@
                 return getScaleFromString(colorString)(1).hex();
             },
             getColorAtIndex: function(colorString, index) {
-                var brewName = getBrewName(colorString),
-                    brew;
-                if (brewName) {
-                    brew = chroma.brewer[brewName];
-                    return brew[index % brew.length];
-                } else {
-                    return colorString;
-                }
+                var colors = getColorArray(colorString);
+                return colors[index % colors.length];
             },
             getColors: function(colorString) {
-                var brewName = getBrewName(colorString);
-                if (brewName) {
-                    return chroma.brewer[brewName];
-                } else {
-                    return [colorString, colorString];
-                }
+                return getColorArray(colorString);
             },
             getColorSets: function() {
                 return chroma.brewer;

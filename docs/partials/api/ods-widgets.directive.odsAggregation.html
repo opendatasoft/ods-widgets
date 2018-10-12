@@ -6,43 +6,76 @@
 <div><h2 id="description">Description</h2>
 <div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>This widget exposes the results of an aggregation function over a context. Can be used for example to expose the average temperature of a weather dataset.
 The result is exposed into a new variable that you can use in other widgets or directly in your HTML.
-If aggregation returns no result, the result value will be null.</p>
+If aggregation returns no result, the result value will be null.
+This widget supports multiple declaration of aggregations.</p>
+<p>Single aggregation example:</p>
+<pre class="prettyprint linenums">
+ &lt;ods-dataset-context context="tree"
+                      tree-dataset="arbresremarquablesparis2011"
+                      tree-domain="parisdata.opendatasoft.com"&gt;
+     &lt;div ods-aggregation="height"
+          ods-aggregation-context="tree"
+          ods-aggregation-expression="hauteurenm"
+          ods-aggregation-function="AVG"&gt;
+         Average height is {{ height | number }} meters.
+     &lt;/div&gt;
+ &lt;/ods-dataset-context&gt;
+</pre>
+<p>Multiple aggregations example:</p>
+<pre class="prettyprint linenums">
+ &lt;ods-dataset-context context="tree"
+                      tree-dataset="arbresremarquablesparis2011"
+                      tree-domain="parisdata.opendatasoft.com"&gt;
+     &lt;div ods-aggregation="total, mingirth, maxgirth"
+          ods-aggregation-total-context="tree"
+          ods-aggregation-total-function="COUNT"
+          ods-aggregation-maxgirth-context="tree"
+          ods-aggregation-maxgirth-expression="circonferenceencm"
+          ods-aggregation-maxgirth-function="MAX"
+          ods-aggregation-mingirth-context="tree"
+          ods-aggregation-mingirth-expression="circonferenceencm"
+          ods-aggregation-mingirth-function="MIN"&gt;
+         There are {{ total }} remarkable trees in paris, with girth ranging from {{ mingirth }} to {{ maxgirth }} cm.
+     &lt;/div&gt;
+ &lt;/ods-dataset-context&gt;
+</pre>
+<p>Multiple aggregations using the same context example:</p>
+<pre class="prettyprint linenums">
+ &lt;ods-dataset-context context="tree"
+                      tree-dataset="arbresremarquablesparis2011"
+                      tree-domain="parisdata.opendatasoft.com"&gt;
+     &lt;div ods-aggregation="total, mingirth, maxgirth"
+          ods-aggregation-context="tree"
+          ods-aggregation-total-function="COUNT"
+          ods-aggregation-maxgirth-expression="circonferenceencm"
+          ods-aggregation-maxgirth-function="MAX"
+          ods-aggregation-mingirth-expression="circonferenceencm"
+          ods-aggregation-mingirth-function="MIN"&gt;
+         There are {{ total }} remarkable trees in paris, with girth ranging from {{ mingirth }} to {{ maxgirth }} cm.
+     &lt;/ div&gt;
+ &lt;/ods-dataset-context&gt;
+</pre>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as attribute<pre class="prettyprint linenums">&lt;ANY ods-aggregation="{string}"
      ods-aggregation-context="{CatalogContext|DatasetContext}"
+     ods-aggregation-xxx-context="{CatalogContext|DatasetContext}"
      ods-aggregation-function="{string}"
-     ods-aggregation-expression="{string}"&gt;
+     ods-aggregation-xxx-function="{string}"
+     ods-aggregation-expression="{string}"
+     ods-aggregation-xxx-expression="{string}"&gt;
    ...
 &lt;/ANY&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>odsAggregation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Variable name to use</p>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>odsAggregation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Variable name to use. For multiple aggregations, separate variable names with commas.</p>
 </div> <p><em>(default: aggregation)</em></p></td></tr><tr><td>odsAggregationContext</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
+</div></td></tr><tr><td>odsAggregationXxxContext</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Specific context for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.</p>
 </div></td></tr><tr><td>odsAggregationFunction</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Aggregation function to apply (AVG, COUNT, MIN, MAX, STDDEV, SUM)</p>
+</div> <p><em>(default: COUNT)</em></p></td></tr><tr><td>odsAggregationXxxFunction</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Specific function for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.</p>
 </div> <p><em>(default: COUNT)</em></p></td></tr><tr><td>odsAggregationExpression</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Expression to apply the function on, typically the name of a field. Optional only when the function is &quot;COUNT&quot;.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>odsAggregationXxxExpression</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Specific expression for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.</p>
 </div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
-<h2 id="example">Example</h2>
-<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
-<div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html">
-    <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com" tree-parameters="{'sort': '-objectid'}">
-        <div class="row-fluid">
-            <div class="span4">
-                <ods-facets context="tree"></ods-facets>
-            </div>
-            <div class="span8" ods-aggregation="height" ods-aggregation-context="tree" ods-aggregation-expression="hauteurenm" ods-aggregation-function="AVG">
-                Average height is {{ height }} meters.
-            </div>
-        </div>
-    </ods-dataset-context>
-</script>
-</div>
-</div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html" ng-eval-javascript=""></div>
-</div></div>
 </div>

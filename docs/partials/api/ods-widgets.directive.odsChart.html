@@ -55,7 +55,9 @@ a type of chart and multiple parameters to fine tune the appearance of chart.</p
        step="{integer}"
        scientific-display="{boolean}"
        logarithmic="{boolean}"
-       display-legend="{boolean}"&gt;
+       display-legend="{boolean}"
+       align-month="{boolean}"
+       labels-x-length="{integer}"&gt;
 &lt;/ods-chart&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -71,5 +73,7 @@ a type of chart and multiple parameters to fine tune the appearance of chart.</p
 </div> <p><em>(default: null)</em></p></td></tr><tr><td>scientificDisplay</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>When set to false, force the full display of the numbers on the Y axis. Active only when singleYAxis is true.</p>
 </div> <p><em>(default: true)</em></p></td></tr><tr><td>logarithmic</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Use a logarithmic scale for Y axis. Active only when singleYAxis is true.</p>
 </div> <p><em>(default: false)</em></p></td></tr><tr><td>displayLegend</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>enable or disable the display of series legend. Active only when singleYAxis is true.</p>
-</div> <p><em>(default: true)</em></p></td></tr></tbody></table></div>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>alignMonth</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Align the month values with the month label. The old behaviour was to align values with the middle of the month, setting this parameter to false reverts to the old behaviour.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>labelsXLength</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Set the maximum number of characters displayed for the X axis labels.</p>
+</div> <p><em>(default: 12)</em></p></td></tr></tbody></table></div>
 </div>

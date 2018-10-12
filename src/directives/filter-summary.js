@@ -78,8 +78,11 @@
                     if (context.type === 'catalog') {
                         if (facetGroupName === 'features') {
                             // FIXME: Find a way to centralize all these special cases regarding the "schema" of the catalog
-                            facetGroupName = 'view';
+                            facetGroupName = translate('View');
                         }
+                        // Since metadata templates other than "basic/default" can be used, the facetGroupName may
+                        // contain the name of the template, e.g. "dcat.contact_name" that we want to strip.
+                        facetGroupName = facetGroupName.slice(facetGroupName.indexOf('.') + 1);
                         return translate(ODS.StringUtils.capitalize(facetGroupName));
                     } else {
                         return context.dataset.getFieldLabel(facetGroupName);
@@ -146,7 +149,7 @@
                     };
 
                     var addTimeRefinement = function (context, parameter) {
-                        
+
                         var fromLabel = 'From';
                         var toLabel = 'To';
 

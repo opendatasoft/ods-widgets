@@ -30,10 +30,10 @@
         // I stole this part from angular-sanitize
         var NON_ALPHANUMERIC_REGEXP = /([^\#-~| |!])/g;
         function encodeEntities(value) {
-          return value.
+            return value.
             replace(/&/g, '&amp;').
             replace(NON_ALPHANUMERIC_REGEXP, function(value){
-              return '&#' + value.charCodeAt(0) + ';';
+                return '&#' + value.charCodeAt(0) + ';';
             }).
             replace(/</g, '&lt;').
             replace(/>/g, '&gt;');
@@ -98,9 +98,9 @@
          * @param {string} url A youtube, dailymotion or vimeo URL.
          * @return {string} An iframe tag including the relevant video player configured with the input url
          */
-        // Youtube:
-        // http(s)://youtu.be/Hh-0y8Qe0Sw
-        // http(s)://(www.)youtube.com/watch?v=Hh-0y8Qe0Sw
+            // Youtube:
+            // http(s)://youtu.be/Hh-0y8Qe0Sw
+            // http(s)://(www.)youtube.com/watch?v=Hh-0y8Qe0Sw
         var re_youtube = /^https?:\/\/(?:(?:youtu.be\/)|(?:(?:www.)?youtube.com\/watch\?v=))([0-9a-z_-]+)$/i;
 
         // Dailymotion
@@ -289,7 +289,8 @@
             } else if (field.type === 'date') {
                 var precision = getPrecision(field);
                 if (precision === 'year') {
-                    return value;
+                    var partialDate = moment(value, 'YYYY');
+                    return $filter('moment')(partialDate, 'YYYY');
                 } else if (precision === 'month') {
                     // Parse the partial date properly
                     var partialDate = moment(value, 'YYYY-MM');
@@ -529,16 +530,35 @@
         };
     }]);
 
-    mod.filter('shortSummary', [function() {
+    mod.filter('shortTextSummary', function() {
         /**
          * @ngdoc filter
-         * @name ods-widgets.filter:shortSummary
+         * @name ods-widgets.filter:shortTextSummary
          *
          * @function
          * @param {string} text Some text
          * @param {number} length The maximum length of the summary
          * @return {string} A short summary from the given text, usually the first paragraph. If longer than the
          * required length, an ellipsis will be made.
+         */
+        return function(text, length) {
+            if (text.length > length) {
+                return text.substring(0, length - 3) + '...';
+            }
+            return text;
+        };
+    });
+
+    mod.filter('shortSummary', [function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:shortSummary
+         *
+         * @function
+         * @param {string} text Some HTML
+         * @param {number} length The maximum length of the summary
+         * @return {string} A short summary from the given text, usually the first paragraph. If longer than the
+         * required length, an ellipsis will be made. This function should not be used with unsafe HTML.
          */
         return function(summary, length) {
             length = length || 400;

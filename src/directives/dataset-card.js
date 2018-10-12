@@ -1,22 +1,18 @@
 (function() {
     'use strict';
-
     var mod = angular.module('ods-widgets');
 
-    var renderCard = function(transcludeService, scope, elem) {
+
+    var positionEmbed = function(elem, position) {
         var datasetItem = elem.find('.dataset-item').first();
-        var cardContainer = elem.find('.card-container');
-        var cardHeight = $(cardContainer).outerHeight();
-        if (scope.position == "bottom") {
+        var cardHeight = $(elem.find('.card-container')).outerHeight();
+        if (position === "bottom") {
             $(datasetItem).css('top', 0);
             $(datasetItem).css('bottom', cardHeight);
         } else { // top
             $(datasetItem).css('top', cardHeight);
             $(datasetItem).css('bottom', 0);
         }
-        transcludeService(function(clone) {
-            $(datasetItem).html(clone);
-        });
     };
 
     mod.directive('odsDatasetCard', function() {
@@ -45,65 +41,86 @@
                 context: '='
             },
             template: '<div class="odswidget odswidget-dataset-card">' +
-                         '<div class="card-container" ng-class="{bottom: position == \'bottom\', expanded: expanded, expandable: isExpandable()}">' +
-                            '<h2 class="dataset-title" ng-click="expanded = !expanded" ng-show="!expanded || (expanded && !context.dataset.metas.description)">{{context.dataset.metas.title}}</h2>' +
-                            '<div ng-click="expanded = !expanded" class="expand-control" title="Show/hide details" translate="title"><span translate>Details</span> <i class="fa fa-chevron-down" ng-show="!expanded" aria-hidden="true"></i><i class="fa fa-chevron-up" aria-hidden="true" ng-hide="!expanded"></i></div>' +
-                            '<div class="dataset-expanded" ng-click="expanded = !expanded"">'+
-                                '<h2 class="dataset-title" ng-show="expanded">{{context.dataset.metas.title}}</h2>' +
-                                '<p class="dataset-description" ng-if="expanded" ng-bind-html="safeHtml(context.dataset.metas.description)"></p>' +
-                            '</div>' +
-                         '<div class="dataset-infos"><span class="dataset-infos-text"><a ng-href="{{datasetUrl}}" target="_blank" ng-bind-html="websiteName"></a><span ng-show="context.dataset.metas.license"> - <span translate>License</span> {{context.dataset.metas.license}}</span></span></div>' +
-                     '</div>' +
-                    '<div class="dataset-item"></div>' +
-                '</div>',
+            '   <div class="card-container" ng-class="{bottom: position == \'bottom\', expanded: expanded, expandable: isExpandable()}">' +
+            '       <h2 class="dataset-title" ng-click="expanded = !expanded" ng-show="!expanded || (expanded && !context.dataset.metas.description)">{{context.dataset.metas.title}}</h2>' +
+            '       <div ng-click="expanded = !expanded" class="expand-control" title="Show/hide details" translate="title">' +
+            '           <span translate>Details</span> ' +
+            '           <i class="fa fa-chevron-down" ng-show="!expanded" aria-hidden="true"></i>' +
+            '           <i class="fa fa-chevron-up" aria-hidden="true" ng-hide="!expanded"></i>' +
+            '       </div>' +
+            '       <div class="dataset-expanded" ng-click="expanded = !expanded"">'+
+            '           <h2 class="dataset-title" ng-show="expanded">' +
+            '               {{context.dataset.metas.title}}' +
+            '           </h2>' +
+            '           <p class="dataset-description" ng-if="expanded" ng-bind-html="safeHtml(context.dataset.metas.description)"></p>' +
+            '       </div>' +
+            '       <div class="dataset-infos">' +
+            '           <span class="dataset-infos-text">' +
+            '               <a ng-href="{{datasetUrl}}" target="_blank" ng-bind-html="websiteName"></a>' +
+            '               <span ng-show="context.dataset.metas.license"> - ' +
+            '                   <span translate>License</span> ' +
+            '                   {{context.dataset.metas.license}}' +
+            '               </span>' +
+            '           </span>' +
+            '       </div>' +
+            '   </div>' +
+            '   <div class="dataset-item" ng-transclude></div>' +
+            '</div>',
+
             replace: true,
             transclude: true,
+
             link: function(scope, elem, attrs) {
                 scope.position = attrs.position || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
             },
+
             controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', '$timeout',
                 function($scope, $element, ODSWidgetsConfig, $transclude, $sce, $timeout) {
-                $scope.renderContent = renderCard;
-                $scope.websiteName = ODSWidgetsConfig.websiteName;
-                $scope.expanded = false;
 
-                $scope.safeHtml = function(html) {
-                    return $sce.trustAsHtml(html);
-                };
-
-                $scope.isExpandable = function() {
-                    if (!$scope.context || !$scope.context.dataset || !$scope.context.dataset.datasetid) {
-                        // No data yet
-                        return false;
-                    }
-
-                    if (!$scope.context.dataset.metas.description) {
-                        return false;
-                    }
-
-                    return true;
-                };
-
-                var unwatch = $scope.$watch('context', function(nv, ov) {
-                    if (!nv || !nv.dataset) {
-                        return;
-                    }
-                    // waiting for re-render
-                    $timeout(function() {
-                        $scope.renderContent($transclude, $scope, $element);
-                    }, 0);
+                    $scope.websiteName = ODSWidgetsConfig.websiteName;
                     $scope.expanded = false;
-                    $scope.datasetUrl = $scope.context.domainUrl + '/explore/dataset/' + $scope.context.dataset.datasetid + '/';
-                    if (!$scope.websiteName) {
-                        $scope.websiteName = $scope.context.domainUrl;
-                    }
-                    unwatch();
-                }, true);
-                $scope.renderContent($transclude, $scope, $element);
-            }]
+
+
+                    $scope.safeHtml = function(html) {
+                        return $sce.trustAsHtml(html);
+                    };
+
+
+                    $scope.isExpandable = function() {
+                        if (!$scope.context || !$scope.context.dataset || !$scope.context.dataset.datasetid) {
+                            // No data yet
+                            return false;
+                        }
+
+                        if (!$scope.context.dataset.metas.description) {
+                            return false;
+                        }
+
+                        return true;
+                    };
+
+
+                    var unwatch = $scope.$watch('context', function(nv, ov) {
+                        if (!nv || !nv.dataset) {
+                            return;
+                        }
+                        // waiting for re-render
+                        $timeout(function() {
+                            positionEmbed($element, $scope.position);
+                        }, 0);
+                        $scope.expanded = false;
+                        $scope.datasetUrl = $scope.context.domainUrl + '/explore/dataset/' + $scope.context.dataset.datasetid + '/';
+                        if (!$scope.websiteName) {
+                            $scope.websiteName = $scope.context.domainUrl;
+                        }
+                        unwatch();
+                    }, true);
+                    positionEmbed($element, $scope.position);
+                }]
         };
     });
+
 
     mod.directive('odsMultidatasetsCard', ['ODSWidgetsConfig', function(ODSWidgetsConfig) {
         return {
@@ -114,85 +131,103 @@
                 context: '='
             },
             template: '<div class="odswidget-multidatasets-card">' +
-                      '  <div class="card-container multidatasets" ng-class="{bottom: (position == \'bottom\'), expanded: expanded, expandable: isExpandable()}">' +
-                      '      <h2 ng-show="!expanded" ng-click="tryToggleExpand()">{{ odsTitle }}</h2>' +
-                      '      <div ng-click="tryToggleExpand()" class="expand-control" ng-class="{expanded: expanded}" title="Show/hide details"><span translate>Details</span> <i class="fa fa-chevron-down" aria-hidden="true"></i></div>' +
-                      '      <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="!expanded">' +
-                      '          <span class="count-text" ng-hide="!datasetObjectKeys || datasetObjectKeys.length <= 1">' +
-                      '               <span translate translate-n="datasetObjectKeys.length" translate-plural="{{ $count }} datasets">{{ $count }} dataset</span>' +
-                      '          </span>' +
-                      '      </h3>' +
-                      '      <div class="datasets-expanded">' +
-                      '          <h2 ng-show="expanded" ng-click="tryToggleExpand()">{{ odsTitle }}</h2>' +
-                      '          <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="expanded">' +
-                      '              <span class="count-text">' +
-                      '                   <span ng-if="datasetObjectKeys.length == 0" translate>no dataset to display</span>' +
-                      '                   <span ng-if="datasetObjectKeys.length > 0" translate translate-n="datasetObjectKeys.length" translate-plural="{{ $count }} datasets">{{ $count }} dataset</span>' +
-                      '              </span>' +
-                      '          </h3>' +
-                      '          <ul class="dataset-list"' +
-                      '              ng-show="(datasetObjectKeys && datasetObjectKeys.length === 1) || (isExpandable() && expanded)"' +
-                      '              ng-class="{\'single-dataset\': datasetObjectKeys.length === 1}">' +
-                      '              <li ng-repeat="(key, dataset) in datasets"> <a' +
-                      '                  ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/"' +
-                      '                  target="_blank">{{ dataset.metas.title }}</a>' +
-                      '                  <span ng-show="dataset.metas.license">- <span translate>License</span> {{ dataset.metas.license }}</span></li>' +
-                      '          </ul>' +
-                      '      </div>' +
-                      '      <div class="dataset-infos"><span class="dataset-infos-text"><a ng-href="/" target="_blank" ng-bind-html="websiteName"></a></span></div>' +
-                      '  </div>' +
-                      '  <!-- embedded content (chart, map etc.) -->' +
-                      '  <div class="dataset-item" ng-transclude></div>' +
-                    '</div>',
+            '   <div class="card-container multidatasets" ng-class="{bottom: (position == \'bottom\'), expanded: expanded, expandable: isExpandable()}">' +
+            '       <h2 ng-show="!expanded" ng-click="tryToggleExpand()">' +
+            '           {{ odsTitle }}' +
+            '       </h2>' +
+            '       <div ng-click="tryToggleExpand()" class="expand-control" ng-class="{expanded: expanded}" title="Show/hide details">' +
+            '           <span translate>Details</span> ' +
+            '           <i class="fa fa-chevron-down" aria-hidden="true"></i>' +
+            '       </div>' +
+            '       <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="!expanded">' +
+            '           <span class="count-text" ng-hide="!datasetObjectKeys || datasetObjectKeys.length <= 1">' +
+            '               <span translate translate-n="datasetObjectKeys.length" translate-plural="{{ $count }} datasets">{{ $count }} dataset</span>' +
+            '          </span>' +
+            '       </h3>' +
+            '       <div class="datasets-expanded">' +
+            '           <h2 ng-show="expanded" ng-click="tryToggleExpand()">' +
+            '               {{ odsTitle }}' +
+            '           </h2>' +
+            '           <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="expanded">' +
+            '               <span class="count-text">' +
+            '                   <span ng-if="datasetObjectKeys.length == 0" translate>no dataset to display</span>' +
+            '                   <span ng-if="datasetObjectKeys.length > 0" translate translate-n="datasetObjectKeys.length" translate-plural="{{ $count }} datasets">{{ $count }} dataset</span>' +
+            '               </span>' +
+            '           </h3>' +
+            '           <ul class="dataset-list"' +
+            '              ng-show="(datasetObjectKeys && datasetObjectKeys.length === 1) || (isExpandable() && expanded)"' +
+            '              ng-class="{\'single-dataset\': datasetObjectKeys.length === 1}">' +
+            '               <li ng-repeat="(key, dataset) in datasets"> ' +
+            '                   <a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_blank">{{ dataset.metas.title }}</a>' +
+            '                  <span ng-show="dataset.metas.license">- <span translate>License</span> {{ dataset.metas.license }}</span>' +
+            '               </li>' +
+            '           </ul>' +
+            '       </div>' +
+            '       <div class="dataset-infos">' +
+            '           <span class="dataset-infos-text">' +
+            '               <a ng-href="/" target="_blank" ng-bind-html="websiteName"></a>' +
+            '           </span>' +
+            '       </div>' +
+            '   </div>' +
+            '   <!-- embedded content (chart, map etc.) -->' +
+            '   <div class="dataset-item" ng-transclude></div>' +
+            '</div>',
+
             replace: true,
             transclude: true,
+
             link: function(scope, elem, attrs) {
                 scope.position = attrs.position || "top";
                 // moves embedded item down so the card doesn't overlap when collapsed
             },
+
             controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', '$timeout',
                 function($scope, $element, ODSWidgetsConfig, $transclude, $sce, $timeout) {
-                $scope.renderContent = renderCard;
-                $scope.datasetObjectKeys = [];
-                $scope.websiteName = ODSWidgetsConfig.websiteName;
+                    $scope.datasetObjectKeys = [];
+                    $scope.websiteName = ODSWidgetsConfig.websiteName;
 
-                $scope.safeHtml = function(html) {
-                    return $sce.trustAsHtml(html);
-                };
 
-                $scope.isExpandable = function() {
-                    if (!$scope.datasetObjectKeys.length || ($scope.datasetObjectKeys.length === 1)) {
-                        return false;
-                    }
-                    return true;
-                };
+                    $scope.safeHtml = function(html) {
+                        return $sce.trustAsHtml(html);
+                    };
 
-                $scope.tryToggleExpand = function() {
-                    if ($scope.isExpandable()) {
-                        $scope.expanded = !$scope.expanded;
-                    }
-                };
 
-                var unwatch = $scope.$watch('datasets', function(nv, ov) {
-                    if (nv) {
-                        var keys = Object.keys(nv);
-                        if (keys.length === 0) {
-                            return;
+                    $scope.isExpandable = function() {
+                        if (!$scope.datasetObjectKeys.length || ($scope.datasetObjectKeys.length === 1)) {
+                            return false;
                         }
-                        $scope.datasetObjectKeys = keys;
+                        return true;
+                    };
 
-                        // waiting for re-render
-                        $timeout(function() {
-                            $scope.renderContent($transclude, $scope, $element);
-                        }, 0);
-                        $scope.expanded = false;
-                        unwatch();
-                    }
-                }, true);
-                $timeout(function() {
-                    $scope.renderContent($transclude, $scope, $element);
-                }, 0);
-            }]
+
+                    $scope.tryToggleExpand = function() {
+                        if ($scope.isExpandable()) {
+                            $scope.expanded = !$scope.expanded;
+                        }
+                    };
+
+
+                    var unwatch = $scope.$watch('datasets', function(nv, ov) {
+                        if (nv) {
+                            var keys = Object.keys(nv);
+                            if (keys.length === 0) {
+                                return;
+                            }
+                            $scope.datasetObjectKeys = keys;
+
+                            // waiting for re-render
+                            $timeout(function() {
+                                positionEmbed($element, $scope.position);
+                            }, 0);
+                            $scope.expanded = false;
+                            unwatch();
+                        }
+                    }, true);
+
+                    $timeout(function() {
+                        positionEmbed($element, $scope.position);
+                    }, 0);
+                }]
         };
     }]);
 })();

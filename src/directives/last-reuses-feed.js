@@ -64,18 +64,20 @@
             },
             controller: ['$scope', function($scope) {
                 $scope.max = $scope.max || 5;
+                var reuses = ODSAPI.uniqueCall(ODSAPI.reuses);
                 var refresh = function() {
-                    // TODO: If the context is a dataset-context
-                    ODSAPI.reuses($scope.context, {'rows': $scope.max}).
-                        success(function(data) {
-                            angular.forEach(data.reuses, function(reuse) {
-                                if (!$scope.externalLinks) {
-                                    reuse.url = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/information/';
-                                }
-                                reuse.datasetUrl = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/information/';
+                    if ($scope.context.type === 'catalog') {
+                        reuses($scope.context, {'rows': $scope.max}).
+                            success(function(data) {
+                                angular.forEach(data.reuses, function(reuse) {
+                                    if (!$scope.externalLinks) {
+                                        reuse.url = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/information/';
+                                    }
+                                    reuse.datasetUrl = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/information/';
+                                });
+                                $scope.reuses = data.reuses;
                             });
-                            $scope.reuses = data.reuses;
-                        });
+                    }
                 };
                 $scope.$watch('context', function() {
                     refresh();

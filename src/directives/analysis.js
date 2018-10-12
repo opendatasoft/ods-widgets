@@ -47,7 +47,7 @@
          *                              ods-analysis-context="tree"
          *                              ods-analysis-max="10"
          *                              ods-analysis-x="espece"
-         *                              ods-analysis-sort="circonferenceencm"
+         *                              ods-analysis-sort="circonference"
          *                              ods-analysis-serie-hauteur="AVG(hauteurenm)"
          *                              ods-analysis-serie-hauteur-cumulative="false"
          *                              ods-analysis-serie-circonference="AVG(circonferenceencm)"
@@ -105,6 +105,8 @@
             priority: 1001, // ng-repeat need to be executed when the results is in the scope.
             controller: ['$scope', '$attrs', function($scope, $attrs) {
                 $scope[$attrs.odsAnalysisContext].wait().then(function() {
+                    var analyze = ODSAPI.uniqueCall(ODSAPI.records.analyze);
+
                     $scope.$watch($attrs.odsAnalysisContext, function(nv) {
                         var variable = $attrs.odsAnalysis || 'results';
                         var options = angular.extend({}, nv.parameters, {'maxpoints': $attrs.odsAnalysisMax || 0});
@@ -169,7 +171,7 @@
                             }
                         });
 
-                        ODSAPI.records.analyze(nv, options).success(function(data) {
+                        analyze(nv, options).success(function(data) {
                             $scope[variable] = {};
                             if (angular.isArray(data)) {
                                 $scope[variable] = {
@@ -211,7 +213,7 @@
          *                      ods-analysis-max="10"
          *                      ods-analysis-x="genre"
          *                      ods-analysis-x="espece"
-         *                      ods-analysis-sort="circonferenceencm"
+         *                      ods-analysis-sort="circonference"
          *                      ods-analysis-serie-hauteur="AVG(hauteurenm)"
          *                      ods-analysis-serie-hauteur-cumulative="false"
          *                      ods-analysis-serie-circonference="AVG(circonferenceencm)">
@@ -239,7 +241,7 @@
          *                   ods-analysis-max="10"
          *                   ods-analysis-x-genre="genre"
          *                   ods-analysis-x-espece="espece"
-         *                   ods-analysis-sort="circonferenceencm"
+         *                   ods-analysis-sort="circonference"
          *                   ods-analysis-serie-hauteur="AVG(hauteurenm)"
          *                   ods-analysis-serie-hauteur-cumulative="false"
          *                   ods-analysis-serie-circonference="AVG(circonferenceencm)">
@@ -370,7 +372,7 @@
          *                  ods-analysis-max="10"
          *                  ods-analysis-x-genre="genre"
          *                  ods-analysis-x-espace="espece"
-         *                  ods-analysis-sort="circonferenceencm"
+         *                  ods-analysis-sort="circonference"
          *                  ods-analysis-serie-hauteur="AVG(hauteurenm)"
          *                  ods-analysis-serie-hauteur-cumulative="false"
          *                  ods-analysis-serie-circonference="AVG(circonferenceencm)">

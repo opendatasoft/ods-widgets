@@ -217,9 +217,10 @@
                     }
                 };
 
+                var search = ODSAPI.uniqueCall(ODSAPI.records.search);
                 var calendarDataSource = function (start, end, timezone, callback) {
                     updateCalendarView();
-                    ODSAPI.records.search(scope.context, getSearchOptions(start, end)).
+                    search(scope.context, getSearchOptions(start, end)).
                         success(function (data) {
                             callback(data.records);
                         });

@@ -43,8 +43,9 @@
             },
             controller: ['$scope', function($scope) {
                 $scope.max = $scope.max || 5;
+                var search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
                 var refresh = function() {
-                    ODSAPI.datasets.search($scope.context, {'rows': $scope.max, 'sort': 'explore.download_count', 'extrametas': true}).
+                    search($scope.context, {'rows': $scope.max, 'sort': 'explore.download_count', 'extrametas': true}).
                         success(function(data) {
                             $scope.datasets = data.datasets;
                         });

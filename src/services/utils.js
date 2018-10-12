@@ -12,11 +12,11 @@
             'highcharts': {
                 'css': [],
                 'js': [
-                    ["https://code.highcharts.com/5.0.2/highcharts.js"],
-                    ["https://code.highcharts.com/5.0.2/modules/no-data-to-display.js"],
-                    ["https://code.highcharts.com/5.0.2/highcharts-more.js"],
-                    ["https://code.highcharts.com/5.0.2/modules/treemap.js"],
-                    ["https://code.highcharts.com/5.0.2/modules/funnel.js"]
+                    ["https://code.highcharts.com/6.1.4/highcharts.js"],
+                    ["https://code.highcharts.com/6.1.4/modules/no-data-to-display.js"],
+                    ["https://code.highcharts.com/6.1.4/highcharts-more.js"],
+                    ["https://code.highcharts.com/6.1.4/modules/treemap.js"],
+                    ["https://code.highcharts.com/6.1.4/modules/funnel.js"]
                 ]
             },
             'leaflet': {
@@ -101,7 +101,14 @@
                 'js': [
                     'ss@https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.js'
                 ]
-            }
+            },
+            'vega': {
+                'js': [
+                    "vega@https://cdn.jsdelivr.net/npm/vega@4.2.0",
+                    "vl@https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc3",
+                    "vegaTooltip@https://cdn.jsdelivr.net/npm/vega-tooltip@0.13.0",
+                ],
+            },
         };
 
         this.getConfig = function() {
@@ -134,8 +141,8 @@
                     loading[url] = deferred;
                     // If it is a relative URL, make it relative to ODSWidgetsConfig.basePath
                     var realURL =  url.substring(0, 1) === '/' ||
-                                   url.substring(0, 7) === 'http://' ||
-                                   url.substring(0, 8) === 'https://' ? url : ODSWidgetsConfig.basePath + url;
+                    url.substring(0, 7) === 'http://' ||
+                    url.substring(0, 8) === 'https://' ? url : ODSWidgetsConfig.basePath + url;
                     LazyLoad[type](realURL, function() {
                         deferred.resolve();
                         loaded.push(url);
@@ -162,16 +169,21 @@
                     }
 
                     for (var k = 0; k < step.length; k++) {
+                        // The following extracts URLs from resource strings if the related service is not already loaded
+                        // resource strings are of the form:
+                        // * <service name>@<url>
+                        // * <url>
+                        // The URL may contain an "@" itself. E.g. https://cdn.jsdelivr.net/npm/package@version/file
                         var parts = step[k].split('@');
                         var url;
-                        if (parts.length > 1) {
+                        if (parts.length > 1 && !(parts[0].startsWith('http://') || parts[0].startsWith('https://'))) {
                             // There is an object name whose existence we can check
                             if (isAlreadyAvailable(parts[0])) {
                                 continue;
                             }
-                            url = parts[1];
+                            url = parts.splice(1).join('@');
                         } else {
-                            url = parts[0];
+                            url = step[k];
                         }
 
                         if (loaded.indexOf(url) === -1) {
@@ -537,7 +549,7 @@
         };
     });
 
-    mod.factory('URLSynchronizer', ['$location', '$document', function($location, $document) {
+    mod.factory('URLSynchronizer', ['$location', '$document', '$rootScope', '$timeout', function($location, $document, $rootScope, $timeout) {
         /*
         This service handles the synchronization of the querystring in the browser's URL, and specific JavaScript objects.
 
@@ -552,6 +564,14 @@
          */
         var suspended = false;
         var syncers = [];
+        // setLocationSearchTimeout and lastSearchUpdated are used to detect multiple location search changes
+        // in a very short time and try to maintain a correct browser back behaviour
+        // We wrap the $location.search calls in a $timeout and we only retain the last one, which safely prevent
+        // multiple changes in a same JS cycle
+        var setLocationSearchTimeout = null;
+        // We assume that if there is less than 300ms between two changes (or the service init), the second one use
+        // $location.replace instead of $location.search
+        var lastSearchUpdated = new Date();
 
         // Waiting for the day the prefixes are gone
         $document.bind('webkitfullscreenchange mozfullscreenchange ofullscreenchange msfullscreenchange khtmlfullscreenchange', function() {
@@ -569,6 +589,40 @@
             }
         });
         var ignoreList = [];
+
+        // The following is used to calculate time between the initial page rendering and the first $location.search
+        // change. There is usually much more than 300ms between the factory init and the first $location.search
+        // call even if everything is done synchronously. This wait for the first angular digest to end (which is not
+        // the end of the initial rendering sadly), then wait for one more JS cycle, then mark the app as init.
+        $rootScope.$evalAsync(function () {
+            $timeout(function () {
+                lastSearchUpdated = new Date();
+            });
+        });
+
+        function setLocationSearch(search, paramValue, skipHistory) {
+            if (skipHistory) {
+                // Assume that if `skipHistory` is supplied, the developer knows what he is doing (used for maps)
+                $location.replace();
+                angular.isString(search) ? $location.search(search, paramValue) : $location.search(search);
+                return ;
+            }
+            // Only retain the last location change in the same JS cycle
+            if (setLocationSearchTimeout) {
+                $timeout.cancel(setLocationSearchTimeout);
+                setLocationSearchTimeout = null;
+
+            }
+            setLocationSearchTimeout = $timeout(function() {
+                // If there is less than 300ms between two location changes, use replace
+                if (new Date().getTime() - lastSearchUpdated.getTime() < 300) {
+                    $location.replace();
+                }
+                angular.isString(search) ? $location.search(search, paramValue) : $location.search(search);
+                lastSearchUpdated = new Date();
+            });
+        }
+
         return {
             addSynchronizedValue: function(scope, objName, urlName, skipHistory) {
                 ignoreList.push(objName);
@@ -581,10 +635,7 @@
                 var sync = function() {
                     // Watching the object to sync the changes to URL
                     var val = scope.$eval(objName);
-                    if (skipHistory) {
-                        $location.replace();
-                    }
-                    $location.search(urlName || objName,val);
+                    setLocationSearch(urlName || objName, val, skipHistory);
                 };
                 var unwatchObject = scope.$watch(objName, function(nv, ov) {
                     if (!suspended) {
@@ -629,7 +680,7 @@
                         val = "";
                     }
                     last_serialization = utf8_to_b64(angular.toJson(val));
-                    $location.search(urlName || objName, last_serialization);
+                    setLocationSearch(urlName || objName, last_serialization);
                 };
 
                 syncers.push(sync);
@@ -692,7 +743,7 @@
                             val[key] = value;
                         }
                     });
-                    $location.search(val);
+                    setLocationSearch(val);
                 };
 
                 // Upon first call, the URLparams  erases the current object
@@ -708,9 +759,15 @@
                 syncers.push(syncToURL);
 
 
-                var unwatchLocation = scope.$watch(function () {
-                    return $location.search();
-                }, syncFromURL, true);
+                var unwatchLocation;
+
+                // wait for the application to be loaded before activating the watch on parameters
+                // otherwise we will sync back the parameters before they are actually applied to the url
+                $timeout(function() {
+                    unwatchLocation = scope.$watch(function () {
+                        return $location.search();
+                    }, syncFromURL, true);
+                }, 300);
 
                 return function unwatch() {
                     unwatchObject();

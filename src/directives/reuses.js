@@ -69,6 +69,7 @@
                 var numberReuses = 0;
                 var page = 1;
                 var resultsPerPage = 20;
+                var reuses = ODSAPI.uniqueCall(ODSAPI.reuses);
 
                 $scope.reuses = [];
 
@@ -76,7 +77,7 @@
                     if ($scope.reuses.length && !done && !fetching) {
                         fetching = true;
                         var start = page * resultsPerPage;
-                        ODSAPI.reuses($scope.context, {'rows': resultsPerPage, 'start': start}).
+                        reuses($scope.context, {'rows': resultsPerPage, 'start': start}).
                             success(function(data) {
                                 $scope.reuses = $scope.reuses.concat(data.reuses);
                                 done = (page + 1) * resultsPerPage >= numberReuses;
@@ -91,7 +92,7 @@
 
                 var refresh = function() {
                     fetching = true;
-                    ODSAPI.reuses($scope.context, {'rows': resultsPerPage}).
+                    reuses($scope.context, {'rows': resultsPerPage}).
                         success(function(data) {
                             $scope.reuses = data.reuses;
                             done = resultsPerPage >= data.nhits;

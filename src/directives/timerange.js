@@ -191,7 +191,7 @@
                         inputFormat: scope.dateFormat
                     }));
                     fromRome.on('data', function(value) {
-                        scope.$apply(function() {
+                        scope.$applyAsync(function() {
                             var from = roundTime(moment(value, scope.dateFormat), scope.dateFormat, scope.displayTime, 'from');
                             $(inputs[0]).val(from.format(scope.dateFormat));
                             fromRome.setValue(from);
@@ -205,7 +205,7 @@
                         inputFormat: scope.dateFormat
                     }));
                     toRome.on('data', function(value) {
-                        scope.$apply(function() {
+                        scope.$applyAsync(function() {
                             var to = roundTime(moment(value, scope.dateFormat), scope.dateFormat, scope.displayTime, 'to');
                             toRome.setValue(to);
                             scope.to = formatTimeToISO(to);

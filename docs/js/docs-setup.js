@@ -11,7 +11,7 @@ NG_DOCS={
       "type": "overview",
       "moduleName": "index",
       "shortDescription": "This documentation contains the complete reference of available ODS Widgets, including examples.",
-      "keywords": "api complete discover documentation examples including left list ods overview reference search widgets",
+      "keywords": "api class complete discover documentation examples github href http icon-github-sign including left link_github list ods overview reference search widgets",
       "isDeprecated": false
     },
     {
@@ -21,7 +21,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget exposes the results of an aggregation function over a context. Can be used for example to expose the average temperature of a weather dataset.",
-      "keywords": "aggregation api apply arbresremarquablesparis2011 average avg catalog class context count dataset directive directly example expose exposed exposes expression field function hauteurenm height html max meters min module null ods-aggregation ods-aggregation-context ods-aggregation-expression ods-aggregation-function ods-widgets odsaggregationcontext opendatasoft optional parisdata result returns row-fluid sort span4 span8 stddev sum temperature tree tree-dataset tree-domain tree-parameters typically variable weather widget widgets",
+      "keywords": "aggregation aggregations api apply arbresremarquablesparis2011 average avg catalog circonferenceencm cm commas context count dataset declaration declared directive directly div example expose exposed exposes expression field function girth hauteurenm height html max maxgirth meters min mingirth multiple names null number ods-aggregation ods-aggregation-context ods-aggregation-expression ods-aggregation-function ods-aggregation-maxgirth-context ods-aggregation-maxgirth-expression ods-aggregation-maxgirth-function ods-aggregation-mingirth-context ods-aggregation-mingirth-expression ods-aggregation-mingirth-function ods-aggregation-total-context ods-aggregation-total-function ods-widgets odsaggregationcontext odsaggregationxxxcontext opendatasoft optional paris parisdata ranging remarkable result returns separate single specific stddev sum supports temperature total tree tree-dataset tree-domain trees typically variable weather widget widgets",
       "isDeprecated": false
     },
     {
@@ -31,7 +31,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget exposes the results of an analysis (as an object containing a results array and optionally an aggregations object) in a variable available in the scope.",
-      "keywords": "aggregations analysis angularjs api arbresremarquablesparis2011 array avg build catalog circonference circonferenceencm class context dataset directive espece exposes false hauteur html invert maximum module ng-repeat ngrepeat number object ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-circonference ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-sort ods-analysis-x ods-widgets odsanalysiscontext odsanalysissort opendatasoft optionally parisdata result scope serie simply sort table table-bordered table-condensed table-striped tree tree-dataset tree-domain variable widget",
+      "keywords": "aggregations analysis angularjs api arbresremarquablesparis2011 array avg build catalog circonference class context dataset directive espece exposes false hauteur html invert maximum module ng-repeat ngrepeat number object ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-circonference ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-sort ods-analysis-x ods-widgets odsanalysiscontext odsanalysissort opendatasoft optionally parisdata result scope serie simply sort table table-bordered table-condensed table-striped tree tree-dataset tree-domain variable widget",
       "isDeprecated": false
     },
     {
@@ -41,7 +41,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget exposes only keeps the longest serie in the results from an analysis.",
-      "keywords": "analysis api arbresremarquablesparis2011 avg axis check circonferenceencm coming condition context directive espece example exposes false genre global hauteur html length longest mode module ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie ods-analysis-serie-circonference ods-analysis-serie-condition ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-serie-mode ods-analysis-serie-name ods-analysis-serie-separate-on-x ods-analysis-sort ods-analysis-x ods-analysis-x-espece ods-analysis-x-genre ods-widgets odsanalysisserie odsanalysisseriecondition odsanalysisseriemode odsanalysisseriename odsanalysisserieseparateonx opendatasoft parameter parisdata reduce replaced requires response separate-on-x serie series set split splited subaggregation tree tree-dataset tree-domain validate validation widget",
+      "keywords": "analysis api arbresremarquablesparis2011 avg axis check circonference coming condition context directive espece example exposes false genre global hauteur html length longest mode module ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie ods-analysis-serie-circonference ods-analysis-serie-condition ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-serie-mode ods-analysis-serie-name ods-analysis-serie-separate-on-x ods-analysis-sort ods-analysis-x ods-analysis-x-espece ods-analysis-x-genre ods-widgets odsanalysisserie odsanalysisseriecondition odsanalysisseriemode odsanalysisseriename odsanalysisserieseparateonx opendatasoft parameter parisdata reduce replaced requires response separate-on-x serie series set split splited subaggregation tree tree-dataset tree-domain validate validation widget",
       "isDeprecated": false
     },
     {
@@ -81,7 +81,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget is the base widget allowing to display charts from OpenDataSoft datasets.",
-      "keywords": "active affect allowing api appearance automatically avg axis base basic case chart chart-type charts color column computed context data dataset datasets deaths default defined defines directive disable display displayed enable enforces example expression-y false fc8d62 field-x fine force form full function-y generated hurricane-tracks-1851-20071 hurricanetracks185120071 hurricanetracks185120071-dataset hurricanetracks185120071-parameters ignored intervals label legend logarithmic max min multiple numbers ods-widgets opendatasoft override parameters pressure represented requested scale series set single singleyaxis singleyaxislabel specific step the-deadliest-hurricanes-in-the-united-states-1900-1996 thedeadliesthurricanesintheunitedstates19001996 thedeadliesthurricanesintheunitedstates19001996-dataset thedeadliesthurricanesintheunitedstates19001996-parameters tick timescale timeseries track_date true tune type widget wind_kts works year",
+      "keywords": "active affect align allowing api appearance automatically avg axis base basic behaviour case characters chart chart-type charts color column computed context data dataset datasets deaths default defined defines directive disable display displayed enable enforces example expression-y false fc8d62 field-x fine force form full function-y generated hurricane-tracks-1851-20071 hurricanetracks185120071 hurricanetracks185120071-dataset hurricanetracks185120071-parameters ignored intervals label labels legend logarithmic max maximum middle min month multiple number numbers ods-widgets opendatasoft override parameter parameters pressure represented requested reverts scale series set setting single singleyaxis singleyaxislabel specific step the-deadliest-hurricanes-in-the-united-states-1900-1996 thedeadliesthurricanesintheunitedstates19001996 thedeadliesthurricanesintheunitedstates19001996-dataset thedeadliesthurricanesintheunitedstates19001996-parameters tick timescale timeseries track_date true tune type values widget wind_kts works year",
       "isDeprecated": false
     },
     {
@@ -231,7 +231,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a gauge in one of the two following modes: circle or horizontal bar.",
-      "keywords": "api bar chart circle css css3 customizable defined directive display-mode displays empty entirely exceeding full gauge horizontal html lower max maximum modes module number ods-widgets relies represented result svg type values widget",
+      "keywords": "api bar based chart circle css css3 customizable decide defined directive display-mode displays empty entirely exceeding forcing full gauge height horizontal html larger lower max maximum modes module number ods-widgets property relies represented result size smaller svg type values widget width won work",
       "isDeprecated": false
     },
     {
@@ -321,7 +321,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget allows you to build a map visualization and show data using various modes of display using layers.",
-      "keywords": "_blank ability adding additional advanced aggregated aggregating aggregation allowed allowing allows alphanumerically angular angularjs-enabled apart api appear appears area areas associated auto autogeolocation automatic automatically average avg based basemap basemaps best border bordercolor box browser build button calculation categories centered change changes chosen chronologically click clicked clicking close cluster clustering clusters clustersforced code color colorbrewer colorbyfield colorfunction colorranges colors colorscale combine combined configurable configuration configurations configure configured content context contexts control count css custom data dataset datasets datetime decide decimal decreasing default define defined density depending determine deviation directive directly display displayed displaying displays downloaded draw drawing dynamic exact example exclude exclude-from-refit excludefromrefit expression false ff0000 ff0f05 field field1 field2 field3 field4 fields fill filter filters firefox fit format france freeze fullscreen function functions generating geo geolocate geolocation geometrical geometry groups heatmap hex hide hoverfield hovers href html http icon identifier inconsistencies indicating informations initialization initializing inside integer interface item items join joincontext joined jump keywords kind large latitude layer layers lead level levels limits linear listed load local localkey location locations log logarithmic longitude map marker markers max maximum min minimum mode modes mot mouse move moves multiple mycontext mycontext1 mycontext2 mycontext3 mycontext5 myvalue names ngif note number numeric object occurs ods-widgets odsmap odsmaplayer odswidgetsconfig odswidgetsconfigprovider opacity opendatasoft orange order org parameter parameters paris persists picto point points position prefixed priorly properties property propose provided ranges raw read record records red reference refine refine-on-click-context refine-on-click-mycontext-context-field refine-on-click-mycontext-map-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-map-field refineonclick refineonclickcontext refineonclickcontextfield refineonclickmapfield refits refreshed relevant remote remotekey rendering represent represents required resize result reverse reversed road scale scales scheme scrolling search second selection semicolon sense separated serie set settings shape shapes sharing shouldn show-if show-zoom-max show-zoom-min showheatmap showif showzoommax showzoommin simple simplification simply single sort sorted sources spatially specific spot stacked standard starting stay stddev sum support supports table tag target template text three time toggle toolbar tools tooltip tooltip-sort tooltips tooltipsort top traffic trigger triggers true type types url usage user users values view visible visualization warning ways wheel widget widgets won ylgnbu zones zoom zooms",
+      "keywords": "_blank ability adding additional advanced aggregated aggregating aggregation allowed allowing allows alphanumerically angular angularjs-enabled apart api appear appears area areas associated auto autogeolocation automatic automatically average avg based basemap basemaps best border bordercolor box browser build button calculation categories centered change changes chosen chronologically click clicked clicking close cluster clustering clusters clustersforced code color colorbrewer colorbyfield colorfunction colorranges colors colorscale combine combined configurable configuration configurations configure configured content context contexts control count css custom data dataset datasets datetime decide decimal decreasing default define defined density depending determine deviation directive directly disable display displayed displaying displays downloaded draw drawing dynamic exact example exclude exclude-from-refit excludefromrefit expression false ff0000 ff0f05 field field1 field2 field3 field4 fields fill filter filters firefox fit format france freeze fullscreen function functions generating geo geolocate geolocation geometrical geometry groups heatmap hex hide hoverfield hovers href html http icon identifier inconsistencies indicating informations initialization initializing inside integer interface item items join joincontext joined jump keywords kind large latitude layer layers lead level levels limits linear listed load local localkey location locations log logarithmic longitude map marker markers max maximum min minimum mode modes mot mouse move moves multiple mycontext mycontext1 mycontext2 mycontext3 mycontext5 myvalue names ngif note number numeric object occurs ods-widgets odsmap odsmaplayer odswidgetsconfig odswidgetsconfigprovider opacity opendatasoft option orange order org parameter parameters paris persists picto point points position prefixed priorly properties property propose provided ranges raw read record records red reference refine refine-on-click-context refine-on-click-mycontext-context-field refine-on-click-mycontext-map-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-map-field refineonclick refineonclickcontext refineonclickcontextfield refineonclickmapfield refits refreshed relevant remote remotekey rendering represent represents required resize result reverse reversed road scale scales scheme scrolling search second selection semicolon sense separated serie set settings shape shapes sharing shouldn show-if show-zoom-max show-zoom-min showheatmap showif showzoommax showzoommin simple simplification simply single sort sorted sources spatially specific spot stacked standard starting stay stddev sum support supports table tag target template text three time toggle toolbar tools tooltip tooltip-disabled tooltip-sort tooltips tooltipsort top traffic trigger triggers true type types url usage user users values view visible visualization warning ways wheel widget widgets won ylgnbu zones zoom zooms",
       "isDeprecated": false
     },
     {
@@ -479,8 +479,8 @@ NG_DOCS={
       "shortName": "odsSocialButtons",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a share button that on hover will reveal social media sharing buttons.",
-      "keywords": "account addthis addthis-pubid addthispubid api button buttons comma directive display displays facebook google-plus hover html list media module myaddthispubid ods-widgets public reveal separated share sharing social twitter widget",
+      "shortDescription": "This widget displays a series of buttons for easy sharing on social media.",
+      "keywords": "api attached buttons comma directive display displays easy email facebook html linkedin list media module ods-widgets post separated series sharing social title twitter url widget",
       "isDeprecated": false
     },
     {
@@ -500,7 +500,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget computes aggregations on an analysis result. It",
-      "keywords": "aggregation aggregations analysis angularjs api arbresremarquablesparis2011 average avg avgcirc build circonference circonferenceencm computes context directive espece expression false genre height html max maxhauteur module ngrepeat ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-circonference ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-sort ods-analysis-x-espace ods-analysis-x-genre ods-subaggregation ods-subaggregation-serie-avgcirc ods-subaggregation-serie-maxhauteur ods-widgets odssubaggregation odssubaggregationserie opendatasoft parisdata result simply table tree tree-dataset tree-domain widget",
+      "keywords": "aggregation aggregations analysis angularjs api arbresremarquablesparis2011 average avg avgcirc build circonference computes context directive espece expression false genre height html max maxhauteur module ngrepeat ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-circonference ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-sort ods-analysis-x-espace ods-analysis-x-genre ods-subaggregation ods-subaggregation-serie-avgcirc ods-subaggregation-serie-maxhauteur ods-widgets odssubaggregation odssubaggregationserie opendatasoft parisdata result simply table tree tree-dataset tree-domain widget",
       "isDeprecated": false
     },
     {
@@ -784,6 +784,15 @@ NG_DOCS={
       "shortName": "shortSummary",
       "type": "filter",
       "moduleName": "ods-widgets",
+      "keywords": "api ellipsis filter function html length longer maximum ods-widgets paragraph required short summary text unsafe",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:shortTextSummary",
+      "shortName": "shortTextSummary",
+      "type": "filter",
+      "moduleName": "ods-widgets",
       "keywords": "api ellipsis filter length longer maximum ods-widgets paragraph required short summary text",
       "isDeprecated": false
     },
@@ -885,26 +894,6 @@ NG_DOCS={
       "type": "filter",
       "moduleName": "ods-widgets",
       "keywords": "api configured dailymotion filter iframe including input ods-widgets player relevant tag url video vimeo youtube",
-      "isDeprecated": false
-    },
-    {
-      "section": "api",
-      "id": "ods-widgets.ODSCurrentDomain",
-      "shortName": "ods-widgets.ODSCurrentDomain",
-      "type": "service",
-      "moduleName": "ods-widgets",
-      "shortDescription": "A service containing the current domain informations. Available informations are described",
-      "keywords": "api current described documentation domain informations ods-widgets odscurrentdomain odscurrentdomainprovider service",
-      "isDeprecated": false
-    },
-    {
-      "section": "api",
-      "id": "ods-widgets.ODSCurrentDomainProvider",
-      "shortName": "ods-widgets.ODSCurrentDomainProvider",
-      "type": "object",
-      "moduleName": "ods-widgets",
-      "shortDescription": "Use ODSCurrentDomainProvider to set configuration values for the current domain.",
-      "keywords": "angular api app catalog config configuration contexts current dataset defaults directive domain domainid local module object ods-widgets odscurrentdomainprovider parameter public set setdomain settings string values var",
       "isDeprecated": false
     },
     {

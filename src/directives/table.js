@@ -537,7 +537,7 @@
 
                 $scope.context.wait().then(function() {
                     if ($scope.displayedFields) {
-                        $scope.displayedFieldsArray = $scope.displayedFields.split(',').map(function(item) {return item.trim();});
+                        $scope.displayedFieldsArray = ODS.ArrayUtils.fromCSVString($scope.displayedFields);
                     } else {
                         if ($scope.context.dataset.extra_metas &&
                             $scope.context.dataset.extra_metas.visualization &&
@@ -681,7 +681,8 @@
                         if ($scope.displayDatasetFeedback) {
                             bodyOffset = $element.find('.table-feedback-new').height() + 5;
                         }
-                        recordsArea.height(elementHeight - 25 - bodyOffset); // Horizontal scrollbar height
+                        var headerHeight = $element.find('.odswidget-table__header').height() || $element.find('.odswidget-table__internal-table-header').height();
+                        recordsArea.height(elementHeight - headerHeight - bodyOffset); // Horizontal scrollbar height
 
                         // Remove previous style
                         var node = document.getElementById(styleSheetId);

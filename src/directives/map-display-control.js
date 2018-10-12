@@ -26,7 +26,8 @@
             '           ng-click="toggleDisplayControl()">' +
             '       <i class="fa fa-caret-left"></i>' +
             '   </button>' +
-            '   <ul class="odswidget-map-display-control__groups">' +
+            '   <ul class="odswidget-map-display-control__groups"' +
+            '       ng-show="mapConfig.groups.length">' +
             '       <li ng-repeat="group in mapConfig.groups" ' +
             '           ng-click="mapConfig.groups.length > 1 && toggleGroup(group)" ' +
             '           ng-class="{\'odswidget-map-display-control__group\': true, \'odswidget-map-display-control__group--disabled\': !group.displayed, \'odswidget-map-display-control__group--not-toggleable\': mapConfig.groups.length === 1}"' +
@@ -41,13 +42,18 @@
             '           <span class="odswidget-map-display-control__group-title" ' +
             '                ng-class="{\'odswidget-map-display-control__group-title--error\' : group._hasUnknownDataset}"' +
             '                title="{{ getGroupTitle(group) }}" ' +
-            '                ng-bind="shortSummaryFilter(getGroupTitle(group), 50)"></span>' +
+            '                ng-bind="shortTextSummaryFilter(getGroupTitle(group), 50)"></span>' +
             '           <div class="odswidget-map-display-control__group-description"' +
             '                ng-class="{\'odswidget-map-display-control__group-description--error\' : group._hasUnknownDataset}"' +
             '                ng-if="getGroupDescription(group)" ' +
             '                ng-bind-html="getGroupDescription(group)|prettyText|safenewlines"></div>' +
             '       </li>' +
             '   </ul>' +
+            '   <div class="odswidget-map-display-control__no-groups" ' +
+            '        ng-show="!mapConfig.groups.length"' +
+            '        translate>' +
+            '       There are no layers on this map' +
+            '   </div>' +
             '</div>',
             scope: {
                 mapConfig: '=',
@@ -56,11 +62,11 @@
             link: function (scope, element, attrs, odsMapCtrl) {
                 scope.resizeMapDisplayControl = odsMapCtrl.resizeMapDisplayControl;
             },
-            controller: ['$scope', 'shortSummaryFilter', function ($scope, shortSummaryFilter) {
+            controller: ['$scope', 'shortTextSummaryFilter', function ($scope, shortTextSummaryFilter) {
                 $scope.expanded = true;
                 $scope.$emit('toggleMapDisplayControl', {expanded: $scope.expanded});
 
-                $scope.shortSummaryFilter = shortSummaryFilter;
+                $scope.shortTextSummaryFilter = shortTextSummaryFilter;
 
                 $scope.getGroupDescription = function(group) {
                     group._hasUnknownDataset = false;

@@ -57,6 +57,9 @@
             scope: true,
             priority: 1001, // ng-repeat need to be executed when the results is in the scope.
             controller: ['$scope', '$attrs', function($scope, $attrs) {
+                var dataset_search = ODSAPI.uniqueCall(ODSAPI.records.search),
+                    catalog_search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
+
                 var loadResults = function (context) {
                     var options = angular.extend({}, context.parameters, {'rows': $attrs.odsResultsMax});
                     var variable = $attrs.odsResults || 'results';
@@ -66,7 +69,7 @@
                             extrametas: 'true',
                             interopmetas: 'true'
                         });
-                        ODSAPI.datasets.search(context, options).success(function(data) {
+                        catalog_search(context, options).success(function(data) {
                             $scope[variable] = data.datasets;
                             context.nhits = data.nhits;
                             $scope.loading = false;
@@ -74,7 +77,7 @@
                             $scope.loading = false;
                         });
                     } else if (context.type === 'dataset' && context.dataset) {
-                        ODSAPI.records.search(context, options).success(function(data) {
+                        dataset_search(context, options).success(function(data) {
                             $scope[variable] = data.records;
                             context.nhits = data.nhits;
                             $scope.loading = false;

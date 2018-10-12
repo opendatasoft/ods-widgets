@@ -40,8 +40,9 @@
                 context: '='
             },
             controller: ['$scope', function($scope) {
+                var facets = ODSAPI.uniqueCall(ODSAPI.datasets.facets);
                 var refresh = function() {
-                    ODSAPI.datasets.facets($scope.context, 'theme').
+                    facets($scope.context, 'theme').
                         success(function(data) {
                             if (data.facet_groups) {
                                 $scope.themes = data.facet_groups[0].facets.slice(0, 5);

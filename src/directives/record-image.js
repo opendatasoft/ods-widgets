@@ -22,7 +22,7 @@
             replace: true,
             template: '' +
                 '<div class="odswidget odswidget-record-image">' +
-                '   <img class="odswidget-record-image__image" ng-if="imageUrl" ng-src="{{ imageUrl }}">' +
+                '   <img class="odswidget-record-image__image" ng-style="{ \'background-image\': prefetchBackground}" ng-if="imageUrl" ng-src="{{ imageUrl }}">' +
                 '   <div class="odswidget-record-image__image odswidget-record-image__image--placeholder" ng-if="placeholder">' +
                 '</div>',
             scope: {
@@ -34,7 +34,9 @@
                 scope.imageUrl = null;
                 var render = function() {
                     var image = scope.record.fields[scope.field];
-                    if (image.url) {
+                    if (image && typeof image !== 'object') {
+                        console.error('Widget <record-image> requires a file field type');
+                    } else if (image.url) {
                         scope.imageUrl = image.url;
                         scope.placeholder = false;
                     } else if (image.placeholder) {
@@ -43,6 +45,9 @@
                     } else {
                         scope.imageUrl = ODS.Record.getImageUrl(scope.record, scope.field, scope.domainUrl);
                         scope.placeholder = false;
+                    }
+                    if (image.color_summary) {
+                        scope.prefetchBackground = "linear-gradient(to bottom, " + image.color_summary.join(",") + ")";
                     }
                 };
 
@@ -53,3 +58,5 @@
         };
     });
 }());
+
+

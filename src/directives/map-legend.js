@@ -20,7 +20,7 @@
             '       </div> ' +
             '       <div class="odswidget-map-legend__title"' +
             '           title="{{ getLayerTitle(selectedLayer) }}"' +
-            '           ng-bind="shortSummaryFilter(getLayerTitle(selectedLayer), 50)">'+
+            '           ng-bind="shortTextSummaryFilter(getLayerTitle(selectedLayer), 50)">'+
             '       </div>' +
             '       <i ng-show="isToggleable(selectedLayer) && !extended" class="odswidget-map-legend__title-toggle odsui-top" ods-tooltip="Click to unfold" translate="ods-tooltip"></i>' +
             '       <i ng-show="isToggleable(selectedLayer) && extended" class="odswidget-map-legend__title-toggle odsui-bottom" ods-tooltip="Click to fold" translate="ods-tooltip"></i>' +
@@ -75,6 +75,22 @@
             '                           {{ bound.upperBound|number:selectedLayer.properties.floatLength }}' +
             '                       </div>' +
             '                   </div>' +
+            '               </div>' +
+            '               <div class="odswidget-map-legend__choropleth__item" ng-show="selectedLayer.properties.undefinedColor">' +
+            '                   <div class="odswidget-map-legend__choropleth__item-color">' +
+            '                       <div ng-style="{\'background-color\' : selectedLayer.properties.undefinedColor }" ' +
+            '                            class="odswidget-map-legend__choropleth__color-block"></div>' +
+            '                   </div>' +
+            '                   <div class="odswidget-map-legend__choropleth__item-range odswidget-map-legend__choropleth__item-range--center" ' +
+            '                        translate>Undefined {{ selectedLayer.properties.legendLabel }}</div>' +
+            '               </div>' +
+            '               <div class="odswidget-map-legend__choropleth__item">' +
+            '                   <div class="odswidget-map-legend__choropleth__item-color">' +
+            '                       <div ng-style="{\'background-color\' : selectedLayer.properties.outOfBoundsColor }" ' +
+            '                            class="odswidget-map-legend__choropleth__color-block"></div>' +
+            '                   </div>' +
+            '                   <div class="odswidget-map-legend__choropleth__item-range odswidget-map-legend__choropleth__item-range--center" ' +
+            '                        translate>Out of bounds {{ selectedLayer.properties.legendLabel }}</div>' +
             '               </div>' +
             '           </div>' +
             '           <div ng-if="isToggleable(selectedLayer) && !extended">' +
@@ -158,7 +174,7 @@
             link: function (scope, element, attrs, odsMapCtrl) {
                 scope.resizeMapDisplayControl = odsMapCtrl.resizeMapDisplayControl;
             },
-            controller: ['$scope', 'MapHelper', 'shortSummaryFilter', function ($scope, MapHelper, shortSummaryFilter) {
+            controller: ['$scope', 'MapHelper', 'shortTextSummaryFilter', 'MapLayerHelper', function ($scope, MapHelper, shortTextSummaryFilter, MapLayerHelper) {
                 $scope.extended = false;
                 $scope.selectedLayer = null;
                 $scope.selectedIndex = 0;
@@ -174,7 +190,7 @@
                     }
                 };
 
-                $scope.shortSummaryFilter = shortSummaryFilter;
+                $scope.shortTextSummaryFilter = shortTextSummaryFilter;
 
                 $scope.getLayerTitle = function(layer){
                     return layer.config.captionTitle || layer.config.title || layer.config.context.dataset.metas.title;
@@ -299,6 +315,13 @@
                                     });
 
                                     properties.bounds = bounds;
+
+                                    var splitComplementaryColors = MapLayerHelper.getSplitComplementaryColors(layer.color.ranges[rangesUpperBounds[rangesUpperBounds.length -1]]);
+                                    properties.outOfBoundsColor = layer.color.outOfBoundsColor || splitComplementaryColors[0];
+                                    if (!layer.func && !layer.expr) {
+                                        // not for aggregation choropleth
+                                        properties.undefinedColor = layer.color.undefinedColor || splitComplementaryColors[1];
+                                    }
 
                                     if ($scope.resizeMapDisplayControl) {
                                         $scope.resizeMapDisplayControl();

@@ -157,11 +157,10 @@
                     'context="'+(scope.context.name || '')+'"' +
                     '>'+(facet.template || '')+'</ods-facet>';
             });
+            html = html.replace(/{{(.*?)}}/g, "\\{\\{$1\\}\\}");
             var tags = angular.element(html);
-
             element.append(tags);
             $compile(tags)(scope);
-
         };
         return {
             restrict: 'E',
@@ -245,6 +244,8 @@
             },
             controller: ['$scope', 'ODSAPI', function($scope, ODSAPI) {
                 var facetsMapping = {};
+                var dataset_search = ODSAPI.uniqueCall(ODSAPI.records.search),
+                    catalog_search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
 
                 $scope.facets = [];
                 $scope.init = function() {
@@ -295,9 +296,9 @@
 
                     var req;
                     if ($scope.context.type === 'dataset') {
-                        req = ODSAPI.records.search($scope.context, params);
+                        req = dataset_search($scope.context, params);
                     } else {
-                        req = ODSAPI.datasets.search($scope.context, params);
+                        req = catalog_search($scope.context, params);
                     }
 
                     req.success(function(data) {
@@ -402,6 +403,7 @@
         return {
             restrict: 'E',
             replace: true,
+            transclude: true,
             scope: {
                 name: '@',
                 title: '@',
@@ -409,23 +411,24 @@
                 hideIfSingleCategory: '@',
                 hideCategoryIf: '@',
                 sort: '@',
-                disjunctive: '=',
-                timerangeFilter: '=',
+                disjunctive: '=?',
+                timerangeFilter: '=?',
                 valueSearch: '@',
                 valueFormatter: '@',
                 refineAlso: '=?',
-                context: '='
+                context: '=?'
             },
-            template: function(tElement) {
-                tElement.data('facet-template', tElement.html().trim());
-                return '' +
+            template:  '' +
                     '<div ng-class="{\'odswidget\': true, \'odswidget-facet\': true, \'odswidget-facet--disjunctive\': disjunctive}">' +
                     '    <h3 class="odswidget-facet__facet-title" ' +
-                    '        ng-if="(title && categories.length && visible()) || hasTimerangeFilter()  ">' +
+                    '        ng-if="title && ((categories.length && visible()) || displayTimerange())">' +
                     '        {{ title }}' +
                     '    </h3>' +
-                    '    <div class="odswidget-facet__date-range" ng-if="timerangeFilter">' +
-                    '        <ods-timerange context="context" time-field="{{ name }}" display-time="false" suffix="{{ name }}"></ods-timerange>' +
+                    '    <div class="odswidget-facet__date-range" ng-if="displayTimerange()">' +
+                    '        <ods-timerange context="context" ' +
+                    '                       time-field="{{ name }}" ' +
+                    '                       display-time="false" ' +
+                    '                       suffix="{{ name }}"></ods-timerange>' +
                     '    </div>'+
                     '    <ods-facet-category-list ng-if="visible()" ' +
                     '                             facet-name="{{ name }}" ' +
@@ -434,8 +437,7 @@
                     '                             categories="categories" ' +
                     '                             template="{{ customTemplate }}" ' +
                     '                             value-formatter="{{valueFormatter}}"></ods-facet-category-list>' +
-                    '</div>';
-            },
+                    '</div>',
             require: '^odsFacets',
             link: function(scope, element, attrs, facetsCtrl) {
                 if (angular.isUndefined(facetsCtrl)) {
@@ -449,8 +451,23 @@
 
                 scope.context =  scope.context || facetsCtrl.context;
 
+                scope.displayTimerange = function () {
+                    // do not display unless the option is activated
+                    if (!scope.timerangeFilter) {
+                        return false;
+                    }
+
+                    // display if there is a value set through timerange control
+                    if (scope.context.parameters && (scope.context.parameters['q.from_date.' + scope.name] || scope.context.parameters['q.timerange.'+scope.name])) {
+                        return true;
+                    }
+
+                    // display if there are categories
+                    return !!scope.categories.length;
+                }
+
             },
-            controller: ['$scope', '$element', function($scope, $element) {
+            controller: ['$scope', '$element', '$transclude', function($scope, $element, $transclude) {
                 $scope.visibleItemsNumber = $scope.visibleItems || 6;
 
                 this.toggleRefinement = function(path) {
@@ -462,8 +479,13 @@
                 $scope.visible = function() {
                     return !(angular.isString($scope.hideIfSingleCategory) && $scope.hideIfSingleCategory.toLowerCase() === 'true' && $scope.categories.length === 1 && $scope.categories[0].state !== 'refined');
                 };
+                // $$boundTransclude is clearly angular black magic but hopefully it will get us what we want in
+                // any situation: the uncompiled content of the template
+                var customTemplate = $transclude.$$boundTransclude().html();
                 // Is there a custom template into the directive's tag?
-                $scope.customTemplate = $element.data('facet-template');
+                if (customTemplate) {
+                    $scope.customTemplate = customTemplate.trim();
+                }
             }]
         };
     });

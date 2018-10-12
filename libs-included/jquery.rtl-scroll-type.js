@@ -7,11 +7,8 @@
 /*global jQuery */
 (function ($) {
     'use strict';
-    var definer = $('<div dir="rtl" style="font-size: 14px; width: 4px; height: 1px; position: absolute; top: -1000px; overflow: scroll">ABCD</div>'),
+    var definer = $('<div dir="rtl" style="font-size: 14px; width: 4px; height: 1px; position: absolute; top: -1000px; overflow: scroll">ABCD</div>').appendTo('body')[0],
         type = 'reverse';
-
-
-    definer.appendTo('body');
 
     if (definer.scrollLeft > 0) {
         type = 'default';
