@@ -8,20 +8,18 @@ var JS_FILES = [
     'src/services/*.js',
     'src/filters.js',
     'src/functions.js',
-    'src/directives/*.js'
+    'src/directives/*.js',
+    '!libs-included/jquery.rtl-scroll-type.js',
 ];
 
 module.exports = function(grunt) {
 
     // Condition to switch resources files path (js, css) in dev or prod
     var distPath;
-    var assetsPath;
     if (process.env.TRAVIS) {
-        distPath = 'https://static.opendatasoft.com/';
-        assetsPath = 'docs/';
+        distPath = 'dist/';
     } else {
         distPath = '../dist/';
-        assetsPath = '../docs/';
     }
 
     // Project configuration.
@@ -143,12 +141,12 @@ module.exports = function(grunt) {
                     'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.js',
                     'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-animate.js',
                     'https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-sanitize.js',
-                    distPath + 'ods-widgets.js',
-                    '../docs-load-css.js'
+                    'dist/ods-widgets.js',
+                    'docs-load-css.js'
                 ],
                 styles: [
-                    distPath + 'ods-widgets.css',
-                    assetsPath + 'css/ods-theme.min.css',
+                    'dist/ods-widgets.min.css',
+                    'docs/css/ods-theme.min.css',
                     'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
                 ],
                 template: 'src-docs/templates/index.tmpl',
