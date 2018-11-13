@@ -525,6 +525,13 @@
                 if (!picto) {
                     return null;
                 }
+
+                // Prevent some path injection to avoid
+                // the use of unsafe resources like assets and attachments by going upward
+                if (picto.search(/[^\w-]+/) > -1) {
+                    return null;
+                }
+
                 var url = context && context.domainUrl || '';
                 if (picto.startsWith('icon-')) {
                     // Old icon set (v1), from fontawesome 3.2.1

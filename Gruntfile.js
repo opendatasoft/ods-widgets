@@ -126,6 +126,11 @@ module.exports = function(grunt) {
                 src: ['libs/**'],
                 dest: 'dist/'
             },
+            'libs-docs': {
+                expand: true,
+                src: ['libs/**'],
+                dest: 'docs/grunt-scripts/'
+            },
             examples: {
                 expand: true,
                 cwd: 'src-docs/examples/',

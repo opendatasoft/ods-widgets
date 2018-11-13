@@ -11,7 +11,7 @@
             template: ''+
                 '<div class="records-analyze">'+
                 '    <div ng-if="fakeMultiChartContext.datasets" no-controls="noControls" advanced-chart-controls chart-context="chartContext" context="fakeMultiChartContext" urlsynchronize></div>'+
-                '    <div ng-if="fakeMultiChartContext.datasets" ods-highcharts-chart colors="colors" context="fakeMultiChartContext" parameters="chartContext.dataChart"></div>'+
+                '    <div ng-if="fakeMultiChartContext.datasets" ods-highcharts-chart colors="colors" context="fakeMultiChartContext" contexts="[context]" parameters="chartContext.dataChart"></div>'+
                 '</div>',
             scope: {
                 context: '=',

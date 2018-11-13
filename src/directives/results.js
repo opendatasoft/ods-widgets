@@ -36,7 +36,7 @@
          *                      </tr>
          *                  </tbody>
          *              </table>
-         *          </ods-catalog-context>
+         *          </ods-dataset-context>
          *      </file>
          *  </example>
          *
@@ -47,7 +47,7 @@
          *              <p ods-results="items" ods-results-context="tree" ods-results-max="10">
          *                  Total number of trees : {{ tree.nhits }}
          *              </p>
-         *          </ods-catalog-context>
+         *          </ods-dataset-context>
          *      </file>
          *  </example>
          */

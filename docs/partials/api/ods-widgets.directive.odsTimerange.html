@@ -9,7 +9,8 @@
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-timerange
        context="{DatasetContext|DatasetContext[]}"
-       time-field="{string}"
+       [time-field="{string}"]
+       [{context}-time-field="{string}"]
        default-from="{string}"
        default-to="{string}"
        display-time="{string}"
@@ -27,7 +28,8 @@
 </ul>
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext[]</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> or array of context to use</p>
-</div></td></tr><tr><td>timeField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Name of the field (date or datetime) to filter on</p>
+</div></td></tr><tr><td>timeField <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>The value is the name of the field (date or datetime) to filter on.<br><br><em>Use this form if you apply the timerange to only one context.</em></p>
+</div> <p><em>(default: first date/datetime field available)</em></p></td></tr><tr><td>{context}TimeField <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>The value is the name of the field (date or datetime) to filter on.<br><br><em>Use this form when you apply the timerange to multiple contexts. {context} must be replaced by the context name.</em></p>
 </div> <p><em>(default: first date/datetime field available)</em></p></td></tr><tr><td>defaultFrom</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Default datetime for the &quot;from&quot; field: either &quot;yesterday&quot;, &quot;now&quot; or a string representing a date</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>defaultTo</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Default datetime for the &quot;to&quot; field: either &quot;yesterday&quot;, &quot;now&quot; or a string representing a date</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>displayTime</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Define if the date selector displays the time selector as well</p>

@@ -15,7 +15,11 @@
             url += path;
             params = ODS.URLUtils.cleanupAPIParams(params) || {};
 
-            params.timezone = jstz.determine().name();
+            if (context && context.dataset && context.dataset.metas && context.dataset.metas.timezone) {
+                params.timezone = context.dataset.metas.timezone;
+            } else if (!params.timezone) {
+                params.timezone = jstz.determine().name();
+            }
             if (context && context.apikey) {
                 params.apikey = context.apikey;
             }

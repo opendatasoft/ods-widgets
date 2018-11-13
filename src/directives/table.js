@@ -87,6 +87,10 @@
                        '         </tbody>' +
                        '     </table>' +
                        ' </div>' +
+                       '<div ng-if="forcedTimezone" class="table-timezone-caption">' +
+                       '    <i class="fa fa-info" aria-hidden="true"></i>' +
+                       '    All dates and times are in {{ forcedTimezone }} time.' +
+                       '</div>' +
                        ' <div ng-if="displayDatasetFeedback" class="table-feedback-new"><a ods-dataset-feedback ods-dataset-feedback-dataset="context.dataset"><i class="fa fa-comment" aria-hidden="true"></i> <span translate>Suggest a new record</span></a></div>' +
                        ' <div class="odswidget-overlay" ng-hide="fetching || records"><span class="odswidget-overlay__message" translate>No results</span></div>' +
                        ' <div class="odswidget-overlay" ng-hide="(!fetching || records) && !working"><ods-spinner></ods-spinner></div>' +
@@ -95,6 +99,7 @@
                 $scope.displayedFieldsArray = null;
 
                 $scope.displayDatasetFeedback = false;
+                $scope.forcedTimezone = null;
                 // Infinite scroll parameters
                 $scope.page = 0;
                 $scope.resultsPerPage = 40;
@@ -558,6 +563,7 @@
                     }
 
                     $scope.displayDatasetFeedback = $scope.datasetFeedback === 'true' && $scope.context.dataset.getExtraMeta('explore', 'feedback_enabled');
+                    $scope.forcedTimezone = $scope.context.dataset.metas.timezone || null;
 
                     $scope.staticSearchOptions = {
                         rows: $scope.resultsPerPage
@@ -677,9 +683,9 @@
                         } else {
                             elementHeight = $element.height();
                         }
-                        var bodyOffset = 0;
+                        var bodyOffset = $element.find('.table-timezone-caption').height() + 5;
                         if ($scope.displayDatasetFeedback) {
-                            bodyOffset = $element.find('.table-feedback-new').height() + 5;
+                            bodyOffset += $element.find('.table-feedback-new').height() + 5;
                         }
                         var headerHeight = $element.find('.odswidget-table__header').height() || $element.find('.odswidget-table__internal-table-header').height();
                         recordsArea.height(elementHeight - headerHeight - bodyOffset); // Horizontal scrollbar height

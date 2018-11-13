@@ -290,6 +290,10 @@
             '    <ods-map-search-box ng-if="searchBox"></ods-map-search-box>' +
             '    <ods-map-legend ng-if="displayLegend && allContextsInitialized" map-config="mapConfig"></ods-map-legend>' +
             '    <div ng-transclude></div>' + // Can't find any better solution...
+            '    <div ng-if="forcedTimezone" class="map-timezone-caption">' +
+            '       <i class="fa fa-info" aria-hidden="true"></i>' +
+            '       All dates and times are in {{ forcedTimezone }} time.' +
+            '    </div>' +
             '</div>',
             link: function(scope, element, attrs, ctrl) {
                 var mapElement = angular.element(element.children()[0]);
@@ -306,6 +310,7 @@
                 var toolbarGeolocation,
                     toolbarFullscreen,
                     autoGeolocation;
+                scope.forcedTimezone = null;
 
                 if (angular.isUndefined(scope.toolbarGeolocation)) {
                     if (angular.isDefined(scope.mapConfig.toolbarGeolocation)) {
@@ -358,6 +363,9 @@
 
                     scope.context.wait().then(function (nv) {
                         if (nv) {
+                            if (scope.context.dataset.metas.timezone) {
+                                scope.forcedTimezone = scope.context.dataset.metas.timezone;
+                            }
                             if (scope.context.dataset.extra_metas && scope.context.dataset.extra_metas.visualization) {
                                 layer.tooltipDisabled = Boolean(scope.context.dataset.extra_metas.visualization.map_tooltip_disabled);
                             }

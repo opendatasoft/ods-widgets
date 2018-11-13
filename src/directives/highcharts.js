@@ -7,6 +7,11 @@
         return ['COUNT', 'CONSTANT'].indexOf(func) === -1;
     };
 
+    function shouldOutputUTC(queries, timeSerieMode) {
+        return (queries.length === 1 && ['hour', 'minute', 'second'].indexOf(queries[0].timescale) !== -1)
+            || ['hour', 'minute', 'second'].indexOf(timeSerieMode) !== -1;
+    }
+
     mod.factory("requestData", ['ODSAPI', '$q', 'ChartHelper', 'AggregationHelper', function(ODSAPI, $q, ChartHelper, AggregationHelper) {
         var buildTimescaleX = ODS.DateFieldUtils.getTimescaleX;
 
@@ -162,11 +167,8 @@
             var charts_by_query = [];
             var original_domain = domain;
             search_parameters = search_parameters || {};
-            if (queries.length === 1) {
-                if (['hour', 'minute', 'second'].indexOf(queries[0].timescale) !== -1) {
-                    search_parameters.output_timezone = 'UTC';
-                }
-            } else if (['hour', 'minute', 'second'].indexOf(timeSerieMode) !== -1) {
+
+            if (shouldOutputUTC(queries, timeSerieMode)) {
                 search_parameters.output_timezone = 'UTC';
             }
 
@@ -188,10 +190,19 @@
                 var virtualContext = {
                     domain: domain,
                     domainUrl: ODSAPI.getDomainURL(domain),
-                    dataset: {'datasetid': search_options.dataset},
+                    dataset: {
+                        'datasetid': search_options.dataset,
+                        'metas': {
+                            timezone: (query.config && query.config.options && query.config.options.timezone) || null
+                        }
+                    },
                     apikey: apikey,
                     parameters: {}
                 };
+
+                var query_options = angular.extend({}, query.config.options);
+                delete query_options.output_timezone;
+                delete query_options.sort;
 
                 var has_y = false;
 
@@ -202,7 +213,7 @@
                 });
 
                 if (has_y) {
-                    search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, search_parameters, query.config.options, search_options), canceller.promise));
+                    search_promises.push(ODSAPI.records.analyze(virtualContext, angular.extend({}, search_parameters, query_options, search_options), canceller.promise));
                     charts_by_query.push(charts);
                 }
             });
@@ -294,6 +305,27 @@
                 'periodic': periodic,
                 'timeSerieMode': timeSerieMode
             };
+        };
+
+        var shouldUseUtc = function(parameters){
+            var timeserie = getTimeSerieMode(parameters);
+
+            var precision = timeserie.precision;
+            var periodic = timeserie.periodic;
+
+            var useUTC = false;
+
+            if (precision) {
+                if (periodic && precision === "hour") {
+                    useUTC = true;
+                } else if (!periodic) {
+                    if (['year', 'month', 'day'].indexOf(precision) !== -1) {
+                        useUTC = true;
+                    }
+                }
+            }
+
+            return useUTC;
         };
 
         var getGlobalOptions = function(parameters, precision, periodic, chartplaceholder, domain) {
@@ -745,7 +777,6 @@
             }
 
             options.tooltip.pointFormatter = getTooltipFormatterFunction(serie.type);
-
             if (serie.refineOnClickCtrl) {
                 options.point = {
                     events: {
@@ -760,7 +791,7 @@
                                 'minute': 'YYYY/MM/DD HH:mm'
                             };
                             if (query.timescale && formats[query.timescale]) {
-                                value = Highcharts.getOptions().global.useUTC ? moment.utc(value) : moment(value);
+                                value = shouldUseUtc(parameters) ? moment.utc(value) : moment(value);
                                 value = value.format(formats[query.timescale]);
                             }
                             // refine context
@@ -952,6 +983,17 @@
             '    </div>' +
             '    <div class="chartplaceholder"></div>' +
             '    <debug data="chartoptions"></debug>' +
+            '    <ul ng-if="tzsForcedLength > 0" class="chart-timezone-caption">' +
+            '       <li ng-repeat="(datasetId, tz) in tzsForced">' +
+            '           <i class="fa fa-info" aria-hidden="true">{{t}}</i>' +
+            '           <span translate ng-if="hasDatasetWithoutTz || tzsForcedLength > 1">' +
+            '               All dates and times for dataset {{datasetId}} are in {{tz}} time.' +
+            '           </span>' +
+            '           <span translate ng-if="!hasDatasetWithoutTz && tzsForcedLength === 1">' +
+            '               All dates and times are in {{tz}} time.' +
+            '           </span>' +
+            '       </li>' +
+            '    </ul>' +
             '</div>',
             controller: ['$scope', '$element', '$attrs', function($scope) {
                 var timeSerieMode, precision, periodic, yAxisesIndexes, domain,
@@ -1048,27 +1090,34 @@
                         precision = timeserie.precision;
                         periodic = timeserie.periodic;
 
-                        if (precision) {
-                            var useUTC = false;
-                            if (periodic && precision === "hour") {
-                                useUTC = true;
-                            } else if (!periodic) {
-                                if (['year', 'month', 'day'].indexOf(precision) !== -1) {
-                                    useUTC = true;
-                                }
-                            }
-
-                            Highcharts.setOptions({
-                                global: {'useUTC': useUTC}
-                            });
-                        }
-
                         var options = getGlobalOptions(parameters, precision, periodic, chartplaceholder, domain);
                         $scope.chartoptions = options;
+                        $scope.tzsForced = {};
+                        $scope.hasDatasetWithoutTz = false;
                         angular.forEach(parameters.queries, function(query) {
                             var datasetid = ChartHelper.getDatasetId({dataset: {datasetid: query.config.dataset}, domain: query.config.domain});
                             if (angular.isUndefined(yAxisesIndexes[datasetid])) {
                                 yAxisesIndexes[datasetid] = {};
+                            }
+
+                            // Map queries with contexts for to get timezone from metas
+                            // We dont have the context name, only the dataset id, but it should be safe
+                            // since timezone is not context dependent
+                            if ($scope.contexts) {
+                                var ctxsWithTz = $scope.contexts.filter(function (ctx) {
+                                    return ctx.dataset.datasetid === query.config.dataset && ctx.dataset.metas && ctx.dataset.metas.timezone
+                                });
+                                if (ctxsWithTz.length > 0) {
+                                    if (!query.config.options) {
+                                        query.options = {};
+                                    }
+                                    query.config.options.timezone = ctxsWithTz[0].dataset.metas.timezone;
+                                    if (!$scope.tzsForced[query.config.dataset]) {
+                                        $scope.tzsForced[query.config.dataset] = query.config.options.timezone
+                                    }
+                                } else {
+                                    $scope.hasDatasetWithoutTz = true;
+                                }
                             }
 
                             angular.forEach(query.charts, function(chart) {
@@ -1101,6 +1150,7 @@
                             });
 
                         });
+                        $scope.tzsForcedLength = Object.keys($scope.tzsForced).length;
 
 
                         function pushValues(serie, categoryIndex, scale, valueX, valueY, colorForCategory, thresholds) {
@@ -1531,12 +1581,24 @@
                                     }
                                 }
                             }
+
+                            // Check if UTC should be used
+
+                            options.time = options.time || {};
+                            options.time.useUTC = shouldUseUtc(parameters);
+
+
                             // render the charts
                             if ($scope.chart && options.chart.renderTo) {
                                 $scope.chart.destroy();
                                 chartplaceholder = $element.find('.chartplaceholder');
                             }
                             options.chart.renderTo = chartplaceholder[0];
+                            if (shouldOutputUTC(parameters.queries, timeSerieMode) && $scope.tzsForcedLength === 1) {
+                                options.time = options.time || {};
+                                options.time.useUTC = true;
+                                options.time.timezone = $scope.tzsForced[Object.keys($scope.tzsForced)[0]];
+                            }
                             try {
                                 if (options.series.length > 500) {
                                     odsNotificationService.sendNotification(translate("There are too many series to be displayed correctly, try to refine your query a bit."));
@@ -1628,7 +1690,7 @@
                 maxpoints: '@'
             },
             replace: true,
-            template: '<div class="odswidget odswidget-highcharts"><div ods-highcharts-chart parameters="chart" domain="context.domain" apikey="context.apikey"></div></div>',
+            template: '<div class="odswidget odswidget-highcharts"><div ods-highcharts-chart parameters="chart" domain="context.domain" contexts="[context]" apikey="context.apikey"></div></div>',
             controller: ['$scope', 'ODSWidgetsConfig', 'ChartHelper', function($scope, ODSWidgetsConfig, ChartHelper) {
 
                 var colors = ODSWidgetsConfig.chartColors || defaultColors;

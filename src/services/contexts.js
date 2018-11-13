@@ -34,8 +34,18 @@
                         var deferred = $q.defer();
                         var apiParams = angular.extend({}, this.parameters, {'rows': 0, 'facet': fieldName});
                         ODSAPI.records.search(this, apiParams).success(function(data) {
+                            /* All the values returned by the APIs should be displayed in the palette, except in a situation where:
+                                - the facet is disjunctive
+                                - there is a refinement on that facet
+                               In that situation, the API will return the other "possible" values that are not included in the result set.
+                               If that happens, only the values with the state "refined" should be kept. */
+                            var isFacetDisjunctive = data.parameters.disjunctive && data.parameters.disjunctive[fieldName];
+                            var isFacetRefined = data.parameters.refine && angular.isDefined(data.parameters.refine[fieldName]);
                             var values = data.facet_groups[0]
                                                 .facets
+                                                .filter(function (category) {
+                                                    return !isFacetDisjunctive || !isFacetRefined || category.state === "refined";
+                                                })
                                                 .map(function (category) {
                                                     return category.name;
                                                 });

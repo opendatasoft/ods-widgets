@@ -560,7 +560,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays two fields to select the two bounds of a date and time range.",
-      "keywords": "add api array bounds cibul cibul-dataset cibul-domain context dataset datetime default default-from default-to define directive displayed displays evenements-publics-cibul field fieldname fields filter format formatted from_date hh html input inputs iso label module ods-widgets opendatasoft overriding parameter prevents public range representing second select selector set string suffix time timerange to_date variable widget widgets yesterday yyyy-mm-dd",
+      "keywords": "add api apply array bounds cibul cibul-dataset cibul-domain context contexts dataset datetime default default-from default-to define directive displayed displays evenements-publics-cibul field fieldname fields filter form format formatted from_date hh html input inputs iso label module multiple ods-widgets opendatasoft overriding parameter prevents public range replaced representing second select selector set string suffix time timerange to_date variable widget widgets yesterday yyyy-mm-dd",
       "isDeprecated": false
     },
     {

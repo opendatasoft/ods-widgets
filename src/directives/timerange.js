@@ -9,7 +9,8 @@
          * @restrict E
          * @scope
          * @param {DatasetContext|DatasetContext[]} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} or array of context to use
-         * @param {string} [timeField=first date/datetime field available] Name of the field (date or datetime) to filter on
+         * @param {string=} [timeField=first date/datetime field available] The value is the name of the field (date or datetime) to filter on.<br><br><em>Use this form if you apply the timerange to only one context.</em>
+         * @param {string=} [{context}TimeField=first date/datetime field available] The value is the name of the field (date or datetime) to filter on.<br><br><em>Use this form when you apply the timerange to multiple contexts. {context} must be replaced by the context name.</em>
          * @param {string} [defaultFrom=none] Default datetime for the "from" field: either "yesterday", "now" or a string representing a date
          * @param {string} [defaultTo=none] Default datetime for the "to" field: either "yesterday", "now" or a string representing a date
          * @param {string} [displayTime=true] Define if the date selector displays the time selector as well

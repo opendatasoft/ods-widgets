@@ -301,7 +301,11 @@
                 if (value.length === 19) {
                     // Fix for legacy timestamps that don't have a timezone
                     value += 'Z';
+                } else {
+                    // Remove timezone specification
+                    value = value.substring(0, 19)
                 }
+
                 return $filter('moment')(value, 'LLL');
             } else if (field.type === 'file') { // it's 'file' type really
                 if (angular.isObject(value)) {

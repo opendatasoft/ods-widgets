@@ -305,6 +305,12 @@ html[dir=rtl] .odswidget-calendar__tooltip.odswidget-calendar__tooltip--increase
   width: 100%;
   height: 100%;
 }
+.ods-chart .chart-timezone-caption {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 0.85em;
+  padding: 0;
+  list-style: none;
+}
 .ods-chart__loading {
   width: 100%;
   position: absolute;
@@ -1110,6 +1116,11 @@ html[dir=rtl] .odswidget-last-datasets-feed__theme-picto {
   .odswidget-map__map--with-display-control .leaflet-top.leaflet-right.collapsed {
     right: 40px;
   }
+}
+.odswidget-map .map-timezone-caption {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 0.85em;
+  padding-top: 0.5em;
 }
 .odswidget-map-display-control {
   position: absolute;
@@ -2509,6 +2520,11 @@ html[dir=rtl] .odswidget-table__header-cell--spinner {
 .odswidget-table__sort-icons__up:hover,
 .odswidget-table__sort-icons__down:hover {
   opacity: 1;
+}
+.odswidget-table .table-timezone-caption {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 0.85em;
+  padding-top: 0.5em;
 }
 .odswidget-tag-cloud__tag-list {
   display: block;
