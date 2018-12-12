@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.service('odsHttpErrorMessages', function(translate) {
+    mod.service('odsHttpErrorMessages', ['translate',  function(translate) {
         this.getForStatus = function(httpStatus) {
             switch (httpStatus) {
             case 400:
@@ -30,5 +30,5 @@
                     'administrator.');
             }
         };
-    });
+    }]);
 })();

@@ -323,6 +323,13 @@ html[dir=rtl] .odswidget-calendar__tooltip.odswidget-calendar__tooltip--increase
 .highcharts-reset-zoom {
   direction: ltr;
 }
+.highcharts-tooltip-container {
+  display: block;
+  background-color: #fff;
+  padding: 9px;
+  margin-left: 1px;
+  margin-top: 1px;
+}
 .odswidget-dataset-card,
 .odswidget-multidatasets-card {
   padding: 0;

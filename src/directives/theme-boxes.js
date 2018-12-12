@@ -9,7 +9,6 @@
          * @scope
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to pull the theme list from.
-         * @param {string} facetName Name of the facet to enumerate
          * @description
          * This widget enumerates the themes available on the domain, by showing their pictos and the number of datasets they contain.
          * They require the `themes` setting to be configured in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig}.

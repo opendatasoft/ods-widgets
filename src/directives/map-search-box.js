@@ -270,8 +270,14 @@
 
                     // First, sort the contexts by title
                     var sortedContexts = contexts.slice(0);
-                    $scope.dataSearchResults = sortedContexts.map(function(c) { return {'context': c}; }).sort(function(a, b) { return a.context.dataset.metas.title > b.context.dataset.metas.title; });
-
+                    $scope.dataSearchResults = sortedContexts
+                        .map(function(c) {
+                            return {'context': c};
+                        }).sort(function(a, b) {
+                            var aTitle = a.context.dataset.metas.title,
+                                bTitle = b.context.dataset.metas.title;
+                            return aTitle > bTitle ? 1 : aTitle < bTitle ? -1 : 0;
+                        });
                     var searches = [];
                     if (angular.isArray(searchesTimeouts)) {
                         searchesTimeouts.forEach(function(timeout) { timeout.resolve(); });

@@ -113,19 +113,24 @@ L.ODSTileLayer = L.TileLayer.extend({
             };
             L.TileLayer.prototype.initialize.call(this, stamenUrl, layerOptions);
         } else if (basemap.provider.startsWith('jawg.') || basemap.provider === 'mapquest') {
+            var jawgMaps = {
+                'streets': '71ba5a33-9529-48cb-8dbe-b6b9c33a3391',
+                'light': '35c38ea4-f4e0-4af5-8fc8-a11a04285356',
+                'dark': 'aa1f80a0-bc95-461d-867a-cb50a814a2d2',
+                'sunny': 'd4246bc4-e98a-4976-b621-681f3f3f4230',
+                'matrix': '26e378b1-bfeb-48b2-8b32-69f484522bb8',
+                'transports': 'jawg-transports'
+            }
             var jawgUrl = 'https://tiles.jawg.io/';
             var jawgMap;
 
             if (basemap.provider !== 'mapquest') {
-                jawgMap = basemap.provider.substring(5);
+                jawgMap = jawgMaps[basemap.provider.substring(5)];
             } else {
-                jawgMap = 'streets';
+                jawgMap = jawgMaps.streets;
             }
 
-            if (jawgMap !== 'streets') {
-                // The streets layer is at the root
-                jawgUrl += 'jawg-' + jawgMap + '/';
-            }
+            jawgUrl += jawgMap + '/';
 
             jawgUrl += '{z}/{x}/{y}';
             //if (L.Browser.retina) {

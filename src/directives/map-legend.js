@@ -52,7 +52,7 @@
             '                       <div class="odswidget-map-legend__categories__item-color">' +
             '                           <div ng-style="{\'background-color\' :selectedLayer.config.color.otherCategories}" class="odswidget-map-legend__categories__color-block"></div>' +
             '                       </div>' +
-            '                       <div class="odswidget-map-legend__categories__item-value--others">Others</div>' +
+            '                       <div class="odswidget-map-legend__categories__item-value--others" translate>Others</div>' +
             '                   </div>' +
             '               </div>' +
             '           </div>' +

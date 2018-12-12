@@ -571,11 +571,6 @@
          */
         var suspended = false;
         var syncers = [];
-        // setLocationSearchTimeout and lastSearchUpdated are used to detect multiple location search changes
-        // in a very short time and try to maintain a correct browser back behaviour
-        // We wrap the $location.search calls in a $timeout and we only retain the last one, which safely prevent
-        // multiple changes in a same JS cycle
-        var setLocationSearchTimeout = null;
         // We assume that if there is less than 300ms between two changes (or the service init), the second one use
         // $location.replace instead of $location.search
         var lastSearchUpdated = new Date();
@@ -614,20 +609,12 @@
                 angular.isString(search) ? $location.search(search, paramValue) : $location.search(search);
                 return ;
             }
-            // Only retain the last location change in the same JS cycle
-            if (setLocationSearchTimeout) {
-                $timeout.cancel(setLocationSearchTimeout);
-                setLocationSearchTimeout = null;
-
+            // If there is less than 300ms between two location changes, use replace
+            if (new Date().getTime() - lastSearchUpdated.getTime() < 300) {
+                $location.replace();
             }
-            setLocationSearchTimeout = $timeout(function() {
-                // If there is less than 300ms between two location changes, use replace
-                if (new Date().getTime() - lastSearchUpdated.getTime() < 300) {
-                    $location.replace();
-                }
-                angular.isString(search) ? $location.search(search, paramValue) : $location.search(search);
-                lastSearchUpdated = new Date();
-            });
+            angular.isString(search) ? $location.search(search, paramValue) : $location.search(search);
+            lastSearchUpdated = new Date();
         }
 
         return {
@@ -765,16 +752,9 @@
 
                 syncers.push(syncToURL);
 
-
-                var unwatchLocation;
-
-                // wait for the application to be loaded before activating the watch on parameters
-                // otherwise we will sync back the parameters before they are actually applied to the url
-                $timeout(function() {
-                    unwatchLocation = scope.$watch(function () {
-                        return $location.search();
-                    }, syncFromURL, true);
-                }, 300);
+                var unwatchLocation = scope.$watch(function () {
+                    return $location.search();
+                }, syncFromURL, true);
 
                 return function unwatch() {
                     unwatchObject();

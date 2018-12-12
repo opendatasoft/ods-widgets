@@ -10240,7 +10240,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.service('odsHttpErrorMessages', function(translate) {
+    mod.service('odsHttpErrorMessages', ['translate',  function(translate) {
         this.getForStatus = function(httpStatus) {
             switch (httpStatus) {
             case 400:
@@ -10267,7 +10267,7 @@ mod.directive('infiniteScroll', [
                     'administrator.');
             }
         };
-    });
+    }]);
 })();
 ;(function() {
     "use strict";
@@ -10746,9 +10746,6 @@ mod.directive('infiniteScroll', [
                         value = record && record.fields && record.fields[layerConfig.color.field];
                     }
 
-                    // limit the number of decimals of the value so that it matches the rangesUpperBounds values
-                    value = ODS.NumberUtils.limitDecimals(value, 5);
-
                     // undefined values
                     if (angular.isUndefined(value)) {
                         return layerConfig.color.undefinedColor || splitComplementaryColors[1];
@@ -10759,6 +10756,9 @@ mod.directive('infiniteScroll', [
                         return layerConfig.color.undefinedColor || splitComplementaryColors[1];
                     }
 
+
+                    // limit the number of decimals of the value so that it matches the rangesUpperBounds values
+                    value = ODS.NumberUtils.limitDecimals(value, 5);
 
                     // out of bounds values
                     if (value < layerConfig.color.minValue || value > rangesUpperBounds[rangesUpperBounds.length - 1]) {
@@ -13072,11 +13072,6 @@ mod.directive('infiniteScroll', [
          */
         var suspended = false;
         var syncers = [];
-        // setLocationSearchTimeout and lastSearchUpdated are used to detect multiple location search changes
-        // in a very short time and try to maintain a correct browser back behaviour
-        // We wrap the $location.search calls in a $timeout and we only retain the last one, which safely prevent
-        // multiple changes in a same JS cycle
-        var setLocationSearchTimeout = null;
         // We assume that if there is less than 300ms between two changes (or the service init), the second one use
         // $location.replace instead of $location.search
         var lastSearchUpdated = new Date();
@@ -13115,20 +13110,12 @@ mod.directive('infiniteScroll', [
                 angular.isString(search) ? $location.search(search, paramValue) : $location.search(search);
                 return ;
             }
-            // Only retain the last location change in the same JS cycle
-            if (setLocationSearchTimeout) {
-                $timeout.cancel(setLocationSearchTimeout);
-                setLocationSearchTimeout = null;
-
+            // If there is less than 300ms between two location changes, use replace
+            if (new Date().getTime() - lastSearchUpdated.getTime() < 300) {
+                $location.replace();
             }
-            setLocationSearchTimeout = $timeout(function() {
-                // If there is less than 300ms between two location changes, use replace
-                if (new Date().getTime() - lastSearchUpdated.getTime() < 300) {
-                    $location.replace();
-                }
-                angular.isString(search) ? $location.search(search, paramValue) : $location.search(search);
-                lastSearchUpdated = new Date();
-            });
+            angular.isString(search) ? $location.search(search, paramValue) : $location.search(search);
+            lastSearchUpdated = new Date();
         }
 
         return {
@@ -13266,16 +13253,9 @@ mod.directive('infiniteScroll', [
 
                 syncers.push(syncToURL);
 
-
-                var unwatchLocation;
-
-                // wait for the application to be loaded before activating the watch on parameters
-                // otherwise we will sync back the parameters before they are actually applied to the url
-                $timeout(function() {
-                    unwatchLocation = scope.$watch(function () {
-                        return $location.search();
-                    }, syncFromURL, true);
-                }, 300);
+                var unwatchLocation = scope.$watch(function () {
+                    return $location.search();
+                }, syncFromURL, true);
 
                 return function unwatch() {
                     unwatchObject();
@@ -13543,7 +13523,7 @@ mod.directive('infiniteScroll', [
         };
     });
 
-    mod.filter('displayImageValue', function($sce) {
+    mod.filter('displayImageValue', ['$sce', function($sce) {
         return function(value, datasetid) {
             if (!value) {
                 return value;
@@ -13552,7 +13532,7 @@ mod.directive('infiniteScroll', [
 
             return $sce.trustAsHtml('<img class="odswidget odswidget-imagified" src="' + url + '" />');
         };
-    });
+    }]);
 
     mod.filter('fieldsForVisualization', function() {
         var blacklist = {
@@ -13690,7 +13670,11 @@ mod.directive('infiniteScroll', [
          * @return {string} The input string, capitalized (ie with its first character in capital letter)
          */
         return function(input) {
-            return ODS.StringUtils.capitalize(input);
+            if (angular.isString(input)) {
+                return ODS.StringUtils.capitalize(input);
+            } else {
+                return input;
+            }
         };
     }]);
 
@@ -20103,7 +20087,8 @@ mod.directive('infiniteScroll', [
                 yAxis: [],
                 plotOptions: {
                     series: {
-                        animation: false
+                        animation: false,
+                        turboThreshold: 10000,
                     },
                     columnrange: {
                         pointPadding: 0,
@@ -20174,6 +20159,7 @@ mod.directive('infiniteScroll', [
                 },
                 tooltip: {
                     useHTML: true,
+                    padding: 0,
                     valueDecimals: 2,
                     headerFormat: '{point.key}<br>',
                     pointFormat: serieTitle + ' <b style="display: inline-block">{point.y}</b>',
@@ -20199,6 +20185,10 @@ mod.directive('infiniteScroll', [
                             s.unshift('<div style="text-align:right">');
                             s.push('</div>');
                         }
+
+                        // Add css to prevent https://github.com/highcharts/highcharts/issues/2528#issuecomment-283177513
+                        s.unshift('<div class="highcharts-tooltip-container">');
+                        s.push('</div>');
 
                         return s.join('');
                     }
@@ -20849,8 +20839,8 @@ mod.directive('infiniteScroll', [
                                             chart.thresholds.splice(i, 1);
                                         }
                                     }
-                                    chart.thresholds = chart.thresholds.sort(function(a, b) {
-                                        return a.value > b.value;
+                                    chart.thresholds.sort(function(a, b) {
+                                        return a.value - b.value;
                                     });
                                 }
                             });
@@ -20892,6 +20882,9 @@ mod.directive('infiniteScroll', [
                                             name: "" + valueX,
                                             y: valueY
                                         });
+                                        if (colorForCategory) {
+                                            serie.data[serie.data.length - 1].color = colorForCategory;
+                                        }
                                     }
                                 } else if (serie.type == 'treemap') {
                                     if (options.xAxis.type === 'datetime') {
@@ -20904,6 +20897,9 @@ mod.directive('infiniteScroll', [
                                             name: "" + valueX,
                                             y: valueY
                                         });
+                                        if (colorForCategory) {
+                                            serie.data[serie.data.length - 1].color = colorForCategory;
+                                        }
                                     }
                                 } else {
                                     if (scale === 'logarithmic' && valueY <= 0) {
@@ -23568,7 +23564,7 @@ mod.directive('infiniteScroll', [
             '                       <div class="odswidget-map-legend__categories__item-color">' +
             '                           <div ng-style="{\'background-color\' :selectedLayer.config.color.otherCategories}" class="odswidget-map-legend__categories__color-block"></div>' +
             '                       </div>' +
-            '                       <div class="odswidget-map-legend__categories__item-value--others">Others</div>' +
+            '                       <div class="odswidget-map-legend__categories__item-value--others" translate>Others</div>' +
             '                   </div>' +
             '               </div>' +
             '           </div>' +
@@ -24176,8 +24172,14 @@ mod.directive('infiniteScroll', [
 
                     // First, sort the contexts by title
                     var sortedContexts = contexts.slice(0);
-                    $scope.dataSearchResults = sortedContexts.map(function(c) { return {'context': c}; }).sort(function(a, b) { return a.context.dataset.metas.title > b.context.dataset.metas.title; });
-
+                    $scope.dataSearchResults = sortedContexts
+                        .map(function(c) {
+                            return {'context': c};
+                        }).sort(function(a, b) {
+                            var aTitle = a.context.dataset.metas.title,
+                                bTitle = b.context.dataset.metas.title;
+                            return aTitle > bTitle ? 1 : aTitle < bTitle ? -1 : 0;
+                        });
                     var searches = [];
                     if (angular.isArray(searchesTimeouts)) {
                         searchesTimeouts.forEach(function(timeout) { timeout.resolve(); });
@@ -27901,6 +27903,7 @@ mod.directive('infiniteScroll', [
          * @scope
          * @restrict E
          * @param {string} placeholder the text to display as a placeholder when the searchbox is empty
+         * @param {string} sort the default sort for the results
          * @param {CatalogContext} [context=none] {@link ods-widgets.directive:odsCatalogContext Catalog Context} indicating the domain to redirect the user to show the search results.
          * If none, the search is done on the local domain (/explore/ of the current domain the user is).
          * @param {string} [autofocus] Add the autofocus attribute (no need for a value) to set the focus in the text search input
@@ -27916,10 +27919,12 @@ mod.directive('infiniteScroll', [
             '<div class="odswidget odswidget-searchbox">' +
                 '<form method="GET" action="{{ actionUrl }}" ng-show="actionUrl">' +
                     '<input class="odswidget-searchbox__box" name="q" type="text" placeholder="{{placeholder|translate}}">' +
+                    '<input ng-if="sort" name="sort" value="{{ sort }}" type="hidden">' +
                 '</form>' +
             '</div>',
             scope: {
                 placeholder: '@',
+                sort: '@',
                 context: '='
             },
             link: function (scope, element, attrs) {
@@ -27940,7 +27945,8 @@ mod.directive('infiniteScroll', [
         };
     });
 
-}());;(function () {
+}());
+;(function () {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -29674,7 +29680,6 @@ mod.directive('infiniteScroll', [
          * @scope
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to pull the theme list from.
-         * @param {string} facetName Name of the facet to enumerate
          * @description
          * This widget enumerates the themes available on the domain, by showing their pictos and the number of datasets they contain.
          * They require the `themes` setting to be configured in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig}.
@@ -29699,7 +29704,8 @@ mod.directive('infiniteScroll', [
         };
     });
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
     var mod = angular.module('ods-widgets');
 

@@ -58,9 +58,6 @@
                         value = record && record.fields && record.fields[layerConfig.color.field];
                     }
 
-                    // limit the number of decimals of the value so that it matches the rangesUpperBounds values
-                    value = ODS.NumberUtils.limitDecimals(value, 5);
-
                     // undefined values
                     if (angular.isUndefined(value)) {
                         return layerConfig.color.undefinedColor || splitComplementaryColors[1];
@@ -71,6 +68,9 @@
                         return layerConfig.color.undefinedColor || splitComplementaryColors[1];
                     }
 
+
+                    // limit the number of decimals of the value so that it matches the rangesUpperBounds values
+                    value = ODS.NumberUtils.limitDecimals(value, 5);
 
                     // out of bounds values
                     if (value < layerConfig.color.minValue || value > rangesUpperBounds[rangesUpperBounds.length - 1]) {

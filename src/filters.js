@@ -208,7 +208,7 @@
         };
     });
 
-    mod.filter('displayImageValue', function($sce) {
+    mod.filter('displayImageValue', ['$sce', function($sce) {
         return function(value, datasetid) {
             if (!value) {
                 return value;
@@ -217,7 +217,7 @@
 
             return $sce.trustAsHtml('<img class="odswidget odswidget-imagified" src="' + url + '" />');
         };
-    });
+    }]);
 
     mod.filter('fieldsForVisualization', function() {
         var blacklist = {
@@ -355,7 +355,11 @@
          * @return {string} The input string, capitalized (ie with its first character in capital letter)
          */
         return function(input) {
-            return ODS.StringUtils.capitalize(input);
+            if (angular.isString(input)) {
+                return ODS.StringUtils.capitalize(input);
+            } else {
+                return input;
+            }
         };
     }]);
 

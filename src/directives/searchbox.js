@@ -9,6 +9,7 @@
          * @scope
          * @restrict E
          * @param {string} placeholder the text to display as a placeholder when the searchbox is empty
+         * @param {string} sort the default sort for the results
          * @param {CatalogContext} [context=none] {@link ods-widgets.directive:odsCatalogContext Catalog Context} indicating the domain to redirect the user to show the search results.
          * If none, the search is done on the local domain (/explore/ of the current domain the user is).
          * @param {string} [autofocus] Add the autofocus attribute (no need for a value) to set the focus in the text search input
@@ -24,10 +25,12 @@
             '<div class="odswidget odswidget-searchbox">' +
                 '<form method="GET" action="{{ actionUrl }}" ng-show="actionUrl">' +
                     '<input class="odswidget-searchbox__box" name="q" type="text" placeholder="{{placeholder|translate}}">' +
+                    '<input ng-if="sort" name="sort" value="{{ sort }}" type="hidden">' +
                 '</form>' +
             '</div>',
             scope: {
                 placeholder: '@',
+                sort: '@',
                 context: '='
             },
             link: function (scope, element, attrs) {

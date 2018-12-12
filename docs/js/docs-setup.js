@@ -460,7 +460,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.",
-      "keywords": "add api attribute autofocus catalog context current directive display displays domain empty explore focus homepage indicating input local ods-widgets placeholder redirect redirects search searchbox set text user wide widget",
+      "keywords": "add api attribute autofocus catalog context current default directive display displays domain empty explore focus homepage indicating input local ods-widgets placeholder redirect redirects search searchbox set sort text user wide widget",
       "isDeprecated": false
     },
     {
@@ -540,7 +540,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget enumerates the themes available on the domain, by showing their pictos and the number of datasets they contain.",
-      "keywords": "api catalog configured context datasets directive domain enumerate enumerates facet facetname list number ods-widgets odswidgetsconfig odswidgetsconfigprovider pictos pull require setting showing theme themes widget",
+      "keywords": "api catalog configured context datasets directive domain enumerates list number ods-widgets odswidgetsconfig odswidgetsconfigprovider pictos pull require setting showing theme themes widget",
       "isDeprecated": false
     },
     {

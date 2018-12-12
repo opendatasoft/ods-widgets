@@ -397,7 +397,8 @@
                 yAxis: [],
                 plotOptions: {
                     series: {
-                        animation: false
+                        animation: false,
+                        turboThreshold: 10000,
                     },
                     columnrange: {
                         pointPadding: 0,
@@ -468,6 +469,7 @@
                 },
                 tooltip: {
                     useHTML: true,
+                    padding: 0,
                     valueDecimals: 2,
                     headerFormat: '{point.key}<br>',
                     pointFormat: serieTitle + ' <b style="display: inline-block">{point.y}</b>',
@@ -493,6 +495,10 @@
                             s.unshift('<div style="text-align:right">');
                             s.push('</div>');
                         }
+
+                        // Add css to prevent https://github.com/highcharts/highcharts/issues/2528#issuecomment-283177513
+                        s.unshift('<div class="highcharts-tooltip-container">');
+                        s.push('</div>');
 
                         return s.join('');
                     }
@@ -1143,8 +1149,8 @@
                                             chart.thresholds.splice(i, 1);
                                         }
                                     }
-                                    chart.thresholds = chart.thresholds.sort(function(a, b) {
-                                        return a.value > b.value;
+                                    chart.thresholds.sort(function(a, b) {
+                                        return a.value - b.value;
                                     });
                                 }
                             });
@@ -1186,6 +1192,9 @@
                                             name: "" + valueX,
                                             y: valueY
                                         });
+                                        if (colorForCategory) {
+                                            serie.data[serie.data.length - 1].color = colorForCategory;
+                                        }
                                     }
                                 } else if (serie.type == 'treemap') {
                                     if (options.xAxis.type === 'datetime') {
@@ -1198,6 +1207,9 @@
                                             name: "" + valueX,
                                             y: valueY
                                         });
+                                        if (colorForCategory) {
+                                            serie.data[serie.data.length - 1].color = colorForCategory;
+                                        }
                                     }
                                 } else {
                                     if (scale === 'logarithmic' && valueY <= 0) {
