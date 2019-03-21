@@ -18,6 +18,7 @@
          * @param {string} [suffix=none] Changes the query parameter ("q" by default) so that it works on "q.suffixValue". This prevents widgets from overriding each other (useful when you want multiple text-search widgets on the same page.
          * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use, or array of context to use.
          * @param {string} [autofocus] Add the autofocus attribute (no need for a value) to set the focus in the text
+         * @param {string} [id] Add an id attribute to the inner input
          * search's input.
          *
          * @description
@@ -80,7 +81,7 @@
             template: '' +
             '<div class="odswidget odswidget-text-search">' +
             '   <form ng-submit="applySearch()" class="odswidget-text-search__form">' +
-            '       <input class="odswidget-text-search__search-box" name="q" type="text" ' +
+            '       <input class="odswidget-text-search__search-box" name="q" type="text" id="{{id}}"' +
             '               ng-model="searchExpression" ' +
             '               aria-label="{{ translatedPlaceholder }}" ' +
             '               placeholder="{{ translatedPlaceholder }}"> ' +
@@ -98,7 +99,8 @@
                 button: '@?',
                 context: '=',
                 field: '@?',
-                suffix: '@?'
+                suffix: '@?',
+                id: '@?',
             },
 
 
@@ -106,6 +108,7 @@
                 if ('autofocus' in attrs) {
                     $(element).find('input').focus();
                 }
+                element.removeAttr('id');
             },
 
 

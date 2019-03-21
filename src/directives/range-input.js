@@ -179,7 +179,7 @@
 
                 // Workaround for the lousy AngularJS support of input[range]
                 $timeout(function() {
-                    element.find('.ods-range-input__range-input').val(scope.values.internalRange);
+                    newElement.find('.ods-range-input__range-input').val(scope.values.internalRange);
                 });
             }
         };

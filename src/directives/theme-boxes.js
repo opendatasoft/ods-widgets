@@ -2,7 +2,7 @@
     'use strict';
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsThemeBoxes', function() {
+    mod.directive('odsThemeBoxes', ['translatePlural', '$interpolate', function(translatePlural, $interpolate) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsThemeBoxes
@@ -19,7 +19,7 @@
             template: '' +
                 '<div class="odswidget odswidget-theme-boxes">' +
                 '   <div ng-repeat="item in items" class="odswidget-theme-boxes__box" ods-facet-results="items" ods-facet-results-context="context" ods-facet-results-facet-name="theme">' +
-                '       <a ng-href="{{context.domainUrl}}/explore/?refine.theme={{encode(item.path)}}" target="_self" translate="ods-tooltip" translate-n="item.count" translate-plural="{{item.name}} ({{$count}} datasets)" ods-tooltip="{{item.name}} ({{$count}} dataset)" ods-tooltip-direction="bottom" style="display: block;">' +
+                '       <a ng-href="{{context.domainUrl}}/explore/?refine.theme={{encode(item.path)}}" target="_self" ods-tooltip="{{ getTooltipMessage(item) }}" ods-tooltip-direction="bottom" style="display: block;">' +
                 '           <ods-theme-picto class="odswidget-theme-boxes__picto" theme="{{item.name}}"></ods-theme-picto>' +
                 '       </a>' +
                 '   </div>' +
@@ -29,8 +29,14 @@
             },
             controller: ['$scope', function($scope) {
                 $scope.encode = encodeURIComponent;
+                $scope.getTooltipMessage = function(item) {
+                    return translatePlural(item.count,
+                        "{{item.name}} ({{$count}} dataset)",
+                        "{{item.name}} ({{$count}} datasets)",
+                        { 'item': item });
+                }
             }]
         };
-    });
+    }]);
 
 }());

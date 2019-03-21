@@ -966,9 +966,9 @@
 
                                 // Show a warning in Preview mode if the dataset has over a 1000 records and the view type is choropleth or categories
                                 // (currently the map can only show up to 1000 points at a time so it can be confusing for users)
-                                angular.forEach(renderedLayers, function(layerGroup) {
-                                    if(layerGroup._incomplete) {
-                                        var layerTitle = layerGroup.title || layerGroup.context.dataset.metas.title;
+                                angular.forEach(renderedLayers, function(layerConfig) {
+                                    if (layerConfig._incomplete) {
+                                        var layerTitle = layerConfig.title || layerConfig.context.dataset.metas.title;
                                         var maxTitleLength = 50;
                                         // Trim the title if it's extremely long
                                         if (layerTitle.length > maxTitleLength) {

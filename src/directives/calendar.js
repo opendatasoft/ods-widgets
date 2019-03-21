@@ -251,6 +251,11 @@
                         newScope.record = record;
                         newScope.dataset = scope.context.dataset;
                         newScope.ctx = scope.context;
+
+                        newScope.domain = {
+                            current_language: ODSWidgetsConfig.language
+                        };
+
                         var content;
                         if (scope.context.dataset.extra_metas.visualization.calendar_tooltip_html_enabled && scope.context.dataset.extra_metas.visualization.calendar_tooltip_html) {
                             content = $compile('<div>' + scope.context.dataset.extra_metas.visualization.calendar_tooltip_html + '</div>')(newScope);

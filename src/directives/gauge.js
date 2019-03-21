@@ -61,7 +61,7 @@
 
                 return '' +
                     '<div class="odswidget-gauge odswidget-gauge--' + displayMode + '">' +
-                    '    <div class="odswidget-gauge__value">{{ percentage | number:0 }}%</div>' + svg +
+                    '    <div class="odswidget-gauge__value">{{ percentage | number:0 }}%</div>' + svg +
                     '</div>';
             },
             link: function (scope, element, attrs) {

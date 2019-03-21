@@ -54,7 +54,7 @@
             '</div>',
             link: function (scope) {
                 scope.openPopup = function (button) {
-                    if (!button.popupWidth || ! button.popupHeight) {
+                    if (!button.popupWidth || ! button.popupHeight) {
                         return;
                     }
 
@@ -109,7 +109,7 @@
                 }
 
                 var getAbsUrl = function () {
-                    return $window.encodeURIComponent(scope.url || $location.absUrl());
+                    return $window.encodeURIComponent(scope.url || $location.absUrl());
                 };
 
                 var getTitle = function () {

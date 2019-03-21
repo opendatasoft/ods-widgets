@@ -33,7 +33,7 @@
             restrict: 'A',
             priority: 100,
             transclude: true,
-            controller: ['$scope', '$element', '$attrs', '$transclude', function($scope, $element, $attrs, $transclude) {
+            controller: ['$scope', '$element', '$attrs', '$transclude', 'ODSWidgetsConfig', function($scope, $element, $attrs, $transclude, ODSWidgetsConfig) {
                 var template,
                     displayedFields,
                     fields,
@@ -44,7 +44,7 @@
                     template = options.defaultTemplate || '';
                     displayedFields = options.displayedFields || [];
                     fields = options.fields || [];
-                    context = options.context || {};
+                    context = options.context || {};
                 };
 
                 this.render = function(record, scopeCustomAttributes, currentField) {
@@ -55,6 +55,10 @@
                     newScope.displayedFields = angular.copy(displayedFields);
                     newScope.fields = angular.copy(fields);
                     newScope.context = angular.copy(context);
+    
+                    newScope.domain = {
+                        current_language: ODSWidgetsConfig.language
+                    };
 
                     if (currentField) {
                         newScope.displayedFields =  newScope.displayedFields.filter(function(field) {

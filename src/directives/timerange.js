@@ -130,7 +130,7 @@
             '    </div>' +
             '</div>',
             link: function(scope, element, attrs) {
-                var formattedSuffix = !angular.isUndefined(scope.suffix) ? ('.' + scope.suffix) : '';
+                var formattedSuffix = !angular.isUndefined(scope.suffix) ? ('.' + scope.suffix) : '';
 
                 scope.labelFrom = angular.isDefined(scope.labelFrom) ? scope.labelFrom : translate('From');
                 scope.labelTo = angular.isDefined(scope.labelTo) ? scope.labelTo : translate('to');
@@ -268,7 +268,7 @@
                 var contexts = [],
                     conf = {};
 
-                var formattedSuffix = !angular.isUndefined($scope.suffix) ? ('.' + $scope.suffix) : '';
+                var formattedSuffix = !angular.isUndefined($scope.suffix) ? ('.' + $scope.suffix) : '';
 
                 // We need to gather the time field before applying our filter
                 var getTimeField = function(dataset) {

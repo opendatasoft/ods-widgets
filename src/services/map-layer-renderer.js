@@ -30,6 +30,7 @@
                 }
                 var timeout = $q.defer();
                 layerConfig._currentRequestTimeout = timeout;
+                layerConfig._incomplete = false;
 
                 var applyLayer = function (newLayer) {
                     layerConfig._rendered = newLayer;

@@ -206,7 +206,7 @@
                                 }
 
                             } else if (recordid) {
-                                options.q = 'recordid:' + recordid;
+                                options['q.refineonclick'] = 'recordid:' + recordid;
                             } else {
                                 ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
                             }

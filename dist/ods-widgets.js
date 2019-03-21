@@ -10894,7 +10894,7 @@ mod.directive('infiniteScroll', [
                                 }
 
                             } else if (recordid) {
-                                options.q = 'recordid:' + recordid;
+                                options['q.refineonclick'] = 'recordid:' + recordid;
                             } else {
                                 ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
                             }
@@ -11290,6 +11290,7 @@ mod.directive('infiniteScroll', [
                 }
                 var timeout = $q.defer();
                 layerConfig._currentRequestTimeout = timeout;
+                layerConfig._incomplete = false;
 
                 var applyLayer = function (newLayer) {
                     layerConfig._rendered = newLayer;
@@ -11420,7 +11421,8 @@ mod.directive('infiniteScroll', [
             }
         };
     }]);
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -11896,7 +11898,6 @@ mod.directive('infiniteScroll', [
 
                 ODSAPI.records.download(layerConfig.context, parameters, timeout.promise).success(function (data) {
                     // _incomplete parameter allows to show warning of partial data.
-                    layerConfig._incomplete = false;
                     if(data.length >= parameters.rows) {
                         // If it hits the limit then we assume that the returned data is partial
                         layerConfig._incomplete = true;
@@ -11956,8 +11957,6 @@ mod.directive('infiniteScroll', [
                     var shape;
                     if(data.length >= parameters.rows) {
                         layerConfig._incomplete = true;
-                    } else {
-                        layerConfig._incomplete = false;
                     }
                     for (var i = 0; i < data.length; i++) {
                         shape = data[i];
@@ -12602,13 +12601,6 @@ mod.directive('infiniteScroll', [
                 'js': [
                     'ss@https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.js'
                 ]
-            },
-            'vega': {
-                'js': [
-                    "vega@https://cdn.jsdelivr.net/npm/vega@4.2.0",
-                    "vl@https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc3",
-                    "vegaTooltip@https://cdn.jsdelivr.net/npm/vega-tooltip@0.13.0",
-                ],
             },
         };
 
@@ -16067,6 +16059,11 @@ mod.directive('infiniteScroll', [
                         newScope.record = record;
                         newScope.dataset = scope.context.dataset;
                         newScope.ctx = scope.context;
+
+                        newScope.domain = {
+                            current_language: ODSWidgetsConfig.language
+                        };
+
                         var content;
                         if (scope.context.dataset.extra_metas.visualization.calendar_tooltip_html_enabled && scope.context.dataset.extra_metas.visualization.calendar_tooltip_html) {
                             content = $compile('<div>' + scope.context.dataset.extra_metas.visualization.calendar_tooltip_html + '</div>')(newScope);
@@ -16550,13 +16547,13 @@ mod.directive('infiniteScroll', [
                     if (this.displayIntermediaryResults) {
                         for (var j = 0; j < this.rowFields.length; j++) {
                             rowNumbersIndex = this.rowNumbersIndexes[j];
-                            if (rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis) === undefined) {
+                            if (rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis) === undefined) {
                                 rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber, isMultiXAnalysis);
                                 currentRowNumber++;
                             }
                         }
                     } else {
-                        if (rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis) === undefined) {
+                        if (rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis) === undefined) {
                             rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber, isMultiXAnalysis);
                             currentRowNumber++;
                         }
@@ -16696,7 +16693,7 @@ mod.directive('infiniteScroll', [
                 return xValue;
             };
 
-            this.buildLabel = function (analysisValue, field, isMultiXAnalysis) {
+            this.buildLabel = function (analysisValue, field, isMultiXAnalysis) {
                 if (isMultiXAnalysis) {
                     return this.formatXValue(analysisValue.x[field]);
                 }
@@ -18762,7 +18759,7 @@ mod.directive('infiniteScroll', [
 
             },
             controller: ['$scope', '$element', '$transclude', function($scope, $element, $transclude) {
-                $scope.visibleItemsNumber = $scope.visibleItems || 6;
+                $scope.visibleItemsNumber = angular.isDefined($scope.visibleItems) ? $scope.visibleItems : 6;
 
                 this.toggleRefinement = function(path) {
                     $scope.facetsCtrl.toggleRefinement($scope.name, path);
@@ -18820,7 +18817,18 @@ mod.directive('infiniteScroll', [
             '   </li>' +
             '</ul>',
             link: function(scope, element, attrs, facetCtrl) {
-                scope.expanded = false;
+                var isExpanded = function (categories) {
+                    if (categories.some(function(category) { return category.state === 'refined' })) {
+                        return true;
+                    }
+                    return categories.some(function(category) {
+                        if (category.facets && category.facets.length) {
+                            return isExpanded(category.facets);
+                        }
+                    })
+                };
+                // Make sure parent categories are always expanded initially if any of its children is refined
+                scope.expanded = isExpanded(scope.categories);
                 scope.visibleItems = facetCtrl.getVisibleItemsNumber();
                 scope.visible = function(index) {
                     return scope.expanded || index < scope.visibleItems;
@@ -18894,7 +18902,7 @@ mod.directive('infiniteScroll', [
                 var defaultTemplate = '' +
                     '<span class="odswidget-facet__category-count">{{ category.count|number }}</span> ' +
                     '<span class="odswidget-facet__category-name" ng-bind-html="formatCategory(category.name, category.path)"></span>';
-                var template = scope.template || defaultTemplate;
+                var template = scope.template || defaultTemplate;
                 template = '' +
                     '<a class="odswidget-facet__category" ' +
                     '   href="#" ' +
@@ -19307,7 +19315,7 @@ mod.directive('infiniteScroll', [
 
                 return '' +
                     '<div class="odswidget-gauge odswidget-gauge--' + displayMode + '">' +
-                    '    <div class="odswidget-gauge__value">{{ percentage | number:0 }}%</div>' + svg +
+                    '    <div class="odswidget-gauge__value">{{ percentage | number:0 }}%</div>' + svg +
                     '</div>';
             },
             link: function (scope, element, attrs) {
@@ -19644,51 +19652,91 @@ mod.directive('infiniteScroll', [
             };
         }]);
 }());
-;(function() {
+;(function () {
     'use strict';
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsGist', function() {
+    mod.directive('odsGist', ['translate', '$http', function (translate, $http) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsGist
          * @restrict E
          * @scope
          * @param {string} username The GitHub username
-         * @param {string} id The Gist id. See the Gist URL to find it
+         * @param {string} gist-id The Gist id. See the Gist URL to find it
          * @description
-         * Integrates a GitHub Gist widget into a page
+         * Integrates a GitHub Gist widget into a page and add a copy to clipboard button in it.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-gist username="opendatasoft" id="8d81bb33e5a062253fe0"></ods-gist>
+         *          <ods-gist username="opendatasoft" gist-id="8d81bb33e5a062253fe0"></ods-gist>
          *      </file>
          *  </example>
          */
-         return {
+        return {
             restrict: 'E',
             replace: true,
-            template: '<div class="odswidget"></div>',
+            template: '' +
+                '<div class="ods-gist gist">' +
+                '   <div class="gist-file">' +
+                '      <div class="gist-meta gist-clipboard">' +
+                '          <div ods-tooltip' +
+                '               ods-tooltip-template="tooltipMessage"' +
+                '               ods-tooltip-direction="top"' +
+                '               ng-click="copyToClipboard()"' +
+                '               ng-mouseleave="resetTooltipMessage()">' +
+                '              <textarea ng-model="rawData"' +
+                '                        ng-readonly="true">' +
+                '              </textarea>' +
+                '               <i class="fa fa-clipboard" aria-hidden="true"></i>' +
+                '               <span>' + translate('Copy to clipboard') + '</span>' +
+                '           </div>' +
+                '      </div>' +
+                '      <div ng-bind-html="htmlData"></div>' +
+                '   </div>' +
+                '</div>',
             scope: {
                 'username': '@',
-                'id': '@'
+                'gistId': '@',
             },
-            link: function(scope, element, attrs) {
-                $.ajax({
-                    url: 'https://gist.github.com/'+attrs.username+'/'+attrs.id+'.json',
-                    dataType: 'jsonp',
-                    timeout: 1000,
-                    success: function (data) {
-                        $(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
-                        element.append(data.div);
-                    }
+            link: function (scope, element, attrs) {
+                if (attrs.id && !scope.gistId) {
+                    scope.gistId = attrs.id;
+                }
+                var successTooltipMessage = '<i class="fa fa-check"></i> ' + translate('Copied');
+                scope.resetTooltipMessage = function() {
+                    scope.tooltipMessage = '<span style="text-align:center">' + translate('Copy to clipboard') + '</span>';
+                };
+
+                scope.resetTooltipMessage();
+
+                $http.jsonp(
+                    'https://gist.github.com/' + scope.username + '/' + scope.gistId + '.json?callback=JSON_CALLBACK',
+                    {timeout: 1000}
+                ).then(function(result) {
+                    var data = result.data;
+                    $(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
+                    var gistElement = $(data.div);
+
+                    scope.rawData = gistElement.find('.gist-data').text()
+                        .replace(/^[\s]*$\n/gm, '').replace(/^[ ]{8}/gm, '');
+                    scope.htmlData = gistElement.find('.gist-file').html();
+                    var textarea = element.find('textarea')[0];
+                    scope.copyToClipboard = function () {
+                        textarea.select();
+                        document.execCommand('copy');
+                        scope.tooltipMessage = successTooltipMessage;
+                        scope.$broadcast('refresh-tooltip');
+                        textarea.blur();
+                    };
                 });
             }
         };
-    });
-}());;(function() {
+    }]);
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -24449,11 +24497,14 @@ mod.directive('infiniteScroll', [
                 }
 
             },
-            controller: ['$scope', '$filter', 'ODSAPI', function($scope, $filter, ODSAPI) {
+            controller: ['$scope', '$filter', 'ODSAPI', 'ODSWidgetsConfig', function($scope, $filter, ODSAPI, ODSWidgetsConfig) {
                 $scope.RECORD_LIMIT = 100;
                 $scope.records = [];
                 $scope.selectedIndex = 0;
 
+                $scope.domain = {
+                    current_language: ODSWidgetsConfig.language
+                };
 
                 var tooltipSort = $scope.tooltipSort;
                 if (!tooltipSort && $scope.context.dataset.getExtraMeta('visualization', 'map_tooltip_sort_field')) {
@@ -25533,9 +25584,9 @@ mod.directive('infiniteScroll', [
 
                                 // Show a warning in Preview mode if the dataset has over a 1000 records and the view type is choropleth or categories
                                 // (currently the map can only show up to 1000 points at a time so it can be confusing for users)
-                                angular.forEach(renderedLayers, function(layerGroup) {
-                                    if(layerGroup._incomplete) {
-                                        var layerTitle = layerGroup.title || layerGroup.context.dataset.metas.title;
+                                angular.forEach(renderedLayers, function(layerConfig) {
+                                    if (layerConfig._incomplete) {
+                                        var layerTitle = layerConfig.title || layerConfig.context.dataset.metas.title;
                                         var maxTitleLength = 50;
                                         // Trim the title if it's extremely long
                                         if (layerTitle.length > maxTitleLength) {
@@ -27418,7 +27469,7 @@ mod.directive('infiniteScroll', [
 
                 // Workaround for the lousy AngularJS support of input[range]
                 $timeout(function() {
-                    element.find('.ods-range-input__range-input').val(scope.values.internalRange);
+                    newElement.find('.ods-range-input__range-input').val(scope.values.internalRange);
                 });
             }
         };
@@ -28347,7 +28398,7 @@ mod.directive('infiniteScroll', [
             '</div>',
             link: function (scope) {
                 scope.openPopup = function (button) {
-                    if (!button.popupWidth || ! button.popupHeight) {
+                    if (!button.popupWidth || ! button.popupHeight) {
                         return;
                     }
 
@@ -28402,7 +28453,7 @@ mod.directive('infiniteScroll', [
                 }
 
                 var getAbsUrl = function () {
-                    return $window.encodeURIComponent(scope.url || $location.absUrl());
+                    return $window.encodeURIComponent(scope.url || $location.absUrl());
                 };
 
                 var getTitle = function () {
@@ -29425,6 +29476,7 @@ mod.directive('infiniteScroll', [
          * @param {string} [suffix=none] Changes the query parameter ("q" by default) so that it works on "q.suffixValue". This prevents widgets from overriding each other (useful when you want multiple text-search widgets on the same page.
          * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use, or array of context to use.
          * @param {string} [autofocus] Add the autofocus attribute (no need for a value) to set the focus in the text
+         * @param {string} [id] Add an id attribute to the inner input
          * search's input.
          *
          * @description
@@ -29487,7 +29539,7 @@ mod.directive('infiniteScroll', [
             template: '' +
             '<div class="odswidget odswidget-text-search">' +
             '   <form ng-submit="applySearch()" class="odswidget-text-search__form">' +
-            '       <input class="odswidget-text-search__search-box" name="q" type="text" ' +
+            '       <input class="odswidget-text-search__search-box" name="q" type="text" id="{{id}}"' +
             '               ng-model="searchExpression" ' +
             '               aria-label="{{ translatedPlaceholder }}" ' +
             '               placeholder="{{ translatedPlaceholder }}"> ' +
@@ -29505,7 +29557,8 @@ mod.directive('infiniteScroll', [
                 button: '@?',
                 context: '=',
                 field: '@?',
-                suffix: '@?'
+                suffix: '@?',
+                id: '@?',
             },
 
 
@@ -29513,6 +29566,7 @@ mod.directive('infiniteScroll', [
                 if ('autofocus' in attrs) {
                     $(element).find('input').focus();
                 }
+                element.removeAttr('id');
             },
 
 
@@ -29673,7 +29727,7 @@ mod.directive('infiniteScroll', [
     'use strict';
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsThemeBoxes', function() {
+    mod.directive('odsThemeBoxes', ['translatePlural', '$interpolate', function(translatePlural, $interpolate) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsThemeBoxes
@@ -29690,7 +29744,7 @@ mod.directive('infiniteScroll', [
             template: '' +
                 '<div class="odswidget odswidget-theme-boxes">' +
                 '   <div ng-repeat="item in items" class="odswidget-theme-boxes__box" ods-facet-results="items" ods-facet-results-context="context" ods-facet-results-facet-name="theme">' +
-                '       <a ng-href="{{context.domainUrl}}/explore/?refine.theme={{encode(item.path)}}" target="_self" translate="ods-tooltip" translate-n="item.count" translate-plural="{{item.name}} ({{$count}} datasets)" ods-tooltip="{{item.name}} ({{$count}} dataset)" ods-tooltip-direction="bottom" style="display: block;">' +
+                '       <a ng-href="{{context.domainUrl}}/explore/?refine.theme={{encode(item.path)}}" target="_self" ods-tooltip="{{ getTooltipMessage(item) }}" ods-tooltip-direction="bottom" style="display: block;">' +
                 '           <ods-theme-picto class="odswidget-theme-boxes__picto" theme="{{item.name}}"></ods-theme-picto>' +
                 '       </a>' +
                 '   </div>' +
@@ -29700,10 +29754,129 @@ mod.directive('infiniteScroll', [
             },
             controller: ['$scope', function($scope) {
                 $scope.encode = encodeURIComponent;
+                $scope.getTooltipMessage = function(item) {
+                    return translatePlural(item.count,
+                        "{{item.name}} ({{$count}} dataset)",
+                        "{{item.name}} ({{$count}} datasets)",
+                        { 'item': item });
+                }
             }]
         };
-    });
+    }]);
 
+}());
+;(function () {
+    'use strict';
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('odsTimer', ['$window', '$interval', function ($window, $interval) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsTimer
+         * @scope
+         * @restrict E
+         * @param {Number} [delay=1000] The number of milliseconds to wait before executing the expression. Minimum value is 1000ms.
+         * @param {Expression} [stopCondition=false] An AngularJS expression returning 'true' or 'false'. The timer stops when the condition is false.
+         * @param {Expression} [exec] An AngularJS expression to execute.
+         *
+         * @description
+         * This widget is a simple timer, it executes the AngularJS expression "exec" every "delay" milliseconds.
+         * It doesn't stop until the user click on the pause button or when the "stopCondition" is true.
+         *
+         * It can be used to animate dashboards to go over a date field and add 1 day every 2 seconds like in the following example.
+         * From and To will increase by 1 day until the user click on pause button.
+         * @example
+         * <example module="ods-widgets">
+         *     <file name="index.html">
+         *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
+         *              <div ng-init="values = {'from':undefined,'to':undefined}">
+         *                  <ods-timerange context="cibul"
+         *                          default-from="2019/01/01"
+         *                          default-to="2019/02/31"
+         *                          from="values.from"
+         *                          to="values.to">
+         *                  </ods-timerange>
+         *                  <ods-timer stop-condition="false"
+         *                        delay="3000"
+         *                        exec="values.from = (values.from | momentadd : 'day' : 1 | moment : 'YYYY-MM-DD');
+         *                              values.to = (values.to | momentadd : 'day' : 1 | moment : 'YYYY-MM-DD');">
+         *                  </ods-timer>
+         *                  <div>
+         *                      <h1  ods-aggregation="cnt"
+         *                           ods-aggregation-context="cibul"
+         *                           ods-aggregation-function="COUNT">
+         *                          # events : {{ cnt  | number}}
+         *                      </h1>
+         *                      <ods-table context="cibul"></ods-table>
+         *                  </div>
+         *              </div>
+         *          </ods-dataset-context>
+         *     </file>
+         * </example>
+         */
+        return {
+            restrict: 'E',
+            scope: {
+                stopCondition: '&',
+                delay: '=',
+                exec: '&'
+            },
+            replace: true,
+            template: '' +
+                '<div class="ods-widget-timer">' +
+                '   <button class="ods-button ods-widget-timer-controller ods-widget-timer-play"' +
+                '        ods-tooltip="play"' +
+                '        ng-if="!running"' +
+                '        ng-click="timerPlay()">' +
+                '       <i class="fa fa-play" aria-hidden="true"></i>' +
+                '   </button>' +
+                '   <button class="ods-button ods-widget-timer-controller ods-widget-timer-stop"' +
+                '        ods-tooltip="stop"' +
+                '        ng-if="running"' +
+                '        ng-click="timerStop()">' +
+                '       <i class="fa fa-stop" aria-hidden="true"></i>' +
+                '   </button>' +
+                '</div>',
+            link: function (scope, elem, $attrs) {
+                scope.running = false;
+                var delay = 1000;
+                if (angular.isDefined(scope.delay)) {
+                    if (!scope.delay || typeof scope.delay !== 'number' || !isFinite(scope.delay)) {
+                        console.warn('ods-timer: delay is not a valid integer: fallbacking to default value (1000ms)');
+                    } else if (scope.delay < 1000) {
+                        console.warn('ods-timer: delay is too small (1000ms minimum): fallbacking to default value (1000ms)');
+                    } else {
+                        delay = scope.delay;
+                    }
+                }
+
+                var stopTimer = function () {
+                    $interval.cancel(scope.promise);
+                    scope.promise = undefined;
+                };
+
+                scope.timerPlay = function () {
+                    /* don't start another timer if one is already running ! */
+                    if (angular.isDefined(scope.promise)) return;
+
+                    scope.promise = $interval(function () {
+                        if (!scope.stopCondition()) {
+                            scope.exec();
+                        } else {
+                            stopTimer();
+                        }
+                    }, delay);
+
+                    scope.running = true;
+                };
+
+                scope.timerStop = function () {
+                    stopTimer();
+                    scope.running = false;
+                };
+            },
+        };
+    }]);
 }());
 ;(function() {
     'use strict';
@@ -29837,7 +30010,7 @@ mod.directive('infiniteScroll', [
             '    </div>' +
             '</div>',
             link: function(scope, element, attrs) {
-                var formattedSuffix = !angular.isUndefined(scope.suffix) ? ('.' + scope.suffix) : '';
+                var formattedSuffix = !angular.isUndefined(scope.suffix) ? ('.' + scope.suffix) : '';
 
                 scope.labelFrom = angular.isDefined(scope.labelFrom) ? scope.labelFrom : translate('From');
                 scope.labelTo = angular.isDefined(scope.labelTo) ? scope.labelTo : translate('to');
@@ -29975,7 +30148,7 @@ mod.directive('infiniteScroll', [
                 var contexts = [],
                     conf = {};
 
-                var formattedSuffix = !angular.isUndefined($scope.suffix) ? ('.' + $scope.suffix) : '';
+                var formattedSuffix = !angular.isUndefined($scope.suffix) ? ('.' + $scope.suffix) : '';
 
                 // We need to gather the time field before applying our filter
                 var getTimeField = function(dataset) {
@@ -30550,230 +30723,7 @@ mod.directive('infiniteScroll', [
             }
         };
     });
-}());;(function () {
-    'use strict';
-    var mod = angular.module('ods-widgets');
-
-    var getSerieNames = function (spec) {
-        // TODO: this only checks for data at the root of the spec object or directly beneath vconcat/hconcat.
-        // However hconcat and vconcat can be nested. We should have a recursive method here.
-        var i,
-            serieNames = [];
-
-        if (spec.hasOwnProperty('data')) {
-            // single view or faceted view
-            if (spec.data.name) {
-                serieNames.push(spec.data.name);
-            }
-        } else if (spec.hasOwnProperty('vconcat')) {
-            for (i = 0; i < spec.vconcat.length; i++) {
-                if (spec.vconcat[i].data.name) {
-                    serieNames.push(spec.vconcat[i].data.name);
-                }
-            }
-        } else if (spec.hasOwnProperty('hconcat')) {
-            for (i = 0; i < spec.hconcat.length; i++) {
-                if (spec.hconcat[i].data.name) {
-                    serieNames.push(spec.hconcat[i].data.name);
-                }
-            }
-        } else {
-            serieNames = ['_serie'];
-        }
-        return serieNames;
-    };
-
-    var getSerieAttrName = function (serieName) {
-        if (serieName === '_serie') {
-            return 'values';
-        } 
-        return 'values' + ODS.StringUtils.capitalize(serieName);
-    };
-
-    var getSerieValues = function (scope, attrs, serieName) {
-        return scope.$parent.$eval(attrs[getSerieAttrName(serieName)]);
-    };
-
-    mod.directive('odsVegaLiteChart', ['ModuleLazyLoader', function (ModuleLazyLoader) {
-        /*
-         * @ngdoc directive
-         * @name ods-widgets.directive:odsVegaLiteChart
-         * @restrict E
-         * @scope
-         * @param {object} spec A vega-lite chart specification object depending on the type parameter
-         * @param {array} values An array whose items are data points
-         *
-         * @description
-         * This widget builds a vega-lite chart according to the given specs. The
-         * [tooltip](https://vega.github.io/vega-lite/docs/tooltip.html) plugin is installed.
-         *
-         * If there are multiple data series, use values-[myname] instead of values to clear ambiguity.
-         *
-         *
-         * @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *          <ods-dataset-context context="stations,tree"
-         *                               stations-domain="https://public.opendatasoft.com"
-         *                               stations-dataset="jcdecaux_bike_data"
-         *                               tree-dataset="arbresremarquablesparis2011"
-         *                               tree-domain="https://parisdata.opendatasoft.com">
-         *
-         *              <!-- data from ods-results -->
-         *
-         *              <div ods-results="res"
-         *                   ods-results-context="stations">
-         *                  <ods-vega-lite-chart spec='{
-         *                                          "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-         *                                          "mark": "line",
-         *                                          "encoding": {
-         *                                              "x": {"field": "fields.name", "type": "nominal"},
-         *                                              "y": {"field": "fields.available_bikes", "type": "quantitative"}
-         *                                          }
-         *                                       }'
-         *                                       values="res"></ods-vega-lite-chart>
-         *
-         *                  <ods-vega-lite-chart spec='{
-         *                                          "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-         *                                          "data": {"name": "mystations"},
-         *                                          "mark": "line",
-         *                                          "encoding": {
-         *                                              "x": {"field": "fields.name", "type": "nominal"},
-         *                                              "y": {"field": "fields.available_bikes", "type": "quantitative"}
-         *                                          }
-         *                                        }'
-         *                                        values-mystations="res"></ods-vega-lite-chart>
-         *
-         *                  <ods-vega-lite-chart spec='{
-         *                                          "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-         *                                          "vconcat": [
-         *                                              {
-         *                                                  "data": {"name": "mystations1"},
-         *                                                  "mark": "line",
-         *                                                  "encoding": {
-         *                                                      "x": {"field": "fields.name", "type": "nominal"},
-         *                                                      "y": {"field": "fields.available_bikes", "type": "quantitative"}
-         *                                                  }
-         *                                              },
-         *                                              {
-         *                                                  "data": {"name": "mystations2"},
-         *                                                  "mark": "line",
-         *                                                  "encoding": {
-         *                                                      "x": {"field": "fields.name", "type": "nominal"},
-         *                                                      "y": {"field": "fields.available_bikes", "type": "quantitative"}
-         *                                                  }
-         *                                              }
-         *                                          ]
-         *                                       }'
-         *                                       values-mystations1="res"
-         *                                       values-mystations2="res"></ods-vega-lite-chart>
-         *              </div>
-         *
-         *              <!-- data from ods-analysis -->
-         *
-         *              <div ods-analysis="analysis"
-         *                    ods-analysis-context="tree"
-         *                    ods-analysis-max="10"
-         *                    ods-analysis-x="espece"
-         *                    ods-analysis-sort="circonferenceencm"
-         *                    ods-analysis-serie-hauteur="AVG(hauteurenm)"
-         *                    ods-analysis-serie-hauteur-cumulative="false"
-         *                    ods-analysis-serie-circonference="AVG(circonferenceencm)">
-         *                  <ods-vega-lite-chart spec='{
-         *                                          "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-         *                                          "data": {"name": "trees"},
-         *                                          "mark": "line",
-         *                                          "encoding": {
-         *                                              "x": {"field": "x", "type": "nominal"},
-         *                                              "y": {"field": "hauteur", "type": "quantitative"}
-         *                                          }
-         *                                       }'
-         *                                       values-trees="analysis.results"></ods-vega-lite-chart>
-         *              </div>
-         *          </ods-dataset-context>
-         *      </file>
-         *  </example>
-         */
-        return {
-            restrict: 'E',
-            replace: true,
-            template: '' +
-                '<div class="odswidget odswidget-vega-lite-chart">' +
-                '   <div class="vega-chart"></div>' +
-                '</div>',
-            scope: {
-                spec: '=',
-            },
-            link: function (scope, element, attrs) {
-                var vegaView;
-                var serieNames = getSerieNames(scope.spec);
-
-                var initView = function () {
-                    // build runtime from specs
-                    var spec = scope.spec;
-                    // insert dummy data in the case the user didn't specify a named 'values' prop
-                    if (!spec.data && angular.equals(serieNames, ['_serie'])) {
-                        spec.data = {name: '_serie', values: []};
-                    }
-                    spec = vl.compile(spec).spec;
-                    var runtime = vega.parse(spec);
-
-                    // use vega-tooltip for html tooltips
-                    var tooltipHandler = new vegaTooltip.Handler();
-
-                    // create vega view
-                    vegaView = new vega.View(runtime)
-                        .renderer('canvas')
-                        .tooltip(tooltipHandler.call)
-                        .initialize(element.find('.vega-chart')[0])
-                        .hover()
-                        .run();
-                };
-
-                var watchData = function () {
-                    angular.forEach(serieNames, function (serieName) {
-                        scope.$watch(function () {
-                            return getSerieValues(scope, attrs, serieName);
-                        }, function (nv, ov) {
-                            updateSerieValues(serieName, nv || []);
-                        });
-                    });
-                };
-
-                var updateSerieValues = function (name, values) {
-                    var changeSet = vega.changeset()
-                        .remove(function (d) { return true; })
-                        .insert(values);
-                    vegaView
-                        .change(name, changeSet)
-                        .resize()
-                        .run();
-                };
-
-                scope.$on("$destroy", function () {
-                    if (vegaView) {
-                        vegaView.finalize();
-                    }
-                });
-
-                // init
-
-                ModuleLazyLoader('vega').then(function () {
-                    // init Vega
-                    var unwatch = scope.$watch('spec', function (spec) {
-                        if (spec) {
-                            unwatch();
-
-                            initView();
-                            watchData();
-                        }
-                    });
-                });
-            },
-        };
-    }]);
-}());
-;(function() {
+}());;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -30808,7 +30758,7 @@ mod.directive('infiniteScroll', [
             restrict: 'A',
             priority: 100,
             transclude: true,
-            controller: ['$scope', '$element', '$attrs', '$transclude', function($scope, $element, $attrs, $transclude) {
+            controller: ['$scope', '$element', '$attrs', '$transclude', 'ODSWidgetsConfig', function($scope, $element, $attrs, $transclude, ODSWidgetsConfig) {
                 var template,
                     displayedFields,
                     fields,
@@ -30819,7 +30769,7 @@ mod.directive('infiniteScroll', [
                     template = options.defaultTemplate || '';
                     displayedFields = options.displayedFields || [];
                     fields = options.fields || [];
-                    context = options.context || {};
+                    context = options.context || {};
                 };
 
                 this.render = function(record, scopeCustomAttributes, currentField) {
@@ -30830,6 +30780,10 @@ mod.directive('infiniteScroll', [
                     newScope.displayedFields = angular.copy(displayedFields);
                     newScope.fields = angular.copy(fields);
                     newScope.context = angular.copy(context);
+    
+                    newScope.domain = {
+                        current_language: ODSWidgetsConfig.language
+                    };
 
                     if (currentField) {
                         newScope.displayedFields =  newScope.displayedFields.filter(function(field) {

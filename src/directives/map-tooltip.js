@@ -86,11 +86,14 @@
                 }
 
             },
-            controller: ['$scope', '$filter', 'ODSAPI', function($scope, $filter, ODSAPI) {
+            controller: ['$scope', '$filter', 'ODSAPI', 'ODSWidgetsConfig', function($scope, $filter, ODSAPI, ODSWidgetsConfig) {
                 $scope.RECORD_LIMIT = 100;
                 $scope.records = [];
                 $scope.selectedIndex = 0;
 
+                $scope.domain = {
+                    current_language: ODSWidgetsConfig.language
+                };
 
                 var tooltipSort = $scope.tooltipSort;
                 if (!tooltipSort && $scope.context.dataset.getExtraMeta('visualization', 'map_tooltip_sort_field')) {

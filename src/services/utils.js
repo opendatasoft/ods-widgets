@@ -102,13 +102,6 @@
                     'ss@https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.js'
                 ]
             },
-            'vega': {
-                'js': [
-                    "vega@https://cdn.jsdelivr.net/npm/vega@4.2.0",
-                    "vl@https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc3",
-                    "vegaTooltip@https://cdn.jsdelivr.net/npm/vega-tooltip@0.13.0",
-                ],
-            },
         };
 
         this.getConfig = function() {

@@ -468,7 +468,7 @@
 
             },
             controller: ['$scope', '$element', '$transclude', function($scope, $element, $transclude) {
-                $scope.visibleItemsNumber = $scope.visibleItems || 6;
+                $scope.visibleItemsNumber = angular.isDefined($scope.visibleItems) ? $scope.visibleItems : 6;
 
                 this.toggleRefinement = function(path) {
                     $scope.facetsCtrl.toggleRefinement($scope.name, path);
@@ -526,7 +526,18 @@
             '   </li>' +
             '</ul>',
             link: function(scope, element, attrs, facetCtrl) {
-                scope.expanded = false;
+                var isExpanded = function (categories) {
+                    if (categories.some(function(category) { return category.state === 'refined' })) {
+                        return true;
+                    }
+                    return categories.some(function(category) {
+                        if (category.facets && category.facets.length) {
+                            return isExpanded(category.facets);
+                        }
+                    })
+                };
+                // Make sure parent categories are always expanded initially if any of its children is refined
+                scope.expanded = isExpanded(scope.categories);
                 scope.visibleItems = facetCtrl.getVisibleItemsNumber();
                 scope.visible = function(index) {
                     return scope.expanded || index < scope.visibleItems;
@@ -600,7 +611,7 @@
                 var defaultTemplate = '' +
                     '<span class="odswidget-facet__category-count">{{ category.count|number }}</span> ' +
                     '<span class="odswidget-facet__category-name" ng-bind-html="formatCategory(category.name, category.path)"></span>';
-                var template = scope.template || defaultTemplate;
+                var template = scope.template || defaultTemplate;
                 template = '' +
                     '<a class="odswidget-facet__category" ' +
                     '   href="#" ' +

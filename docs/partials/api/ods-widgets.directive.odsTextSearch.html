@@ -13,7 +13,8 @@
        field="{string}"
        suffix="{string}"
        context="{CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]}"
-       [autofocus]="{string}"&gt;
+       [autofocus]="{string}"
+       [id]="{string}"&gt;
 &lt;/ods-text-search&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -28,7 +29,8 @@ value of the &quot;field&quot; parameter.
 The search will be a simple text search and won&#39;t support any query language or operators.</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>suffix</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Changes the query parameter (&quot;q&quot; by default) so that it works on &quot;q.suffixValue&quot;. This prevents widgets from overriding each other (useful when you want multiple text-search widgets on the same page.</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext[]</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext[]</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use, or array of context to use.</p>
-</div></td></tr><tr><td>[autofocus]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Add the autofocus attribute (no need for a value) to set the focus in the text
+</div></td></tr><tr><td>[autofocus]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Add the autofocus attribute (no need for a value) to set the focus in the text</p>
+</div></td></tr><tr><td>[id]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Add an id attribute to the inner input
 search&#39;s input.</p>
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>

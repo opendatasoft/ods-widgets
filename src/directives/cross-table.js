@@ -196,13 +196,13 @@
                     if (this.displayIntermediaryResults) {
                         for (var j = 0; j < this.rowFields.length; j++) {
                             rowNumbersIndex = this.rowNumbersIndexes[j];
-                            if (rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis) === undefined) {
+                            if (rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis) === undefined) {
                                 rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber, isMultiXAnalysis);
                                 currentRowNumber++;
                             }
                         }
                     } else {
-                        if (rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis) === undefined) {
+                        if (rowNumbersIndex.getRowNumber(analysisValue, isMultiXAnalysis) === undefined) {
                             rowNumbersIndex.setRowNumber(analysisValue, currentRowNumber, isMultiXAnalysis);
                             currentRowNumber++;
                         }
@@ -342,7 +342,7 @@
                 return xValue;
             };
 
-            this.buildLabel = function (analysisValue, field, isMultiXAnalysis) {
+            this.buildLabel = function (analysisValue, field, isMultiXAnalysis) {
                 if (isMultiXAnalysis) {
                     return this.formatXValue(analysisValue.x[field]);
                 }
