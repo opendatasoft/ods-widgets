@@ -1,0 +1,22 @@
+.leaflet-vectormarker .leaflet-vectormarker-iconoverlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    margin: auto;
+    text-align: center;
+    line-height: 0; /* To avoid an effective minimum height in very small sizes */
+}
+
+.leaflet-vectormarker .leaflet-vectormarker-singleicon {
+    line-height: 0; /* To avoid an effective minimum height in very small sizes */
+}
+
+.leaflet-vectormarker .leaflet-vectormarker-singleicon i {
+    text-shadow: 0.1em 0.1em 0.3em rgba(0,0,0,0.5);
+}
+
+.leaflet-vectormarker .leaflet-vectormarker-singleicon #dot-icon {
+    /* Special treatment for the dot icon: a white border */
+    stroke: white;
+}
