@@ -22,8 +22,8 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-picto url="'../src/img/opendatasoft-logo.svg'"
-         *                     color="'#33629C'"></ods-picto>
+         *          <ods-picto url="'assets/opendatasoft-logo.svg'"
+         *                     color="'#33629C'" style="width: 64px; height: 64px"></ods-picto>
          *      </file>
          *  </example>
          */

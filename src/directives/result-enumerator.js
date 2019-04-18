@@ -30,9 +30,10 @@
          *  @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
+         *          <ods-catalog-context context="example"
+         *                               example-domain="https://data.opendatasoft.com">
          *              <ul>
-         *                  <ods-result-enumerator context="public">
+         *                  <ods-result-enumerator context="example">
          *                      <li>
          *                          <strong>{{item.metas.title}}</strong>
          *                          (<a ng-href="{{context.domainUrl + '/explore/dataset/' + item.datasetid + '/'}}" target="_blank">{{item.datasetid}}</a>)

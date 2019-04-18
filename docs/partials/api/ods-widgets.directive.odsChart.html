@@ -9,35 +9,46 @@ A Chart is defined by one or more series that get there data from form one or mo
 a type of chart and multiple parameters to fine tune the appearance of chart.</p>
 <p>Basic example:
    <pre class="prettyprint linenums">
-       &lt;ods-dataset-context hurricanetracks185120071-parameters="{}" hurricanetracks185120071-dataset="hurricane-tracks-1851-20071" context="hurricanetracks185120071"&gt;
-           &lt;ods-chart timescale="year"&gt;
-               &lt;ods-chart-query context="hurricanetracks185120071" field-x="track_date" timescale="year"&gt;
-                   &lt;ods-chart-serie expression-y="pressure" chart-type="line" function-y="AVG" color="#66c2a5"&gt;&lt;/ods-chart-serie&gt;
+       &lt;ods-dataset-context context="trees"
+                            trees-dataset="les-arbres-remarquables-de-paris"
+                            trees-domain="https://widgets-examples.opendatasoft.com/"&gt;
+           &lt;ods-chart&gt;
+               &lt;ods-chart-query context="trees" field-x="espece" maxpoints="10"&gt;
+                   &lt;ods-chart-serie expression-y="circonference" chart-type="column" function-y="MAX" color="#66c2a5"&gt;
+                   &lt;/ods-chart-serie&gt;
                &lt;/ods-chart-query&gt;
            &lt;/ods-chart&gt;
        &lt;/ods-dataset-context&gt;
    </pre>
 <p>You can display multiple series from the same dataset on the same chart:
    <pre class="prettyprint linenums">
-       &lt;ods-dataset-context hurricanetracks185120071-parameters="{}" hurricanetracks185120071-dataset="hurricane-tracks-1851-20071" context="hurricanetracks185120071"&gt;
-         &lt;ods-chart timescale="year"&gt;
-               &lt;ods-chart-query context="hurricanetracks185120071" field-x="track_date" timescale="year"&gt;
-                   &lt;ods-chart-serie expression-y="pressure" chart-type="line" function-y="AVG" color="#66c2a5"&gt;&lt;/ods-chart-serie&gt;
-                   &lt;ods-chart-serie expression-y="wind_kts" chart-type="line" function-y="AVG" color="#fc8d62"&gt;&lt;/ods-chart-serie&gt;
+       &lt;ods-dataset-context context="trees"
+                            trees-dataset="les-arbres-remarquables-de-paris"
+                            trees-domain="https://widgets-examples.opendatasoft.com/"&gt;
+           &lt;ods-chart&gt;
+               &lt;ods-chart-query context="trees" field-x="espece" maxpoints="10"&gt;
+                   &lt;ods-chart-serie expression-y="circonference" chart-type="column" function-y="AVG" color="#66c2a5"&gt;
+                   &lt;/ods-chart-serie&gt;
+                   &lt;ods-chart-serie expression-y="hauteur" chart-type="column" function-y="AVG" color="#fc8d62"&gt;
+                   &lt;/ods-chart-serie&gt;
                &lt;/ods-chart-query&gt;
            &lt;/ods-chart&gt;
        &lt;/ods-dataset-context&gt;
    </pre>
 <p>You can display multiple series from multiple datasets on the same chart:
    <pre class="prettyprint linenums">
-       &lt;ods-dataset-context hurricanetracks185120071-parameters="{}" hurricanetracks185120071-dataset="hurricane-tracks-1851-20071" thedeadliesthurricanesintheunitedstates19001996-parameters="{}" thedeadliesthurricanesintheunitedstates19001996-dataset="the-deadliest-hurricanes-in-the-united-states-1900-1996" context="hurricanetracks185120071,thedeadliesthurricanesintheunitedstates19001996"&gt;
-           &lt;ods-chart timescale="year"&gt;
-               &lt;ods-chart-query context="hurricanetracks185120071" field-x="track_date" timescale="year"&gt;
-                   &lt;ods-chart-serie expression-y="wind_kts" chart-type="line" function-y="MAX" color="#66c2a5"&gt;
+       &lt;ods-dataset-context context="commute,demographics"
+                            commute-dataset="commute-time-us-counties"
+                            commute-domain="https://widgets-examples.opendatasoft.com/"&gt;
+                            demographics-dataset="us-cities-demographics"
+                            demographics-domain="https://widgets-examples.opendatasoft.com/"&gt;
+           &lt;ods-chart align-month="true"&gt;
+               &lt;ods-chart-query context="commute" field-x="state" maxpoints="20"&gt;
+                   &lt;ods-chart-serie expression-y="mean_commuting_time" chart-type="column" function-y="AVG" color="#66c2a5" scientific-display="true"&gt;
                    &lt;/ods-chart-serie&gt;
                &lt;/ods-chart-query&gt;
-               &lt;ods-chart-query context="thedeadliesthurricanesintheunitedstates19001996" field-x="year" timescale="year"&gt;
-                   &lt;ods-chart-serie expression-y="deaths" chart-type="column" function-y="AVG" color="#fc8d62"&gt;
+               &lt;ods-chart-query context="demographics" field-x="state" maxpoints="20"&gt;
+                   &lt;ods-chart-serie expression-y="count" chart-type="column" function-y="SUM" color="#fc8d62" scientific-display="true"&gt;
                    &lt;/ods-chart-serie&gt;
                &lt;/ods-chart-query&gt;
            &lt;/ods-chart&gt;

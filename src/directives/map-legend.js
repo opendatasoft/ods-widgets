@@ -318,10 +318,7 @@
 
                                     var splitComplementaryColors = MapLayerHelper.getSplitComplementaryColors(layer.color.ranges[rangesUpperBounds[rangesUpperBounds.length -1]]);
                                     properties.outOfBoundsColor = layer.color.outOfBoundsColor || splitComplementaryColors[0];
-                                    if (!layer.func && !layer.expr) {
-                                        // not for aggregation choropleth
-                                        properties.undefinedColor = layer.color.undefinedColor || splitComplementaryColors[1];
-                                    }
+                                    properties.undefinedColor = layer.color.undefinedColor || splitComplementaryColors[1];
 
                                     if ($scope.resizeMapDisplayControl) {
                                         $scope.resizeMapDisplayControl();

@@ -35,10 +35,12 @@
          *  @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com" ods-domain-statistics>
-         *              <p>Our portal has {{public.stats.dataset}} datasets, described by {{public.stats.theme}} themes
-         *              and {{public.stats.keyword}} keywords.</p>
-         *              <p>{{public.stats.publisher}} publishers have contributed.</p>
+         *          <ods-catalog-context context="examples"
+         *                               examples-domain="https://widgets-examples.opendatasoft.com/"
+         *                               ods-domain-statistics>
+         *              <p>Our portal has {{examples.stats.dataset}} datasets, described by {{examples.stats.theme}} themes
+         *              and {{examples.stats.keyword}} keywords.</p>
+         *              <p>{{examples.stats.publisher}} publishers have contributed.</p>
          *          </ods-catalog-context>
          *      </file>
          *  </example>

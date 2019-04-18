@@ -56,9 +56,10 @@
          *  @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
-         *              <pre>{{ public }}</pre>
-         *              <ods-result-enumerator context="public">
+         *          <ods-catalog-context context="examples"
+         *                               examples-domain="https://widgets-examples.opendatasoft.com/">
+         *              <pre>{{ examples }}</pre>
+         *              <ods-result-enumerator context="examples">
          *                  <p>{{item.datasetid}}</p>
          *              </ods-result-enumerator>
          *          </ods-catalog-context>

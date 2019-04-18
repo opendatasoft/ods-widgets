@@ -200,6 +200,18 @@
     }
 }
 
+/*
+Leaflet Draw behaves very weirdly in a RTL page, and we have to give it a LTR container, then bring RTL back to other
+elements.
+ */
+html[dir=rtl] .odswidget-map .leaflet-popup-pane {
+    direction: ltr;
+}
+html[dir=rtl] .odswidget-map .leaflet-popup-pane :not(.leaflet-draw-tooltip) {
+    direction: rtl;
+}
+
+
 .odswidget-map .map-timezone-caption {
     color: rgba(0, 0, 0, 0.5);
     font-size: 0.85em;

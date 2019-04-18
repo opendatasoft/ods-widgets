@@ -11,13 +11,13 @@
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
-         * This widget displays the 5 top publishers
+         * This widget displays the 5 top publishers.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
-         *              <ods-top-publishers context="public"></ods-top-publishers>
+         *          <ods-catalog-context context="example" example-domain="data.opendatasoft.com">
+         *              <ods-top-publishers context="example"></ods-top-publishers>
          *          </ods-catalog-context>
          *      </file>
          *  </example>
@@ -40,9 +40,9 @@
                 context: '='
             },
             controller: ['$scope', function($scope) {
-                var catalog_search = ODSAPI.uniqueCall(ODSAPI.datasets.search)
+                var catalog_search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
                 var refresh = function() {
-                    catalog_search($scope.context, 'publisher').
+                    catalog_search($scope.context, {facet: 'publisher'}).
                         success(function(data) {
                             $scope.publishers = data.facet_groups[0].facets.slice(0, 5);
                         });

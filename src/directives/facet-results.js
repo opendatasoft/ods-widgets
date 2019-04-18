@@ -28,10 +28,15 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com">
+         *          <ods-catalog-context context="catalog"
+         *                               catalog-domain="https://widgets-examples.opendatasoft.com/">
          *              <label>Select a facet:</label>
          *              <select ng-model="userchoice">
-         *                  <option ng-repeat="item in items" ods-facet-results="items" ods-facet-results-context="catalog" ods-facet-results-facet-name="publisher" value="{{item.name}}">{{item.name}}</option>
+         *                  <option ng-repeat="item in items"
+         *                          ods-facet-results="items"
+         *                          ods-facet-results-context="catalog"
+         *                          ods-facet-results-facet-name="publisher"
+         *                          value="{{item.name}}">{{item.name}}</option>
          *              </select>
          *          </ods-catalog-context>
          *      </file>

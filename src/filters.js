@@ -904,4 +904,78 @@
             return $filter('number')(formatted) + ' ' + units[count];
         };
     }]);
+
+    mod.filter('math', function() {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:math
+         *
+         * @function
+         * @param {string|Date|Number|Array} value A numerical value to process
+         * @param {string} function A Math library function. Can be any of:
+         * <b>abs</b> (absolute value),
+         * <b>cbrt</b> (cube root),
+         * <b>ceil</b> (smallest integer >= value),
+         * <b>cos</b> (cosine),
+         * <b>exp</b> (E**value),
+         * <b>floor</b> (largest integer <= value),
+         * <b>log` or `ln</b> (natural logarithm),
+         * <b>log2</b> (base 2 logarithm),
+         * <b>log10</b> (base 10 logarithm),
+         * <b>random</b> (pseudo-random number between 0 and 1 * value),
+         * <b>round</b> (value rounded to the nearest integer),
+         * <b>sign</b> (sign of value, pos. = 1, neg = -1, zero = 0),
+         * <b>sin</b> (sine),
+         * <b>sqrt</b> (positive square root),
+         * <b>tan</b> (tangent),
+         * <b>trunc</b> (integer part of value)
+         * <br/> or static properties: <b>PI</b> or <b>E</b>.
+         * @return {Number} The result
+         */
+        return function(val, func) {
+            /* whitelist of Math function, to avoid method injection and security problems */
+            /* dummy implementation as some function don't work the same than others... */
+            if (func === 'abs')
+                return Math.abs(val);
+            if (func === 'cbrt')
+                return Math.cbrt(val);
+            if (func === 'ceil')
+                return Math.ceil(val);
+            if (func === 'cos')
+                return Math.cos(val);
+            if (func === 'exp')
+                return Math.exp(val);
+            if (func === 'floor')
+                return Math.floor(val);
+            if (func === 'log' || func === 'ln')
+                return Math.log(val);
+            if (func === 'log2')
+                return Math.log2(val);
+            if (func === 'log10')
+                return Math.log10(val);
+            if (func === 'random')
+                return Math.random() * val;
+            if (func === 'round')
+                return Math.round(val);
+            if (func === 'sign')
+                return Math.sign(val);
+            if (func === 'sin')
+                return Math.sin(val);
+            if (func === 'sqrt')
+                return Math.sqrt(val);
+            if (func === 'tan')
+                return Math.tan(val);
+            if (func === 'trunc')
+                return Math.trunc(val);
+
+            /* Properties / replace value */
+            if (func === 'PI')
+                return Math.PI;
+            if (func === 'E')
+                return Math.E;
+
+            // else
+            return val;
+        }
+    });
 }());

@@ -19,8 +19,10 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
-         *              <ods-table context="stations"></ods-table>
+         *          <ods-dataset-context context="commute"
+         *                               commute-domain="https://widgets-examples.opendatasoft.com/"
+         *                               commute-dataset="commute-time-us-counties">
+         *              <ods-table context="commute"></ods-table>
          *          </ods-dataset-context>
          *      </file>
          *  </example>

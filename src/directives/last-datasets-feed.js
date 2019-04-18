@@ -16,8 +16,8 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
-         *              <ods-last-datasets-feed context="public"></ods-last-datasets-feed>
+         *          <ods-catalog-context context="example" example-domain="data.opendatasoft.com">
+         *              <ods-last-datasets-feed context="example"></ods-last-datasets-feed>
          *          </ods-catalog-context>
          *      </file>
          *  </example>

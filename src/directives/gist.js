@@ -17,7 +17,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-gist username="opendatasoft" gist-id="8d81bb33e5a062253fe0"></ods-gist>
+         *          <ods-gist username="Amli" gist-id="b845c8d4b3a2ce08c0a5ce3dd0d7625d"></ods-gist>
          *      </file>
          *  </example>
          */

@@ -11,8 +11,8 @@
          * @param {DatasetContext|DatasetContext[]} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} or array of context to use
          * @param {string=} [timeField=first date/datetime field available] The value is the name of the field (date or datetime) to filter on.<br><br><em>Use this form if you apply the timerange to only one context.</em>
          * @param {string=} [{context}TimeField=first date/datetime field available] The value is the name of the field (date or datetime) to filter on.<br><br><em>Use this form when you apply the timerange to multiple contexts. {context} must be replaced by the context name.</em>
-         * @param {string} [defaultFrom=none] Default datetime for the "from" field: either "yesterday", "now" or a string representing a date
-         * @param {string} [defaultTo=none] Default datetime for the "to" field: either "yesterday", "now" or a string representing a date
+         * @param {string} [defaultFrom=none] Default datetime for the "from" field: either "yesterday", "now" or a string representing a date. This value always uses the `YYYY-MM-DD HH:mm` or `YYYY-MM-DD` format.
+         * @param {string} [defaultTo=none] Default datetime for the "to" field: either "yesterday", "now" or a string representing a date. This value always uses the `YYYY-MM-DD HH:mm` or `YYYY-MM-DD` format.
          * @param {string} [displayTime=true] Define if the date selector displays the time selector as well
          * @param {string} [dateFormat='YYYY-MM-DD HH:mm'] Define the format for the date displayed in the inputs
          * @param {string} [suffix='fieldname'] (optional) Add a suffix to the q.timerange, q.from_date or q.to_date parameter. This prevents widgets from overriding each other.
@@ -25,12 +25,42 @@
          * @description
          * This widget displays two fields to select the two bounds of a date and time range.
          *
+         * Be careful, the values for the `defaultTo` and `defaultFrom` parameters MUST be in `YYYY-MM-DD HH:mm`
+         * (or `YYYY-MM-DD` for date only) whatever the displayFormat.
+         *
          *  @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
-         *              <ods-timerange context="cibul" default-from="yesterday" default-to="now"></ods-timerange>
-         *              <ods-table context="cibul"></ods-table>
+         *          <ods-dataset-context context="events"
+         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-dataset="evenements-publics-openagenda-extract">
+         *              <ods-timerange context="events"
+         *                             default-from="yesterday"
+         *                             default-to="now"
+         *                             display-time="true"></ods-timerange>
+         *              <ods-table context="events"></ods-table>
+         *          </ods-dataset-context>
+         *
+         *          <ods-dataset-context context="events"
+         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-dataset="evenements-publics-openagenda-extract">
+         *              <ods-timerange context="events"
+         *                             date-format="DD/MM/YYYY"
+         *                             default-from="2019-01-01"
+         *                             default-to="2019-02-01"></ods-timerange>
+         *              <ods-table context="events"></ods-table>
+         *          </ods-dataset-context>
+         *
+         *          <ods-dataset-context context="events"
+         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-dataset="evenements-publics-openagenda-extract">
+         *              <div ods-datetime="datenow">
+         *                  <ods-timerange context="events"
+         *                                 date-format="DD/MM/YYYY"
+         *                                 default-from="{{ datenow|moment:'YYYY-MM-DD' }}"
+         *                                 default-to="{{ (datenow | momentadd:'months':3)|moment:'YYYY-MM-DD' }}"></ods-timerange>
+         *              </div>
+         *              <ods-table context="events"></ods-table>
          *          </ods-dataset-context>
          *     </file>
          * </example>
@@ -188,7 +218,6 @@
                     var fromRome = rome(inputs[0], angular.extend({}, romeOptions, {
                         time: scope.displayTime,
                         dateValidator: rome.val.beforeEq(inputs[1]),
-                        initialValue: scope.defaultFrom,
                         inputFormat: scope.dateFormat
                     }));
                     fromRome.on('data', function(value) {
@@ -202,7 +231,6 @@
                     var toRome = rome(inputs[1], angular.extend({}, romeOptions, {
                         time: scope.displayTime,
                         dateValidator: rome.val.afterEq(inputs[0]),
-                        initialValue: scope.defaultTo,
                         inputFormat: scope.dateFormat
                     }));
                     toRome.on('data', function(value) {

@@ -224,7 +224,9 @@
          * @example
          * <example module="ods-widgets">
          *     <file name="index.html">
-         *         <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com">
+         *         <ods-dataset-context context="tree"
+         *                              tree-dataset="les-arbres-remarquables-de-paris"
+         *                              tree-domain="https://widgets-examples.opendatasoft.com/">
          *             <ods-dataset-json-schema context="tree"></ods-dataset-json-schema>
          *         </ods-dataset-context>
          *    </file>

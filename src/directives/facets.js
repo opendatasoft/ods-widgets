@@ -116,16 +116,16 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="public.opendatasoft.com"
-         *                               events-dataset="evenements-publics-cibul">
+         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-dataset="evenements-publics-openagenda-extract">
          *              <div class="row-fluid">
          *                  <div class="span4">
          *                      <ods-facets context="events">
-         *                          <ods-facet name="updated_at" title="Date"></ods-facet>
+         *                          <ods-facet name="date_mise_a_jour" title="Date"></ods-facet>
          *                          <h3>
          *                              <i class="icon-tags"></i> Tags
          *                          </h3>
-         *                          <ods-facet name="tags">
+         *                          <ods-facet name="mots_cles">
          *                              <div>
          *                                  <i class="icon-tag"></i> {{category.name}}
          *                              </div>

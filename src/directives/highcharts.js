@@ -678,7 +678,7 @@
                 if (serie.type !== 'treemap') {
                     options.dataLabels.formatter = function() {
                         var label;
-                        if (decimals) {
+                        if (decimals !== false) {
                             label = Highcharts.numberFormat(this.point.y, decimals);
                         } else {
                             label = Highcharts.numberFormat(this.point.y).replace(/([,.][0-9]*?)0+$/, '$1').replace(/[,.]$/, '');
@@ -1897,10 +1897,13 @@
          *
          * Basic example:
          *    <pre>
-         *        <ods-dataset-context hurricanetracks185120071-parameters="{}" hurricanetracks185120071-dataset="hurricane-tracks-1851-20071" context="hurricanetracks185120071">
-         *            <ods-chart timescale="year">
-         *                <ods-chart-query context="hurricanetracks185120071" field-x="track_date" timescale="year">
-         *                    <ods-chart-serie expression-y="pressure" chart-type="line" function-y="AVG" color="#66c2a5"></ods-chart-serie>
+         *        <ods-dataset-context context="trees"
+         *                             trees-dataset="les-arbres-remarquables-de-paris"
+         *                             trees-domain="https://widgets-examples.opendatasoft.com/">
+         *            <ods-chart>
+         *                <ods-chart-query context="trees" field-x="espece" maxpoints="10">
+         *                    <ods-chart-serie expression-y="circonference" chart-type="column" function-y="MAX" color="#66c2a5">
+         *                    </ods-chart-serie>
          *                </ods-chart-query>
          *            </ods-chart>
          *        </ods-dataset-context>
@@ -1908,11 +1911,15 @@
          *
          * You can display multiple series from the same dataset on the same chart:
          *    <pre>
-         *        <ods-dataset-context hurricanetracks185120071-parameters="{}" hurricanetracks185120071-dataset="hurricane-tracks-1851-20071" context="hurricanetracks185120071">
-         *          <ods-chart timescale="year">
-         *                <ods-chart-query context="hurricanetracks185120071" field-x="track_date" timescale="year">
-         *                    <ods-chart-serie expression-y="pressure" chart-type="line" function-y="AVG" color="#66c2a5"></ods-chart-serie>
-         *                    <ods-chart-serie expression-y="wind_kts" chart-type="line" function-y="AVG" color="#fc8d62"></ods-chart-serie>
+         *        <ods-dataset-context context="trees"
+         *                             trees-dataset="les-arbres-remarquables-de-paris"
+         *                             trees-domain="https://widgets-examples.opendatasoft.com/">
+         *            <ods-chart>
+         *                <ods-chart-query context="trees" field-x="espece" maxpoints="10">
+         *                    <ods-chart-serie expression-y="circonference" chart-type="column" function-y="AVG" color="#66c2a5">
+         *                    </ods-chart-serie>
+         *                    <ods-chart-serie expression-y="hauteur" chart-type="column" function-y="AVG" color="#fc8d62">
+         *                    </ods-chart-serie>
          *                </ods-chart-query>
          *            </ods-chart>
          *        </ods-dataset-context>
@@ -1920,14 +1927,18 @@
          *
          * You can display multiple series from multiple datasets on the same chart:
          *    <pre>
-         *        <ods-dataset-context hurricanetracks185120071-parameters="{}" hurricanetracks185120071-dataset="hurricane-tracks-1851-20071" thedeadliesthurricanesintheunitedstates19001996-parameters="{}" thedeadliesthurricanesintheunitedstates19001996-dataset="the-deadliest-hurricanes-in-the-united-states-1900-1996" context="hurricanetracks185120071,thedeadliesthurricanesintheunitedstates19001996">
-         *            <ods-chart timescale="year">
-         *                <ods-chart-query context="hurricanetracks185120071" field-x="track_date" timescale="year">
-         *                    <ods-chart-serie expression-y="wind_kts" chart-type="line" function-y="MAX" color="#66c2a5">
+         *        <ods-dataset-context context="commute,demographics"
+         *                             commute-dataset="commute-time-us-counties"
+         *                             commute-domain="https://widgets-examples.opendatasoft.com/">
+         *                             demographics-dataset="us-cities-demographics"
+         *                             demographics-domain="https://widgets-examples.opendatasoft.com/">
+         *            <ods-chart align-month="true">
+         *                <ods-chart-query context="commute" field-x="state" maxpoints="20">
+         *                    <ods-chart-serie expression-y="mean_commuting_time" chart-type="column" function-y="AVG" color="#66c2a5" scientific-display="true">
          *                    </ods-chart-serie>
          *                </ods-chart-query>
-         *                <ods-chart-query context="thedeadliesthurricanesintheunitedstates19001996" field-x="year" timescale="year">
-         *                    <ods-chart-serie expression-y="deaths" chart-type="column" function-y="AVG" color="#fc8d62">
+         *                <ods-chart-query context="demographics" field-x="state" maxpoints="20">
+         *                    <ods-chart-serie expression-y="count" chart-type="column" function-y="SUM" color="#fc8d62" scientific-display="true">
          *                    </ods-chart-serie>
          *                </ods-chart-query>
          *            </ods-chart>
@@ -2141,6 +2152,7 @@
          * @param {boolean} [stacked=false] Stack the resulting charts. Only works with columns, line charts and area charts.
          * @param {string} [seriesBreakdown=none] When declared, all series are break down by the defined facet
          * @param {string} [seriesBreakdownTimescale=true] if the break down facet is a time serie (date or datetime), it defines the aggregation level for this facet
+         * @param {object} [categoryColors={}] A object containing a color for each category name. For example: {'my value': '#FF0000', 'my other value': '#0000FF'}
          *
          * @description
          * odsChartQuery is the sub widget that defines the queries for the series defined inside.
@@ -2240,6 +2252,8 @@
          * @param {string} [expressionY] set up the facet used for aggregation
          * @param {string} [color] defines the color used for this serie. see colors below
          * @param {string} [labelY] specify a custom label for the serie
+         * @param {string} [labelsposition='outside'] specify the position of labels. value can 'inside' or 'outside' (for pie charts only)
+         * @param {number} [innersize=0] this parameter can be used to change a pie chart into a donut by creating a hole in the center. The value is expressed in pixels.
          * @param {boolean} [cumulative] Y values are accumulated
          * @param {boolean} [logarithmic=false] display the serie using a logarithmic scale
          * @param {integer} [min=null] minimum value to be displayed on the Y axis. If not defined, it is computed automatically.
@@ -2252,7 +2266,7 @@
          * @param {number} [multiplier] multiply all values for this serie by the defined number
          * @param {string} [colorThresholds] an array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the defined color is used. The format for this parameter is color-thresholds="[{'value': 5, 'color': '#00ff00'},{'value': 10, 'color': '#ffff00'}]"
          * @param {string} [subsets] used when functionY is set to 'QUANTILES' to define the wanted quantile
-         * @param {boolean} [subseries] an array containing 2 objects. TODO add explanation for this...
+         * @param {boolean} [subseries] an array of subserie. They are used for range, columnrange and boxplot charts. Each item of the array contains an object like: {"func": "AVG", "yAxis": "myfield"}
          * @param {string} [refineOnClickContext] context name or array of of contexts name on which to refine when the serie is clicked on. Won't work properly if the fieldX attribute of the parent odsChartQuery is a date or datetime field and if the associated timescale is not one of 'year', 'month', 'day', 'hour', 'minute'
          * @param {string} [refineOnClick[context]ContextField] name of the field that will be refined for each context.
          *

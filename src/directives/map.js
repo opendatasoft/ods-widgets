@@ -794,6 +794,7 @@
                     // TODO: Maybe we can just watch a single layer and only refresh this one?
                     var startConfigWatcher = function() {
                         //console.log('Start config watcher');
+                        stopColorWatcher();
                         configWatcher = scope.$watch(function() {
                             // We want a light version of the config, and the only reliable mechanism to efficiently
                             // simplify a complex object for comparison is JSON.stringify.
@@ -832,15 +833,29 @@
 
                     };
 
-
-
-
                     var stopConfigWatcher = function() {
                         //console.log('Stop config watcher');
                         if (configWatcher) {
                             configWatcher();
                         }
+                        startColorWatcher();
                     };
+
+                    var unwatchColor;
+                    var startColorWatcher = function() {
+                        if (ctrl.userControlledColors.length) {
+                            unwatchColor = scope.$watch(function() { return ctrl.userControlledColors; }, function() {
+                                refreshData();
+                            }, true);
+                        }
+
+                    };
+                    var stopColorWatcher = function() {
+                        if (unwatchColor) {
+                            unwatchColor();
+                        }
+                    };
+                    startColorWatcher();
 
                     scope.$watch('dynamicConfig', function(nv, ov) {
                         if (angular.isDefined(nv)) {
@@ -1342,6 +1357,13 @@
                     });
                 };
 
+                // The list of color objects that have been configured as a widget parameter, and therefore could
+                // change
+                this.userControlledColors = [];
+                this.registerUserControlledColor = function(colorConfiguration) {
+                    this.userControlledColors.push(colorConfiguration);
+                };
+
                 // watch for reset
                 var that = this;
                 $scope.$watch(
@@ -1508,6 +1530,7 @@
                     if (scope.colorCategoriesOther) {
                         color.otherCategories = scope.colorCategoriesOther;
                     }
+                    mapCtrl.registerUserControlledColor(color);
                 } else if (scope.colorGradient) {
                     color = {
                         type: 'gradient',

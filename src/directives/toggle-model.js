@@ -22,10 +22,10 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-catalog-context context="catalog"
-         *                               catalog-domain="public.opendatasoft.com"
+         *                               catalog-domain="https://data.opendatasoft.com"
          *                               catalog-parameters="{'disjunctive.publisher':true}">
-         *              <input type="checkbox" ods-toggle-model="catalog.parameters" ods-toggle-key="refine.publisher" ods-toggle-value="OpenStreetMap"> OpenStreetMap
-         *              <input type="checkbox" ods-toggle-model="catalog.parameters" ods-toggle-key="refine.publisher" ods-toggle-value="Eurostat"> Eurostat
+         *              <label><input type="checkbox" ods-toggle-model="catalog.parameters" ods-toggle-key="refine.publisher" ods-toggle-value="OpenStreetMap"> OpenStreetMap</label>
+         *              <label><input type="checkbox" ods-toggle-model="catalog.parameters" ods-toggle-key="refine.publisher" ods-toggle-value="Eurostat"> Eurostat</label>
          *              <div ods-results="items" ods-results-context="catalog" ods-results-max="10">
          *                  {{items.length}}
          *              <table>

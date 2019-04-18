@@ -82,25 +82,25 @@
          *  </pre>
          *
          *  <pre>
-         *  <ods-dataset-context context="trees,clocks"
-         *                       trees-dataset="arbresalignementparis2010"
-         *                       trees-domain="http://opendata.paris.fr"
-         *                       clocks-dataset="horloges_exterieures_et_interieures"
-         *                       clocks-domain="public">
+         *  <ods-dataset-context context="trees,events"
+         *                       trees-dataset="les-arbres-remarquables-de-paris"
+         *                       trees-domain="https://widgets-examples.opendatasoft.com/"
+         *                       clocks-dataset="evenements-publics-openagenda-extract"
+         *                       clocks-domain="widgets-examples">
          *      <!-- Shows a list of the trees -->
          *      <ods-table context="trees"></ods-table>
          *      <!-- Shows a map of clocks -->
-         *      <ods-map context="clocks"></ods-map>
+         *      <ods-map context="events"></ods-map>
          *  </ods-dataset-context>
          *  </pre>
          *
          *  <pre>
-         *  <ods-dataset-context context="stations"
-         *                       stations-dataset="jcdecaux_bike_data"
-         *                       stations-domain="public.opendatasoft.com"
-         *                       stations-parameters="{'q': 'place', 'refine.contract_name': 'Paris'}">
-         *      <!-- All bike stations in Paris that have 'place' in their name or address -->
-         *      <ods-map context="trees"></ods-map>
+         *  <ods-dataset-context context="demographics"
+         *                       stations-dataset="us-cities-demographics"
+         *                       stations-domain="https://widgets-examples.opendatasoft.com/"
+         *                       stations-parameters="{'q': 'Santa', 'refine.state': 'California'}">
+         *      <!-- Demographics for all cities in California that have 'Santa' in their name -->
+         *      <ods-table context="demographics"></ods-table>
          *  </ods-dataset-context>
          *  </pre>
          */

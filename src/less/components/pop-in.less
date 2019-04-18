@@ -1,0 +1,55 @@
+.ods-pop-in {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+}
+
+.ods-pop-in--hidden {
+    display: none;
+}
+
+.ods-pop-in__container {
+    position: relative;
+    max-width: 700px;
+    max-height: 500px;
+    background-color: @color-white;
+    vertical-align: middle;
+    padding: 60px;
+    border: 1px solid @color-grey;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    margin: 0 10px;
+}
+
+.ods-pop-in__close-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+[dir="rtl"] .ods-pop-in__close-button {
+    right: auto;
+    left: 20px;
+}
+
+.ods-pop-in__close-button i {
+    display: block;
+    color: #999999;
+}
+
+.ods-pop-in__body {
+    overflow: auto;
+    max-height: 380px;
+}

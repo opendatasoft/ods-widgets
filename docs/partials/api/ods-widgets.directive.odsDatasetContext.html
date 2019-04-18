@@ -89,24 +89,24 @@ configured using specific attributes, as described below.</p>
 &lt;/ods-dataset-context&gt;
 </pre>
 <pre class="prettyprint linenums">
-&lt;ods-dataset-context context="trees,clocks"
-                     trees-dataset="arbresalignementparis2010"
-                     trees-domain="http://opendata.paris.fr"
-                     clocks-dataset="horloges_exterieures_et_interieures"
-                     clocks-domain="public"&gt;
+&lt;ods-dataset-context context="trees,events"
+                     trees-dataset="les-arbres-remarquables-de-paris"
+                     trees-domain="https://widgets-examples.opendatasoft.com/"
+                     clocks-dataset="evenements-publics-openagenda-extract"
+                     clocks-domain="widgets-examples"&gt;
     &lt;!-- Shows a list of the trees --&gt;
     &lt;ods-table context="trees"&gt;&lt;/ods-table&gt;
     &lt;!-- Shows a map of clocks --&gt;
-    &lt;ods-map context="clocks"&gt;&lt;/ods-map&gt;
+    &lt;ods-map context="events"&gt;&lt;/ods-map&gt;
 &lt;/ods-dataset-context&gt;
 </pre>
 <pre class="prettyprint linenums">
-&lt;ods-dataset-context context="stations"
-                     stations-dataset="jcdecaux_bike_data"
-                     stations-domain="public.opendatasoft.com"
-                     stations-parameters="{'q': 'place', 'refine.contract_name': 'Paris'}"&gt;
-    &lt;!-- All bike stations in Paris that have 'place' in their name or address --&gt;
-    &lt;ods-map context="trees"&gt;&lt;/ods-map&gt;
+&lt;ods-dataset-context context="demographics"
+                     stations-dataset="us-cities-demographics"
+                     stations-domain="https://widgets-examples.opendatasoft.com/"
+                     stations-parameters="{'q': 'Santa', 'refine.state': 'California'}"&gt;
+    &lt;!-- Demographics for all cities in California that have 'Santa' in their name --&gt;
+    &lt;ods-table context="demographics"&gt;&lt;/ods-table&gt;
 &lt;/ods-dataset-context&gt;
 </pre>
 </div></div>

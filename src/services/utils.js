@@ -102,6 +102,21 @@
                     'ss@https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.js'
                 ]
             },
+            'vega': {
+                'js': [[
+                    'https://vega.github.io/vega/assets/promise.min.js',
+                    'https://vega.github.io/vega/assets/symbol.min.js',
+                    'https://vega.github.io/vega/assets/fetch.min.js',
+                ], [
+                    "vega@https://cdn.jsdelivr.net/npm/vega@4.3.0",
+                    "vl@https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc12",
+                    "vegaTooltip@https://cdn.jsdelivr.net/npm/vega-tooltip@0.13.0",
+                ]],
+            },
+            'ion.rangeSlider': {
+                'js': ['https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.0/js/ion.rangeSlider.min.js'],
+                'css': ['https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.0/css/ion.rangeSlider.min.css']
+            },
         };
 
         this.getConfig = function() {

@@ -14,7 +14,8 @@ see <a href="#/api/ods-widgets.directive:odsChart">odsChart</a> for complete exa
        maxpoints="{integer}"
        stacked="{boolean}"
        series-breakdown="{string}"
-       series-breakdown-timescale="{string}"&gt;
+       series-breakdown-timescale="{string}"
+       category-colors="{object}"&gt;
 &lt;/ods-chart-query&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -26,5 +27,6 @@ see <a href="#/api/ods-widgets.directive:odsChart">odsChart</a> for complete exa
 </div> <p><em>(default: 50)</em></p></td></tr><tr><td>stacked</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>Stack the resulting charts. Only works with columns, line charts and area charts.</p>
 </div> <p><em>(default: false)</em></p></td></tr><tr><td>seriesBreakdown</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>When declared, all series are break down by the defined facet</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>seriesBreakdownTimescale</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>if the break down facet is a time serie (date or datetime), it defines the aggregation level for this facet</p>
-</div> <p><em>(default: true)</em></p></td></tr></tbody></table></div>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>categoryColors</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>A object containing a color for each category name. For example: {&#39;my value&#39;: &#39;#FF0000&#39;, &#39;my other value&#39;: &#39;#0000FF&#39;}</p>
+</div> <p><em>(default: {})</em></p></td></tr></tbody></table></div>
 </div>

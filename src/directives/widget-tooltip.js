@@ -20,8 +20,10 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="cheese" cheese-domain="public.opendatasoft.com" cheese-dataset="frenchcheese">
-         *              <ods-media-gallery context="cheese" ods-widget-tooltip>
+         *          <ods-dataset-context context="affiches"
+         *                               affiches-domain="https://widgets-examples.opendatasoft.com/"
+         *                               affiches-dataset="affiches-anciennes">
+         *              <ods-media-gallery context="affiches" ods-auto-resize ods-widget-tooltip>
          *                  <h3>My custom tooltip</h3>
          *                  {{ getRecordTitle(record) }}
          *              </ods-media-gallery>

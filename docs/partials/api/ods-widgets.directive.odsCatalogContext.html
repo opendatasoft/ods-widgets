@@ -68,9 +68,10 @@ configured using specific attributes, as described below.</p>
 <div class="tabbable"><div class="tab-pane" title="index.html">
 <pre class="prettyprint linenums" ng-set-text="index.html-4" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
 <script type="text/ng-template" id="index.html-4">
-    <ods-catalog-context context="public" public-domain="public.opendatasoft.com">
-        <pre>{{ public }}</pre>
-        <ods-result-enumerator context="public">
+    <ods-catalog-context context="examples"
+                         examples-domain="https://widgets-examples.opendatasoft.com/">
+        <pre>{{ examples }}</pre>
+        <ods-result-enumerator context="examples">
             <p>{{item.datasetid}}</p>
         </ods-result-enumerator>
     </ods-catalog-context>

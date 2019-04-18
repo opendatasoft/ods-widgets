@@ -32,29 +32,32 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com">
+         *          <ods-dataset-context context="tree"
+         *                               tree-dataset="les-arbres-remarquables-de-paris"
+         *                               tree-domain="https://widgets-examples.opendatasoft.com/">
          *              <table class="table table-bordered table-condensed table-striped">
          *                  <thead>
          *                      <tr>
          *                          <th>Tree name</th>
          *                          <th>Height</th>
-         *                          <th>Circonference</th>
+         *                          <th>Girth</th>
          *                      </tr>
          *                  </thead>
          *                  <tbody>
-         *                      <tr ng-repeat="result in analysis.results"
-         *                              ods-analysis="analysis"
-         *                              ods-analysis-context="tree"
-         *                              ods-analysis-max="10"
-         *                              ods-analysis-x="espece"
-         *                              ods-analysis-sort="circonference"
-         *                              ods-analysis-serie-hauteur="AVG(hauteurenm)"
-         *                              ods-analysis-serie-hauteur-cumulative="false"
-         *                              ods-analysis-serie-circonference="AVG(circonferenceencm)"
+         *                      <tr ods-analysis="analysis"
+         *                          ods-analysis-context="tree"
+         *                          ods-analysis-max="10"
+         *                          ods-analysis-x="espece"
+         *                          ods-analysis-sort="circonference"
+         *                          ods-analysis-serie-height="AVG(hauteur)"
+         *                          ods-analysis-serie-height-cumulative="false"
+         *                          ods-analysis-serie-girth="AVG(circonference)"
+         *
+         *                          ng-repeat="result in analysis.results"
          *                      >
          *                          <td>{{ result.x }}</td>
-         *                          <td>{{ result.hauteur|number:2 }}</td>
-         *                          <td>{{ result.circonference|number:2 }}</td>
+         *                          <td>{{ result.height|number:2 }}</td>
+         *                          <td>{{ result.girth|number:2 }}</td>
          *                      </tr>
          *                  </tbody>
          *              </table>
@@ -190,6 +193,7 @@
 
     mod.directive('odsAnalysisSerie', [function() {
         /**
+         * deprecated
          * @ngdoc directive
          * @name ods-widgets.directive:odsAnalysisSerie
          * @scope
@@ -206,7 +210,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com">
+         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://widgets-examples.opendatasoft.com/">
          *              <div
          *                      ods-analysis="analysis"
          *                      ods-analysis-context="tree"
@@ -214,9 +218,9 @@
          *                      ods-analysis-x="genre"
          *                      ods-analysis-x="espece"
          *                      ods-analysis-sort="circonference"
-         *                      ods-analysis-serie-hauteur="AVG(hauteurenm)"
+         *                      ods-analysis-serie-hauteur="AVG(hauteur)"
          *                      ods-analysis-serie-hauteur-cumulative="false"
-         *                      ods-analysis-serie-circonference="AVG(circonferenceencm)">
+         *                      ods-analysis-serie-circonference="AVG(circonference)">
          *                 <div
          *                      ods-analysis-serie="analysis.results"
          *                      ods-analysis-serie-condition="y > 20"
@@ -234,17 +238,17 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
-         *                               tree-dataset="arbresremarquablesparis2011"
-         *                               tree-domain="parisdata.opendatasoft.com">
+         *                               tree-dataset="les-arbres-remarquables-de-paris"
+         *                               tree-domain="https://widgets-examples.opendatasoft.com/">
          *              <div ods-analysis="analysis"
          *                   ods-analysis-context="tree"
          *                   ods-analysis-max="10"
          *                   ods-analysis-x-genre="genre"
          *                   ods-analysis-x-espece="espece"
          *                   ods-analysis-sort="circonference"
-         *                   ods-analysis-serie-hauteur="AVG(hauteurenm)"
+         *                   ods-analysis-serie-hauteur="AVG(hauteur)"
          *                   ods-analysis-serie-hauteur-cumulative="false"
-         *                   ods-analysis-serie-circonference="AVG(circonferenceencm)">
+         *                   ods-analysis-serie-circonference="AVG(circonference)">
          *                  <div ods-analysis-serie="analysis.results"
          *                       ods-analysis-serie-condition="y > 20"
          *                       ods-analysis-serie-name="hauteur"
@@ -365,7 +369,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com">
+         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://widgets-examples.opendatasoft.com/">
          *              <div
          *                  ods-analysis="analysis"
          *                  ods-analysis-context="tree"
@@ -373,15 +377,15 @@
          *                  ods-analysis-x-genre="genre"
          *                  ods-analysis-x-espace="espece"
          *                  ods-analysis-sort="circonference"
-         *                  ods-analysis-serie-hauteur="AVG(hauteurenm)"
-         *                  ods-analysis-serie-hauteur-cumulative="false"
-         *                  ods-analysis-serie-circonference="AVG(circonferenceencm)">
+         *                  ods-analysis-serie-height="AVG(hauteur)"
+         *                  ods-analysis-serie-height-cumulative="false"
+         *                  ods-analysis-serie-girth="AVG(circonference)">
          *                  <div
          *                      ods-subaggregation="analysis.results"
-         *                      ods-subaggregation-serie-maxhauteur="MAX(hauteur)"
-         *                      ods-subaggregation-serie-avgcirc="AVG(circonference)">
-         *                      max height: {{ results[0].maxhauteur|number:2 }}<br>
-         *                      average circonference: {{ results[0].avgcirc }}
+         *                      ods-subaggregation-serie-maxheight="MAX(height)"
+         *                      ods-subaggregation-serie-avggirth="MEAN(girth)">
+         *                      max height: {{ results[0].maxheight|number:2 }}<br>
+         *                      average girth: {{ results[0].avggirth|number:2 }}
          *                  </div>
          *              </div>
          *          </ods-dataset-context>

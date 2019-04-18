@@ -28,9 +28,11 @@
          *  @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
-         *              <ods-timescale context="cibul" default-value="day"></ods-timescale>
-         *              <ods-map context="cibul"></ods-map>
+         *          <ods-dataset-context context="events"
+         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-dataset="evenements-publics-openagenda-extract">
+         *              <ods-timescale context="events" default-value="everything"></ods-timescale>
+         *              <ods-map context="events"></ods-map>
          *          </ods-dataset-context>
          *     </file>
          * </example>

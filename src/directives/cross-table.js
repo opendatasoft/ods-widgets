@@ -32,15 +32,15 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="averagewages"
-         *                               averagewages-domain="https://data.opendatasoft.com"
-         *                               averagewages-dataset="oecd-average-wages@public-us">
-         *              <ods-cross-table context="averagewages"
-         *                               rows="location"
-         *                               column="time"
-         *                               serie-production-label="Average wages"
-         *                               serie-production-func="AVG"
-         *                               serie-production-expr="value"></ods-cross-table>
+         *         <ods-dataset-context context="trees"
+         *                              trees-dataset="les-arbres-remarquables-de-paris"
+         *                              trees-domain="https://widgets-examples.opendatasoft.com/">
+         *              <ods-cross-table context="trees"
+         *                               rows="arrondissement"
+         *                               column="espece"
+         *                               serie-height-label="Average height"
+         *                               serie-height-func="AVG"
+         *                               serie-height-expr="hauteur"></ods-cross-table>
          *          </ods-dataset-context>
          *      </file>
          *  </example>

@@ -44,12 +44,12 @@ can be browsed on http://public.opendatasoft.com/explore/dataset/restaurants_a_p
 There is a complete tutorial to help you build your first page around a simple example.
 Since it is build on public data, you can reproduce it by yourself and even use it as a basis
 for your first project.
-#### [> Tutorial to build your first page](http://opendatasoft.github.io/ods-widgets/docs/#/tutorial)
+#### [> Tutorial to build your first page](https://help.opendatasoft.com/widgets/#/tutorial/)
 
 There is a complete reference documentation of all the available directives and all
 the parameters they support. It also contains more literature on the technical
 details of the library.
-#### [> Reference Documentation](http://opendatasoft.github.io/ods-widgets/docs/)
+#### [> Reference Documentation](https://help.opendatasoft.com/widgets)
 
 ### Compatibility
 Known to work on: (may not be exhaustive)

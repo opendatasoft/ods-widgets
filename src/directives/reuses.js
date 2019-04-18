@@ -28,7 +28,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="paris" paris-domain="http://opendata.paris.fr">
+         *          <ods-catalog-context context="paris" paris-domain="https://opendata.paris.fr">
          *              <ods-reuses context="paris"></ods-reuses>
          *          </ods-catalog-context>
          *      </file>

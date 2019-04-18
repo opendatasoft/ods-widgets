@@ -30,14 +30,14 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *              <ods-dataset-context context="events"
-         *                                   events-domain="public.opendatasoft.com"
-         *                                   events-dataset="evenements-publics-cibul">
+         *                                   events-domain="https://widgets-examples.opendatasoft.com/"
+         *                                   events-dataset="evenements-publics-openagenda-extract">
          *                  <ods-calendar context="events"
-         *                                start-field="date_start"
-         *                                end-field="date_end"
-         *                                title-field="title"
+         *                                start-field="date_debut"
+         *                                end-field="date_de_fin"
+         *                                title-field="titre"
          *                                event-color="#333"
-         *                                tooltip-fields="image, latlon, link, description"></ods-calendar>
+         *                                tooltip-fields="image, latlon, lien, description"></ods-calendar>
          *              </ods-dataset-context>
          *      </file>
          *  </example>

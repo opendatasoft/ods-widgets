@@ -27,11 +27,11 @@
          *
          * <pre>
          *  <ods-dataset-context context="tree"
-         *                       tree-dataset="arbresremarquablesparis2011"
-         *                       tree-domain="parisdata.opendatasoft.com">
+         *                       tree-dataset="les-arbres-remarquables-de-paris"
+         *                       tree-domain="https://widgets-examples.opendatasoft.com/">
          *      <div ods-aggregation="height"
          *           ods-aggregation-context="tree"
-         *           ods-aggregation-expression="hauteurenm"
+         *           ods-aggregation-expression="hauteur"
          *           ods-aggregation-function="AVG">
          *          Average height is {{ height | number }} meters.
          *      </div>
@@ -41,19 +41,20 @@
          * Multiple aggregations example:
          *
          * <pre>
-         *  <ods-dataset-context context="tree"
-         *                       tree-dataset="arbresremarquablesparis2011"
-         *                       tree-domain="parisdata.opendatasoft.com">
-         *      <div ods-aggregation="total, mingirth, maxgirth"
-         *           ods-aggregation-total-context="tree"
-         *           ods-aggregation-total-function="COUNT"
-         *           ods-aggregation-maxgirth-context="tree"
-         *           ods-aggregation-maxgirth-expression="circonferenceencm"
-         *           ods-aggregation-maxgirth-function="MAX"
-         *           ods-aggregation-mingirth-context="tree"
-         *           ods-aggregation-mingirth-expression="circonferenceencm"
-         *           ods-aggregation-mingirth-function="MIN">
-         *          There are {{ total }} remarkable trees in paris, with girth ranging from {{ mingirth }} to {{ maxgirth }} cm.
+         *  <ods-dataset-context context="commute,demographics"
+         *                       commute-dataset="commute-time-us-counties"
+         *                       commute-domain="https://widgets-examples.opendatasoft.com/"
+         *                       demographics-dataset="us-cities-demographics"
+         *                       demographics-domain="https://widgets-examples.opendatasoft.com/"
+         *  >
+         *      <div ods-aggregation="population, time"
+         *           ods-aggregation-population-context="demographics"
+         *           ods-aggregation-population-function="SUM"
+         *           ods-aggregation-time-context="commute"
+         *           ods-aggregation-time-function="AVG"
+         *           ods-aggregation-time-expression="mean_commuting_time"
+         *      >
+         *          The average commute time in the US in 2015 was {{ time|number:2 }} minutes for a population of {{ population }} people.
          *      </div>
          *  </ods-dataset-context>
          * </pre>
@@ -62,21 +63,20 @@
          *
          * <pre>
          *  <ods-dataset-context context="tree"
-         *                       tree-dataset="arbresremarquablesparis2011"
-         *                       tree-domain="parisdata.opendatasoft.com">
+         *                       tree-dataset="les-arbres-remarquables-de-paris"
+         *                       tree-domain="https://widgets-examples.opendatasoft.com/">
          *      <div ods-aggregation="total, mingirth, maxgirth"
          *           ods-aggregation-context="tree"
          *           ods-aggregation-total-function="COUNT"
-         *           ods-aggregation-maxgirth-expression="circonferenceencm"
+         *           ods-aggregation-maxgirth-expression="circonference"
          *           ods-aggregation-maxgirth-function="MAX"
-         *           ods-aggregation-mingirth-expression="circonferenceencm"
+         *           ods-aggregation-mingirth-expression="circonference"
          *           ods-aggregation-mingirth-function="MIN">
          *          There are {{ total }} remarkable trees in paris, with girth ranging from {{ mingirth }} to {{ maxgirth }} cm.
          *      </ div>
          *  </ods-dataset-context>
          * </pre>
          */
-
         return {
             restrict: 'A',
             scope: true,

@@ -49,8 +49,10 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
-         *              <ods-map-legacy context="stations"></ods-map-legacy>
+         *          <ods-dataset-context context="events"
+         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-dataset="evenements-publics-openagenda-extract">
+         *              <ods-map-legacy context="events"></ods-map-legacy>
          *          </ods-dataset-context>
          *      </file>
          *  </example>

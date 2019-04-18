@@ -21,26 +21,28 @@
          * @example
          * <example module="ods-widgets">
          *     <file name="index.html">
-         *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
+         *          <ods-dataset-context context="events"
+         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-dataset="evenements-publics-openagenda-extract">
          *              <div ng-init="values = {'from':undefined,'to':undefined}">
-         *                  <ods-timerange context="cibul"
+         *                  <ods-timerange context="events"
          *                          default-from="2019/01/01"
          *                          default-to="2019/02/31"
          *                          from="values.from"
          *                          to="values.to">
          *                  </ods-timerange>
          *                  <ods-timer stop-condition="false"
-         *                        delay="3000"
-         *                        exec="values.from = (values.from | momentadd : 'day' : 1 | moment : 'YYYY-MM-DD');
-         *                              values.to = (values.to | momentadd : 'day' : 1 | moment : 'YYYY-MM-DD');">
+         *                             delay="3000"
+         *                             exec="values.from = (values.from | momentadd : 'day' : 1 | moment : 'YYYY-MM-DD');
+         *                                   values.to = (values.to | momentadd : 'day' : 1 | moment : 'YYYY-MM-DD');">
          *                  </ods-timer>
          *                  <div>
-         *                      <h1  ods-aggregation="cnt"
-         *                           ods-aggregation-context="cibul"
-         *                           ods-aggregation-function="COUNT">
+         *                      <h1 ods-aggregation="cnt"
+         *                          ods-aggregation-context="events"
+         *                          ods-aggregation-function="COUNT">
          *                          # events : {{ cnt  | number}}
          *                      </h1>
-         *                      <ods-table context="cibul"></ods-table>
+         *                      <ods-table context="events"></ods-table>
          *                  </div>
          *              </div>
          *          </ods-dataset-context>

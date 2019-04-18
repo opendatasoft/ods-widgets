@@ -5,30 +5,23 @@
   top: 0;
   left: 0;
   z-index: 50;
-  background-color: #126e92;
+  background-color: #126E92;
 }
 @media (min-width: 992px) {
   .ods-header {
-    display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
-        -ms-flex-direction: row;
-            flex-direction: row;
-    -webkit-box-pack: start;
-        -ms-flex-pack: start;
-            justify-content: flex-start;
+    -ms-flex-direction: row;
+        flex-direction: row;
+    -ms-flex-pack: start;
+        justify-content: flex-start;
   }
 }
 .ods-header__brand {
-  display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  -ms-flex-direction: row;
+      flex-direction: row;
   -ms-flex-pack: distribute;
       justify-content: space-around;
   height: 99px;
@@ -53,7 +46,7 @@
   border: none;
   margin: auto 0;
   background-color: white;
-  color: #126e92;
+  color: #126E92;
   border-radius: 4px;
   padding: 5px 10px;
   font-size: 16px;
@@ -98,9 +91,8 @@
   top: 100px;
   right: -300px;
   height: 100%;
-  background-color: #126e92;
+  background-color: #126E92;
   z-index: 1000;
-  display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   transition: 0.5s;
@@ -110,10 +102,8 @@
     position: fixed;
     width: 300px;
     padding-top: 40px;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-        -ms-flex-direction: column;
-            flex-direction: column;
+    -ms-flex-direction: column;
+        flex-direction: column;
     border-top: 1px solid white;
   }
 }
@@ -122,10 +112,8 @@
     margin-left: 100px;
     position: static;
     width: auto;
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
-        -ms-flex-direction: row;
-            flex-direction: row;
+    -ms-flex-direction: row;
+        flex-direction: row;
     -ms-flex-pack: distribute;
         justify-content: space-around;
     border: none;
@@ -328,7 +316,7 @@ button {
 }
 .nav-items-link {
   display: block;
-  color: #126e92;
+  color: #126E92;
   font-size: 22px;
   padding: 10px 0 10px 14px;
   margin: 10px 0;
@@ -337,7 +325,7 @@ button {
   text-decoration: none;
 }
 .nav-items-link:hover {
-  background-color: #126e92;
+  background-color: #126E92;
   color: white;
   text-decoration: none;
 }
@@ -352,11 +340,11 @@ button {
   }
 }
 .nav-items-link-active {
-  background-color: #126e92;
+  background-color: #126E92;
   color: white!important;
 }
 .ng-binding {
-  color: #7b7b7b;
+  color: #7B7B7B;
   font-size: 16px;
   line-height: 30px;
   font-weight: 500;
@@ -370,19 +358,19 @@ button {
 .nav-list > .active > a,
 .nav-list > .active > a:hover,
 .nav-list > .active > a:focus {
-  background-color: #126e92;
+  background-color: #126E92;
   text-shadow: none;
 }
 .nav-list > .active > a > [class^="icon-"] {
   color: white!important;
 }
 .api-list-item:hover .ng-binding {
-  background-color: #126e92 !important;
+  background-color: #126E92 !important;
   color: white!important;
   text-shadow: none;
 }
 .api-list-item:hover .pull-right {
-  background-color: #126e92 !important;
+  background-color: #126E92 !important;
 }
 .api-list-item:hover .pull-right .icon-cog {
   color: white!important;
@@ -515,11 +503,11 @@ li {
   }
 }
 .link_github {
-  color: #7b7b7b;
+  color: #7B7B7B;
   text-decoration: none;
 }
 .link_github:hover {
-  color: #7b7b7b;
+  color: #7B7B7B;
   outline: none;
 }
 @media (max-width: 991px) {
@@ -530,4 +518,14 @@ li {
     position: fixed;
     height: 100%;
   }
+}
+.doc-example-live {
+  position: relative;
+}
+.doc-example-live button {
+  height: 30px;
+}
+.doc-example-live button.odswidget-table__sort-icon {
+  height: 9px;
+  font-size: 8px;
 }

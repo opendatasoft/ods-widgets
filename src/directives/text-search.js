@@ -27,11 +27,11 @@
          *  @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="cibul"
-         *                               cibul-domain="public.opendatasoft.com"
-         *                               cibul-dataset="evenements-publics-cibul">
-         *              <ods-text-search context="cibul" field="title"></ods-text-search>
-         *              <ods-table context="cibul"></ods-table>
+         *          <ods-dataset-context context="events"
+         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-dataset="evenements-publics-openagenda-extract">
+         *              <ods-text-search context="events" field="titre"></ods-text-search>
+         *              <ods-table context="events"></ods-table>
          *          </ods-dataset-context>
          *     </file>
          * </example>
@@ -40,13 +40,13 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="cibul"
-         *                               cibul-domain="public.opendatasoft.com"
-         *                               cibul-dataset="evenements-publics-cibul">
-         *              <ods-text-search context="cibul" suffix="primary"></ods-text-search>
-         *              <ods-text-search context="cibul" suffix="secondary"></ods-text-search>
-         *              <ods-text-search context="cibul" field="title"></ods-text-search>
-         *              <ods-table context="cibul"></ods-table>
+         *          <ods-dataset-context context="events"
+         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-dataset="evenements-publics-openagenda-extract">
+         *              <ods-text-search context="events" suffix="primary"></ods-text-search>
+         *              <ods-text-search context="events" suffix="secondary"></ods-text-search>
+         *              <ods-text-search context="events" field="titre"></ods-text-search>
+         *              <ods-table context="events"></ods-table>
          *          </ods-dataset-context>
          *     </file>
          * </example>
@@ -57,16 +57,16 @@
          *  @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="cibul,medecins"
-         *                               cibul-domain="public.opendatasoft.com"
-         *                               cibul-dataset="evenements-publics-cibul"
-         *                               medecins-domain="public.opendatasoft.com"
-         *                               medecins-dataset="donnees-sur-les-medecins-accredites">
-         *              <ods-text-search context="[cibul,medecins]"
-         *                               cibul-field="title"
-         *                               medecins-field="libelle_long_de_la_specialite_du_medecin"></ods-text-search>
-         *              <ods-table context="cibul"></ods-table>
-         *              <ods-table context="medecins"></ods-table>
+         *          <ods-dataset-context context="events,trees"
+         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-dataset="evenements-publics-openagenda-extract"
+         *                               trees-domain="https://widgets-examples.opendatasoft.com/"
+         *                               trees-dataset="les-arbres-remarquables-de-paris">
+         *              <ods-text-search context="[events,trees]"
+         *                               events-field="titre"
+         *                               trees-field="libellefrancais"></ods-text-search>
+         *              <ods-table context="events"></ods-table>
+         *              <ods-table context="trees"></ods-table>
          *          </ods-dataset-context>
          *      </file>
          * </example>

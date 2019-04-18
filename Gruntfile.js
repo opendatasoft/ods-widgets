@@ -117,6 +117,7 @@ module.exports = function(grunt) {
                 cwd: 'assets/',
                 src: [
                     'ODS_logo_widgets_blanc.svg',
+                    'opendatasoft-logo.svg',
                     'ods-favicon.ico'
                 ],
                 dest: 'docs/assets'

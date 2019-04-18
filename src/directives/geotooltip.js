@@ -30,12 +30,14 @@
              *              <ods-geotooltip coords="[48.841601, 2.284822]">Nice people</ods-geotooltip>
              *          </p>
              *
-             *          <ods-dataset-context context="stations" stations-domain="public.opendatasoft.com" stations-dataset="jcdecaux_bike_data">
+             *          <ods-dataset-context context="events"
+             *                               events-domain="https://widgets-examples.opendatasoft.com/"
+             *                               events-dataset="evenements-publics-openagenda-extract">
              *              <!-- Display values from records -->
-             *              <ods-result-enumerator context="stations" max="1">
+             *              <ods-result-enumerator context="events" max="1">
              *                  <div>
              *                      <!-- Using the value from a field with a "geo_point_2d" type -->
-             *                      <ods-geotooltip coords="item.fields.position">Location</ods-geotooltip>
+             *                      <ods-geotooltip coords="item.fields.latlon">Location</ods-geotooltip>
              *                      <!-- Directly passing a record -->
              *                      <ods-geotooltip record="item">Same location</ods-geotooltip>
              *                  </div>

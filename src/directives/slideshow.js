@@ -23,16 +23,14 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="thetatecollection"
-         *                               thetatecollection-domain="public"
-         *                               thetatecollection-dataset="the-tate-collection">
-         *              <ods-slideshow context="thetatecollection"
-         *                             image-field="thumbnailurl"
-         *                             title-fields="artist"
+         *          <ods-dataset-context context="affiches"
+         *                               affiches-domain="https://widgets-examples.opendatasoft.com/"
+         *                               affiches-dataset="affiches-anciennes">
+         *              <ods-slideshow context="affiches"
+         *                             image-field="image"
+         *                             title-fields="titre"
          *                             style="height: 300px">
-         *                  <strong>{{ record.fields.artiste }}</strong> <br>
-         *                  Location:
-         *                  <ods-geotooltip coords="record.fields.geo">{{ record.fields.adresse }}</ods-geotooltip>
+         *                  <strong>{{ record.fields.titre }}</strong> <br>
          *              </ods-slideshow>
          *          </ods-dataset-context>
          *      </file>

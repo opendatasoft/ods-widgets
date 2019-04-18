@@ -21,18 +21,24 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com" tree-parameters="{'sort': '-objectid'}">
+         *          <ods-dataset-context context="tree"
+         *                               tree-dataset="les-arbres-remarquables-de-paris"
+         *                               tree-domain="https://widgets-examples.opendatasoft.com/"
+         *                               tree-parameters="{'sort': '-objectid'}">
          *              <table class="table table-bordered table-condensed table-striped">
          *                  <thead>
          *                      <tr>
          *                          <th>Tree name</th>
-         *                          <th>Place</th>
+         *                          <th>Addrese</th>
          *                      </tr>
          *                  </thead>
          *                  <tbody>
-         *                      <tr ng-repeat="item in items" ods-results="items" ods-results-context="tree" ods-results-max="10">
-         *                          <td>{{ item.fields.nom_commun }}</td>
-         *                          <td>{{ item.fields.nom_ev }}</td>
+         *                      <tr ng-repeat="item in items"
+         *                          ods-results="items"
+         *                          ods-results-context="tree"
+         *                          ods-results-max="10">
+         *                          <td>{{ item.fields.libellefrancais }}</td>
+         *                          <td>{{ item.fields.adresse }}</td>
          *                      </tr>
          *                  </tbody>
          *              </table>
@@ -43,7 +49,9 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="tree" tree-dataset="arbresremarquablesparis2011" tree-domain="parisdata.opendatasoft.com" tree-parameters="{'sort': '-objectid'}">
+         *          <ods-dataset-context context="tree"
+         *                               tree-dataset="les-arbres-remarquables-de-paris"
+     *                                   tree-domain="https://widgets-examples.opendatasoft.com/">
          *              <p ods-results="items" ods-results-context="tree" ods-results-max="10">
          *                  Total number of trees : {{ tree.nhits }}
          *              </p>

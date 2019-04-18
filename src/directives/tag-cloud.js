@@ -27,7 +27,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="catalog" catalog-domain="public.opendatasoft.com">
+         *          <ods-catalog-context context="catalog" catalog-domain="data.opendatasoft.com">
          *              <ods-tag-cloud context="catalog" facet-name="keyword"></ods-tag-cloud>
          *          </ods-catalog-context>
          *      </file>
