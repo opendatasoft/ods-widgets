@@ -165,6 +165,33 @@
                     return label;
                 }
             },
+            convertGeofiltersToQueries: function(parameters) {
+                if (parameters['geofilter.polygon']) {
+                    var polygon = parameters['geofilter.polygon'];
+                    parameters['q.geofilter'] = '#polygon("' + polygon + '")';
+                    delete parameters['geofilter.polygon'];
+                }
+                if (parameters['geofilter.distance']) {
+                    var circle = parameters['geofilter.distance'];
+                    // Add double quotes around the coordinates part
+                    circle = '"' + circle.slice(0, circle.lastIndexOf(',')) + '",' + circle.slice(circle.lastIndexOf(',')+1);
+                    parameters['q.geofilter'] = '#distance(' + circle + ')';
+                    delete parameters['geofilter.distance'];
+                }
+            },
+            convertQueriesToGeofilters: function(parameters) {
+                if (parameters['q.geofilter']) {
+                    var geofilter = parameters['q.geofilter'];
+                    if (geofilter.startsWith('#polygon')) {
+                        // Remove the "#polygon("[real polygon]") part
+                        parameters['geofilter.polygon'] = geofilter.slice(geofilter.indexOf('"') + 1, -2);
+                    } else {
+                        // Remove the "#distance("[center]",[radius]) part
+                        parameters['geofilter.distance'] = geofilter.slice(geofilter.indexOf('"')+1, -1).replace('",', ',')
+                    }
+                    delete parameters['q.geofilter'];
+                }
+            },
             MapConfiguration: {
                 getActiveContextList: function (config, options) {
                     /*

@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
     /**
-     * @ngDoc directive
+     * @ngdoc directive
      * @name ods-widgets.directive:odsPopIn
      * @scope
      * @restrict E

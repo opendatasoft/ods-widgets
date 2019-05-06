@@ -193,7 +193,7 @@
 
     mod.directive('odsAnalysisSerie', [function() {
         /**
-         * deprecated
+         * @deprecated
          * @ngdoc directive
          * @name ods-widgets.directive:odsAnalysisSerie
          * @scope

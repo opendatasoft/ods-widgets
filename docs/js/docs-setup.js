@@ -5,16 +5,6 @@ NG_DOCS={
   },
   "pages": [
     {
-      "section": "api\ndeprecated",
-      "id": "ods-widgets.directive:odsAnalysisSerie",
-      "shortName": "odsAnalysisSerie",
-      "type": "directive",
-      "moduleName": "ods-widgets",
-      "shortDescription": "This widget exposes only keeps the longest serie in the results from an analysis.",
-      "keywords": "analysis api avg axis check circonference coming condition context deprecated directive espece example exposes false genre global hauteur html https length les-arbres-remarquables-de-paris longest mode module ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie ods-analysis-serie-circonference ods-analysis-serie-condition ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-serie-mode ods-analysis-serie-name ods-analysis-serie-separate-on-x ods-analysis-sort ods-analysis-x ods-analysis-x-espece ods-analysis-x-genre ods-widgets odsanalysisserie odsanalysisseriecondition odsanalysisseriemode odsanalysisseriename odsanalysisserieseparateonx opendatasoft parameter reduce replaced requires response separate-on-x serie series set split splited subaggregation tree tree-dataset tree-domain validate validation widget",
-      "isDeprecated": false
-    },
-    {
       "section": "api",
       "id": "index",
       "shortName": "index",
@@ -43,6 +33,16 @@ NG_DOCS={
       "shortDescription": "This widget exposes the results of an analysis (as an object containing a results array and optionally an aggregations object) in a variable available in the scope.",
       "keywords": "aggregations analysis angularjs api array avg build catalog circonference class context dataset directive espece exposes false girth height html https invert les-arbres-remarquables-de-paris maximum module ng-repeat ngrepeat number object ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-girth ods-analysis-serie-height ods-analysis-serie-height-cumulative ods-analysis-sort ods-analysis-x ods-widgets odsanalysiscontext odsanalysissort opendatasoft optionally result scope serie simply sort table table-bordered table-condensed table-striped tree tree-dataset tree-domain variable widget",
       "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsAnalysisSerie",
+      "shortName": "odsAnalysisSerie",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget exposes only keeps the longest serie in the results from an analysis.",
+      "keywords": "analysis api avg axis check circonference coming condition context directive espece example exposes false genre global hauteur html https length les-arbres-remarquables-de-paris longest mode module ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie ods-analysis-serie-circonference ods-analysis-serie-condition ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-serie-mode ods-analysis-serie-name ods-analysis-serie-separate-on-x ods-analysis-sort ods-analysis-x ods-analysis-x-espece ods-analysis-x-genre ods-widgets odsanalysisserie odsanalysisseriecondition odsanalysisseriemode odsanalysisseriename odsanalysisserieseparateonx opendatasoft parameter reduce replaced requires response separate-on-x serie series set split splited subaggregation tree tree-dataset tree-domain validate validation widget",
+      "isDeprecated": true
     },
     {
       "section": "api",
@@ -91,7 +91,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "odsChartQuery is the sub widget that defines the queries for the series defined inside.",
-      "keywords": "aggregated aggregation aggregations analysis api area break category charts color columns complete compute computed daily dataset datetime declared defined defines directive example examples facet fetched ff0000 field fieldx inside interval level maximum month number object ods-widgets odschart odschartquery points queries query serie series set stack time timescale timeseries values widget works year",
+      "keywords": "active aggregated aggregation aggregations analysis api area bar break category chart charts color columns complete compute computed daily dataset datetime declared defined defines directive displayed example examples facet fetched ff0000 field fieldx inside interval level maximum month normal number object ods-widgets odschart odschartquery option order percent points queries query reverse serie series set singleyaxis spline stack stacked time timescale timeseries values widget works year",
       "isDeprecated": false
     },
     {
@@ -341,7 +341,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "keywords": "active add additional api appear apply array attempt basemap basemaps bottom case cases click clicked clicks clusters configured content context context3 data dataset decide default described directive displayed displays estate evenements-publics-openagenda-extract events events-dataset events-domain exact example expanded facet field field1 field2 field3 filter focus format html https identifier initial interaction item item-click-context item-click-roads-context-field item-click-roads-map-field item-click-trees-context-field item-click-trees-map-field itemclickcontext itemclickcontextfield itemclickmapfield latitude location longitude main map marker module myctx note object ods-widgets odswidgetsconfig odswidgetsconfigprovider opendatasoft panned parameter passing point popping popup query real refine resize roads shape shapes share space spatial specific specifies static table tools tooltip true view viewport widgets window zoom zoomed",
-      "isDeprecated": false
+      "isDeprecated": true
     },
     {
       "section": "api",
@@ -421,6 +421,26 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "Integrates a Plume Air Embed using a city name.",
       "keywords": "air api city directive embed en_us english fr_fr french html http integrate integrates lang module new-york ods-widgets plume plumelabs version",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsPopIn",
+      "shortName": "odsPopIn",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Displays a pop-in on the page with the provided content.",
+      "keywords": "access ad adipiscing aliqua aliquip amet anim api aute browsing center cillum class color commodo consectetur consequat content culpa cupidatat data define delay deserunt directive display-after display-only-once displayed displaying displays dolor dolore duis ea eiusmod elit enim esse est eu excepteur exercitation experience fa fa-arrow-right fa-thumbs-o-up false ffd202 font-size fugiat function hidepopin href html improve incididunt inside internally ipsum irure labore laboris laborum loaded lorem magna minim module mollit ng-click nisi nostrud nulla occaecat ods-widgets officia pariatur pop-in popup proident provided qui quis reference reprehenderit second sed session signup sint sit start style sunt tempor test text-align time timer title ullamco uniquely user ut velit veniam voluptate widget window",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsRangeInput",
+      "shortName": "odsRangeInput",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays an input of type range that allows the user to select a numeric value which must",
+      "keywords": "adds aligned allows angular api aria-label aria-label-text arialabeltext assignable attr attribute balls binding classes component current currentvalue data data-bind debounce default depend directive directly display displays double enabled expression fa fa-globe fa-tree fontawesome forcing granularity html icon icon-max icon-max-title icon-min icon-min-title iconmax iconmaxtitle iconmin iconmintitle input inputs layer left level limit limits listed max maximum maxvalue maxvalueposition min minimum minvalue minvalueposition modified module moved ng-init ng-model ng-model-options number numeric ods-widgets opendatasoft parameters range range-input second select selectablemin set sets side slider sliders step street title translate two-way type update user values view visibility widget world",
       "isDeprecated": false
     },
     {
@@ -570,7 +590,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget is a simple timer, it executes the AngularJS expression &quot;exec&quot; every &quot;delay&quot; milliseconds.",
-      "keywords": "add angularjs animate api button click cnt condition context count dashboards day default-from default-to delay directive doesn evenements-publics-openagenda-extract events events-dataset events-domain example exec execute executes executing expression false field html https increase milliseconds minimum module moment momentadd ng-init number ods-aggregation ods-aggregation-context ods-aggregation-function ods-widgets opendatasoft pause returning seconds simple stop-condition stopcondition stops timer true user values wait widget yyyy-mm-dd",
+      "keywords": "add angularjs animate api automatically button click cnt condition context count dashboards day default-from default-to delay directive doesn evenements-publics-openagenda-extract events events-dataset events-domain example exec execute executes executing expression false field html https increase load milliseconds minimum module moment momentadd ng-init number ods-aggregation ods-aggregation-context ods-aggregation-function ods-widgets opendatasoft pause returning seconds simple starts stop-condition stopcondition stops timer true user values wait widget yyyy-mm-dd",
       "isDeprecated": false
     },
     {

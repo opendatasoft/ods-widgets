@@ -5,11 +5,11 @@
 
     mod.directive('odsRangeInput', ['$timeout', 'translate', '$compile', function ($timeout, translate, $compile) {
         /**
-         * @ngDoc directive
+         * @ngdoc directive
          * @name ods-widgets.directive:odsRangeInput
          * @scope
          * @restrict E
-         * @param ng-model Assignable angular expression to data-bind to.c
+         * @param {any} ng-model Assignable angular expression to data-bind to the input
          * @param {number} min Minimum value of the range input.
          * @param {number} max Maximum value of the range input.
          * @param {number} step Sets the value's granularity. By default the granularity is 1
@@ -32,23 +32,25 @@
          * @param {string} iconMaxTitle Adds a title attr to the max side of the input.
          * @param {string} ariaLabelText Adds an aria-label attribute to the inputs
          * @description
-         * This widget displays an <input> of type range that allows the user to select a numeric value which must
+         * This widget displays an input of type range that allows the user to select a numeric value which must
          * be no less than a given value, and no more than another given value.
          *
          * @example
          * <example module="ods-widgets">
          *     <file name="index.html">
-         *         <ods-range-input ng-model="layer.showZoomMax"
-         *              ng-model-options="{ debounce: 300 }"
-         *              min="minZoomLevel"
-         *              max="maxZoomLevel"
-         *              step="1"
-         *              min-value-position="layer.showZoomMin"
-         *              icon-min="fa fa-globe"
-         *              icon-max="fa fa-tree"
-         *              icon-min-title="{{ 'World view'| translate }}"
-         *              icon-max-title="{{ 'Street level' | translate }}"
-         *              aria-label-text="Set layer visibility"></ods-range-input>
+         *         <div ng-init="values = {minvalue: 10, maxvalue: 30, currentvalue: 15}">
+         *             <ods-range-input ng-model="values.currentvalue"
+         *                  ng-model-options="{ debounce: 300 }"
+         *                  min="values.minvalue"
+         *                  max="values.maxvalue"
+         *                  step="1"
+         *                  icon-min="fa fa-globe"
+         *                  icon-max="fa fa-tree"
+         *                  icon-min-title="{{ 'World view'| translate }}"
+         *                  icon-max-title="{{ 'Street level' | translate }}"
+         *                  aria-label-text="Set layer visibility"></ods-range-input>
+         *              {{ values.currentvalue }}
+         *          </div>
          *     </file>
          * </example>
          */

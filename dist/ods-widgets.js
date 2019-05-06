@@ -10507,6 +10507,33 @@ mod.directive('infiniteScroll', [
                     return label;
                 }
             },
+            convertGeofiltersToQueries: function(parameters) {
+                if (parameters['geofilter.polygon']) {
+                    var polygon = parameters['geofilter.polygon'];
+                    parameters['q.geofilter'] = '#polygon("' + polygon + '")';
+                    delete parameters['geofilter.polygon'];
+                }
+                if (parameters['geofilter.distance']) {
+                    var circle = parameters['geofilter.distance'];
+                    // Add double quotes around the coordinates part
+                    circle = '"' + circle.slice(0, circle.lastIndexOf(',')) + '",' + circle.slice(circle.lastIndexOf(',')+1);
+                    parameters['q.geofilter'] = '#distance(' + circle + ')';
+                    delete parameters['geofilter.distance'];
+                }
+            },
+            convertQueriesToGeofilters: function(parameters) {
+                if (parameters['q.geofilter']) {
+                    var geofilter = parameters['q.geofilter'];
+                    if (geofilter.startsWith('#polygon')) {
+                        // Remove the "#polygon("[real polygon]") part
+                        parameters['geofilter.polygon'] = geofilter.slice(geofilter.indexOf('"') + 1, -2);
+                    } else {
+                        // Remove the "#distance("[center]",[radius]) part
+                        parameters['geofilter.distance'] = geofilter.slice(geofilter.indexOf('"')+1, -1).replace('",', ',')
+                    }
+                    delete parameters['q.geofilter'];
+                }
+            },
             MapConfiguration: {
                 getActiveContextList: function (config, options) {
                     /*
@@ -13303,6 +13330,15 @@ mod.directive('infiniteScroll', [
                     return ODS.StringUtils.capitalize(moment.months()[parseInt(value, 10)-1]);
                 }
                 return ODS.StringUtils.escapeHTML(value);
+            },
+            'boolean': function(value) {
+                switch (value) {
+                    case 'false':
+                        return ODS.StringUtils.capitalize(translate('No'));
+                    case 'true':
+                        return ODS.StringUtils.capitalize(translate('Yes'));
+                }
+
             }
         };
 
@@ -15483,7 +15519,7 @@ mod.directive('infiniteScroll', [
 
     mod.directive('odsAnalysisSerie', [function() {
         /**
-         * deprecated
+         * @deprecated
          * @ngdoc directive
          * @name ods-widgets.directive:odsAnalysisSerie
          * @scope
@@ -20811,7 +20847,7 @@ mod.directive('infiniteScroll', [
                     scientificDisplay: parameters.scientificDisplay
                 };
 
-                options.yAxis = [buildYAxis(parameters.singleAxisLabel, yAxisParameters, false)];
+                options.yAxis = [buildYAxis(parameters.singleAxisLabel, yAxisParameters, false, false)];
             }
 
             for (var i = 0; i < parameters.queries.length; i++) {
@@ -21090,7 +21126,7 @@ mod.directive('infiniteScroll', [
             }
         };
 
-        var buildYAxis = function(yLabel, chart, opposite, stacked) {
+        var buildYAxis = function(yLabel, chart, opposite, stacked, reverseStacks) {
             var hasMin = typeof chart.yRangeMin !== "undefined" && chart.yRangeMin !== '';
             var hasMax = typeof chart.yRangeMax !== "undefined" && chart.yRangeMax !== '';
             var yAxis = {
@@ -21145,7 +21181,10 @@ mod.directive('infiniteScroll', [
                         fontWeight: 'bold'
                     }
                 };
+
             }
+            // we want to reverse the highcharts order (which default to true)
+            yAxis.reversedStacks = !reverseStacks;
 
             return yAxis;
         };
@@ -21372,7 +21411,7 @@ mod.directive('infiniteScroll', [
                                 if (!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])) {
                                     // we dont yet have an axis for this column :
                                     // Create axis and register it in yAxisesIndexes
-                                    var yAxis = buildYAxis(yLabel, chart, Boolean(options.yAxis.length % 2), Boolean(chart.displayStackValues));
+                                    var yAxis = buildYAxis(yLabel, chart, Boolean(options.yAxis.length % 2), Boolean(chart.displayStackValues), query.reverseStacks);
                                     yAxisesIndexes[datasetid][yLabel] = options.yAxis.push(yAxis) - 1;
                                 }
 
@@ -22390,7 +22429,8 @@ mod.directive('infiniteScroll', [
          * @param {string} fieldX Set the field that is used to compute the aggregations during the analysis query.
          * @param {string} [timescale="year"] Works only with timeseries (when fieldX is a date or datetime). Y values will be computed against this interval. For example, if you have daily values in a dataset and ask for a "month" timescale, the Y values for the {@link ods-widgets.directive:odsChartSerie series} inside this query will aggregated month by month and computed.
          * @param {integer} [maxpoints=50] Defines the maximum number of points fetched by the query. With a value of 0, all points will be fetched by the query.
-         * @param {boolean} [stacked=false] Stack the resulting charts. Only works with columns, line charts and area charts.
+         * @param {string} [stacked=null] Stack the resulting charts. Stacked values can 'normal' or 'percent'. Only works with columns, bar, line, spline, area and spline area charts.
+         * @param {boolean} [reverseStacks=false] Reverse the order of the displayed stack. Only works with stacked charts when the singleYAxis option is not active on the chart.
          * @param {string} [seriesBreakdown=none] When declared, all series are break down by the defined facet
          * @param {string} [seriesBreakdownTimescale=true] if the break down facet is a time serie (date or datetime), it defines the aggregation level for this facet
          * @param {object} [categoryColors={}] A object containing a color for each category name. For example: {'my value': '#FF0000', 'my other value': '#0000FF'}
@@ -22416,6 +22456,7 @@ mod.directive('infiniteScroll', [
                             maxpoints: attrs.maxpoints ? parseInt(attrs.maxpoints, 10): undefined,
                             timescale: attrs.timescale,
                             stacked: attrs.stacked,
+                            reverseStacks: attrs.reverseStacks === 'true',
                             seriesBreakdown: attrs.seriesBreakdown,
                             seriesBreakdownTimescale: attrs.seriesBreakdownTimescale,
                             categoryColors: attrs.categoryColors ? scope.$eval(attrs.categoryColors) : undefined
@@ -23099,6 +23140,7 @@ mod.directive('infiniteScroll', [
 
     mod.directive('odsMapLegacy', ['ModuleLazyLoader', function(ModuleLazyLoader) {
         /**
+         * @deprecated
          * @ngdoc directive
          * @name ods-widgets.directive:odsMapLegacy
          * @restrict E
@@ -27837,7 +27879,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
     /**
-     * @ngDoc directive
+     * @ngdoc directive
      * @name ods-widgets.directive:odsPopIn
      * @scope
      * @restrict E
@@ -27972,11 +28014,11 @@ mod.directive('infiniteScroll', [
 
     mod.directive('odsRangeInput', ['$timeout', 'translate', '$compile', function ($timeout, translate, $compile) {
         /**
-         * @ngDoc directive
+         * @ngdoc directive
          * @name ods-widgets.directive:odsRangeInput
          * @scope
          * @restrict E
-         * @param ng-model Assignable angular expression to data-bind to.c
+         * @param {any} ng-model Assignable angular expression to data-bind to the input
          * @param {number} min Minimum value of the range input.
          * @param {number} max Maximum value of the range input.
          * @param {number} step Sets the value's granularity. By default the granularity is 1
@@ -27999,23 +28041,25 @@ mod.directive('infiniteScroll', [
          * @param {string} iconMaxTitle Adds a title attr to the max side of the input.
          * @param {string} ariaLabelText Adds an aria-label attribute to the inputs
          * @description
-         * This widget displays an <input> of type range that allows the user to select a numeric value which must
+         * This widget displays an input of type range that allows the user to select a numeric value which must
          * be no less than a given value, and no more than another given value.
          *
          * @example
          * <example module="ods-widgets">
          *     <file name="index.html">
-         *         <ods-range-input ng-model="layer.showZoomMax"
-         *              ng-model-options="{ debounce: 300 }"
-         *              min="minZoomLevel"
-         *              max="maxZoomLevel"
-         *              step="1"
-         *              min-value-position="layer.showZoomMin"
-         *              icon-min="fa fa-globe"
-         *              icon-max="fa fa-tree"
-         *              icon-min-title="{{ 'World view'| translate }}"
-         *              icon-max-title="{{ 'Street level' | translate }}"
-         *              aria-label-text="Set layer visibility"></ods-range-input>
+         *         <div ng-init="values = {minvalue: 10, maxvalue: 30, currentvalue: 15}">
+         *             <ods-range-input ng-model="values.currentvalue"
+         *                  ng-model-options="{ debounce: 300 }"
+         *                  min="values.minvalue"
+         *                  max="values.maxvalue"
+         *                  step="1"
+         *                  icon-min="fa fa-globe"
+         *                  icon-max="fa fa-tree"
+         *                  icon-min-title="{{ 'World view'| translate }}"
+         *                  icon-max-title="{{ 'Street level' | translate }}"
+         *                  aria-label-text="Set layer visibility"></ods-range-input>
+         *              {{ values.currentvalue }}
+         *          </div>
          *     </file>
          * </example>
          */
@@ -30463,6 +30507,7 @@ mod.directive('infiniteScroll', [
          * @restrict E
          * @param {Number} [delay=1000] The number of milliseconds to wait before executing the expression. Minimum value is 1000ms.
          * @param {Expression} [stopCondition=false] An AngularJS expression returning 'true' or 'false'. The timer stops when the condition is false.
+         * @param {Boolean} [autoStart=false] Starts the timer automatically when the page load
          * @param {Expression} [exec] An AngularJS expression to execute.
          *
          * @description
@@ -30505,6 +30550,7 @@ mod.directive('infiniteScroll', [
         return {
             restrict: 'E',
             scope: {
+                autoStart: '=',
                 stopCondition: '&',
                 delay: '=',
                 exec: '&'
@@ -30537,6 +30583,9 @@ mod.directive('infiniteScroll', [
                         delay = scope.delay;
                     }
                 }
+                if (angular.isUndefined(scope.autoStart)) {
+                    scope.autoStart = false;
+                }
 
                 var stopTimer = function () {
                     $interval.cancel(scope.promise);
@@ -30551,7 +30600,7 @@ mod.directive('infiniteScroll', [
                         if (!scope.stopCondition()) {
                             scope.exec();
                         } else {
-                            stopTimer();
+                            scope.timerStop();
                         }
                     }, delay);
 
@@ -30562,6 +30611,10 @@ mod.directive('infiniteScroll', [
                     stopTimer();
                     scope.running = false;
                 };
+
+                if (scope.autoStart === true) {
+                    scope.timerPlay();
+                }
             },
         };
     }]);

@@ -5,6 +5,7 @@
 
     mod.directive('odsMapLegacy', ['ModuleLazyLoader', function(ModuleLazyLoader) {
         /**
+         * @deprecated
          * @ngdoc directive
          * @name ods-widgets.directive:odsMapLegacy
          * @restrict E

@@ -570,7 +570,7 @@
                     scientificDisplay: parameters.scientificDisplay
                 };
 
-                options.yAxis = [buildYAxis(parameters.singleAxisLabel, yAxisParameters, false)];
+                options.yAxis = [buildYAxis(parameters.singleAxisLabel, yAxisParameters, false, false)];
             }
 
             for (var i = 0; i < parameters.queries.length; i++) {
@@ -849,7 +849,7 @@
             }
         };
 
-        var buildYAxis = function(yLabel, chart, opposite, stacked) {
+        var buildYAxis = function(yLabel, chart, opposite, stacked, reverseStacks) {
             var hasMin = typeof chart.yRangeMin !== "undefined" && chart.yRangeMin !== '';
             var hasMax = typeof chart.yRangeMax !== "undefined" && chart.yRangeMax !== '';
             var yAxis = {
@@ -904,7 +904,10 @@
                         fontWeight: 'bold'
                     }
                 };
+
             }
+            // we want to reverse the highcharts order (which default to true)
+            yAxis.reversedStacks = !reverseStacks;
 
             return yAxis;
         };
@@ -1131,7 +1134,7 @@
                                 if (!parameters.singleAxis && angular.isUndefined(yAxisesIndexes[datasetid][yLabel])) {
                                     // we dont yet have an axis for this column :
                                     // Create axis and register it in yAxisesIndexes
-                                    var yAxis = buildYAxis(yLabel, chart, Boolean(options.yAxis.length % 2), Boolean(chart.displayStackValues));
+                                    var yAxis = buildYAxis(yLabel, chart, Boolean(options.yAxis.length % 2), Boolean(chart.displayStackValues), query.reverseStacks);
                                     yAxisesIndexes[datasetid][yLabel] = options.yAxis.push(yAxis) - 1;
                                 }
 
@@ -2149,7 +2152,8 @@
          * @param {string} fieldX Set the field that is used to compute the aggregations during the analysis query.
          * @param {string} [timescale="year"] Works only with timeseries (when fieldX is a date or datetime). Y values will be computed against this interval. For example, if you have daily values in a dataset and ask for a "month" timescale, the Y values for the {@link ods-widgets.directive:odsChartSerie series} inside this query will aggregated month by month and computed.
          * @param {integer} [maxpoints=50] Defines the maximum number of points fetched by the query. With a value of 0, all points will be fetched by the query.
-         * @param {boolean} [stacked=false] Stack the resulting charts. Only works with columns, line charts and area charts.
+         * @param {string} [stacked=null] Stack the resulting charts. Stacked values can 'normal' or 'percent'. Only works with columns, bar, line, spline, area and spline area charts.
+         * @param {boolean} [reverseStacks=false] Reverse the order of the displayed stack. Only works with stacked charts when the singleYAxis option is not active on the chart.
          * @param {string} [seriesBreakdown=none] When declared, all series are break down by the defined facet
          * @param {string} [seriesBreakdownTimescale=true] if the break down facet is a time serie (date or datetime), it defines the aggregation level for this facet
          * @param {object} [categoryColors={}] A object containing a color for each category name. For example: {'my value': '#FF0000', 'my other value': '#0000FF'}
@@ -2175,6 +2179,7 @@
                             maxpoints: attrs.maxpoints ? parseInt(attrs.maxpoints, 10): undefined,
                             timescale: attrs.timescale,
                             stacked: attrs.stacked,
+                            reverseStacks: attrs.reverseStacks === 'true',
                             seriesBreakdown: attrs.seriesBreakdown,
                             seriesBreakdownTimescale: attrs.seriesBreakdownTimescale,
                             categoryColors: attrs.categoryColors ? scope.$eval(attrs.categoryColors) : undefined

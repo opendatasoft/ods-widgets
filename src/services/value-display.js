@@ -32,6 +32,15 @@
                     return ODS.StringUtils.capitalize(moment.months()[parseInt(value, 10)-1]);
                 }
                 return ODS.StringUtils.escapeHTML(value);
+            },
+            'boolean': function(value) {
+                switch (value) {
+                    case 'false':
+                        return ODS.StringUtils.capitalize(translate('No'));
+                    case 'true':
+                        return ODS.StringUtils.capitalize(translate('Yes'));
+                }
+
             }
         };
 

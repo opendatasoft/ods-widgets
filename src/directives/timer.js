@@ -10,6 +10,7 @@
          * @restrict E
          * @param {Number} [delay=1000] The number of milliseconds to wait before executing the expression. Minimum value is 1000ms.
          * @param {Expression} [stopCondition=false] An AngularJS expression returning 'true' or 'false'. The timer stops when the condition is false.
+         * @param {Boolean} [autoStart=false] Starts the timer automatically when the page load
          * @param {Expression} [exec] An AngularJS expression to execute.
          *
          * @description
@@ -52,6 +53,7 @@
         return {
             restrict: 'E',
             scope: {
+                autoStart: '=',
                 stopCondition: '&',
                 delay: '=',
                 exec: '&'
@@ -84,6 +86,9 @@
                         delay = scope.delay;
                     }
                 }
+                if (angular.isUndefined(scope.autoStart)) {
+                    scope.autoStart = false;
+                }
 
                 var stopTimer = function () {
                     $interval.cancel(scope.promise);
@@ -98,7 +103,7 @@
                         if (!scope.stopCondition()) {
                             scope.exec();
                         } else {
-                            stopTimer();
+                            scope.timerStop();
                         }
                     }, delay);
 
@@ -109,6 +114,10 @@
                     stopTimer();
                     scope.running = false;
                 };
+
+                if (scope.autoStart === true) {
+                    scope.timerPlay();
+                }
             },
         };
     }]);
