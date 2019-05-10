@@ -1,36 +1,66 @@
-@import "header";
 @import "ods-theme-variables";
+@import "header";
+
+/* ==========================================================================
+   Theme for ods-widgets
+   ========================================================================== */
+
+/* Shared elements
+   ========================================================================== */
+
+html {
+    font-size: @base-font-size;
+    font-family: @basic-font;
+    color: @color-text;
+    line-height: 1.4;
+}
 
 body {
-    font-size: 16px;
-    line-height: 25px;
-	font-family: @basic-font;
-	
-	@media (min-width: @screen-md-min) {
-        font-size: 14px;
-        line-height: 20px;
-	}
+    font-family: @basic-font;
 }
 
 button {
     font-family: @basic-font;
 }
 
+a {
+    color: @identity-300;
+}
+
+ul {
+    margin-bottom: @spacing-200;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 400;
+}
+
+input, button, select, textarea {
+    font-family: @basic-font;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: @identity-300;
+}
+
 .ods-container {
-    margin: 100px 0 0 0;
+    margin: @header-height @spacing-100 0 @spacing-100;
 	width: 100%;
-	
+
 	@media (min-width: @screen-md-min) {
-        margin: 100px 0 0 0;
+        margin: @header-height 0 0 0;
     }
 }
 
-//- Sidebar 
+/* Sidebar
+   ========================================================================== */
+
 .ods-sidebar {
-    border-right: 1px solid lighten(@grey-dark, 30%);
-    padding: 25px 0;
+    border-right: 1px solid @light-400;
+    padding: @spacing-200 0;
     position: absolute;
-    top: 100px;
+    top: @header-height;
     left: -302px;
     z-index: 2;
     width: 300px;
@@ -39,15 +69,15 @@ button {
     transition: 0.5s;
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
-	
+
 	@media (min-width: @screen-md-min) {
         position: fixed;
         overflow-y: scroll;
         left: 0;
-        top: 100px;
-        height: 85vh;
+        top: @header-height;
+        height: calc(100vh - @header-height);
         width: 300px;
-        padding: 25px 0;
+        padding: @spacing-200 0;
 
     }
 }
@@ -60,17 +90,22 @@ button {
 	left: 0;
 }
 
+/* Form search
+   ========================================================================== */
+
 .form-search .search-query {
     width: 215px;
-    height: 30px;
-    font-size: 13px;
+    height: 32px;
+    font-size: @font-size-200;
+    line-height: @line-height-200;
     font-weight: 400;
-    border: 1px solid lighten(@grey-dark, 30%);
-    margin: 0 0 15px 15px;
-    padding: 0 20px;
+    border: 1px solid @light-400;
+    margin: 0 0 @spacing-100 @spacing-200;
+    padding: 0 @spacing-100;
+    border-radius: 2px;
 
-    @media (min-width: @screen-md-min) {
-        height: 30px;
+    &::placeholder {
+        color: @light-500;
     }
 }
 
@@ -80,11 +115,11 @@ button {
 
 .form-search .search-query:focus {
     box-shadow: none;
-    border: 1px solid lighten(@grey-dark, 30%);
+    border: 1px solid @identity-300;
 }
 
 .form-search .well .nav-header {
-    padding: 3px 0;
+    font-weight: normal;
 }
 
 .form-search .well {
@@ -92,35 +127,45 @@ button {
     background-color: white;
     -webkit-box-shadow: none;
     box-shadow: none;
+    padding: 0 @spacing-200;
 }
 
 .form-search > ul.nav > li.section {
     background-color: white;
-    margin: 25px 0 20px 0;
-
-    @media (min-width: @screen-md-min) {
-        margin: 15px 0;
-    }
+    margin: @spacing-200 0 @spacing-200 0;
+    padding: 0;
+    min-height: auto;
 }
 
 
 .form-search > ul.nav > li {
-    width: 300px;
+    width: auto;
 }
 
 .form-search .well .guide {
-    float: left;
-    color: black!important;
-    font-size: 22px;
-
-    @media (min-width: @screen-md-min) {
-        font-size: 18px;
-    }
+    font-size: @font-size-200;
+    line-height: @line-height-200;
+    color: @light-500;
+    float: none;
+    padding: 0;
+    margin: 0;
 }
+
+.form-search .well .nav-header a {
+    color: @light-500;
+    text-transform: uppercase;
+}
+
+.form-search > ul.nav > li.first {
+    padding-top: 0;
+}
+
+/* Content Navigation
+   ========================================================================== */
 
 .content-nav-items {
     padding: 0;
-    margin: 15px 0 25px 0;
+    margin: @spacing-100 0 @spacing-200 0;
     height: auto;
     width: 300px;
     list-style-type: none;
@@ -128,7 +173,7 @@ button {
     //- IE 10 / 11
     @media all and (-ms-high-contrast: active),
     (-ms-high-contrast:none) {
-        margin: 5px 0 25px 0;
+        margin: @spacing-50 0 @spacing-200 0;
     }
 }
 
@@ -136,83 +181,90 @@ button {
     padding: 0;
 
     &:first-child {
-        margin-bottom: 25px;
+        // margin-bottom: 25px;
     }
 }
 
 .nav-items-link {
     display: block;
-    color: @blue-light;
-    font-size: 22px;
-    padding: 10px 0 10px 14px;
-    margin: 10px 0;
-    font-weight: bold;
-    width: 286px;
+    color: @light-700;
+    font-size: @font-size-200;
+    padding: 0 0 @spacing-100 @spacing-200;
+    margin: 0;
+    font-weight: normal;
     text-decoration: none;
+    text-transform: uppercase;
 
     &:hover {
-        background-color: @blue-light;
-        color: white;
+        background-color: white;
+        color: @identity-300;
         text-decoration: none;
     }
 
     &:focus, &:active {
         text-decoration: none;
     }
-
-    @media (min-width: @screen-md-min) {
-        font-size: 18px;
-        width: 300px;
-    }
 }
 
 .nav-items-link-active {
-    background-color: @blue-light;
-    color: white!important;
+    background-color: white;
+    color: @identity-300 !important;
 }
 
-.ng-binding {
-    color: @grey-dark;
-    font-size: 16px;
-    line-height: 30px;
-    font-weight: 500;
+.nav-list {
+    padding-left: @spacing-200;
+    padding-right: @spacing-200;
+}
 
-    @media (min-width: @screen-md-min) {
-        font-size: 14px;
-        line-height: 25px;
-    }
+.nav-list > li {
+    padding: 0 @spacing-100 @spacing-100 @spacing-100;
+}
+
+.nav-list > li > a {
+    font-size: @font-size-200;
+    line-height: @line-height-200;
+    letter-spacing: 0.1;
+    background-color: white;
+    color: @light-600;
+    margin: 0;
+    text-shadow: none;
+    padding: 0;
+}
+
+.nav-list > li > a:hover {
+    background-color: white;
+    color: @identity-300 !important;
 }
 
 .nav-list > .active > a,
 .nav-list > .active > a:hover,
 .nav-list > .active > a:focus {
-    background-color: @blue-light;
+    color: @identity-300;
+    background-color: white;
     text-shadow: none;
 }
 
 .nav-list > .active > a > [class^="icon-"] {
-    color: white!important;
+    color: @identity-300 !important;
+}
+
+.nav > li > a:focus {
+    background-color: @light-100;
 }
 
 .api-list-item:hover {
-    .ng-binding {
-        background-color: @blue-light!important;
-        color: white!important;
-        text-shadow: none;
-    }
-    
     .pull-right {
-        background-color: @blue-light!important;
-        
+        color: @identity-300 !important;
+
         .icon-cog {
-            color: white!important;
+            color: @identity-300 !important;
             text-shadow: none;
         }
     }
-}   
+}
 
 .icon-cog {
-    color: @blue-hover;
+    color: @light-500;
     line-height: 30px;
     font-size: 25px;
 
@@ -222,32 +274,39 @@ button {
     }
 }
 
-//- Content principal
+/* Content container
+   ========================================================================== */
+
 .ods-content {
-    padding: 25px 5px 0 5px;
+    padding: @spacing-200 @spacing-100 0 @spacing-100;
     position: absolute;
     left: 0;
-    top: 100px;
+    top: @header-height;
     margin: 0;
     width: 100%;
-    height: auto!important;
-	
-	@media (min-width: @screen-md-min) {    
+    height: auto !important;
+    box-sizing: border-box;
+
+	@media (min-width: @screen-md-min) {
         position: absolute;
         margin-left: 302px;
         max-width: 45%;
-        padding: 25px 0 0 50px;
+        padding: @spacing-200 0 0 @spacing-300;
     }
 }
 
+/* Breadcrumbs
+
+   ========================================================================== */
+
 .breadcrumb {
     background-color: white;
-    padding: 5px 0;
-    margin-bottom: 30px;
+    padding: @spacing-50 0;
+    margin-bottom: @spacing-100;
 
     @media (min-width: @screen-md-min) {
-       margin-bottom: 13px;
-   } 
+       margin-bottom: @spacing-100;
+   }
 }
 
 .breadcrumb > li > a,
@@ -267,41 +326,44 @@ button {
     }
 }
 
-.content h1 {
-    font-size: 50px;
-    word-wrap: break-word;
+/* Content Typography
+   ========================================================================== */
 
-    @media (min-width: @screen-md-min) {
-        font-size: 35px;
-    }
+.content h1 {
+    font-size: 2.074rem;
+    line-height: 1.4;
+    font-weight: 400;
+    word-wrap: break-word;
+    color: @color-title;
+    margin: 0 0 @spacing-200 0;
 }
 
 .content h2 {
-    font-size: 35px;
-
-    @media (min-width: @screen-md-min) {
-        font-size: 25px;
-    }
+    font-size: 1.728rem;
+    line-height: 1.3;
+    font-weight: 400;
+    color: @color-title;
+    margin: 0 0 @spacing-200 0;
 }
 
 .content h3 {
-    line-height: 40px;
-    font-size: 25px;
-
-    @media (min-width: @screen-md-min) {
-        line-height: 27px;
-        font-size: 18px;
-    }
+    font-size: 1.44rem;
+    line-height: 1.2;
+    font-weight: 400;
+    color: @color-title;
+    margin: 0 0 @spacing-100 0;
 }
 
 .content h4 {
-    font-size: 20px;
-    line-height: 35px;
+    font-size: 1.2rem;
+    line-height: 1.3;
+    font-weight: 400;
+    color: @color-title;
+    margin: 0 0 @spacing-100 0;
+}
 
-    @media (min-width: @screen-md-min) {
-        font-size: 15px;
-        line-height: 20px;
-    }
+.content p {
+    margin-bottom: @spacing-100;
 }
 
 code {
@@ -309,46 +371,60 @@ code {
     font-family: @basic-font!important;
 }
 
+.hint {
+    color: @light-500;
+    font-size: @font-size-200;
+    line-height: @line-height-200;
+    font-weight: normal;
+}
+
+.directive-info {
+    margin-bottom: @spacing-200;
+}
+
+pre.prettyprint {
+    margin-bottom: @spacing-200;
+}
+
+.tabbable .nav {
+    margin-bottom: 0;
+    border-bottom: 0;
+}
+
+.description {
+    margin-bottom: @spacing-200;
+}
+
+/* Tables
+   ========================================================================== */
+
+.table {
+    margin-bottom: @spacing-200;
+}
+
 .table td {
-    line-height: 25px;
+    line-height: @spacing-200;
     max-width: 100px;
     word-wrap: break-word;
 
     @media (min-width: @screen-md-min) {
-        line-height: 20px;
+        line-height: @spacing-100;
     }
 }
 
-.variables-matrix td {
-    padding: 3px;
+.table-bordered {
+    border-radius: 0;
 }
 
-ol.linenums li {
-    font-size: 16px;
-    line-height: 25px;
-
-    @media (min-width: @screen-md-min) {
-        font-size: 12px;
-        line-height: 18px;
-    }
+.variables-matrix td,
+.variables-matrix th {
+    font-size: @font-size-200;
+    line-height: @line-height-200;
+    padding: @spacing-100;
 }
 
-li {
-    line-height: 30px;
-
-    @media (min-width: @screen-md-min) {
-        line-height: 20px;
-    }
-}
-
-.link_github {
-    color: @grey-dark;
-    text-decoration: none;
-	
-	&:hover {
-        color: @grey-dark;
-        outline: none;
-    }
+.well {
+    box-shadow: none;
 }
 
 @media (max-width: @screen-sm-max) {
@@ -375,4 +451,40 @@ li {
 .doc-example-live button.odswidget-table__sort-icon {
     height: 9px;
     font-size: 8px;
+}
+
+.in-html-template-binding, 
+.in-javascript {
+    margin-bottom: @spacing-200;
+}
+
+/* Deprecated warning
+   ========================================================================== */
+
+.deprecated legend {
+    position: relative;
+    padding: @spacing-200;
+    border: none;
+    margin-bottom: @spacing-200;
+    color: @color-text;
+    font-size: @font-size-300;
+    line-height: @line-height-300;
+    border-radius: 4px;
+    background-color: fade(@identity-400, 10%);
+    border: 1px solid fade(@identity-400, 40%);
+    box-sizing: border-box;
+}
+
+.deprecated legend:before {
+    content: "\26A0  warning";
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 2px @spacing-50;
+    border-radius: 3px 0;
+    font-size: @font-size-100;
+    background-color: @identity-400;
+    text-transform: uppercase;
+    color: @light-100;
+    vertical-align: middle;
 }

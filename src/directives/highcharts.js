@@ -522,7 +522,7 @@
 
             if (precision) {
                 options.xAxis.type = 'datetime';
-                options.xAxis.maxZoom = 3600000; // fourteen days
+                options.xAxis.maxZoom = 60000; // one minute
                 options.chart.zoomType = 'xy';
 
                 if (periodic) {

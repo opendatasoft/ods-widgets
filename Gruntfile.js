@@ -58,7 +58,7 @@ module.exports = function(grunt) {
                 },
                 files: {
                     "dist/ods-widgets.min.css": "src/less/ods-widgets.less",
-                    "docs/css/ods-theme.min.css": "src-docs/templates/less/ods-theme.less"                    
+                    "docs/css/ods-theme.min.css": "src-docs/templates/less/ods-theme.less"
                 }
             }
         },
@@ -116,7 +116,7 @@ module.exports = function(grunt) {
                 expand: true,
                 cwd: 'assets/',
                 src: [
-                    'ODS_logo_widgets_blanc.svg',
+                    'ods-logo-helphub.svg',
                     'opendatasoft-logo.svg',
                     'ods-favicon.ico'
                 ],
@@ -157,7 +157,7 @@ module.exports = function(grunt) {
                 ],
                 template: 'src-docs/templates/index.tmpl',
                 html5Mode: false,
-                image: 'assets/ODS_logo_widgets_blanc.svg',
+                image: 'assets/ods-logo-helphub.svg',
 				title: "ODS-Widgets",
 				bestMatch: false,
                 startPage: '/api'
