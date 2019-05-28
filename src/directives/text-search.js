@@ -106,7 +106,7 @@
 
             link: function (scope, element, attrs) {
                 if ('autofocus' in attrs) {
-                    $(element).find('input').focus();
+                    jQuery(element).find('input').focus();
                 }
                 element.removeAttr('id');
             },

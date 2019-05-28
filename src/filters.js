@@ -403,7 +403,7 @@
             if(angular.isArray(config) && config.length) {
                 var output = [];
                 angular.forEach(config, function(fieldName){
-                    var field = $.grep(fields, function(field){ return field.name === fieldName; })[0];
+                    var field = jQuery.grep(fields, function(field){ return field.name === fieldName; })[0];
                     if (angular.isDefined(field)) {
                         output.push(field);
                     }

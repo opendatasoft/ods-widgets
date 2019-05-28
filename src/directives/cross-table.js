@@ -536,7 +536,7 @@
                 var crossTable;
                 var rows = scope.rows.split(',');
 
-                var $element = $(element);
+                var $element = jQuery(element);
                 var $frozenHeaderWrapper = $element.find('.ods-cross-table__frozen-header-wrapper');
                 var $frozenHeaderTable = $element.find('.ods-cross-table__frozen-header');
                 var $frozenColsWrapper = $element.find('.ods-cross-table__frozen-cols-wrapper');
@@ -669,19 +669,19 @@
 
                             var serieHeaderCells = $frozenRowsTable.find('tr:last-child .ods-cross-table__cell-content');
                             $bodyTable.find('tr:first-child td').each(function (index) {
-                                synchronizeWidth($(this), $(serieHeaderCells[index]));
+                                synchronizeWidth(jQuery(this), jQuery(serieHeaderCells[index]));
                             });
 
                             var headerCells = $frozenHeaderTable.find('tr:last-child .ods-cross-table__cell-content');
                             $frozenColsTable.find('tr:first-child td').each(function (index) {
-                                synchronizeWidth($(this), $(headerCells[index]));
+                                synchronizeWidth(jQuery(this), jQuery(headerCells[index]));
                             });
 
                             // synchronize header cells height
 
                             headerCells = $frozenHeaderTable.find('td:first-child .ods-cross-table__cell-content');
                             $frozenRowsTable.find('td:first-child').each(function (index) {
-                                $(headerCells[index]).css({height: $(this).height()});
+                                jQuery(headerCells[index]).css({height: jQuery(this).height()});
                             });
 
                             // reposition sections
@@ -711,8 +711,8 @@
 
                             // synchronise scroll
                             $bodyWrapper.on('scroll', function () {
-                                $frozenColsTable.css({'margin-top': -$(this).scrollTop()});
-                                $frozenRowsTable.css({'margin-left': -$(this).scrollLeft()});
+                                $frozenColsTable.css({'margin-top': -jQuery(this).scrollTop()});
+                                $frozenRowsTable.css({'margin-left': -jQuery(this).scrollLeft()});
                             });
                             $frozenColsWrapper.on('wheel', function (event) {
                                 $bodyWrapper.scrollTop($bodyWrapper.scrollTop() + event.originalEvent.deltaY);
@@ -726,17 +726,17 @@
                             // synchronise hover
                             $bodyTable.find('tr').hover(
                                 function () {
-                                    $frozenColsTable.find('tr:nth-child(' + ($(this).index() + 1) + ')').addClass('ods-cross-table__row--hover');
+                                    $frozenColsTable.find('tr:nth-child(' + (jQuery(this).index() + 1) + ')').addClass('ods-cross-table__row--hover');
                                 },
                                 function () {
-                                    $frozenColsTable.find('tr:nth-child(' + ($(this).index() + 1) + ')').removeClass('ods-cross-table__row--hover');
+                                    $frozenColsTable.find('tr:nth-child(' + (jQuery(this).index() + 1) + ')').removeClass('ods-cross-table__row--hover');
                                 });
                             $frozenColsTable.find('tr').hover(
                                 function () {
-                                    $bodyTable.find('tr:nth-child(' + ($(this).index() + 1) + ')').addClass('ods-cross-table__row--hover');
+                                    $bodyTable.find('tr:nth-child(' + (jQuery(this).index() + 1) + ')').addClass('ods-cross-table__row--hover');
                                 },
                                 function () {
-                                    $bodyTable.find('tr:nth-child(' + ($(this).index() + 1) + ')').removeClass('ods-cross-table__row--hover');
+                                    $bodyTable.find('tr:nth-child(' + (jQuery(this).index() + 1) + ')').removeClass('ods-cross-table__row--hover');
                                 });
 
                             // hide spinner

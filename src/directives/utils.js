@@ -37,8 +37,8 @@
                     element.find('[ods-main-click]').attr('href', attrs.odsFullClick);
                 }
                 element.click(function(evt){
-                    if (!$(evt.target).is('a,button,[ng-click]') && // The element is not a link in itself
-                        ($(evt.target).parents('a,button,[ng-click]').length === 0) && // The element is not within a clickable element
+                    if (!jQuery(evt.target).is('a,button,[ng-click]') && // The element is not a link in itself
+                        (jQuery(evt.target).parents('a,button,[ng-click]').length === 0) && // The element is not within a clickable element
                         element.find('[ods-main-click]').length) {
                         if (document.createEvent){
                             // Web Browsers

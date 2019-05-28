@@ -38,7 +38,7 @@
                     };
                     resize();
 
-                    $(window).on('resize', function () {
+                    jQuery(window).on('resize', function () {
                         $timeout.cancel(timeout);
                         timeout = $timeout(function () {
                             resize();

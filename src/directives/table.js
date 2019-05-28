@@ -491,7 +491,7 @@
                                 count++;
                             }
 
-                            newHeight = visible ? $(placeholderBot).height() - count*recordHeight : ($scope.records.length-endIndex)*recordHeight;
+                            newHeight = visible ? jQuery(placeholderBot).height() - count*recordHeight : ($scope.records.length-endIndex)*recordHeight;
                             newHeight = newHeight > 0 ? newHeight : 0;
                             placeholderBot.style.height = newHeight + 'px';
                         } else {
@@ -515,7 +515,7 @@
                                 count++;
                             }
 
-                            newHeight = visible ? $(placeholderTop).height() - count*recordHeight : startIndex*recordHeight;
+                            newHeight = visible ? jQuery(placeholderTop).height() - count*recordHeight : startIndex*recordHeight;
                             newHeight = newHeight > 0 ? newHeight : 0;
                             placeholderTop.style.height = newHeight + 'px';
                         }
@@ -601,7 +601,7 @@
                 // synchronize scroll between header and body
 
                 var isRtl = ($element.css('direction') === 'rtl');
-                var rtlScrollType = $.support.rtlScrollType;
+                var rtlScrollType = jQuery.support.rtlScrollType;
 
                 var synchronizeHeaderPosition;
                 if (!isRtl) {
@@ -680,7 +680,7 @@
                         }
 
                         if ($element.hasClass('odswidget-table--embedded')) {
-                            elementHeight = $(window).height() - $element.offset().top;
+                            elementHeight = jQuery(window).height() - $element.offset().top;
                             $element.height(elementHeight);
                         } else {
                             elementHeight = $element.height();
@@ -704,7 +704,7 @@
 
                         var totalWidth = 0;
                         angular.forEach($element.find('.odswidget-table__internal-table-header .odswidget-table__cell-container'), function (thDiv, i) {
-                            $scope.layout[i] = $(thDiv).width() + 8; // For sortable icons
+                            $scope.layout[i] = jQuery(thDiv).width() + 8; // For sortable icons
                             totalWidth += $scope.layout[i];
                         });
                         $scope.layout[0] = 30; // First column is the record number

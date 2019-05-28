@@ -40,10 +40,10 @@
         }
 
         function aggregateArrays(facets, median) {
-            var array1 = $.grep(facets, function (value) {
+            var array1 = jQuery.grep(facets, function (value) {
                 return value.count >= median;
             });
-            var array2 = $.grep(facets, function (value) {
+            var array2 = jQuery.grep(facets, function (value) {
                 return value.count <= median;
             });
             var obj = [
@@ -143,7 +143,7 @@
                     if ($scope.context.type === 'catalog') {
                         query = catalog_search($scope.context, queryParams);
                     } else {
-                        queryParams = $.extend({}, $scope.context.parameters, queryParams);
+                        queryParams = jQuery.extend({}, $scope.context.parameters, queryParams);
                         query = dataset_search($scope.context, queryParams);
                     }
                     query.success(function (data) {

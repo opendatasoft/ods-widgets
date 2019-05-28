@@ -26,7 +26,7 @@ L.Control.ODSMapFullscreen = L.Control.extend({
         this._updateTitle();
 
         var that = this;
-        $(document).on('fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange MSFullscreenChange odsfullscreenchange', function (event) {
+        jQuery(document).on('fullscreenchange mozfullscreenchange webkitfullscreenchange msfullscreenchange MSFullscreenChange odsfullscreenchange', function (event) {
             that.updateInternalFullscreenStatus(event);
             that.updateKeypressEventListener(event);
             that.updateDOM();
@@ -66,7 +66,7 @@ L.Control.ODSMapFullscreen = L.Control.extend({
         try {
             window.dispatchEvent(new Event('resize'))
         } catch(error) {
-            $(window).trigger('resize');
+            jQuery(window).trigger('resize');
         }
     },
 

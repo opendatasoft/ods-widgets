@@ -223,7 +223,7 @@
                     fromRome.on('data', function(value) {
                         scope.$applyAsync(function() {
                             var from = roundTime(moment(value, scope.dateFormat), scope.dateFormat, scope.displayTime, 'from');
-                            $(inputs[0]).val(from.format(scope.dateFormat));
+                            jQuery(inputs[0]).val(from.format(scope.dateFormat));
                             fromRome.setValue(from);
                             scope.from = formatTimeToISO(from);
                         });

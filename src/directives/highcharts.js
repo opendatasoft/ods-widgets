@@ -289,7 +289,7 @@
                 timescale = parameters.queries[0].timescale || false;
             }
 
-            if(timescale && $.grep(parameters.queries, function(query){return query.sort;}).length === 0){
+            if(timescale && jQuery.grep(parameters.queries, function(query){return query.sort;}).length === 0){
                  timeSerieMode = timescale;
                  var tokens = timeSerieMode.split(' ');
                  precision = tokens[0];

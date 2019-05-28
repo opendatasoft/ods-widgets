@@ -150,9 +150,9 @@
                 if (angular.isDefined(scope.titleFields)) {
                     titleFields = scope.titleFields.split(',');
                 }
-                var imageWrapperElement = $(element).children('.ods-slideshow__image-wrapper');
-                var $imageIndex = $(element).find('.ods-slideshow__image-index');
-                var $image = $(element).find('.ods-slideshow__image');
+                var imageWrapperElement = jQuery(element).children('.ods-slideshow__image-wrapper');
+                var $imageIndex = jQuery(element).find('.ods-slideshow__image-index');
+                var $image = jQuery(element).find('.ods-slideshow__image');
                 var image;
 
                 var resizeImage = function () {
@@ -265,7 +265,7 @@
                         return;
                     }
 
-                    var elementDirection = $(element).css('direction');
+                    var elementDirection = jQuery(element).css('direction');
 
                     // Check if HTML is RTL or LTR to map keys appropriately (controls are inverted)
                     if(elementDirection === "rtl") {
@@ -294,7 +294,7 @@
 
                 };
 
-                $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function (event) {
+                jQuery(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function (event) {
                     if (event.target == element[0]) {
                         scope.fullscreen = !scope.fullscreen;
                         $timeout(resizeImage);

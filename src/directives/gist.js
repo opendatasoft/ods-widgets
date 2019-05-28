@@ -63,8 +63,8 @@
                     {timeout: 1000}
                 ).then(function(result) {
                     var data = result.data;
-                    $(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
-                    var gistElement = $(data.div);
+                    jQuery(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
+                    var gistElement = jQuery(data.div);
 
                     scope.rawData = gistElement.find('.gist-data').text()
                         .replace(/^[\s]*$\n/gm, '').replace(/^[ ]{8}/gm, '');

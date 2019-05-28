@@ -7,7 +7,7 @@
         // This code is copied from ng-infinite-scroll.js so the scrollParent is the same in both our and their directives
         var $scrollParent;
         $scrollParent = element.parents().filter(function() {
-            return /(auto|scroll)/.test($.css(this, 'overflow') + $.css(this, 'overflow-y'));
+            return /(auto|scroll)/.test(jQuery.css(this, 'overflow') + jQuery.css(this, 'overflow-y'));
         }).eq(0);
 
         if ($scrollParent.length === 0) {
@@ -141,7 +141,7 @@
                     try {
                         window.dispatchEvent(new Event('resize'));
                     } catch (error) {
-                        $(window).trigger('resize');
+                        jQuery(window).trigger('resize');
                     }
                 };
 

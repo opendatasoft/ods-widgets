@@ -35,7 +35,7 @@
             },
             link: function (scope, element, attrs) {
                 if ('autofocus' in attrs) {
-                    $(element).find('input').focus();
+                    jQuery(element).find('input').focus();
                 }
             },
             controller: ['$scope', '$sce', function($scope, $sce) {

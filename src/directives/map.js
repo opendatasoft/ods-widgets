@@ -375,10 +375,10 @@
                 }
 
                 function resizeMap() {
-                    var mapElement = $('.odswidget-map__map');
+                    var mapElement = jQuery('.odswidget-map__map');
                     if (scope.autoResize === 'true' && mapElement.length > 0) {
                         // Only do this if visible
-                        var height = Math.max(200, $(window).height() - mapElement.offset().top);
+                        var height = Math.max(200, jQuery(window).height() - mapElement.offset().top);
                         mapElement.height(height);
                     }
 
@@ -387,7 +387,7 @@
                 }
 
                 if (scope.autoResize === 'true') {
-                    $(window).on('resize', resizeMap);
+                    jQuery(window).on('resize', resizeMap);
                     resizeMap();
                 }
 
@@ -403,7 +403,7 @@
                 });
 
                 scope.$on('toggleMapDisplayControl', function (event, data) {
-                    var $leafletControlsElement = $('.leaflet-top.leaflet-right');
+                    var $leafletControlsElement = jQuery('.leaflet-top.leaflet-right');
                     if (data.expanded) {
                         $leafletControlsElement.removeClass('collapsed');
                     } else {
@@ -1342,9 +1342,9 @@
 
                 this.resizeMapDisplayControl = function () {
                     $timeout(function () {
-                        var $mapElement = $('.odswidget-map');
-                        var $legendElement = $('.odswidget-map-legend');
-                        var $mapDisplayControlElement = $('.odswidget-map-display-control__groups');
+                        var $mapElement = jQuery('.odswidget-map');
+                        var $legendElement = jQuery('.odswidget-map-legend');
+                        var $mapDisplayControlElement = jQuery('.odswidget-map-display-control__groups');
                         if ($mapDisplayControlElement.length === 1) {
                             $mapDisplayControlElement = $mapDisplayControlElement.first();
                             if ($legendElement.length > 0) {

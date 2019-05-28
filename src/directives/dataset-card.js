@@ -5,13 +5,13 @@
 
     var positionEmbed = function(elem, position) {
         var datasetItem = elem.find('.dataset-item').first();
-        var cardHeight = $(elem.find('.card-container')).outerHeight();
+        var cardHeight = jQuery(elem.find('.card-container')).outerHeight();
         if (position === "bottom") {
-            $(datasetItem).css('top', 0);
-            $(datasetItem).css('bottom', cardHeight);
+            jQuery(datasetItem).css('top', 0);
+            jQuery(datasetItem).css('bottom', cardHeight);
         } else { // top
-            $(datasetItem).css('top', cardHeight);
-            $(datasetItem).css('bottom', 0);
+            jQuery(datasetItem).css('top', cardHeight);
+            jQuery(datasetItem).css('bottom', 0);
         }
     };
 

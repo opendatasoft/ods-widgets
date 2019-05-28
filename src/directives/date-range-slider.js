@@ -240,7 +240,7 @@
                 }
                 // Init plugin
                 ModuleLazyLoader('ion.rangeSlider').then(function () {
-                    scope.rangeslider = $(input).ionRangeSlider(angular.extend(
+                    scope.rangeslider = jQuery(input).ionRangeSlider(angular.extend(
                         ionRangesliderSettings, ionRangesliderOptions));
                     scope.slider_instance = scope.rangeslider.data("ionRangeSlider");
                     var tmp_rangesetting = computeRangeSizeAndGridSettings(scope.startBound, scope.endBound, scope.rangeslider.parent().width());

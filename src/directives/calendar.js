@@ -137,7 +137,7 @@
                     }
 
                     // actual calendar setup
-                    scope.tooltip = $(element).children('.odswidget-calendar__tooltip').first()
+                    scope.tooltip = jQuery(element).children('.odswidget-calendar__tooltip').first()
                         .qtip({
                             content: {
                                 text: '',
@@ -147,7 +147,7 @@
                                 my: 'bottom center',
                                 at: 'top center',
                                 target: 'mouse',
-                                viewport: $('.odswidget-calendar__fullcalendar'),
+                                viewport: jQuery('.odswidget-calendar__fullcalendar'),
                                 adjust: {
                                     mouse: false,
                                     scroll: false
@@ -162,18 +162,18 @@
                         .qtip('api');
 
                     // hide tooltip for any click not directed at a calendar object
-                    $(document).on('click', function (event) {
-                        if (!$(event.target).parents('.fc-event').length &&
-                            !$(event.target).parents('.odswidget-calendar__tooltip').length) {
+                    jQuery(document).on('click', function (event) {
+                        if (!jQuery(event.target).parents('.fc-event').length &&
+                            !jQuery(event.target).parents('.odswidget-calendar__tooltip').length) {
                             hideTooltip();
                         }
                     });
 
-                    scope.fullcalendar = $(element).children('.odswidget-calendar__fullcalendar').first();
+                    scope.fullcalendar = jQuery(element).children('.odswidget-calendar__fullcalendar').first();
                     scope.fullcalendar.fullCalendar({
                         lazyFetching: false,
                         header: {
-                            left: $(element).css('direction') === 'rtl' ? 'nextYear,next,prev,prevYear, today' : 'prevYear,prev,next,nextYear, today',
+                            left: jQuery(element).css('direction') === 'rtl' ? 'nextYear,next,prev,prevYear, today' : 'prevYear,prev,next,nextYear, today',
                             center: 'title',
                             right: scope.availableCalendarViews.join(',')
                         },
@@ -202,7 +202,7 @@
                 };
 
                 var hideTooltip = function () {
-                    $('.odswidget-calendar__tooltip').hide();
+                    jQuery('.odswidget-calendar__tooltip').hide();
                 };
 
                 var updateCalendar = function () {
@@ -211,9 +211,9 @@
 
                 var toggleLoadingWheel = function (isLoading) {
                     if (isLoading) {
-                        $('.odswidget-calendar__loading-backdrop').show();
+                        jQuery('.odswidget-calendar__loading-backdrop').show();
                     } else {
-                        $('.odswidget-calendar__loading-backdrop').hide();
+                        jQuery('.odswidget-calendar__loading-backdrop').hide();
                     }
                 };
 
@@ -277,13 +277,13 @@
                         rows: 1000
                     };
                     // apply common filters
-                    options = $.extend(options, scope.context.parameters);
+                    options = jQuery.extend(options, scope.context.parameters);
                     // restrict to current view
                     var boundsQuery = [
                         scope.startField + '<' + end.format('YYYY-MM-DD'),
                         scope.endField + '>=' + start.format('YYYY-MM-DD')
                     ].join(' AND ');
-                    options = $.extend(options, {
+                    options = jQuery.extend(options, {
                         'q.calendar_bounds': boundsQuery
                     });
                     return options;

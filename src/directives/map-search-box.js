@@ -131,7 +131,7 @@
                 };
 
                 scope.collapseSearchBox = function () {
-                    $('.odswidget-map-search-box__box').blur();
+                    jQuery('.odswidget-map-search-box__box').blur();
                     scope.expanded = false;
                 };
 
