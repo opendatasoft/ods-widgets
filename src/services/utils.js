@@ -238,7 +238,7 @@
         // TODO: Don't duplicate our own DebugLogger
         return {
             log: function() {
-                if ($window.location.hash == '#debug' || $window.location.hash.indexOf('debug=') >= 0 || $(document.body).hasClass('showDebug')) {
+                if ($window.location.hash == '#debug' || $window.location.hash.indexOf('debug=') >= 0 || jQuery(document.body).hasClass('showDebug')) {
                     console.log.apply(console, arguments);
                 }
             }

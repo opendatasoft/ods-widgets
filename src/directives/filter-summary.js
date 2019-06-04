@@ -159,13 +159,13 @@
                                 var timerangeFound = false;
                                 angular.forEach(timeWidgets, function(timeWidget){
                                     if (!timerangeFound) {
-                                        if ($(timeWidget).is('.odswidget-timerange')){
+                                        if (jQuery(timeWidget).is('.odswidget-timerange')){
                                             timerangeFound = true;
-                                            if (!angular.isUndefined($(timeWidget).attr('label-from'))) {
-                                                fromLabel = $(timeWidget).attr('label-from');
+                                            if (!angular.isUndefined(jQuery(timeWidget).attr('label-from'))) {
+                                                fromLabel = jQuery(timeWidget).attr('label-from');
                                             }
-                                            if (!angular.isUndefined($(timeWidget).attr('label-to'))) {
-                                                toLabel = $(timeWidget).attr('label-to');
+                                            if (!angular.isUndefined(jQuery(timeWidget).attr('label-to'))) {
+                                                toLabel = jQuery(timeWidget).attr('label-to');
                                             }
                                         }
                                     }

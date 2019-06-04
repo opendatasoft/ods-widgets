@@ -514,7 +514,7 @@
                     if (currentLine.height < currentLine.max_height || image.index === imagesCount - 1) {
                         // this line is done
                         var lineWidth = 0;
-                        $.each(currentLine.images, function (index, image) {
+                        jQuery.each(currentLine.images, function (index, image) {
                             image.height = currentLine.height;
                             image.width = Math.floor(image.realwidth * image.height / image.realheight);
                             image.marginTop = image.marginBottom = image.marginRight = image.marginLeft = MARGIN + "px";

@@ -32,7 +32,7 @@
             },
             getFunctionLabel: function(func) {
                 func = func.toUpperCase();
-                return $.grep(availableFunctions, function(f){return func === f.func;})[0].label;
+                return jQuery.grep(availableFunctions, function(f){return func === f.func;})[0].label;
             }
         };
     }]);
@@ -359,7 +359,7 @@
                 return positions[position].position;
             },
             getPieChartPositions: function() {
-                return $.map(positions, function(v,k) {return {'label': v.label, 'value': k};});
+                return jQuery.map(positions, function(v,k) {return {'label': v.label, 'value': k};});
             },
             getDefaultColors: function() {
                 return defaultColors;
@@ -562,7 +562,7 @@
                 } else {
                     // there is an yAxis defined, we need to check if it still exists
                     if (!conservative && ['COUNT', 'CONSTANT', 'CUSTOM'].indexOf(chart.func) === -1) {
-                        if ($.grep(availableY, function(y) {return y.name === chart.yAxis;}).length === 0) {
+                        if (jQuery.grep(availableY, function(y) {return y.name === chart.yAxis;}).length === 0) {
                             // the currently defined y does not seem to exists anymore, fallback on the first available one
                             chart.yAxis = availableY[0].name;
                         }
@@ -715,7 +715,7 @@
                     } else {
                         var funcLabel = AggregationHelper.getFunctionLabel(chart.func);
                         var nameY = chart.yAxis || chart.expr;
-                        var possibleYAxis = $.grep(this.getAvailableY(datasetid), function(y){return y.name == nameY;});
+                        var possibleYAxis = jQuery.grep(this.getAvailableY(datasetid), function(y){return y.name == nameY;});
                         if (possibleYAxis.length > 0 && chart.func !== "COUNT" && chart.func !== "CONSTANT" && chart.func !== "CUSTOM") {
                             return funcLabel + ' ' + possibleYAxis[0].label;
                         } else {

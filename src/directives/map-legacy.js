@@ -111,13 +111,13 @@
                 }
 
                 function resizeMap(){
-                    if ($('.odswidget-map__map').length > 0) {
+                    if (jQuery('.odswidget-map__map').length > 0) {
                         // Only do this if visible
-                        $('.odswidget-map__map').height(Math.max(200, $(window).height() - $('.odswidget-map__map').offset().top));
+                        jQuery('.odswidget-map__map').height(Math.max(200, jQuery(window).height() - jQuery('.odswidget-map__map').offset().top));
                     }
                 }
                 if (scope.autoResize === 'true') {
-                    $(window).on('resize', resizeMap);
+                    jQuery(window).on('resize', resizeMap);
                     resizeMap();
                 }
                 ModuleLazyLoader('leaflet').then(function() {
@@ -168,7 +168,7 @@
                             });
                             // FIXME: Plug it to a working ods-tooltip
 //                            if ($) {
-//                                $(link).tooltip({
+//                                jQuery(link).tooltip({
 //                                    placement: 'left',
 //                                    title: '<div style="white-space: nowrap; width: auto;" translate>Filter the data to what you see on the map</div>',
 //                                    html: true
