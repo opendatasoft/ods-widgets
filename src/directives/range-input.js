@@ -24,9 +24,9 @@
          * This means that the value of the slider can never be more than the value of the other slider, forcing a range.
          * @param {boolean} [editableValue=false] If enabled, an input type="number" will show to the right of the range
          * input with the current range value which can be modified directly in this input.
-         * @param {string} iconMin Used to display an icon to the left of the range slider. FontAwesome or OpenDataSoft
+         * @param {string} iconMin Used to display an icon to the left of the range slider. FontAwesome or Opendatasoft
          * icon classes should be used here.
-         * @param {string} iconMax Used to display an icon to the right of the range slider. FontAwesome or OpenDataSoft
+         * @param {string} iconMax Used to display an icon to the right of the range slider. FontAwesome or Opendatasoft
          * icon classes should be used here.
          * @param {string} iconMinTitle Adds a title attr to the min side of the input.
          * @param {string} iconMaxTitle Adds a title attr to the max side of the input.

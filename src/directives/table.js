@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsTable', function() {
+    mod.directive('odsTable', ['translate', function(translate) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsTable
@@ -327,10 +327,11 @@
 
                     if ($scope.displayDatasetFeedback) {
                         // FIXME: This is entirely tied to ODS platform, it should not be within a widget
-                        var feedbackButton = '<i class="fa fa-comment table-feedback-icon" aria-hidden="true" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="Suggest changes for this record" translate="ods-tooltip"></i>';
+                        var feedbackButton = '<i class="fa fa-comment table-feedback-icon" aria-hidden="true" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="{{label}}"></i>';
                         var localScope = $scope.$new(true);
                         localScope.record = record;
                         localScope.dataset = $scope.context.dataset;
+                        localScope.label = translate('Suggest changes for this record');
                         div.appendChild($compile(feedbackButton)(localScope)[0]);
                     }
 
@@ -745,5 +746,5 @@
                 }
             }
         };
-    });
+    }]);
 }());

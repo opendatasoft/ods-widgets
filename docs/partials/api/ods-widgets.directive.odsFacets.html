@@ -75,12 +75,13 @@ see an example below of such a behaviour.</p>
 <p>You can write HTML within the odsFacet tag to change the display template of each category. The available variables
 within the template are <code>facetName</code> (the name of the field that the filter is based on), <code>category.name</code>
 (the value of the category), <code>category.path</code> (the complete path to the category, including hierarchical levels)
-and <code>category.state</code> (refined, excluded, or displayed).</p>
+and <code>category.state</code> (refined, excluded, or displayed).
+For this to work properly, you must use an <code>ng-non-bindable</code> wrapper element around your display template.</p>
 <pre class="prettyprint linenums">
     &lt;ods-facets context="mycontext"&gt;
-        &lt;ods-facet name="myfield"&gt;
+        &lt;ods-facet name="myfield"&gt;&lt;span ng-non-bindable&gt;
             {{category.name}} @ {{category.state}}
-        &lt;/ods-facet&gt;
+        &lt;/span&gt;&lt;/ods-facet&gt;
     &lt;/ods-facets&gt;
 </pre>
 <p>You can filter multiple contexts through this widget. To illustrate how this works, we&#39;ll consider 3 datasets
@@ -124,7 +125,7 @@ refine all 3 contexts simultaneously, we need to write the following.</p>
                         <i class="icon-tags"></i> Tags
                     </h5>
                     <ods-facet name="mots_cles">
-                        <div>
+                        <div ng-non-bindable>
                             <i class="icon-tag"></i> {{category.name}}
                         </div>
                     </ods-facet>

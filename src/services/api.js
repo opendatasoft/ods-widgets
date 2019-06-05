@@ -5,7 +5,7 @@
 
     mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'odsHttpErrorMessages', '$q', function($http, ODSWidgetsConfig, odsNotificationService, odsHttpErrorMessages, $q) {
         /**
-         * This service exposes OpenDataSoft APIs.
+         * This service exposes Opendatasoft APIs.
          *
          * Each method take a context, and specific parameters to append to this request (without modifying the context).
          * A context is an object usually created by a directive such as dataset-context or catalog-context.
@@ -26,6 +26,11 @@
             if (context && context.source) {
                 params.source = context.source;
             }
+
+            if (params.dataset) {
+                params.dataset = sourcedDatasetId(context, params.dataset);
+            }
+
             var options = {
                 params: params,
                 paramSerializer: function(params) {
@@ -62,6 +67,19 @@
                 return $http.jsonp(url, options);
             }
         };
+
+        var sourcedDatasetId = function(context, datasetId) {
+            if (!context.domainUrl &&
+                !context.domain &&
+                !context.source &&
+                datasetId.indexOf('@') === -1 &&
+                ODSWidgetsConfig.defaultSourceDomain
+            ) {
+                return datasetId + '@' + ODSWidgetsConfig.defaultSourceDomain
+            }
+            return datasetId;
+        }
+
         return {
             'uniqueCall': function(func) {
                 /*
@@ -112,7 +130,7 @@
             },
             'datasets': {
                 'get': function(context, datasetID, parameters, timeout) {
-                    return request(context, '/api/datasets/1.0/'+datasetID+'/', parameters, timeout);
+                    return request(context, '/api/datasets/1.0/'+ sourcedDatasetId(context, datasetID) +'/', parameters, timeout);
                 },
                 'search': function(context, parameters, timeout) {
                     var queryParameters = angular.extend({}, context.parameters, parameters);

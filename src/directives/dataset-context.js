@@ -28,7 +28,7 @@
          *  * **`domain`** - {@type string} - (optional) Indicate the "domain" (used to construct an URL to an API root) where to find the dataset.
          * Domain value can be:
          *
-         *      * a simple alphanum string (e.g. *mydomain*): it will assume it is an OpenDataSoft domain (so in this example *mydomain.opendatasoft.com*)
+         *      * a simple alphanum string (e.g. *mydomain*): it will assume it is an Opendatasoft domain (so in this example *mydomain.opendatasoft.com*)
          *
          *      * a hostname (e.g. *data.mydomain.com*)
          *

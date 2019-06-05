@@ -8,7 +8,7 @@
          * @name ods-widgets.directive:odsTimer
          * @scope
          * @restrict E
-         * @param {Number} [delay=1000] The number of milliseconds to wait before executing the expression. Minimum value is 1000ms.
+         * @param {Number} [delay=1000] The number of milliseconds to wait before executing the expression. Minimum value is 100ms.
          * @param {Expression} [stopCondition=false] An AngularJS expression returning 'true' or 'false'. The timer stops when the condition is false.
          * @param {Boolean} [autoStart=false] Starts the timer automatically when the page load
          * @param {Expression} [exec] An AngularJS expression to execute.
@@ -58,7 +58,7 @@
                 delay: '=',
                 exec: '&'
             },
-            replace: true,
+            replace: false,
             template: '' +
                 '<div class="ods-widget-timer">' +
                 '   <button class="ods-button ods-widget-timer-controller ods-widget-timer-play"' +
@@ -80,8 +80,8 @@
                 if (angular.isDefined(scope.delay)) {
                     if (!scope.delay || typeof scope.delay !== 'number' || !isFinite(scope.delay)) {
                         console.warn('ods-timer: delay is not a valid integer: fallbacking to default value (1000ms)');
-                    } else if (scope.delay < 1000) {
-                        console.warn('ods-timer: delay is too small (1000ms minimum): fallbacking to default value (1000ms)');
+                    } else if (scope.delay < 100) {
+                        console.warn('ods-timer: delay is too small (100ms minimum): fallbacking to default value (1000ms)');
                     } else {
                         delay = scope.delay;
                     }
@@ -118,7 +118,11 @@
                 if (scope.autoStart === true) {
                     scope.timerPlay();
                 }
-            },
+
+                scope.$on('$destroy', function() {
+                    scope.timerStop();
+                });
+            }
         };
     }]);
 }());

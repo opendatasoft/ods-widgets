@@ -10,8 +10,8 @@
          * @scope
          * @restrict A
          * @param {string} [odsAggregation=aggregation] Variable name to use. For multiple aggregations, separate variable names with commas.
-         * @param {CatalogContext|DatasetContext} odsAggregationContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {CatalogContext|DatasetContext} odsAggregationXxxContext Specific context for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.
+         * @param {DatasetContext} odsAggregationContext {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {DatasetContext} odsAggregationXxxContext Specific context for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.
          * @param {string} [odsAggregationFunction=COUNT] Aggregation function to apply (AVG, COUNT, MIN, MAX, STDDEV, SUM)
          * @param {string} [odsAggregationXxxFunction=COUNT] Specific function for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.
          * @param {string} [odsAggregationExpression=none] Expression to apply the function on, typically the name of a field. Optional only when the function is "COUNT".

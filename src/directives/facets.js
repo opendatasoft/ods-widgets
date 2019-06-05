@@ -88,12 +88,13 @@
          * within the template are `facetName` (the name of the field that the filter is based on), `category.name`
          * (the value of the category), `category.path` (the complete path to the category, including hierarchical levels)
          * and `category.state` (refined, excluded, or displayed).
+         * For this to work properly, you must use an `ng-non-bindable` wrapper element around your display template.
          *
          * <pre>
          *     <ods-facets context="mycontext">
-         *         <ods-facet name="myfield">
+         *         <ods-facet name="myfield"><span ng-non-bindable>
          *             {{category.name}} @ {{category.state}}
-         *         </ods-facet>
+         *         </span></ods-facet>
          *     </ods-facets>
          * </pre>
          *
@@ -126,7 +127,7 @@
          *                              <i class="icon-tags"></i> Tags
          *                          </h3>
          *                          <ods-facet name="mots_cles">
-         *                              <div>
+         *                              <div ng-non-bindable>
          *                                  <i class="icon-tag"></i> {{category.name}}
          *                              </div>
          *                          </ods-facet>

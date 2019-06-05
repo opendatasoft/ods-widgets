@@ -4,7 +4,7 @@ ODS Widgets
 interactive pages of datavisualization, live from data available on a remote API.
 
 In more concrete terms, it is a set of AngularJS directives that can be directly
-plugged on a remote data API (currently OpenDataSoft only); those directives
+plugged on a remote data API (currently Opendatasoft only); those directives
 can interact with each others using shared contexts (for example a "calendar"
 directive could refine the data displayed by a "table" directive). It is
 designed to work without the need for a local backend, and to be efficient to
@@ -13,7 +13,7 @@ directive tags). Since it is regular HTML, it can be integrated in your current
 pages, supports CSS styling, and generally works in a way that will feel familiar
 if you know HTML. **It does not require knowing AngularJS to be used.**
 
-This library is used in production as a part of the OpenDataSoft platform, a
+This library is used in production as a part of the Opendatasoft platform, a
 Software-as-a-Service data portal. It is essentially the current core of our
 front-end data visualization features.
 
@@ -88,10 +88,10 @@ Some specific widgets can rely on specific "heavy" libraries (such as Highcharts
 in that case, they are lazily-loaded from a CDN when the widget initializes itself.
 
 ### Available API and data sources
-Currently, ODS-Widgets only works with an API from an OpenDataSoft domain, or any API
+Currently, ODS-Widgets only works with an API from an Opendatasoft domain, or any API
 that exposes the same interface and returns the same JSON result.
 
-This project originates from OpenDataSoft codebase, and as such obviously works
+This project originates from Opendatasoft codebase, and as such obviously works
 closely with our own interfaces; however, we are looking to make this framework work
 with more APIs and services (and thankfully, AngularJS can make it easier), for example by
 implementing more AngularJS services as sources, beside our ODSAPI service.

@@ -582,6 +582,7 @@
             var body = angular.element('<div>'+summary+'</div>');
             if (body.children().length === 0) {
                 // Regular text
+                summary = '' + summary; // make sure it is a string
                 if (summary.indexOf('\n') > -1) {
                     text = summary.substring(0, summary.indexOf('\n'));
                 } else {

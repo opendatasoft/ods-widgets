@@ -17,7 +17,7 @@ This log tries to follow the good principles of [Keep a CHANGELOG](http://keepac
 
 ### Added
 - `odsDatasetContext`: new `refresh-delay` parameter to automatically refresh the context's data at a fixed interval
-- new `odsPageRefresh` directive trigering a full refresh of the page at a given interval  
+- new `odsPageRefresh` directive trigering a full refresh of the page at a given interval
 - added notifications when XHR requests fail
 
 ### Fixed
@@ -25,7 +25,7 @@ This log tries to follow the good principles of [Keep a CHANGELOG](http://keepac
 - `odsMap`: pan map so that tooltip fits in
 
 ### Removed
-- `odsRedirectIfNotLoggedIn` having no use outside of dashboards hosted on OpenDataSoft, it's been moved out of this library
+- `odsRedirectIfNotLoggedIn` having no use outside of dashboards hosted on Opendatasoft, it's been moved out of this library
 
 ## 1.1.0 - 2018-02-23
 ### Added
@@ -71,7 +71,7 @@ This log tries to follow the good principles of [Keep a CHANGELOG](http://keepac
 ### Fixed
 - `odsAggregation`: fix example and crash when aggregation yields no result
 - `odsCrossTable`: fix refresh condition
-- `odsFacets`: fix race condition with filtered contexts 
+- `odsFacets`: fix race condition with filtered contexts
 - `odsRangeInput`: fix bad display on init
 - `odsSlideshow`: fix numerous errors that used to show up in the console
 - `odsMap`: bug fixes and many improvement following the release of the new mapbuilder
@@ -83,7 +83,7 @@ This log tries to follow the good principles of [Keep a CHANGELOG](http://keepac
 - `odsGeoSearch`: now uses the default map location set through ODSWidgetsConfig
 - `odsInfiniteScrollResults`: now lists dataset's interop metas as well
 - `odsLastReusesFeed`: new option to link either to the reuse or to the dataset
-- `odsMapDisplayControls`: if no group title or description is set, default to the title or description of the first 
+- `odsMapDisplayControls`: if no group title or description is set, default to the title or description of the first
 layer of the group before resorting to the this layer's dataset title and description.
 - `odsMapLegend`: support for choropleth and heatmap legends, and lots of visual improvements
 - `odsMapSearchBox`: visual improvements
@@ -119,7 +119,7 @@ layer of the group before resorting to the this layer's dataset title and descri
 ## 1.0.8 - 2016-12-19
 ### Added
 - `odsCrossTable`: new visualisation that allows a representation of datasets data in a pivot table like formatting
-- `odsMap`: new choropleth mode for map rendering 
+- `odsMap`: new choropleth mode for map rendering
 
 ### Fixed
 - `odsTwitterTimeline`: deprecate the old Twitter widget system and promote the new Twitter widgets
@@ -147,7 +147,7 @@ layer of the group before resorting to the this layer's dataset title and descri
 - `odsChart`: Added three new chart types: `polar`, `funnel`, `spiderweb`.
 
 ### Fixed
-- Fixed an issue with `odsFacets` when used in disjunctive mode: in Firefox and Internet Explorer, it used to have a 
+- Fixed an issue with `odsFacets` when used in disjunctive mode: in Firefox and Internet Explorer, it used to have a
 weird centering effect when hovered.
 
 
@@ -207,7 +207,7 @@ dataset catalogs.
 
 ### Added
 - New `odsMediaGallery` widget to build image galleries from datasets containing images.
-- New `odsGeoSearch` widget to make geographic searches within dataset catalogs. These searches relies on the 
+- New `odsGeoSearch` widget to make geographic searches within dataset catalogs. These searches relies on the
   `geographic_area` metadata set on datasets.
 
 ### Fixed
@@ -229,7 +229,7 @@ more details about usage of aggregation functions in the `odsMap` widget.
 ## 1.0.0 - 2015-12-14
 This release is the one that finally jumps to the 1.x.x major version number! Many changes in the structure and styles, most of
 them being breaking changes, so it warranted a major version; and at the same time we are now confident that it is going
-to stay stable for a long time, so the jump to 1.x seemed warranted. 
+to stay stable for a long time, so the jump to 1.x seemed warranted.
 
 There are two (big) breaking changes:
 - **Internet Explorer 8 is no longer supported.** This seems harsh, but this enabled us to upgrade Angular version to 1.4,
@@ -245,9 +245,9 @@ But unfortunately, this means that any current customization is likely to be ent
 - New `odsPlumeAirQuality`: displays the status of the air quality in a specific city
 - New `odsClearAllFilters`: a simple link to reset all filters on a context.
 - New `odsDatetime`: can be used to inject the current date/time as a variable in the page.
-- New `odsRedirectIfNotLoggedIn` (OpenDataSoft customers): redirects the users to the login page if they are not logged in.
+- New `odsRedirectIfNotLoggedIn` (Opendatasoft customers): redirects the users to the login page if they are not logged in.
 Can be used on a public page that uses private datasets, to ensure the user doesn't stop at an empty dashboard. Only works
-on the OpenDataSoft platform.
+on the Opendatasoft platform.
 - New `availableCalendarViews` parameter on `odsCalendar`, allowing you to restrict the available views in the calendar.
 - New `minZoom` and `maxZoom` parameters on `odsMap`, to restrict the available zoom levels.
 - New `scrollWheelZoom` parameter on `odsMap` to prevent the mousewheel to zoom/unzoom. Can be useful on a scrollable
@@ -265,7 +265,7 @@ in the close future.
 - New `odsCalendar` widget! Displays a calendar view of your data. Live example: http://data.issy.com/explore/dataset/agendav2/?tab=calendar
 - In `odsDatasetContext`, you can now set `mycontextname-urlsync="true"` to synchronize this context's parameter with
 the page's URL, so that the URL changes when the parameters change. Also, if you arrive on the page with parameters in
-the URL, the context will directly initialize with these parameters. You can use this to make dynamic pages with URL 
+the URL, the context will directly initialize with these parameters. You can use this to make dynamic pages with URL
 parameters (for examples mypage?refine.city=Paris).
 - In `odsReuses`, you can now pass a template to configure how to display each reuse. More information is available
 in the widget's documentation.
@@ -300,7 +300,7 @@ only appeared on the "aggregation" visualization mode).
 
 ## 0.1.6 - 2015-03-27
 ### Added
-- All templates are now inlined instead of external; this means that you won't have any more issue with CORS and widgets such as `odsTable` and `odsMap`. 
+- All templates are now inlined instead of external; this means that you won't have any more issue with CORS and widgets such as `odsTable` and `odsMap`.
 Also, all examples in the documentation should now work, and testing in Plunkr should be easier!
 - When using `odsFacets` with the searchbox, the current search is now reset when you select a category.
 - You can now prevent specific parameters to be displayed within `odsFilterSummary`.
@@ -318,7 +318,7 @@ to the configuration), and issues on the documentation.
 - You can now use `odsTimescale`, `odsTimerange`, and/or `odsTextSearch` without each one overriding the other.
 - Limiting the size of the real text content within `odsTable` cells, to prevent browsers crashes.
 - Fixed some map pictos from not being displayed under Firefox 36, due to a browser bug.
-- Fixed some cases where a reverse sort on Y axis in `odsChart` would be ignored. 
+- Fixed some cases where a reverse sort on Y axis in `odsChart` would be ignored.
 - Various IE8 fixes.
 
 
@@ -347,7 +347,7 @@ for more information.
 - New `odsPaginationBlock` widget, especially used in `odsResultEnumerator` where you can use a new `showPagination` attribute
 to display a pagination control below your results.
 - `odsFacets` now support the configuration of a specific order for facet values. It can be used for example to ensure
- "Monday", "Tuesday", "Wednesday", "Thursday"... are displayed in the right order. 
+ "Monday", "Tuesday", "Wednesday", "Thursday"... are displayed in the right order.
  See documentation of the `sort` parameter for more information.
 - In `odsMap` default tooltips, if a field contains a link to a YouTube video, a mini video player is displayed.
 - Clicking on a reuse's source will now open in a new tab by default.

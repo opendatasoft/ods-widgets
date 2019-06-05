@@ -107,12 +107,14 @@
         Context: {
             toggleRefine: function(context, facetName, path, replace) {
                 var refineKey = 'refine.'+facetName;
+                var isHierarchical = false;
                 var refineSeparator = '/';
                 if (context.dataset) {
                     var field = context.dataset.getField(facetName);
-                    var annotation = context.dataset.getFieldAnnotation(field, "hierarchical");
-                    if (typeof annotation !== "undefined") {
-                        refineSeparator = annotation.args[0] || refineSeparator;
+                    var hierarchicalAnnotation = context.dataset.getFieldAnnotation(field, "hierarchical");
+                    if (typeof hierarchicalAnnotation !== "undefined") {
+                        isHierarchical = true;
+                        refineSeparator = hierarchicalAnnotation.args[0] || refineSeparator;
                     }
                 }
                 if (angular.isDefined(context.parameters[refineKey])) {
@@ -127,15 +129,17 @@
                         refines.splice(refines.indexOf(path), 1);
                     } else {
                         // Activate
-                        angular.forEach(refines, function(refine, idx) {
-                            if (path.startsWith(refine + refineSeparator)) {
-                                // This already active refine is less precise than the new one, we remove it
-                                refines.splice(idx, 1);
-                            } else if (refine.startsWith(path + refineSeparator)) {
-                                // This already active refine is more precise than the new one, we remove it
-                                refines.splice(idx, 1);
-                            }
-                        });
+                        if (isHierarchical) {
+                            angular.forEach(refines, function(refine, idx) {
+                                if (path.startsWith(refine + refineSeparator)) {
+                                    // This already active refine is less precise than the new one, we remove it
+                                    refines.splice(idx, 1);
+                                } else if (refine.startsWith(path + refineSeparator)) {
+                                    // This already active refine is more precise than the new one, we remove it
+                                    refines.splice(idx, 1);
+                                }
+                            });
+                        }
                         if (angular.isUndefined(replace) || replace === false) {
                             refines.push(path);
                         } else {

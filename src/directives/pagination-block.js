@@ -36,7 +36,8 @@
                 '        <li class="odswidget-pagination__page" ng-repeat="page in pages">' +
                 '            <a class="odswidget-pagination__page-link" ' +
                 '               ng-class="{\'odswidget-pagination__page-link--active\': page.start == (context.parameters.start||0)}" ' +
-                '               ng-attr-rel="{{nofollow?\'nofollow\':\'\'}}"' +
+                '               ng-attr-rel="{{nofollow?\'nofollow\':undefined}}"' +
+                '               ng-attr-aria-label="{{page.ariaLabel?page.ariaLabel:undefined}}"' +
                 '               ng-click="click($event, page.start)" ' +
                 '               href="?start={{ page.start }}" ' +
                 '               rel="nofollow">{{ page.label }}</a>' +
@@ -49,7 +50,7 @@
                 nofollow: '@',
                 containerIdentifier: '@'
             },
-            controller: ['$scope', '$anchorScroll', function($scope, $anchorScroll) {
+            controller: ['$scope', '$anchorScroll', 'translate', function($scope, $anchorScroll, translate) {
                 $scope.location = $location;
                 $scope.pages = [];
                 $scope.perPage = $scope.perPage || 10;
@@ -83,18 +84,18 @@
                             for (pageNum=1; pageNum<=8; pageNum++) {
                                 pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
                             }
-                            pages.push({'label': '>>', 'start': (pagesCount-1)*$scope.perPage});
+                            pages.push({'label': '>>', 'ariaLabel': translate('Last page'), 'start': (pagesCount-1)*$scope.perPage});
                         } else if (currentPage >= (pagesCount-4)) {
-                            pages.push({'label': '<<', 'start': 0});
+                            pages.push({'label': '<<', 'ariaLabel': translate('First page'), 'start': 0});
                             for (pageNum=(pagesCount-7); pageNum<=pagesCount; pageNum++) {
                                 pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
                             }
                         } else {
-                            pages.push({'label': '<<', 'start': 0});
+                            pages.push({'label': '<<', 'ariaLabel': translate('First page'), 'start': 0});
                             for (pageNum=(currentPage-3); pageNum<=(currentPage+3); pageNum++) {
                                 pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
                             }
-                            pages.push({'label': '>>', 'start': (pagesCount-1)*$scope.perPage});
+                            pages.push({'label': '>>', 'ariaLabel': translate('Last page'), 'start': (pagesCount-1)*$scope.perPage});
                         }
                     }
                     $scope.pages = pages;

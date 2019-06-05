@@ -420,7 +420,7 @@
                 var service = this;
                 var clickable = layerConfig.refineOnClick || (angular.isDefined(layerConfig.tooltipDisabled) ? !layerConfig.tooltipDisabled : true);
 
-                var shapeLayer = new L.GeoJSON(geoJSON, {
+                var shapeRenderOptions = {
                     clickable: clickable,
                     style: function (feature) {
                         var opts = {};
@@ -429,7 +429,6 @@
                         if (layerConfig.borderPattern && layerConfig.borderPattern !== 'solid') {
                             opts.dashArray = service.patternToDashArray(layerConfig.borderPattern);
                         }
-
                         if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
                             opts.weight = layerConfig.lineWidth;
                             opts.color = service.getRecordColor(record, layerConfig);
@@ -465,20 +464,47 @@
                                 opts.dashArray = service.patternToDashArray(layerConfig.borderPattern);
                             }
                         }
+
                         return opts;
                     }
-                });
+                };
 
-                // TODO: Document the cases
-                if (clickable) {
-                    if (angular.isObject(record)) {
-                        service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, record.recordid);
-                    } else {
-                        service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, null, geoDigest);
-                    }
+                // Is it a shape containing points?
+                var hasPoints = geoJSON.type === "GeometryCollection" && Boolean(geoJSON.geometries.filter(function(geometry) { return geometry.type === 'Point'}).length);
+
+                if (hasPoints) {
+                    // We have to wait until the SVG is ready to be rendered in the markers
+                    SVGInliner.getPromise(PictoHelper.mapPictoToURL(layerConfig.picto, layerConfig.context), layerConfig.marker ? 'white' : service.getRecordColor(record, layerConfig)).then(function (svg) {
+                        shapeRenderOptions.pointToLayer = function (featureData, latlng) {
+                            return new L.VectorMarker(latlng, {
+                                color: service.getRecordColor(record, layerConfig),
+                                icon: svg,
+                                marker: layerConfig.marker,
+                                opacity: layerConfig.pointOpacity,
+                                size: layerConfig.size,
+                                clickable: clickable,
+                            });
+                        };
+
+                        renderOnMap(shapeRenderOptions);
+                    });
+                } else {
+                    // Render directly
+                    renderOnMap(shapeRenderOptions);
                 }
 
-                targetLayer.addLayer(shapeLayer);
+                function renderOnMap(renderOptions) {
+                    var shapeLayer = new L.GeoJSON(geoJSON, renderOptions);
+                    if (clickable) {
+                        if (angular.isObject(record)) {
+                            service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, record.recordid);
+                        } else {
+                            service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, null, geoDigest);
+                        }
+                    }
+
+                    targetLayer.addLayer(shapeLayer);
+                }
             },
             patternToDashArray: function(pattern) {
                 var dashArray;

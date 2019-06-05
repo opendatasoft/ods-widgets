@@ -1818,7 +1818,7 @@
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @param {string|Object} [chartConfig=none] A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.
          * @description
-         * This widget can display a multiple chart generated using the "Charts" interface of OpenDataSoft.
+         * This widget can display a multiple chart generated using the "Charts" interface of Opendatasoft.
          *
          */
         return {
@@ -1894,7 +1894,7 @@
          * @param {integer} [labelsXLength=12] Set the maximum number of characters displayed for the X axis labels.
          *
          * @description
-         * This widget is the base widget allowing to display charts from OpenDataSoft datasets.
+         * This widget is the base widget allowing to display charts from Opendatasoft datasets.
          * A Chart is defined by one or more series that get there data from form one or more dataset represented by an {@link ods-widgets.directive:odsDatasetContext Dataset Context},
          * a type of chart and multiple parameters to fine tune the appearance of chart.
          *

@@ -86,9 +86,11 @@
             '               aria-label="{{ translatedPlaceholder }}" ' +
             '               placeholder="{{ translatedPlaceholder }}"> ' +
             '       <button type="reset" class="odswidget-text-search__reset" ng-show="searchExpression" ng-click="resetSearch()" aria-label="Reset search" translate="aria-label">' +
+            '           <span class="ods-aria-instructions" translate>Reset</span>' +
             '           <i class="fa fa-times-circle" aria-hidden="true"></i>' +
             '       </button>' +
             '       <button type="submit" class="odswidget-text-search__submit" aria-label="Search in catalog" translate="aria-label">' +
+            '           <span class="ods-aria-instructions" translate>Submit</span>' +
             '           <i class="fa fa-search" aria-hidden="true"></i>' +
             '       </button>' +
             '    </form>' +

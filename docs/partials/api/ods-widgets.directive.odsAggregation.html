@@ -59,8 +59,8 @@ This widget supports multiple declaration of aggregations.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as attribute<pre class="prettyprint linenums">&lt;ANY ods-aggregation="{string}"
-     ods-aggregation-context="{CatalogContext|DatasetContext}"
-     ods-aggregation-xxx-context="{CatalogContext|DatasetContext}"
+     ods-aggregation-context="{DatasetContext}"
+     ods-aggregation-xxx-context="{DatasetContext}"
      ods-aggregation-function="{string}"
      ods-aggregation-xxx-function="{string}"
      ods-aggregation-expression="{string}"
@@ -72,8 +72,8 @@ This widget supports multiple declaration of aggregations.</p>
 </ul>
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>odsAggregation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Variable name to use. For multiple aggregations, separate variable names with commas.</p>
-</div> <p><em>(default: aggregation)</em></p></td></tr><tr><td>odsAggregationContext</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
-</div></td></tr><tr><td>odsAggregationXxxContext</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Specific context for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.</p>
+</div> <p><em>(default: aggregation)</em></p></td></tr><tr><td>odsAggregationContext</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
+</div></td></tr><tr><td>odsAggregationXxxContext</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Specific context for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.</p>
 </div></td></tr><tr><td>odsAggregationFunction</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Aggregation function to apply (AVG, COUNT, MIN, MAX, STDDEV, SUM)</p>
 </div> <p><em>(default: COUNT)</em></p></td></tr><tr><td>odsAggregationXxxFunction</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Specific function for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.</p>
 </div> <p><em>(default: COUNT)</em></p></td></tr><tr><td>odsAggregationExpression</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Expression to apply the function on, typically the name of a field. Optional only when the function is &quot;COUNT&quot;.</p>

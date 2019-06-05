@@ -11,7 +11,7 @@
          * @restrict E
          *
          * @description
-         * This widget displays the custom OpenDataSoft spinner.
+         * This widget displays the custom Opendatasoft spinner.
          * Its size and color match the current font's.
          * If the browser doesn't support svg animation via css, an animated gif will be displayed instead.
          *

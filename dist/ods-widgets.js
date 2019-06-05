@@ -8750,7 +8750,7 @@ mod.directive('infiniteScroll', [
     'use strict';
 
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
-    // by OpenDataSoft
+    // by Opendatasoft
     //  License: MIT
     var version = '1.3.1';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
@@ -8916,7 +8916,7 @@ mod.directive('infiniteScroll', [
 
     mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'odsHttpErrorMessages', '$q', function($http, ODSWidgetsConfig, odsNotificationService, odsHttpErrorMessages, $q) {
         /**
-         * This service exposes OpenDataSoft APIs.
+         * This service exposes Opendatasoft APIs.
          *
          * Each method take a context, and specific parameters to append to this request (without modifying the context).
          * A context is an object usually created by a directive such as dataset-context or catalog-context.
@@ -8937,6 +8937,11 @@ mod.directive('infiniteScroll', [
             if (context && context.source) {
                 params.source = context.source;
             }
+
+            if (params.dataset) {
+                params.dataset = sourcedDatasetId(context, params.dataset);
+            }
+
             var options = {
                 params: params,
                 paramSerializer: function(params) {
@@ -8973,6 +8978,19 @@ mod.directive('infiniteScroll', [
                 return $http.jsonp(url, options);
             }
         };
+
+        var sourcedDatasetId = function(context, datasetId) {
+            if (!context.domainUrl &&
+                !context.domain &&
+                !context.source &&
+                datasetId.indexOf('@') === -1 &&
+                ODSWidgetsConfig.defaultSourceDomain
+            ) {
+                return datasetId + '@' + ODSWidgetsConfig.defaultSourceDomain
+            }
+            return datasetId;
+        }
+
         return {
             'uniqueCall': function(func) {
                 /*
@@ -9023,7 +9041,7 @@ mod.directive('infiniteScroll', [
             },
             'datasets': {
                 'get': function(context, datasetID, parameters, timeout) {
-                    return request(context, '/api/datasets/1.0/'+datasetID+'/', parameters, timeout);
+                    return request(context, '/api/datasets/1.0/'+ sourcedDatasetId(context, datasetID) +'/', parameters, timeout);
                 },
                 'search': function(context, parameters, timeout) {
                     var queryParameters = angular.extend({}, context.parameters, parameters);
@@ -9106,7 +9124,7 @@ mod.directive('infiniteScroll', [
             },
             getFunctionLabel: function(func) {
                 func = func.toUpperCase();
-                return $.grep(availableFunctions, function(f){return func === f.func;})[0].label;
+                return jQuery.grep(availableFunctions, function(f){return func === f.func;})[0].label;
             }
         };
     }]);
@@ -9433,7 +9451,7 @@ mod.directive('infiniteScroll', [
                 return positions[position].position;
             },
             getPieChartPositions: function() {
-                return $.map(positions, function(v,k) {return {'label': v.label, 'value': k};});
+                return jQuery.map(positions, function(v,k) {return {'label': v.label, 'value': k};});
             },
             getDefaultColors: function() {
                 return defaultColors;
@@ -9636,7 +9654,7 @@ mod.directive('infiniteScroll', [
                 } else {
                     // there is an yAxis defined, we need to check if it still exists
                     if (!conservative && ['COUNT', 'CONSTANT', 'CUSTOM'].indexOf(chart.func) === -1) {
-                        if ($.grep(availableY, function(y) {return y.name === chart.yAxis;}).length === 0) {
+                        if (jQuery.grep(availableY, function(y) {return y.name === chart.yAxis;}).length === 0) {
                             // the currently defined y does not seem to exists anymore, fallback on the first available one
                             chart.yAxis = availableY[0].name;
                         }
@@ -9789,7 +9807,7 @@ mod.directive('infiniteScroll', [
                     } else {
                         var funcLabel = AggregationHelper.getFunctionLabel(chart.func);
                         var nameY = chart.yAxis || chart.expr;
-                        var possibleYAxis = $.grep(this.getAvailableY(datasetid), function(y){return y.name == nameY;});
+                        var possibleYAxis = jQuery.grep(this.getAvailableY(datasetid), function(y){return y.name == nameY;});
                         if (possibleYAxis.length > 0 && chart.func !== "COUNT" && chart.func !== "CONSTANT" && chart.func !== "CUSTOM") {
                             return funcLabel + ' ' + possibleYAxis[0].label;
                         } else {
@@ -11132,7 +11150,7 @@ mod.directive('infiniteScroll', [
                 var service = this;
                 var clickable = layerConfig.refineOnClick || (angular.isDefined(layerConfig.tooltipDisabled) ? !layerConfig.tooltipDisabled : true);
 
-                var shapeLayer = new L.GeoJSON(geoJSON, {
+                var shapeRenderOptions = {
                     clickable: clickable,
                     style: function (feature) {
                         var opts = {};
@@ -11141,7 +11159,6 @@ mod.directive('infiniteScroll', [
                         if (layerConfig.borderPattern && layerConfig.borderPattern !== 'solid') {
                             opts.dashArray = service.patternToDashArray(layerConfig.borderPattern);
                         }
-
                         if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
                             opts.weight = layerConfig.lineWidth;
                             opts.color = service.getRecordColor(record, layerConfig);
@@ -11177,20 +11194,47 @@ mod.directive('infiniteScroll', [
                                 opts.dashArray = service.patternToDashArray(layerConfig.borderPattern);
                             }
                         }
+
                         return opts;
                     }
-                });
+                };
 
-                // TODO: Document the cases
-                if (clickable) {
-                    if (angular.isObject(record)) {
-                        service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, record.recordid);
-                    } else {
-                        service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, null, geoDigest);
-                    }
+                // Is it a shape containing points?
+                var hasPoints = geoJSON.type === "GeometryCollection" && Boolean(geoJSON.geometries.filter(function(geometry) { return geometry.type === 'Point'}).length);
+
+                if (hasPoints) {
+                    // We have to wait until the SVG is ready to be rendered in the markers
+                    SVGInliner.getPromise(PictoHelper.mapPictoToURL(layerConfig.picto, layerConfig.context), layerConfig.marker ? 'white' : service.getRecordColor(record, layerConfig)).then(function (svg) {
+                        shapeRenderOptions.pointToLayer = function (featureData, latlng) {
+                            return new L.VectorMarker(latlng, {
+                                color: service.getRecordColor(record, layerConfig),
+                                icon: svg,
+                                marker: layerConfig.marker,
+                                opacity: layerConfig.pointOpacity,
+                                size: layerConfig.size,
+                                clickable: clickable,
+                            });
+                        };
+
+                        renderOnMap(shapeRenderOptions);
+                    });
+                } else {
+                    // Render directly
+                    renderOnMap(shapeRenderOptions);
                 }
 
-                targetLayer.addLayer(shapeLayer);
+                function renderOnMap(renderOptions) {
+                    var shapeLayer = new L.GeoJSON(geoJSON, renderOptions);
+                    if (clickable) {
+                        if (angular.isObject(record)) {
+                            service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, record.recordid);
+                        } else {
+                            service.bindTooltip(map, shapeLayer, layerConfig, geoJSON, null, geoDigest);
+                        }
+                    }
+
+                    targetLayer.addLayer(shapeLayer);
+                }
             },
             patternToDashArray: function(pattern) {
                 var dashArray;
@@ -12762,7 +12806,7 @@ mod.directive('infiniteScroll', [
         // TODO: Don't duplicate our own DebugLogger
         return {
             log: function() {
-                if ($window.location.hash == '#debug' || $window.location.hash.indexOf('debug=') >= 0 || $(document.body).hasClass('showDebug')) {
+                if ($window.location.hash == '#debug' || $window.location.hash.indexOf('debug=') >= 0 || jQuery(document.body).hasClass('showDebug')) {
                     console.log.apply(console, arguments);
                 }
             }
@@ -13758,7 +13802,7 @@ mod.directive('infiniteScroll', [
             if(angular.isArray(config) && config.length) {
                 var output = [];
                 angular.forEach(config, function(fieldName){
-                    var field = $.grep(fields, function(field){ return field.name === fieldName; })[0];
+                    var field = jQuery.grep(fields, function(field){ return field.name === fieldName; })[0];
                     if (angular.isDefined(field)) {
                         output.push(field);
                     }
@@ -13937,6 +13981,7 @@ mod.directive('infiniteScroll', [
             var body = angular.element('<div>'+summary+'</div>');
             if (body.children().length === 0) {
                 // Regular text
+                summary = '' + summary; // make sure it is a string
                 if (summary.indexOf('\n') > -1) {
                     text = summary.substring(0, summary.indexOf('\n'));
                 } else {
@@ -14443,12 +14488,14 @@ mod.directive('infiniteScroll', [
         Context: {
             toggleRefine: function(context, facetName, path, replace) {
                 var refineKey = 'refine.'+facetName;
+                var isHierarchical = false;
                 var refineSeparator = '/';
                 if (context.dataset) {
                     var field = context.dataset.getField(facetName);
-                    var annotation = context.dataset.getFieldAnnotation(field, "hierarchical");
-                    if (typeof annotation !== "undefined") {
-                        refineSeparator = annotation.args[0] || refineSeparator;
+                    var hierarchicalAnnotation = context.dataset.getFieldAnnotation(field, "hierarchical");
+                    if (typeof hierarchicalAnnotation !== "undefined") {
+                        isHierarchical = true;
+                        refineSeparator = hierarchicalAnnotation.args[0] || refineSeparator;
                     }
                 }
                 if (angular.isDefined(context.parameters[refineKey])) {
@@ -14463,15 +14510,17 @@ mod.directive('infiniteScroll', [
                         refines.splice(refines.indexOf(path), 1);
                     } else {
                         // Activate
-                        angular.forEach(refines, function(refine, idx) {
-                            if (path.startsWith(refine + refineSeparator)) {
-                                // This already active refine is less precise than the new one, we remove it
-                                refines.splice(idx, 1);
-                            } else if (refine.startsWith(path + refineSeparator)) {
-                                // This already active refine is more precise than the new one, we remove it
-                                refines.splice(idx, 1);
-                            }
-                        });
+                        if (isHierarchical) {
+                            angular.forEach(refines, function(refine, idx) {
+                                if (path.startsWith(refine + refineSeparator)) {
+                                    // This already active refine is less precise than the new one, we remove it
+                                    refines.splice(idx, 1);
+                                } else if (refine.startsWith(path + refineSeparator)) {
+                                    // This already active refine is more precise than the new one, we remove it
+                                    refines.splice(idx, 1);
+                                }
+                            });
+                        }
                         if (angular.isUndefined(replace) || replace === false) {
                             refines.push(path);
                         } else {
@@ -15210,8 +15259,8 @@ mod.directive('infiniteScroll', [
          * @scope
          * @restrict A
          * @param {string} [odsAggregation=aggregation] Variable name to use. For multiple aggregations, separate variable names with commas.
-         * @param {CatalogContext|DatasetContext} odsAggregationContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {CatalogContext|DatasetContext} odsAggregationXxxContext Specific context for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.
+         * @param {DatasetContext} odsAggregationContext {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {DatasetContext} odsAggregationXxxContext Specific context for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.
          * @param {string} [odsAggregationFunction=COUNT] Aggregation function to apply (AVG, COUNT, MIN, MAX, STDDEV, SUM)
          * @param {string} [odsAggregationXxxFunction=COUNT] Specific function for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.
          * @param {string} [odsAggregationExpression=none] Expression to apply the function on, typically the name of a field. Optional only when the function is "COUNT".
@@ -15913,7 +15962,7 @@ mod.directive('infiniteScroll', [
                     };
                     resize();
 
-                    $(window).on('resize', function () {
+                    jQuery(window).on('resize', function () {
                         $timeout.cancel(timeout);
                         timeout = $timeout(function () {
                             resize();
@@ -16071,7 +16120,7 @@ mod.directive('infiniteScroll', [
                     }
 
                     // actual calendar setup
-                    scope.tooltip = $(element).children('.odswidget-calendar__tooltip').first()
+                    scope.tooltip = jQuery(element).children('.odswidget-calendar__tooltip').first()
                         .qtip({
                             content: {
                                 text: '',
@@ -16081,7 +16130,7 @@ mod.directive('infiniteScroll', [
                                 my: 'bottom center',
                                 at: 'top center',
                                 target: 'mouse',
-                                viewport: $('.odswidget-calendar__fullcalendar'),
+                                viewport: jQuery('.odswidget-calendar__fullcalendar'),
                                 adjust: {
                                     mouse: false,
                                     scroll: false
@@ -16096,18 +16145,18 @@ mod.directive('infiniteScroll', [
                         .qtip('api');
 
                     // hide tooltip for any click not directed at a calendar object
-                    $(document).on('click', function (event) {
-                        if (!$(event.target).parents('.fc-event').length &&
-                            !$(event.target).parents('.odswidget-calendar__tooltip').length) {
+                    jQuery(document).on('click', function (event) {
+                        if (!jQuery(event.target).parents('.fc-event').length &&
+                            !jQuery(event.target).parents('.odswidget-calendar__tooltip').length) {
                             hideTooltip();
                         }
                     });
 
-                    scope.fullcalendar = $(element).children('.odswidget-calendar__fullcalendar').first();
+                    scope.fullcalendar = jQuery(element).children('.odswidget-calendar__fullcalendar').first();
                     scope.fullcalendar.fullCalendar({
                         lazyFetching: false,
                         header: {
-                            left: $(element).css('direction') === 'rtl' ? 'nextYear,next,prev,prevYear, today' : 'prevYear,prev,next,nextYear, today',
+                            left: jQuery(element).css('direction') === 'rtl' ? 'nextYear,next,prev,prevYear, today' : 'prevYear,prev,next,nextYear, today',
                             center: 'title',
                             right: scope.availableCalendarViews.join(',')
                         },
@@ -16136,7 +16185,7 @@ mod.directive('infiniteScroll', [
                 };
 
                 var hideTooltip = function () {
-                    $('.odswidget-calendar__tooltip').hide();
+                    jQuery('.odswidget-calendar__tooltip').hide();
                 };
 
                 var updateCalendar = function () {
@@ -16145,9 +16194,9 @@ mod.directive('infiniteScroll', [
 
                 var toggleLoadingWheel = function (isLoading) {
                     if (isLoading) {
-                        $('.odswidget-calendar__loading-backdrop').show();
+                        jQuery('.odswidget-calendar__loading-backdrop').show();
                     } else {
-                        $('.odswidget-calendar__loading-backdrop').hide();
+                        jQuery('.odswidget-calendar__loading-backdrop').hide();
                     }
                 };
 
@@ -16211,13 +16260,13 @@ mod.directive('infiniteScroll', [
                         rows: 1000
                     };
                     // apply common filters
-                    options = $.extend(options, scope.context.parameters);
+                    options = jQuery.extend(options, scope.context.parameters);
                     // restrict to current view
                     var boundsQuery = [
                         scope.startField + '<' + end.format('YYYY-MM-DD'),
                         scope.endField + '>=' + start.format('YYYY-MM-DD')
                     ].join(' AND ');
-                    options = $.extend(options, {
+                    options = jQuery.extend(options, {
                         'q.calendar_bounds': boundsQuery
                     });
                     return options;
@@ -16306,7 +16355,7 @@ mod.directive('infiniteScroll', [
          *  * **`domain`** - {@type string} - (optional) Indicate the "domain" (used to construct an URL to an API root) where to find the dataset.
          * Domain value can be:
          *
-         *      * a simple alphanum string (e.g. *mydomain*): it will assume it is an OpenDataSoft domain (so in this example *mydomain.opendatasoft.com*)
+         *      * a simple alphanum string (e.g. *mydomain*): it will assume it is an Opendatasoft domain (so in this example *mydomain.opendatasoft.com*)
          *
          *      * a hostname (e.g. *data.mydomain.com*)
          *
@@ -17014,7 +17063,7 @@ mod.directive('infiniteScroll', [
                 var crossTable;
                 var rows = scope.rows.split(',');
 
-                var $element = $(element);
+                var $element = jQuery(element);
                 var $frozenHeaderWrapper = $element.find('.ods-cross-table__frozen-header-wrapper');
                 var $frozenHeaderTable = $element.find('.ods-cross-table__frozen-header');
                 var $frozenColsWrapper = $element.find('.ods-cross-table__frozen-cols-wrapper');
@@ -17147,19 +17196,19 @@ mod.directive('infiniteScroll', [
 
                             var serieHeaderCells = $frozenRowsTable.find('tr:last-child .ods-cross-table__cell-content');
                             $bodyTable.find('tr:first-child td').each(function (index) {
-                                synchronizeWidth($(this), $(serieHeaderCells[index]));
+                                synchronizeWidth(jQuery(this), jQuery(serieHeaderCells[index]));
                             });
 
                             var headerCells = $frozenHeaderTable.find('tr:last-child .ods-cross-table__cell-content');
                             $frozenColsTable.find('tr:first-child td').each(function (index) {
-                                synchronizeWidth($(this), $(headerCells[index]));
+                                synchronizeWidth(jQuery(this), jQuery(headerCells[index]));
                             });
 
                             // synchronize header cells height
 
                             headerCells = $frozenHeaderTable.find('td:first-child .ods-cross-table__cell-content');
                             $frozenRowsTable.find('td:first-child').each(function (index) {
-                                $(headerCells[index]).css({height: $(this).height()});
+                                jQuery(headerCells[index]).css({height: jQuery(this).height()});
                             });
 
                             // reposition sections
@@ -17189,8 +17238,8 @@ mod.directive('infiniteScroll', [
 
                             // synchronise scroll
                             $bodyWrapper.on('scroll', function () {
-                                $frozenColsTable.css({'margin-top': -$(this).scrollTop()});
-                                $frozenRowsTable.css({'margin-left': -$(this).scrollLeft()});
+                                $frozenColsTable.css({'margin-top': -jQuery(this).scrollTop()});
+                                $frozenRowsTable.css({'margin-left': -jQuery(this).scrollLeft()});
                             });
                             $frozenColsWrapper.on('wheel', function (event) {
                                 $bodyWrapper.scrollTop($bodyWrapper.scrollTop() + event.originalEvent.deltaY);
@@ -17204,17 +17253,17 @@ mod.directive('infiniteScroll', [
                             // synchronise hover
                             $bodyTable.find('tr').hover(
                                 function () {
-                                    $frozenColsTable.find('tr:nth-child(' + ($(this).index() + 1) + ')').addClass('ods-cross-table__row--hover');
+                                    $frozenColsTable.find('tr:nth-child(' + (jQuery(this).index() + 1) + ')').addClass('ods-cross-table__row--hover');
                                 },
                                 function () {
-                                    $frozenColsTable.find('tr:nth-child(' + ($(this).index() + 1) + ')').removeClass('ods-cross-table__row--hover');
+                                    $frozenColsTable.find('tr:nth-child(' + (jQuery(this).index() + 1) + ')').removeClass('ods-cross-table__row--hover');
                                 });
                             $frozenColsTable.find('tr').hover(
                                 function () {
-                                    $bodyTable.find('tr:nth-child(' + ($(this).index() + 1) + ')').addClass('ods-cross-table__row--hover');
+                                    $bodyTable.find('tr:nth-child(' + (jQuery(this).index() + 1) + ')').addClass('ods-cross-table__row--hover');
                                 },
                                 function () {
-                                    $bodyTable.find('tr:nth-child(' + ($(this).index() + 1) + ')').removeClass('ods-cross-table__row--hover');
+                                    $bodyTable.find('tr:nth-child(' + (jQuery(this).index() + 1) + ')').removeClass('ods-cross-table__row--hover');
                                 });
 
                             // hide spinner
@@ -17249,13 +17298,13 @@ mod.directive('infiniteScroll', [
 
     var positionEmbed = function(elem, position) {
         var datasetItem = elem.find('.dataset-item').first();
-        var cardHeight = $(elem.find('.card-container')).outerHeight();
+        var cardHeight = jQuery(elem.find('.card-container')).outerHeight();
         if (position === "bottom") {
-            $(datasetItem).css('top', 0);
-            $(datasetItem).css('bottom', cardHeight);
+            jQuery(datasetItem).css('top', 0);
+            jQuery(datasetItem).css('bottom', cardHeight);
         } else { // top
-            $(datasetItem).css('top', cardHeight);
-            $(datasetItem).css('bottom', 0);
+            jQuery(datasetItem).css('top', cardHeight);
+            jQuery(datasetItem).css('bottom', 0);
         }
     };
 
@@ -17509,7 +17558,7 @@ mod.directive('infiniteScroll', [
          *  * **`domain`** - {@type string} - (optional) Indicate the "domain" (used to construct an URL to an API root) where to find the dataset.
          * Domain value can be:
          *
-         *      * a simple alphanum string (e.g. *mydomain*): it will assume it is an OpenDataSoft domain (so in this example *mydomain.opendatasoft.com*)
+         *      * a simple alphanum string (e.g. *mydomain*): it will assume it is an Opendatasoft domain (so in this example *mydomain.opendatasoft.com*)
          *
          *      * a hostname (e.g. *data.mydomain.com*)
          *
@@ -18411,7 +18460,7 @@ mod.directive('infiniteScroll', [
                 }
                 // Init plugin
                 ModuleLazyLoader('ion.rangeSlider').then(function () {
-                    scope.rangeslider = $(input).ionRangeSlider(angular.extend(
+                    scope.rangeslider = jQuery(input).ionRangeSlider(angular.extend(
                         ionRangesliderSettings, ionRangesliderOptions));
                     scope.slider_instance = scope.rangeslider.data("ionRangeSlider");
                     var tmp_rangesetting = computeRangeSizeAndGridSettings(scope.startBound, scope.endBound, scope.rangeslider.parent().width());
@@ -18916,12 +18965,13 @@ mod.directive('infiniteScroll', [
          * within the template are `facetName` (the name of the field that the filter is based on), `category.name`
          * (the value of the category), `category.path` (the complete path to the category, including hierarchical levels)
          * and `category.state` (refined, excluded, or displayed).
+         * For this to work properly, you must use an `ng-non-bindable` wrapper element around your display template.
          *
          * <pre>
          *     <ods-facets context="mycontext">
-         *         <ods-facet name="myfield">
+         *         <ods-facet name="myfield"><span ng-non-bindable>
          *             {{category.name}} @ {{category.state}}
-         *         </ods-facet>
+         *         </span></ods-facet>
          *     </ods-facets>
          * </pre>
          *
@@ -18954,7 +19004,7 @@ mod.directive('infiniteScroll', [
          *                              <i class="icon-tags"></i> Tags
          *                          </h3>
          *                          <ods-facet name="mots_cles">
-         *                              <div>
+         *                              <div ng-non-bindable>
          *                                  <i class="icon-tag"></i> {{category.name}}
          *                              </div>
          *                          </ods-facet>
@@ -19630,13 +19680,13 @@ mod.directive('infiniteScroll', [
                                 var timerangeFound = false;
                                 angular.forEach(timeWidgets, function(timeWidget){
                                     if (!timerangeFound) {
-                                        if ($(timeWidget).is('.odswidget-timerange')){
+                                        if (jQuery(timeWidget).is('.odswidget-timerange')){
                                             timerangeFound = true;
-                                            if (!angular.isUndefined($(timeWidget).attr('label-from'))) {
-                                                fromLabel = $(timeWidget).attr('label-from');
+                                            if (!angular.isUndefined(jQuery(timeWidget).attr('label-from'))) {
+                                                fromLabel = jQuery(timeWidget).attr('label-from');
                                             }
-                                            if (!angular.isUndefined($(timeWidget).attr('label-to'))) {
-                                                toLabel = $(timeWidget).attr('label-to');
+                                            if (!angular.isUndefined(jQuery(timeWidget).attr('label-to'))) {
+                                                toLabel = jQuery(timeWidget).attr('label-to');
                                             }
                                         }
                                     }
@@ -20256,8 +20306,8 @@ mod.directive('infiniteScroll', [
                     {timeout: 1000}
                 ).then(function(result) {
                     var data = result.data;
-                    $(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
-                    var gistElement = $(data.div);
+                    jQuery(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
+                    var gistElement = jQuery(data.div);
 
                     scope.rawData = gistElement.find('.gist-data').text()
                         .replace(/^[\s]*$\n/gm, '').replace(/^[ ]{8}/gm, '');
@@ -20566,7 +20616,7 @@ mod.directive('infiniteScroll', [
                 timescale = parameters.queries[0].timescale || false;
             }
 
-            if(timescale && $.grep(parameters.queries, function(query){return query.sort;}).length === 0){
+            if(timescale && jQuery.grep(parameters.queries, function(query){return query.sort;}).length === 0){
                  timeSerieMode = timescale;
                  var tokens = timeSerieMode.split(' ');
                  precision = tokens[0];
@@ -22095,7 +22145,7 @@ mod.directive('infiniteScroll', [
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @param {string|Object} [chartConfig=none] A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.
          * @description
-         * This widget can display a multiple chart generated using the "Charts" interface of OpenDataSoft.
+         * This widget can display a multiple chart generated using the "Charts" interface of Opendatasoft.
          *
          */
         return {
@@ -22171,7 +22221,7 @@ mod.directive('infiniteScroll', [
          * @param {integer} [labelsXLength=12] Set the maximum number of characters displayed for the X axis labels.
          *
          * @description
-         * This widget is the base widget allowing to display charts from OpenDataSoft datasets.
+         * This widget is the base widget allowing to display charts from Opendatasoft datasets.
          * A Chart is defined by one or more series that get there data from form one or more dataset represented by an {@link ods-widgets.directive:odsDatasetContext Dataset Context},
          * a type of chart and multiple parameters to fine tune the appearance of chart.
          *
@@ -22695,7 +22745,7 @@ mod.directive('infiniteScroll', [
         // This code is copied from ng-infinite-scroll.js so the scrollParent is the same in both our and their directives
         var $scrollParent;
         $scrollParent = element.parents().filter(function() {
-            return /(auto|scroll)/.test($.css(this, 'overflow') + $.css(this, 'overflow-y'));
+            return /(auto|scroll)/.test(jQuery.css(this, 'overflow') + jQuery.css(this, 'overflow-y'));
         }).eq(0);
 
         if ($scrollParent.length === 0) {
@@ -22829,7 +22879,7 @@ mod.directive('infiniteScroll', [
                     try {
                         window.dispatchEvent(new Event('resize'));
                     } catch (error) {
-                        $(window).trigger('resize');
+                        jQuery(window).trigger('resize');
                     }
                 };
 
@@ -22858,6 +22908,101 @@ mod.directive('infiniteScroll', [
                     fetchResults(true);
                 }
             }]
+        };
+    });
+}());
+;(function () {
+    'use strict';
+    var mod = angular.module('ods-widgets');
+
+    var crossBrowserTranslation = {
+        " ": "Spacebar",
+        "ArrowUp": "Up",
+        "ArrowDown": "Down",
+        "ArrowLeft": "Left",
+        "ArrowRight": "Right",
+        "Escape": "Esc",
+        "Delete": "Del"
+    };
+
+    mod.directive('odsKeyboard', function () {
+        /**
+         *  @ngdoc directive
+         *  @name ods-widgets.directive:odsKeyboard
+         *  @restrict AE
+         *  @param {string} odsKeyboardKey the keyboard key code, see https://keycode.info/ and get the 'event.key'
+         *  @param {string} odsKeyboardExpression the expression to execute
+         *  @param {boolean} odsKeyboardPreventDefault to prevent the event to trigger the default behavior. Usefull for Escape, Space mainly. Default to 'false'
+         *  @description
+         *  Bind a keyboard key to execute the associated ngClick or specific expression.
+         *  Get the correct key here : https://keycode.info/
+         *  For the space bar, use 'Space' code.
+         *
+         *  @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *              <div ng-init="values = { 'count' : 0 }">
+         *                  <div style="cursor: pointer;text-decoration: underline;color: #0086d6;width: fit-content;"
+         *                       ods-keyboard
+         *                       ods-keyboard-key="ArrowLeft"
+         *                       ods-keyboard-prevent-default="true"
+         *                       ng-click="values.count = values.count - 1">
+         *                          Left arrow : -1
+         *                  </div>
+         *                  <ods-keyboard   class="ods-button"
+         *                                  ods-keyboard-key="ArrowRight"
+         *                                  ods-keyboard-prevent-default="true"
+         *                                  ods-keyboard-expression="values.count = values.count + 1">
+         *                          Right arrow : +1
+         *                  </ods-keyboard>
+         *                  <div style="cursor: pointer;text-decoration: underline;color: #0086d6;width: fit-content;"
+         *                       ods-keyboard
+         *                       ods-keyboard-key="Enter"
+         *                       ng-click="values.count = 0">
+         *                      Enter : set to 0
+         *                  </div>
+         *                  <p>
+         *                      Counter = {{ values.count }}
+         *                  </p>
+         *              </div>
+         *     </file>
+         * </example>
+         */
+        return {
+            restrict: 'AE',
+            link: function (scope, elem, attrs) {
+                var key = attrs.odsKeyboardKey;
+                var expr = attrs.odsKeyboardExpression || attrs.ngClick;
+                var preventDefault = attrs.odsKeyboardPreventDefault || false;
+
+                if (angular.isUndefined(key)) return;
+                if (angular.isUndefined(expr)) return;
+
+                if (key === "Space")
+                    key = " ";
+
+                var cb = function (e) {
+                    if (e.key === key || (key in crossBrowserTranslation && e.key === crossBrowserTranslation[key])) {
+                        if (!(e.target.tagName === 'INPUT' ||
+                                e.target.tagName === 'SELECT' ||
+                                e.target.tagName === 'TEXTAREA' ||
+                                (e.target.contentEditable && e.target.contentEditable === 'true'))) {
+                            scope.$evalAsync(expr);
+                            if (preventDefault) {
+                                e.preventDefault();
+                            }
+                        }
+                    } else {
+                        return;
+                    }
+                }
+
+                $(document).on("keydown", cb);
+
+                scope.$on('$destroy', function () {
+                    $(document).off("keydown", cb);
+                });
+            }
         };
     });
 }());
@@ -23246,13 +23391,13 @@ mod.directive('infiniteScroll', [
                 }
 
                 function resizeMap(){
-                    if ($('.odswidget-map__map').length > 0) {
+                    if (jQuery('.odswidget-map__map').length > 0) {
                         // Only do this if visible
-                        $('.odswidget-map__map').height(Math.max(200, $(window).height() - $('.odswidget-map__map').offset().top));
+                        jQuery('.odswidget-map__map').height(Math.max(200, jQuery(window).height() - jQuery('.odswidget-map__map').offset().top));
                     }
                 }
                 if (scope.autoResize === 'true') {
-                    $(window).on('resize', resizeMap);
+                    jQuery(window).on('resize', resizeMap);
                     resizeMap();
                 }
                 ModuleLazyLoader('leaflet').then(function() {
@@ -23303,7 +23448,7 @@ mod.directive('infiniteScroll', [
                             });
                             // FIXME: Plug it to a working ods-tooltip
 //                            if ($) {
-//                                $(link).tooltip({
+//                                jQuery(link).tooltip({
 //                                    placement: 'left',
 //                                    title: '<div style="white-space: nowrap; width: auto;" translate>Filter the data to what you see on the map</div>',
 //                                    html: true
@@ -24641,7 +24786,7 @@ mod.directive('infiniteScroll', [
                 };
 
                 scope.collapseSearchBox = function () {
-                    $('.odswidget-map-search-box__box').blur();
+                    jQuery('.odswidget-map-search-box__box').blur();
                     scope.expanded = false;
                 };
 
@@ -25553,10 +25698,10 @@ mod.directive('infiniteScroll', [
                 }
 
                 function resizeMap() {
-                    var mapElement = $('.odswidget-map__map');
+                    var mapElement = jQuery('.odswidget-map__map');
                     if (scope.autoResize === 'true' && mapElement.length > 0) {
                         // Only do this if visible
-                        var height = Math.max(200, $(window).height() - mapElement.offset().top);
+                        var height = Math.max(200, jQuery(window).height() - mapElement.offset().top);
                         mapElement.height(height);
                     }
 
@@ -25565,7 +25710,7 @@ mod.directive('infiniteScroll', [
                 }
 
                 if (scope.autoResize === 'true') {
-                    $(window).on('resize', resizeMap);
+                    jQuery(window).on('resize', resizeMap);
                     resizeMap();
                 }
 
@@ -25581,7 +25726,7 @@ mod.directive('infiniteScroll', [
                 });
 
                 scope.$on('toggleMapDisplayControl', function (event, data) {
-                    var $leafletControlsElement = $('.leaflet-top.leaflet-right');
+                    var $leafletControlsElement = jQuery('.leaflet-top.leaflet-right');
                     if (data.expanded) {
                         $leafletControlsElement.removeClass('collapsed');
                     } else {
@@ -26520,9 +26665,9 @@ mod.directive('infiniteScroll', [
 
                 this.resizeMapDisplayControl = function () {
                     $timeout(function () {
-                        var $mapElement = $('.odswidget-map');
-                        var $legendElement = $('.odswidget-map-legend');
-                        var $mapDisplayControlElement = $('.odswidget-map-display-control__groups');
+                        var $mapElement = jQuery('.odswidget-map');
+                        var $legendElement = jQuery('.odswidget-map-legend');
+                        var $mapDisplayControlElement = jQuery('.odswidget-map-display-control__groups');
                         if ($mapDisplayControlElement.length === 1) {
                             $mapDisplayControlElement = $mapDisplayControlElement.first();
                             if ($legendElement.length > 0) {
@@ -27373,7 +27518,7 @@ mod.directive('infiniteScroll', [
                     if (currentLine.height < currentLine.max_height || image.index === imagesCount - 1) {
                         // this line is done
                         var lineWidth = 0;
-                        $.each(currentLine.images, function (index, image) {
+                        jQuery.each(currentLine.images, function (index, image) {
                             image.height = currentLine.height;
                             image.width = Math.floor(image.realwidth * image.height / image.realheight);
                             image.marginTop = image.marginBottom = image.marginRight = image.marginLeft = MARGIN + "px";
@@ -27610,7 +27755,8 @@ mod.directive('infiniteScroll', [
                 '        <li class="odswidget-pagination__page" ng-repeat="page in pages">' +
                 '            <a class="odswidget-pagination__page-link" ' +
                 '               ng-class="{\'odswidget-pagination__page-link--active\': page.start == (context.parameters.start||0)}" ' +
-                '               ng-attr-rel="{{nofollow?\'nofollow\':\'\'}}"' +
+                '               ng-attr-rel="{{nofollow?\'nofollow\':undefined}}"' +
+                '               ng-attr-aria-label="{{page.ariaLabel?page.ariaLabel:undefined}}"' +
                 '               ng-click="click($event, page.start)" ' +
                 '               href="?start={{ page.start }}" ' +
                 '               rel="nofollow">{{ page.label }}</a>' +
@@ -27623,7 +27769,7 @@ mod.directive('infiniteScroll', [
                 nofollow: '@',
                 containerIdentifier: '@'
             },
-            controller: ['$scope', '$anchorScroll', function($scope, $anchorScroll) {
+            controller: ['$scope', '$anchorScroll', 'translate', function($scope, $anchorScroll, translate) {
                 $scope.location = $location;
                 $scope.pages = [];
                 $scope.perPage = $scope.perPage || 10;
@@ -27657,18 +27803,18 @@ mod.directive('infiniteScroll', [
                             for (pageNum=1; pageNum<=8; pageNum++) {
                                 pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
                             }
-                            pages.push({'label': '>>', 'start': (pagesCount-1)*$scope.perPage});
+                            pages.push({'label': '>>', 'ariaLabel': translate('Last page'), 'start': (pagesCount-1)*$scope.perPage});
                         } else if (currentPage >= (pagesCount-4)) {
-                            pages.push({'label': '<<', 'start': 0});
+                            pages.push({'label': '<<', 'ariaLabel': translate('First page'), 'start': 0});
                             for (pageNum=(pagesCount-7); pageNum<=pagesCount; pageNum++) {
                                 pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
                             }
                         } else {
-                            pages.push({'label': '<<', 'start': 0});
+                            pages.push({'label': '<<', 'ariaLabel': translate('First page'), 'start': 0});
                             for (pageNum=(currentPage-3); pageNum<=(currentPage+3); pageNum++) {
                                 pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
                             }
-                            pages.push({'label': '>>', 'start': (pagesCount-1)*$scope.perPage});
+                            pages.push({'label': '>>', 'ariaLabel': translate('Last page'), 'start': (pagesCount-1)*$scope.perPage});
                         }
                     }
                     $scope.pages = pages;
@@ -27708,7 +27854,8 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -28033,9 +28180,9 @@ mod.directive('infiniteScroll', [
          * This means that the value of the slider can never be more than the value of the other slider, forcing a range.
          * @param {boolean} [editableValue=false] If enabled, an input type="number" will show to the right of the range
          * input with the current range value which can be modified directly in this input.
-         * @param {string} iconMin Used to display an icon to the left of the range slider. FontAwesome or OpenDataSoft
+         * @param {string} iconMin Used to display an icon to the left of the range slider. FontAwesome or Opendatasoft
          * icon classes should be used here.
-         * @param {string} iconMax Used to display an icon to the right of the range slider. FontAwesome or OpenDataSoft
+         * @param {string} iconMax Used to display an icon to the right of the range slider. FontAwesome or Opendatasoft
          * icon classes should be used here.
          * @param {string} iconMinTitle Adds a title attr to the min side of the input.
          * @param {string} iconMaxTitle Adds a title attr to the max side of the input.
@@ -28710,7 +28857,7 @@ mod.directive('infiniteScroll', [
             },
             link: function (scope, element, attrs) {
                 if ('autofocus' in attrs) {
-                    $(element).find('input').focus();
+                    jQuery(element).find('input').focus();
                 }
             },
             controller: ['$scope', '$sce', function($scope, $sce) {
@@ -28879,9 +29026,9 @@ mod.directive('infiniteScroll', [
                 if (angular.isDefined(scope.titleFields)) {
                     titleFields = scope.titleFields.split(',');
                 }
-                var imageWrapperElement = $(element).children('.ods-slideshow__image-wrapper');
-                var $imageIndex = $(element).find('.ods-slideshow__image-index');
-                var $image = $(element).find('.ods-slideshow__image');
+                var imageWrapperElement = jQuery(element).children('.ods-slideshow__image-wrapper');
+                var $imageIndex = jQuery(element).find('.ods-slideshow__image-index');
+                var $image = jQuery(element).find('.ods-slideshow__image');
                 var image;
 
                 var resizeImage = function () {
@@ -28994,7 +29141,7 @@ mod.directive('infiniteScroll', [
                         return;
                     }
 
-                    var elementDirection = $(element).css('direction');
+                    var elementDirection = jQuery(element).css('direction');
 
                     // Check if HTML is RTL or LTR to map keys appropriately (controls are inverted)
                     if(elementDirection === "rtl") {
@@ -29023,7 +29170,7 @@ mod.directive('infiniteScroll', [
 
                 };
 
-                $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function (event) {
+                jQuery(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function (event) {
                     if (event.target == element[0]) {
                         scope.fullscreen = !scope.fullscreen;
                         $timeout(resizeImage);
@@ -29213,7 +29360,7 @@ mod.directive('infiniteScroll', [
          * @restrict E
          *
          * @description
-         * This widget displays the custom OpenDataSoft spinner.
+         * This widget displays the custom Opendatasoft spinner.
          * Its size and color match the current font's.
          * If the browser doesn't support svg animation via css, an animated gif will be displayed instead.
          *
@@ -29264,7 +29411,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsTable', function() {
+    mod.directive('odsTable', ['translate', function(translate) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsTable
@@ -29588,10 +29735,11 @@ mod.directive('infiniteScroll', [
 
                     if ($scope.displayDatasetFeedback) {
                         // FIXME: This is entirely tied to ODS platform, it should not be within a widget
-                        var feedbackButton = '<i class="fa fa-comment table-feedback-icon" aria-hidden="true" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="Suggest changes for this record" translate="ods-tooltip"></i>';
+                        var feedbackButton = '<i class="fa fa-comment table-feedback-icon" aria-hidden="true" ods-dataset-feedback ods-dataset-feedback-record="record" ods-dataset-feedback-dataset="dataset" ods-tooltip="{{label}}"></i>';
                         var localScope = $scope.$new(true);
                         localScope.record = record;
                         localScope.dataset = $scope.context.dataset;
+                        localScope.label = translate('Suggest changes for this record');
                         div.appendChild($compile(feedbackButton)(localScope)[0]);
                     }
 
@@ -29752,7 +29900,7 @@ mod.directive('infiniteScroll', [
                                 count++;
                             }
 
-                            newHeight = visible ? $(placeholderBot).height() - count*recordHeight : ($scope.records.length-endIndex)*recordHeight;
+                            newHeight = visible ? jQuery(placeholderBot).height() - count*recordHeight : ($scope.records.length-endIndex)*recordHeight;
                             newHeight = newHeight > 0 ? newHeight : 0;
                             placeholderBot.style.height = newHeight + 'px';
                         } else {
@@ -29776,7 +29924,7 @@ mod.directive('infiniteScroll', [
                                 count++;
                             }
 
-                            newHeight = visible ? $(placeholderTop).height() - count*recordHeight : startIndex*recordHeight;
+                            newHeight = visible ? jQuery(placeholderTop).height() - count*recordHeight : startIndex*recordHeight;
                             newHeight = newHeight > 0 ? newHeight : 0;
                             placeholderTop.style.height = newHeight + 'px';
                         }
@@ -29862,7 +30010,7 @@ mod.directive('infiniteScroll', [
                 // synchronize scroll between header and body
 
                 var isRtl = ($element.css('direction') === 'rtl');
-                var rtlScrollType = $.support.rtlScrollType;
+                var rtlScrollType = jQuery.support.rtlScrollType;
 
                 var synchronizeHeaderPosition;
                 if (!isRtl) {
@@ -29941,7 +30089,7 @@ mod.directive('infiniteScroll', [
                         }
 
                         if ($element.hasClass('odswidget-table--embedded')) {
-                            elementHeight = $(window).height() - $element.offset().top;
+                            elementHeight = jQuery(window).height() - $element.offset().top;
                             $element.height(elementHeight);
                         } else {
                             elementHeight = $element.height();
@@ -29965,7 +30113,7 @@ mod.directive('infiniteScroll', [
 
                         var totalWidth = 0;
                         angular.forEach($element.find('.odswidget-table__internal-table-header .odswidget-table__cell-container'), function (thDiv, i) {
-                            $scope.layout[i] = $(thDiv).width() + 8; // For sortable icons
+                            $scope.layout[i] = jQuery(thDiv).width() + 8; // For sortable icons
                             totalWidth += $scope.layout[i];
                         });
                         $scope.layout[0] = 30; // First column is the record number
@@ -30006,7 +30154,7 @@ mod.directive('infiniteScroll', [
                 }
             }
         };
-    });
+    }]);
 }());
 ;(function () {
     'use strict';
@@ -30050,10 +30198,10 @@ mod.directive('infiniteScroll', [
         }
 
         function aggregateArrays(facets, median) {
-            var array1 = $.grep(facets, function (value) {
+            var array1 = jQuery.grep(facets, function (value) {
                 return value.count >= median;
             });
-            var array2 = $.grep(facets, function (value) {
+            var array2 = jQuery.grep(facets, function (value) {
                 return value.count <= median;
             });
             var obj = [
@@ -30153,7 +30301,7 @@ mod.directive('infiniteScroll', [
                     if ($scope.context.type === 'catalog') {
                         query = catalog_search($scope.context, queryParams);
                     } else {
-                        queryParams = $.extend({}, $scope.context.parameters, queryParams);
+                        queryParams = jQuery.extend({}, $scope.context.parameters, queryParams);
                         query = dataset_search($scope.context, queryParams);
                     }
                     query.success(function (data) {
@@ -30274,9 +30422,11 @@ mod.directive('infiniteScroll', [
             '               aria-label="{{ translatedPlaceholder }}" ' +
             '               placeholder="{{ translatedPlaceholder }}"> ' +
             '       <button type="reset" class="odswidget-text-search__reset" ng-show="searchExpression" ng-click="resetSearch()" aria-label="Reset search" translate="aria-label">' +
+            '           <span class="ods-aria-instructions" translate>Reset</span>' +
             '           <i class="fa fa-times-circle" aria-hidden="true"></i>' +
             '       </button>' +
             '       <button type="submit" class="odswidget-text-search__submit" aria-label="Search in catalog" translate="aria-label">' +
+            '           <span class="ods-aria-instructions" translate>Submit</span>' +
             '           <i class="fa fa-search" aria-hidden="true"></i>' +
             '       </button>' +
             '    </form>' +
@@ -30294,7 +30444,7 @@ mod.directive('infiniteScroll', [
 
             link: function (scope, element, attrs) {
                 if ('autofocus' in attrs) {
-                    $(element).find('input').focus();
+                    jQuery(element).find('input').focus();
                 }
                 element.removeAttr('id');
             },
@@ -30505,7 +30655,7 @@ mod.directive('infiniteScroll', [
          * @name ods-widgets.directive:odsTimer
          * @scope
          * @restrict E
-         * @param {Number} [delay=1000] The number of milliseconds to wait before executing the expression. Minimum value is 1000ms.
+         * @param {Number} [delay=1000] The number of milliseconds to wait before executing the expression. Minimum value is 100ms.
          * @param {Expression} [stopCondition=false] An AngularJS expression returning 'true' or 'false'. The timer stops when the condition is false.
          * @param {Boolean} [autoStart=false] Starts the timer automatically when the page load
          * @param {Expression} [exec] An AngularJS expression to execute.
@@ -30555,7 +30705,7 @@ mod.directive('infiniteScroll', [
                 delay: '=',
                 exec: '&'
             },
-            replace: true,
+            replace: false,
             template: '' +
                 '<div class="ods-widget-timer">' +
                 '   <button class="ods-button ods-widget-timer-controller ods-widget-timer-play"' +
@@ -30577,8 +30727,8 @@ mod.directive('infiniteScroll', [
                 if (angular.isDefined(scope.delay)) {
                     if (!scope.delay || typeof scope.delay !== 'number' || !isFinite(scope.delay)) {
                         console.warn('ods-timer: delay is not a valid integer: fallbacking to default value (1000ms)');
-                    } else if (scope.delay < 1000) {
-                        console.warn('ods-timer: delay is too small (1000ms minimum): fallbacking to default value (1000ms)');
+                    } else if (scope.delay < 100) {
+                        console.warn('ods-timer: delay is too small (100ms minimum): fallbacking to default value (1000ms)');
                     } else {
                         delay = scope.delay;
                     }
@@ -30615,7 +30765,11 @@ mod.directive('infiniteScroll', [
                 if (scope.autoStart === true) {
                     scope.timerPlay();
                 }
-            },
+
+                scope.$on('$destroy', function() {
+                    scope.timerStop();
+                });
+            }
         };
     }]);
 }());
@@ -30844,7 +30998,7 @@ mod.directive('infiniteScroll', [
                     fromRome.on('data', function(value) {
                         scope.$applyAsync(function() {
                             var from = roundTime(moment(value, scope.dateFormat), scope.dateFormat, scope.displayTime, 'from');
-                            $(inputs[0]).val(from.format(scope.dateFormat));
+                            jQuery(inputs[0]).val(from.format(scope.dateFormat));
                             fromRome.setValue(from);
                             scope.from = formatTimeToISO(from);
                         });
@@ -31471,8 +31625,8 @@ mod.directive('infiniteScroll', [
                     element.find('[ods-main-click]').attr('href', attrs.odsFullClick);
                 }
                 element.click(function(evt){
-                    if (!$(evt.target).is('a,button,[ng-click]') && // The element is not a link in itself
-                        ($(evt.target).parents('a,button,[ng-click]').length === 0) && // The element is not within a clickable element
+                    if (!jQuery(evt.target).is('a,button,[ng-click]') && // The element is not a link in itself
+                        (jQuery(evt.target).parents('a,button,[ng-click]').length === 0) && // The element is not within a clickable element
                         element.find('[ods-main-click]').length) {
                         if (document.createEvent){
                             // Web Browsers
