@@ -1138,6 +1138,16 @@ html[dir=rtl] .odswidget-last-datasets-feed__theme-picto {
     right: 40px;
   }
 }
+/*
+Leaflet Draw behaves very weirdly in a RTL page, and we have to give it a LTR container, then bring RTL back to other
+elements.
+ */
+html[dir=rtl] .odswidget-map .leaflet-popup-pane {
+  direction: ltr;
+}
+html[dir=rtl] .odswidget-map .leaflet-popup-pane :not(.leaflet-draw-tooltip) {
+  direction: rtl;
+}
 .odswidget-map .map-timezone-caption {
   color: rgba(0, 0, 0, 0.5);
   font-size: 0.85em;
@@ -2068,7 +2078,7 @@ html[dir=rtl] .odswidget-most-popular-datasets__theme-picto {
   margin-left: 2px;
   margin-right: 2px;
   padding: 4px 8px;
-  font-size: 16px;
+  font-size: 1.15rem;
 }
 .odswidget-pagination__page-link:hover {
   text-decoration: none;
@@ -2485,6 +2495,7 @@ html[dir=rtl] .odswidget-table__cell:first-child {
   border: none;
   display: block;
   padding: 0;
+  line-height: normal;
 }
 .odswidget-table__cell-container__right-aligned {
   text-align: right;
@@ -3206,6 +3217,81 @@ html[dir=rtl] .odswidget-dataset-schema__field-properties-key {
 .odswidget-vega-lite-chart {
   width: 100%;
   height: 400px;
+}
+.ods-pop-in {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-pack: center;
+      justify-content: center;
+  -ms-flex-align: center;
+      align-items: center;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+}
+.ods-pop-in--hidden {
+  display: none;
+}
+.ods-pop-in__container {
+  position: relative;
+  max-width: 700px;
+  max-height: 500px;
+  background-color: #ffffff;
+  vertical-align: middle;
+  padding: 60px;
+  border: 1px solid #888888;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  margin: 0 10px;
+}
+.ods-pop-in__close-button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+      align-items: center;
+  -ms-flex-pack: center;
+      justify-content: center;
+}
+[dir="rtl"] .ods-pop-in__close-button {
+  right: auto;
+  left: 20px;
+}
+.ods-pop-in__close-button i {
+  display: block;
+  color: #999999;
+}
+.ods-pop-in__body {
+  overflow: auto;
+  max-height: 380px;
+}
+.odswidget-date-range-slider .irs--flat .irs-handle > i:first-child {
+  background-color: #33629C;
+}
+.odswidget-date-range-slider .irs--flat .irs-bar {
+  background-color: #33629C;
+}
+.odswidget-date-range-slider .irs--flat .irs-from,
+.odswidget-date-range-slider .irs--flat .irs-to,
+.odswidget-date-range-slider .irs--flat .irs-single {
+  background-color: #33629C;
+}
+.odswidget-date-range-slider .irs--flat .irs-from:before,
+.odswidget-date-range-slider .irs--flat .irs-to:before,
+.odswidget-date-range-slider .irs--flat .irs-single:before {
+  border-top-color: #33629C;
+}
+.odswidget-date-range-slider .irs--flat .irs-handle.state_hover > i:first-child,
+.odswidget-date-range-slider .irs--flat .irs-handle:hover > i:first-child {
+  background-color: #33629C;
 }
 .odswidget.odswidget-imagified {
   max-width: 100% !important;
