@@ -864,6 +864,15 @@
                 return null;
             }
 
+            if (typeof array === "undefined" || array === null) {
+                return {};
+            }
+
+            if (!Array.isArray(array)) {
+                console.log("A non array value has been given to the toObject filter", array);
+                return {};
+            }
+
             return array.reduce(function(newObject, item) {
                 newObject[item[key]] = item;
                 return newObject;
@@ -923,6 +932,7 @@
          * <b>log` or `ln</b> (natural logarithm),
          * <b>log2</b> (base 2 logarithm),
          * <b>log10</b> (base 10 logarithm),
+         * <b>pow</b> (power) ex: {{ val | math : 'pow' : 2 }} for val^2
          * <b>random</b> (pseudo-random number between 0 and 1 * value),
          * <b>round</b> (value rounded to the nearest integer),
          * <b>sign</b> (sign of value, pos. = 1, neg = -1, zero = 0),
@@ -933,7 +943,7 @@
          * <br/> or static properties: <b>PI</b> or <b>E</b>.
          * @return {Number} The result
          */
-        return function(val, func) {
+        return function(val, func, opt) {
             /* whitelist of Math function, to avoid method injection and security problems */
             /* dummy implementation as some function don't work the same than others... */
             if (func === 'abs')
@@ -954,6 +964,8 @@
                 return Math.log2(val);
             if (func === 'log10')
                 return Math.log10(val);
+            if (func === 'pow')
+                return Math.pow(val, opt);
             if (func === 'random')
                 return Math.random() * val;
             if (func === 'round')

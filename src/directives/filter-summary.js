@@ -248,6 +248,9 @@
                                 addRefinement(context, translate('Map filter'), context.parameters['q.mapfilter'], 'q.mapfilter');
                             }
 
+                            if (isParameterActive(context, 'geonav')) {
+                                addRefinement(context, translate('Location'), context.parameters['geonav'], 'geonav',  translate('Chosen territory'));
+                            }
 
                             // Handle query with suffix attribute (q.mysuffix)
                             angular.forEach(context.parameters, function (value, parameter) {

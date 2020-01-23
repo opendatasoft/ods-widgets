@@ -9,7 +9,7 @@
 
 .ods-cross-table__frozen-header-wrapper {
     position: absolute;
-    z-index: @zIndex-4;
+    z-index: 4;
     overflow: hidden;
     border-bottom: 1px solid darken(#f4f4f4, 8%);
     border-right: 1px solid darken(#f4f4f4, 8%);
@@ -20,7 +20,7 @@
 
 .ods-cross-table__frozen-rows-wrapper {
     position: absolute;
-    z-index: @zIndex-3;
+    z-index: 3;
     right: 0;
     overflow: hidden;
     border-bottom: 1px solid darken(#f4f4f4, 8%);
@@ -31,7 +31,7 @@
 
 .ods-cross-table__frozen-cols-wrapper {
     position: absolute;
-    z-index: @zIndex-2;
+    z-index: 2;
     bottom: 0;
     overflow: hidden;
     border-right: 1px solid darken(#f4f4f4, 8%);
@@ -42,7 +42,7 @@
 
 .ods-cross-table__body-wrapper {
     position: absolute;
-    z-index: @zIndex-1;
+    z-index: 1;
     right: 0;
     bottom: 0;
     overflow: scroll;
@@ -92,5 +92,5 @@
 }
 
 .ods-cross-table .odswidget-spinner__backdrop {
-    z-index: @zIndex-5;
+    z-index: @zindex-modal-backdrop;
 }

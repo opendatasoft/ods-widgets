@@ -13,6 +13,8 @@
          * @param {CatalogContext} [context=none] {@link ods-widgets.directive:odsCatalogContext Catalog Context} indicating the domain to redirect the user to show the search results.
          * If none, the search is done on the local domain (/explore/ of the current domain the user is).
          * @param {string} [autofocus] Add the autofocus attribute (no need for a value) to set the focus in the text search input
+         * @param {string} [formId=none] Configures the `id` attribute of the form generated internally by the widget, which can be used from other HTML elements (for example
+         * to submit the search from another button)
          *
          * @description
          * This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.
@@ -23,7 +25,7 @@
             replace: true,
             template: '' +
             '<div class="odswidget odswidget-searchbox">' +
-                '<form method="GET" action="{{ actionUrl }}" ng-show="actionUrl">' +
+                '<form method="GET" action="{{ actionUrl }}" ng-show="actionUrl" ng-attr-id="{{formId}}">' +
                     '<input class="odswidget-searchbox__box" name="q" type="text" placeholder="{{placeholder|translate}}">' +
                     '<input ng-if="sort" name="sort" value="{{ sort }}" type="hidden">' +
                 '</form>' +
@@ -31,7 +33,8 @@
             scope: {
                 placeholder: '@',
                 sort: '@',
-                context: '='
+                context: '=',
+                formId: '@?'
             },
             link: function (scope, element, attrs) {
                 if ('autofocus' in attrs) {

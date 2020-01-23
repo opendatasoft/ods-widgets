@@ -1,0 +1,149 @@
+.odswidget-geo-navigation {
+
+}
+
+.odswidget-geo-navigation__map {
+    height: 170px;
+    box-shadow: @boxShadow-1
+}
+
+.odswidget-geo-navigation__map.leaflet-container {
+    cursor: pointer; // Overrides the "move" cursor on Leaflet
+}
+
+.odswidget-geo-navigation__current-filter {
+    font-weight: 400;
+    padding: 0.5rem 1.2rem;
+    margin-bottom: .5rem;
+    color: @color-geoNavigation-title-color;
+    display: flex;
+    background-color: @color-geoNavigation-background;
+    box-shadow: @boxShadow-1;
+}
+
+.odswidget-geo-navigation__current-filter-title {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin-right: 1rem; // Leave space for the close button
+    flex-grow: 1;
+}
+
+.odswidget-geo-navigation__cancel {
+    background: none;
+    border: none;
+    padding: 0;
+    font-style: italic;
+    flex-grow: 0;
+    white-space: nowrap;
+}
+
+.odswidget-geo-navigation__navigation-control {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.odswidget-geo-navigation__navigation-control:hover {
+    background-color: @color-geoNavigation-hover-background;
+    color: @color-geoNavigation-hover-color;
+}
+
+.odswidget-geo-navigation__default-label {
+    .rtl-prop(padding-left, padding-right, 0.67rem, 0);
+    .rtl-prop(border-left, border-right, solid 3px @color-facetCategoryList-border, 0);
+    display: flex;
+    margin-top: .67rem;
+}
+
+.odswidget-geo-navigation__default-label:hover {
+    background-color: @color-geoNavigation-hover-background;
+    color: @color-geoNavigation-hover-color;
+    border-color: @color-geoNavigation-hover-color;
+}
+
+.odswidget-geo-navigation__navigation-separator {
+    width: 100%;
+    border-top: solid 1px @color-geoNavigation-choice-border;
+}
+
+.odswidget-geo-navigation__choice {
+    display: flex;
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+    .rtl-prop(padding-left, padding-right, 0.67rem, 0);
+    .rtl-prop(border-left, border-right, solid 3px @color-geoNavigation-choice-border, 0);
+}
+
+.odswidget-geo-navigation__choice:hover {
+    background-color: @color-geoNavigation-hover-background;
+    color: @color-geoNavigation-hover-color;
+    border-color: @color-geoNavigation-hover-color;
+}
+
+.odswidget-geo-navigation__choice-label {
+    flex-grow: 1;
+}
+.odswidget-geo-navigation__choice-count {
+    flex-grow: 0;
+    text-align: right;
+    padding-left: 0.5rem;
+}
+
+.odswidget-geo-navigation__choice-label,
+.odswidget-geo-navigation__choice-count{
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+}
+
+// Text search within the choices in a level
+.odswidget-geo-navigation__level-search-box-container {
+    padding: 1rem 0;
+}
+
+.odswidget-geo-navigation__level-search-box-icon {
+    position: absolute;
+    left: 0;
+    padding-top: .66rem;
+    padding-bottom: .66rem;
+}
+
+.odswidget-geo-navigation__level-search-box {
+    width: 100%;
+    padding: .66rem 1.5rem; // 13px = spacing-100
+    background-color: transparent;
+    border-left: none;
+    border-right: none;
+}
+
+.odswidget-geo-navigation__level-search-box:focus {
+    border-bottom: solid 1px @color-geoNavigation-searchBox-focus-border;
+    outline: none;
+}
+.odswidget-geo-navigation__level-search-box:focus + .odswidget-geo-navigation__level-search-box-icon {
+    color: @color-geoNavigation-searchBox-focus-border;
+}
+
+.odswidget-geo-navigation__expansion-control-link {
+    font-style: italic;
+    padding: 0 1rem;
+    color: @color-geoNavigation-color;
+}
+.odswidget-geo-navigation__expansion-control-link:hover {
+    color: @color-geoNavigation-hover-color;
+    text-decoration: none;
+}
+
+// Ascending filter toggle
+.odswidget-geo-navigation__ascending-filter-container {
+    font-size: 0.9rem;
+    margin: 0.5rem;
+    display: flex;
+    cursor: pointer;
+}
+.odswidget-geo-navigation__ascending-filter-button {
+    background: transparent;
+    border: none;
+}
+.odswidget-geo-navigation__ascending-filter-button--enabled {
+    color: @color-geoNavigation-ascending-toggle-enabled;
+}

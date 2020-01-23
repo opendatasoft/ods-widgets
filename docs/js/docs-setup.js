@@ -101,7 +101,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "odsChartSerie is the sub widget that defines a serie in the chart with all its parameters.",
-      "keywords": "accumulated aggreation aggregation api area arearange areas areaspline areasplinerange array associated attribute automatically avg axis bar boxplot calculate category center change chart charts clicked color color-thresholds colors column columnrange complete computed constant context contexts count counts creating cumulated custom datetime day define defined defines directive display displayed documents donut enable examples expressed expressiony facet false ffff00 field fieldx force format full func function functions functiony funnel hole hour inside invidual item label labels logarithmic max maximal maximum min minimal minimum minute month multiply myfield number numbers object objects ods-widgets odschart odschartquery odschartserie parameter parameters parent pie pixels polar position properly quantile quantiles range refine refined scale scatter serie series set simple spiderweb spline stacks stddev step subserie sum takes threshold tick timescale tooltip top types units values wanted widget won work yaxis year",
+      "keywords": "accumulated aggreation aggregation api area arearange areas areaspline areasplinerange array associated attribute automatically avg axis bar boxplot calculate category center change chart charts clicked color color-thresholds colors column columnrange complete computed constant context contexts count counts creating cumulated custom datetime day define defined defines directive display displayed documents donut enable examples expressed expressiony facet false ffff00 field fieldx force format full func function functions functiony funnel higher hole hour inside invidual item label labels logarithmic lower max maximal maximum min minimal minimum minute month multiply myfield number numbers object objects ods-widgets odschart odschartquery odschartserie order parameter parameters parent pie pixels polar position properly quantile quantiles range refine refined scale scatter serie series set simple spiderweb spline stacks stddev step subserie sum takes threshold tick timescale tooltip top types units values wanted widget won work yaxis year",
       "isDeprecated": false
     },
     {
@@ -112,6 +112,16 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a button which will clear all active filters in the given context.",
       "keywords": "active api array button catalog clear clearing context contexts dataset directive display displays exclude filters list ods-widgets parameters widget",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsColorGradient",
+      "shortName": "odsColorGradient",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget exposes the results of an analysis transposed to a set of colors for each X values.",
+      "keywords": "abc activate analysis angularjs api avg axis build categories choices cities classes code color color-by-field color-categories color-categories-other colorgradient colors compute consistent context contours-geographiques-des-regions-2019-copy corresponding custom data dataset directive directly disjunctive display exposes expression ff009a field flatten func good grades gradient greater guyane hex highest html legend lightgrey linear log logarithmic logarithmic-scale lowest mandatory martinique max mayotte min mode module ngrepeat nom_reg number ods-color-gradient ods-color-gradient-context ods-color-gradient-high ods-color-gradient-low ods-color-gradient-serie ods-color-gradient-x ods-maps ods-widgets odscolorgradient odscolorgradientcontext odscolorgradientserie odscolorgradientx odsmap output parameter population population-dataset population-domain population-millesimee-communes-2016 population-parameters public range region regions regions-dataset regions-domain regions-parameters reunion rgb salso scale scales scope serie set shape-opacity structure sum tend time title transposed values variable widget work",
       "isDeprecated": false
     },
     {
@@ -171,7 +181,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a range slider to select the two bounds of a date range.",
-      "keywords": "angularjs api array avoid bound bounds cibul cibul-dataset cibul-domain class collision container container-fluid context ctx ctx-dataset ctx-domain dataset date-format day default define directive displays end-bound evenements-publics-cibul expected expression expressions field format formatted html initial-from initial-to input iso maximum minimum mm module month ng-init obj ods-box ods-widgets opendatasoft parameter precision provide provided public queries query quotes range render representing second select selectable selection set simple slider start-bound static string suffix surround syntax type variable variables widget year yesterday yyyy yyyy-mm-dd",
+      "keywords": "angularjs api array avoid bound bounds class collision context ctx ctx-dataset ctx-domain dataset date-format day default define directive displays end-bound evenements-publics-cibul expected expression expressions field format formatted html initial-from initial-to input iso maximum minimum module month ng-init obj ods-box ods-widgets parameter precision provide provided public queries query quotes range render representing second select selectable selection set simple slider start-bound static string suffix surround syntax type variable variables widget year yesterday yyyy yyyy-mm-dd",
       "isDeprecated": false
     },
     {
@@ -242,6 +252,16 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a gauge in one of the two following modes: circle or horizontal bar.",
       "keywords": "api bar based chart circle css css3 customizable decide defined directive display-mode displays empty entirely exceeding forcing full gauge height horizontal html larger lower max maximum modes module number ods-widgets property relies represented result size smaller svg type values widget width won work",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsGeoNavigation",
+      "shortName": "odsGeoNavigation",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "The geographic navigation filter can be used to navigate visually inside a catalog using a geographic",
+      "keywords": "api catalog context country coverage current defaultfilter depend directive filter geographic highest indication inside leading level levels location lowest metadata minlevel navigate navigation ods-widgets odsfacets path point references set starting user visual visually world",
       "isDeprecated": false
     },
     {
@@ -336,6 +356,16 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsLegend",
+      "shortName": "odsLegend",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget displays a map legend computed with the color gradient structure from odsColorGradient widget.",
+      "keywords": "alternative api based categories cities classes code color color-by-field color-categories color-categories-other color-gradient colorgradient colors computed context contours-geographiques-des-regions-2019-copy dataset decimal decimal-precision default directive disjunctive display displays gradient guyane html legend lightgrey linear map martinique max mayotte min mode module no-value-color nom_reg number object ods-color-gradient ods-color-gradient-context ods-color-gradient-high ods-color-gradient-low ods-color-gradient-nb-classes ods-color-gradient-serie ods-color-gradient-x ods-widgets odscolorgradient option population population-dataset population-domain population-millesimee-communes-2016 population-parameters precision provided public range region regions regions-dataset regions-domain regions-parameters reunion rgb set shape-opacity single square step steps structure sub-title subtitle sum title values warning widget",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsMap",
       "shortName": "odsMap",
       "type": "directive",
@@ -370,7 +400,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays the top datasets of a catalog (default is the 5 top datasets), based on the number of downloads.",
-      "keywords": "api based catalog context data datasets directive displays downloads example example-domain html module number ods-widgets opendatasoft top widget",
+      "keywords": "amount api based catalog context data datasets directive displays downloaded downloads example example-domain html list module number ods-widgets opendatasoft options order popularity top widget",
       "isDeprecated": false
     },
     {
@@ -500,7 +530,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.",
-      "keywords": "add api attribute autofocus catalog context current default directive display displays domain empty explore focus homepage indicating input local ods-widgets placeholder redirect redirects search searchbox set sort text user wide widget",
+      "keywords": "add api attribute autofocus button catalog configures context current default directive display displays domain elements empty example explore focus form generated homepage html indicating input internally local ods-widgets placeholder redirect redirects search searchbox set sort submit text user wide widget",
       "isDeprecated": false
     },
     {
@@ -788,7 +818,7 @@ NG_DOCS={
       "shortName": "math",
       "type": "filter",
       "moduleName": "ods-widgets",
-      "keywords": "api filter function integer library ln logarithm math nearest neg number numerical ods-widgets pos process properties result root rounded square static",
+      "keywords": "api filter function integer library ln logarithm math nearest neg number numerical ods-widgets pos pow process properties result root rounded square static val",
       "isDeprecated": false
     },
     {

@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.4.1 - 2020-01-23
+
+### Added
+- `odsColorGradient`: new widget that can be used to build a set of colors from the results of an aggregation
+- `odsLegend`: together with `odsColorGradient`, can be used to build a dynamic map legend
+- `odsGeoNavigation`: a new filter, specifically for geographic-based metadata such as "Geographic coverage"
+- `odsMostPopularDatasets`: new `orderBy` parameter, can be used to display the most popular datasets based on their 
+  popularity score (`popularity`) instead of the default based on the number of downloads (`downloads`)
+- `math` filter: new `pow` function to compute power
+
 ## 1.2.1 - 2018-03-21
 
 ### Added

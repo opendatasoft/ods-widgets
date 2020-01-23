@@ -437,7 +437,7 @@
             Documentation: https://community.algolia.com/places/rest.html
          */
         var options = {};
-        if (ODSWidgetsConfig.algoliaPlacesApplicationId) {
+        if (ODSWidgetsConfig.algoliaPlacesApplicationId && ODSWidgetsConfig.algoliaPlacesAPIKey) {
             options.headers = {
                 'X-Algolia-Application-Id': ODSWidgetsConfig.algoliaPlacesApplicationId,
                 'X-Algolia-API-Key': ODSWidgetsConfig.algoliaPlacesAPIKey

@@ -433,6 +433,38 @@
                 });
                 return params;
             },
+            computeCatalogFilterParams: function(params) {
+                if (angular.isUndefined(params.geonav) || params.geonav === '') {
+                    return params;
+                }
+
+                var newParams = angular.copy(params);
+
+                var geonav = newParams.geonav;
+
+                var clauses = [];
+
+                if (params['geonav-asc']) {
+                    // Higher levels:
+                    geonav.split('/').forEach(function (uid) {
+                        clauses.push('geographic_reference:"' + uid + '"');
+                    });
+
+
+                    // Lower levels:
+                    clauses.push('#startswith(explore.geographic_reference_path, "'+geonav+'/")');
+                    delete newParams['geonav-asc'];
+                } else {
+                    clauses.push('#startswith(explore.geographic_reference_path, "'+geonav+'")'); // FIXME: How about a simple refine?
+                }
+
+                var query = clauses.join(' OR ');
+
+                newParams['q.geonav'] = query;
+                delete newParams['geonav'];
+
+                return newParams;
+            },
             getAPIQueryString: function(options) {
                 options = this.cleanupAPIParams(angular.extend({}, options || {}));
                 if (!options) return '';
@@ -714,26 +746,31 @@
             datePatternBuilder: function (mode) {
                 var patterns = {
                     highcharts: {
-                        'Hh': '%Hh', // '00h', '01h', ... '23h'
-                        'MMM': '%M', // 'Jan', 'Feb', ... 'Dec'
+                        'mm': '%M',
+                        'Hh': '%H:00', // '00:00', '01:00', ... '23:00'
+                        'HH': '%H', // '00', '01:00', ... '23:00'
+                        'MMM': '%b', // 'Jan', 'Feb', ... 'Dec'
                         'YYYY': '%Y', // '2011', '2012', '2013'...
                         'MMMM': '%B', // 'January', 'February', ... 'December'
                         'D': '%e', // '1', '2', ... '31',
-                        'ddd': '%a' // 'Sun', 'Mon', ... 'Sat'
+                        'ddd': '%a', // 'Sun', 'Mon', ... 'Sat',
+                        'DDD': '%j', // 1, 2, ... 365
                     },
                     moment: {
+                        'mm': 'mm',
                         'Hh': 'H[h]',
                         'MMM': 'MMM',
                         'YYYY': 'YYYY',
                         'MMMM': 'MMMM',
                         'D': 'D',
-                        'ddd': 'ddd'
+                        'ddd': 'ddd',
+                        'DDD': 'DDD',
                     }
                 }[mode];
 
                 return function (object) {
                     var datePattern = '';
-                    if (angular.isObject(object) && ('year' in object || 'month' in object || 'day' in object || 'hour' in object || 'minute' in object || 'weekday' in object)) {
+                    if (angular.isObject(object) && ('year' in object || 'month' in object || 'day' in object || 'hour' in object || 'minute' in object || 'weekday' in object || 'yearday' in object)) {
                         if (!('year' in object)) {
                             if ('month' in object) {
                                 datePattern = patterns['MMMM'];
@@ -752,6 +789,8 @@
                                 }
                             } else if ('hour' in object) {
                                 datePattern = patterns['Hh'];
+                            } else if ('yearday' in object) {
+                                datePattern = patterns['DDD'];
                             }
                         } else {
                             if ('day' in object) {
@@ -764,7 +803,7 @@
 
                             if ('hour' in object) {
                                 if ('minute' in object) {
-                                    datePattern += ' ' + patterns['Hh'] + patterns['MMM'];
+                                    datePattern += ' ' + patterns['HH'] + ':' + patterns['mm'];
                                 } else {
                                     datePattern += ' ' + patterns['Hh'];
                                 }

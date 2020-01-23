@@ -115,6 +115,8 @@
                                             filter == 'q.timerange' ||
                                             filter == 'geofilter.polygon' ||
                                             filter == 'geofilter.distance' ||
+                                            filter == 'geonav' ||
+                                            filter == 'geonav-asc' ||
                                             filter.indexOf('refine.') === 0 ||
                                             filter.match(queryPattern) ||
                                             (filter == 'q.geographic_area' && that.parameters['q.geographic_area'] && that.parameters['q.geographic_area'].length > 0);

@@ -41,6 +41,7 @@
                 '           </div>' +
                 '      </div>' +
                 '      <div ng-bind-html="htmlData"></div>' +
+                '      <div ng-bind-html="htmlError"></div>' +
                 '   </div>' +
                 '</div>',
             scope: {
@@ -52,7 +53,7 @@
                     scope.gistId = attrs.id;
                 }
                 var successTooltipMessage = '<i class="fa fa-check"></i> ' + translate('Copied');
-                scope.resetTooltipMessage = function() {
+                scope.resetTooltipMessage = function () {
                     scope.tooltipMessage = '<span style="text-align:center">' + translate('Copy to clipboard') + '</span>';
                 };
 
@@ -60,24 +61,31 @@
 
                 $http.jsonp(
                     'https://gist.github.com/' + scope.username + '/' + scope.gistId + '.json?callback=JSON_CALLBACK',
-                    {timeout: 1000}
-                ).then(function(result) {
-                    var data = result.data;
-                    jQuery(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
-                    var gistElement = jQuery(data.div);
+                    {timeout: 5000}
+                ).then(function (result) {
+                        var data = result.data;
+                        jQuery(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
+                        var gistElement = jQuery(data.div);
 
-                    scope.rawData = gistElement.find('.gist-data').text()
-                        .replace(/^[\s]*$\n/gm, '').replace(/^[ ]{8}/gm, '');
-                    scope.htmlData = gistElement.find('.gist-file').html();
-                    var textarea = element.find('textarea')[0];
-                    scope.copyToClipboard = function () {
-                        textarea.select();
-                        document.execCommand('copy');
-                        scope.tooltipMessage = successTooltipMessage;
-                        scope.$broadcast('refresh-tooltip');
-                        textarea.blur();
-                    };
-                });
+                        scope.rawData = gistElement.find('.gist-data').text()
+                            .replace(/^[\s]*$\n/gm, '').replace(/^[ ]{8}/gm, '');
+                        scope.htmlData = gistElement.find('.gist-file').html();
+                        var textarea = element.find('textarea')[0];
+                        scope.copyToClipboard = function () {
+                            textarea.select();
+                            document.execCommand('copy');
+                            scope.tooltipMessage = successTooltipMessage;
+                            scope.$broadcast('refresh-tooltip');
+                            textarea.blur();
+                        };
+                    },
+                    function (error) {
+                        scope.htmlError =
+                            "<div class=\"gist blob-code-inner ods-gist-error\">" +
+                                "<p translate>Impossible to load code resource</p>" +
+                                "<a target=\"_blank\" href=\"" + 'https://gist.github.com/' + scope.username + '/' + scope.gistId + "\" translate>Try directly on Github</a>" +
+                            "</div>";
+                    });
             }
         };
     }]);

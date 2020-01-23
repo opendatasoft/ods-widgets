@@ -51,14 +51,14 @@ angular.module('gettext').constant('gettext', function (str) {
 });
 
 angular.module('gettext').service('translate', ["gettextCatalog", function (gettextCatalog) {
-    return function(input) {
-        return gettextCatalog.getString(input);
+    return function(input, additionalScope) {
+        return gettextCatalog.getString(input, additionalScope);
     }
 }]);
 
 angular.module('gettext').service('translatePlural', ["gettextCatalog", function (gettextCatalog) {
     return function(count, string, stringPlural, additionalScope) {
-        return gettextCatalog.getPlural(count, string, stringPlural, additionalScope || {});
+        return gettextCatalog.getPlural(count, string, stringPlural, additionalScope);
 
     }
 }]);
@@ -8312,7 +8312,7 @@ mod.directive('infiniteScroll', [
           var $scrollParent, checkWhenEnabled, elementTop, handler, scrollDistance, scrollEnabled, parentTop;
 
           $scrollParent = elem.parents().filter(function() {
-            return /(auto|scroll)/.test($.css(this, 'overflow') + $.css(this, 'overflow-y'));
+            return /(auto|scroll)/.test(jQuery.css(this, 'overflow') + jQuery.css(this, 'overflow-y'));
           }).eq(0);
 
           if ($scrollParent.length === 0) {
@@ -8391,7 +8391,8 @@ mod.directive('infiniteScroll', [
       }
     };
   }
-]);;(function() {
+]);
+;(function() {
     'use strict';
 
     // add indexOf to old browsers
@@ -8752,7 +8753,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by Opendatasoft
     //  License: MIT
-    var version = '1.3.1';
+    var version = '1.4.1';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -8926,6 +8927,10 @@ mod.directive('infiniteScroll', [
             url += path;
             params = ODS.URLUtils.cleanupAPIParams(params) || {};
 
+            if (context && context.type === 'catalog') {
+                params = ODS.URLUtils.computeCatalogFilterParams(params);
+            }
+
             if (context && context.dataset && context.dataset.metas && context.dataset.metas.timezone) {
                 params.timezone = context.dataset.metas.timezone;
             } else if (!params.timezone) {
@@ -8960,7 +8965,7 @@ mod.directive('infiniteScroll', [
                 }
                 options.headers['ODS-Widgets-Version'] = ODSWidgetsConfig.ODSWidgetsVersion;
             }
-            if (!context.domainUrl || Modernizr.cors) {
+            if (!context || !context.domainUrl || Modernizr.cors) {
                 return $http.
                     get(url, options).
                     error(function(data, status) {
@@ -9085,6 +9090,11 @@ mod.directive('infiniteScroll', [
             },
             'reuses': function(context, parameters, timeout) {
                 return request(context, '/api/reuses/', parameters, timeout);
+            },
+            'georeference': {
+                'uid': function(uid, timeout) {
+                    return request(null, '/api/georeference/v1/uid/'+uid+'/', {}, timeout);
+                }
             }
         };
     }]);
@@ -9809,7 +9819,11 @@ mod.directive('infiniteScroll', [
                         var nameY = chart.yAxis || chart.expr;
                         var possibleYAxis = jQuery.grep(this.getAvailableY(datasetid), function(y){return y.name == nameY;});
                         if (possibleYAxis.length > 0 && chart.func !== "COUNT" && chart.func !== "CONSTANT" && chart.func !== "CUSTOM") {
-                            return funcLabel + ' ' + possibleYAxis[0].label;
+                            var label = funcLabel + ' ' + possibleYAxis[0].label;
+                            if (chart.func === "QUANTILES") {
+                                label = chart.subsets + ' ' + label;
+                            }
+                            return label;
                         } else {
                             return funcLabel;
                         }
@@ -10121,7 +10135,7 @@ mod.directive('infiniteScroll', [
                                If that happens, only the values with the state "refined" should be kept. */
                             var isFacetDisjunctive = data.parameters.disjunctive && data.parameters.disjunctive[fieldName];
                             var isFacetRefined = data.parameters.refine && angular.isDefined(data.parameters.refine[fieldName]);
-                            var values = data.facet_groups[0]
+                            var values = data.facet_groups.filter(function(facetGroup) { return facetGroup.name === fieldName; })[0]
                                                 .facets
                                                 .filter(function (category) {
                                                     return !isFacetDisjunctive || !isFacetRefined || category.state === "refined";
@@ -10250,7 +10264,224 @@ mod.directive('infiniteScroll', [
             return currentDomain;
         };
     }]);
-}());;(function() {
+}());;(function () {
+    'use strict';
+    var mod = angular.module('ods-widgets');
+
+        var pathMatches = function(queriedPath, comparedPath, allowSubstring) {
+            /*
+            Compares two paths to see if one matches the other.
+            This is different from just comparing the strings, because it accounts for wildcards (*).
+
+            If allowSubstring is true, then comparedPath can be contained inside queriedPath, but not the other
+            way.
+
+            queriedPath = a/b/c/d, comparedPath = a/b/c => true
+            queriedPath = a/b/c, comparedPath = a/b/c/d => false
+             */
+            // queriedPath can contain a *, which would match anything in that level
+            if (queriedPath === comparedPath) {
+                return true;
+            }
+
+            var queriedPathTokens = queriedPath.split('/');
+            var comparedPathTokens = comparedPath.split('/');
+
+            if (!allowSubstring && queriedPathTokens.length !== comparedPathTokens.length) {
+                return false;
+            }
+
+            if (queriedPathTokens.length < comparedPathTokens.length) {
+                return false;
+            }
+
+            var matches = true;
+
+            angular.forEach(queriedPathTokens, function(queriedPathToken, idx) {
+                if (!matches) {
+                    // No point going further
+                    return;
+                }
+
+                if (idx >= comparedPathTokens.length) {
+                    return;
+                }
+
+                if (queriedPathToken === '*' || comparedPathTokens[idx] === '*') {
+                    // If either is a wildcard, then it's a match
+                    return;
+                }
+
+                if (queriedPathToken !== comparedPathTokens[idx]) {
+                    matches = false;
+                }
+            });
+
+            return matches;
+        };
+
+    mod.service('GeographicReferenceService', ['$q', 'ODSAPI', 'ODSWidgetsConfig', function($q, ODSAPI, ODSWidgetsConfig) {
+        // Note: each label in label path is URL-encoded
+        // Pre-initialized with world path to spare one trivial API call
+        var MAPPING_LABELS_TO_UIDS = {
+            "World": "world"
+        };
+        var MAPPING_UIDS_TO_LABELS = {
+            "world": "World"
+        };
+
+        var entityFetchRequests = {};
+
+        var addMappings = function(uidPath, labelPath) {
+            // Store mappings from these paths, and all the paths in-between
+            var uidPathTokens = uidPath.split('/');
+            var labelPathTokens = labelPath.split('/');
+
+            var addedUIDPath = '',
+                addedLabelPath = '';
+
+            for (var i=0; i<uidPathTokens.length; i++) {
+                if (i) {
+                    addedUIDPath += '/';
+                    addedLabelPath += '/';
+                }
+                addedUIDPath += uidPathTokens[i];
+                addedLabelPath += labelPathTokens[i];
+                MAPPING_LABELS_TO_UIDS[addedLabelPath] = addedUIDPath;
+                MAPPING_UIDS_TO_LABELS[addedUIDPath] = addedLabelPath;
+            }
+        };
+
+        var addMappingsFromEntity = function(entity) {
+            // Inside an entity, we have several mappings readily available that we can get from the parents
+            if (!entity.parents) {
+                // This is a root level (country)
+                addMappings(entity.uid, entity.name);
+            } else {
+                angular.forEach(entity.parents, function (parentHierarchy) {
+                    var levels = Object.keys(parentHierarchy);
+                    levels.sort();
+                    var uidPath = '',
+                        labelPath = '';
+                    angular.forEach(levels, function (level, idx) {
+                        if (idx) {
+                            uidPath += '/';
+                            labelPath += '/';
+                        }
+                        uidPath += parentHierarchy[level].uid;
+                        labelPath += encodeURIComponent(parentHierarchy[level].label);
+                    });
+
+                    if (uidPath) {
+                        uidPath += '/' + entity.uid;
+                        labelPath += '/' + encodeURIComponent(entity.name);
+                    }
+                    addMappings(uidPath, labelPath);
+                });
+            }
+        };
+
+        return {
+            // Geodomain
+            getLabelPathFromUIDPath: function(uidPath) {
+                var deferred = $q.defer();
+                if (angular.isDefined(MAPPING_UIDS_TO_LABELS[uidPath])) {
+                    deferred.resolve(MAPPING_UIDS_TO_LABELS[uidPath]);
+                } else {
+                    var uid = uidPath.split('/').pop();
+                    this.getEntity(uid).then(function () {
+                        // Entity fetching caches the paths already
+                        deferred.resolve(MAPPING_UIDS_TO_LABELS[uidPath]);
+                    });
+                }
+                return deferred.promise;
+            },
+            getUIDPathFromLabelPath: function(labelPath, catalogContext) {
+                var deferred = $q.defer();
+                if (angular.isDefined(MAPPING_LABELS_TO_UIDS[labelPath])) {
+                    deferred.resolve(MAPPING_LABELS_TO_UIDS[labelPath]);
+                } else {
+                    var params = {
+                        rows: 1,
+                        geonav: '',
+                        extrametas: true,
+                        q: '#startswith(explore.geographic_reference_path_labels, "' + labelPath + '")'
+                    };
+                    ODSAPI.datasets.search(catalogContext, params).success(function(data) {
+                        var dataset = data.datasets[0];
+                        var pathIndex;
+                        angular.forEach(dataset.extra_metas.explore.geographic_reference_path_labels, function(value, index) {
+                            // In the case of a *, we'll get two paths in the facets, but we want the one without the wildcard,
+                            // so that we get the real hierarchy.
+                            if (value.split('/').indexOf('*') === -1 && pathMatches(value, labelPath, true)) {
+                                pathIndex = index;
+                            }
+                        });
+
+                        // var labels = dataset.metas.geographic_reference_path[pathIndex];
+                        var uidPath = dataset.extra_metas.explore.geographic_reference_path[pathIndex];
+                        var depth = labelPath.split('/').length;
+                        uidPath = uidPath.split('/').slice(0, depth).join('/');
+                        addMappings(dataset.extra_metas.explore.geographic_reference_path[pathIndex], dataset.extra_metas.explore.geographic_reference_path_labels[pathIndex]);
+                        deferred.resolve(uidPath);
+                    })
+                }
+                return deferred.promise;
+            },
+            getEntity: function(uid) {
+                if (entityFetchRequests[uid]) {
+                    return entityFetchRequests[uid];
+                } else {
+                    var deferred = $q.defer();
+                    entityFetchRequests[uid] = deferred.promise;
+
+                    ODSAPI.georeference.uid(uid).success(function(entity) {
+                        addMappingsFromEntity(entity);
+                        deferred.resolve(entity);
+                    });
+
+                    return deferred.promise;
+                }
+            },
+            // Geonavigation levels
+            getLevelsForCountry: function(country) {
+                var levels = ODSWidgetsConfig.geonavigationLevels.world;
+                if (ODSWidgetsConfig.geonavigationLevels[country]) {
+                    levels = levels.concat(ODSWidgetsConfig.geonavigationLevels[country]);
+                }
+                return levels;
+            },
+            getLevelFromPath: function(uidPath, additionalDepth) {
+                additionalDepth = additionalDepth || 0;
+                var tokens = uidPath.split('/');
+                if (tokens.length === 1) {
+                    // World level
+                    if (additionalDepth) {
+                        return null;
+                    } else {
+                        return ODSWidgetsConfig.geonavigationLevels.world[0];
+                    }
+                }
+                var country = tokens[1].substring(6);
+                var levels = this.getLevelsForCountry(country);
+                if (levels.length <= tokens.length - 1 + additionalDepth) {
+                    return null;
+                }
+                return levels[tokens.length - 1 + additionalDepth];
+            },
+            isMaxLevel: function(uidPath) {
+                if (!uidPath || uidPath === 'world') {
+                    return false;
+                }
+                var tokens = uidPath.split('/');
+                var country = tokens[1].substring(6);
+                var allLevels = this.getLevelsForCountry(country);
+                return tokens.length === allLevels.length;
+            }
+        }
+    }]);
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -10285,80 +10516,6 @@ mod.directive('infiniteScroll', [
     }]);
 })();
 ;(function() {
-    "use strict";
-
-    var mod = angular.module('ods-widgets');
-
-    mod.service('I18n', ['translate', function(translate_time) {
-        return {
-            weekdays: {
-                shorthand: [
-                    translate_time('Sun'),
-                    translate_time('Mon'),
-                    translate_time('Tue'),
-                    translate_time('Wed'),
-                    translate_time('Thu'),
-                    translate_time('Fri'),
-                    translate_time('Sat')
-                ],
-                longhand: [
-                    translate_time('Sunday'),
-                    translate_time('Monday'),
-                    translate_time('Tuesday'),
-                    translate_time('Wednesday'),
-                    translate_time('Thursday'),
-                    translate_time('Friday'),
-                    translate_time('Saturday')
-                ]
-            },
-            months: {
-                shorthand: [
-                    translate_time('Jan'),
-                    translate_time('Feb'),
-                    translate_time('Mar'),
-                    translate_time('Apr'),
-                    translate_time('May'),
-                    translate_time('Jun'),
-                    translate_time('Jul'),
-                    translate_time('Aug'),
-                    translate_time('Sep'),
-                    translate_time('Oct'),
-                    translate_time('Nov'),
-                    translate_time('Dec')
-                ],
-                longhand: [
-                    translate_time('January'),
-                    translate_time('February'),
-                    translate_time('March'),
-                    translate_time('April'),
-                    translate_time('May'),
-                    translate_time('June'),
-                    translate_time('July'),
-                    translate_time('August'),
-                    translate_time('September'),
-                    translate_time('October'),
-                    translate_time('November'),
-                    translate_time('December')
-                ]
-            },
-
-            fr: {
-                timeFormat: 'HH:mm',
-                timeSeparators: [':'],
-                dateFormat: 'DD/MM/YYYY',
-                dateSeparators: ['/'],
-                firstDayOfWeek: 1
-            },
-            en: {
-                timeFormat: 'hh:mm A',
-                timeSeparators: [':', ' '],
-                dateFormat: 'MM/DD/YYYY',
-                dateSeparators: ['/'],
-                firstDayOfWeek: 0
-            }
-        };
-    }]);
-}());;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -14263,6 +14420,15 @@ mod.directive('infiniteScroll', [
                 return null;
             }
 
+            if (typeof array === "undefined" || array === null) {
+                return {};
+            }
+
+            if (!Array.isArray(array)) {
+                console.log("A non array value has been given to the toObject filter", array);
+                return {};
+            }
+
             return array.reduce(function(newObject, item) {
                 newObject[item[key]] = item;
                 return newObject;
@@ -14322,6 +14488,7 @@ mod.directive('infiniteScroll', [
          * <b>log` or `ln</b> (natural logarithm),
          * <b>log2</b> (base 2 logarithm),
          * <b>log10</b> (base 10 logarithm),
+         * <b>pow</b> (power) ex: {{ val | math : 'pow' : 2 }} for val^2
          * <b>random</b> (pseudo-random number between 0 and 1 * value),
          * <b>round</b> (value rounded to the nearest integer),
          * <b>sign</b> (sign of value, pos. = 1, neg = -1, zero = 0),
@@ -14332,7 +14499,7 @@ mod.directive('infiniteScroll', [
          * <br/> or static properties: <b>PI</b> or <b>E</b>.
          * @return {Number} The result
          */
-        return function(val, func) {
+        return function(val, func, opt) {
             /* whitelist of Math function, to avoid method injection and security problems */
             /* dummy implementation as some function don't work the same than others... */
             if (func === 'abs')
@@ -14353,6 +14520,8 @@ mod.directive('infiniteScroll', [
                 return Math.log2(val);
             if (func === 'log10')
                 return Math.log10(val);
+            if (func === 'pow')
+                return Math.pow(val, opt);
             if (func === 'random')
                 return Math.random() * val;
             if (func === 'round')
@@ -14814,6 +14983,38 @@ mod.directive('infiniteScroll', [
                 });
                 return params;
             },
+            computeCatalogFilterParams: function(params) {
+                if (angular.isUndefined(params.geonav) || params.geonav === '') {
+                    return params;
+                }
+
+                var newParams = angular.copy(params);
+
+                var geonav = newParams.geonav;
+
+                var clauses = [];
+
+                if (params['geonav-asc']) {
+                    // Higher levels:
+                    geonav.split('/').forEach(function (uid) {
+                        clauses.push('geographic_reference:"' + uid + '"');
+                    });
+
+
+                    // Lower levels:
+                    clauses.push('#startswith(explore.geographic_reference_path, "'+geonav+'/")');
+                    delete newParams['geonav-asc'];
+                } else {
+                    clauses.push('#startswith(explore.geographic_reference_path, "'+geonav+'")'); // FIXME: How about a simple refine?
+                }
+
+                var query = clauses.join(' OR ');
+
+                newParams['q.geonav'] = query;
+                delete newParams['geonav'];
+
+                return newParams;
+            },
             getAPIQueryString: function(options) {
                 options = this.cleanupAPIParams(angular.extend({}, options || {}));
                 if (!options) return '';
@@ -15095,26 +15296,31 @@ mod.directive('infiniteScroll', [
             datePatternBuilder: function (mode) {
                 var patterns = {
                     highcharts: {
-                        'Hh': '%Hh', // '00h', '01h', ... '23h'
-                        'MMM': '%M', // 'Jan', 'Feb', ... 'Dec'
+                        'mm': '%M',
+                        'Hh': '%H:00', // '00:00', '01:00', ... '23:00'
+                        'HH': '%H', // '00', '01:00', ... '23:00'
+                        'MMM': '%b', // 'Jan', 'Feb', ... 'Dec'
                         'YYYY': '%Y', // '2011', '2012', '2013'...
                         'MMMM': '%B', // 'January', 'February', ... 'December'
                         'D': '%e', // '1', '2', ... '31',
-                        'ddd': '%a' // 'Sun', 'Mon', ... 'Sat'
+                        'ddd': '%a', // 'Sun', 'Mon', ... 'Sat',
+                        'DDD': '%j', // 1, 2, ... 365
                     },
                     moment: {
+                        'mm': 'mm',
                         'Hh': 'H[h]',
                         'MMM': 'MMM',
                         'YYYY': 'YYYY',
                         'MMMM': 'MMMM',
                         'D': 'D',
-                        'ddd': 'ddd'
+                        'ddd': 'ddd',
+                        'DDD': 'DDD',
                     }
                 }[mode];
 
                 return function (object) {
                     var datePattern = '';
-                    if (angular.isObject(object) && ('year' in object || 'month' in object || 'day' in object || 'hour' in object || 'minute' in object || 'weekday' in object)) {
+                    if (angular.isObject(object) && ('year' in object || 'month' in object || 'day' in object || 'hour' in object || 'minute' in object || 'weekday' in object || 'yearday' in object)) {
                         if (!('year' in object)) {
                             if ('month' in object) {
                                 datePattern = patterns['MMMM'];
@@ -15133,6 +15339,8 @@ mod.directive('infiniteScroll', [
                                 }
                             } else if ('hour' in object) {
                                 datePattern = patterns['Hh'];
+                            } else if ('yearday' in object) {
+                                datePattern = patterns['DDD'];
                             }
                         } else {
                             if ('day' in object) {
@@ -15145,7 +15353,7 @@ mod.directive('infiniteScroll', [
 
                             if ('hour' in object) {
                                 if ('minute' in object) {
-                                    datePattern += ' ' + patterns['Hh'] + patterns['MMM'];
+                                    datePattern += ' ' + patterns['HH'] + ':' + patterns['mm'];
                                 } else {
                                     datePattern += ' ' + patterns['Hh'];
                                 }
@@ -15373,14 +15581,14 @@ mod.directive('infiniteScroll', [
         };
     }]);
 }());
-;(function() {
+;(function () {
     'use strict';
 
     var checkCondition = function checkCondition(scope, condition_expr, value) {
         try {
             return !!(scope.$eval(condition_expr, {
-                                y: value
-                            }));
+                y: value
+            }));
         } catch (e) {
             console.warn("Error while compiling condition with expr", condition_expr);
         }
@@ -15389,8 +15597,88 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
+    mod.factory('AnalysisHelper', function () {
+        return {
+            parseCustomExpression: function (serie, parentserie_for_subseries) {
+                var regex = /([A-Z_-]*?)\((.*?)\)/g;
+                var params2regex = /([A-Z_-]*?)\(([a-zA-Z0-9\._]+),\s?([0-9\.]+)\)/g;
+                var aggregates_holder = parentserie_for_subseries || serie;
+                var match;
 
-    mod.directive('odsAnalysis', ['ODSAPI', function(ODSAPI) {
+                serie.compiled_expr = "" + serie.expr;
+                aggregates_holder.aggregates = [];
+
+                var options = {};
+                while ((match = regex.exec(serie.expr))) {
+                    var extended_match = params2regex.exec(match[0]);
+                    if (extended_match && extended_match.length === 4) {
+                        match = extended_match;
+                    }
+                    if (match && (match.length === 3 || match.length === 4)) {
+                        if (match[2].indexOf('serie') === 0) {
+                            var compiled = "operators." + match[1].toLowerCase() + ".apply(null, accumulation['" + match[2] + "']";
+                            if (match.length === 4) {
+                                compiled += ", " + match[3];
+                            }
+                            compiled += ")";
+                            serie.compiled_expr = serie.compiled_expr.replace(match[0], compiled);
+                            aggregates_holder.aggregates.push(match[2]);
+                        } else { // we are really trying to get values from the index
+                            options['func'] = match[1];
+                            options['expr'] = match[2];
+                            if (match[3]) {
+                                options['subsets'] = match[3];
+                            }
+                            serie.compiled_expr += serie.compiled_expr.replace(match[0], 'y');
+                        }
+                    }
+                }
+                return options;
+            },
+            calibrateValue: function (min, max, logScaleFactor, value) {
+                var val = 1;
+                if (min === max) {
+                    val = 1;
+                } else {
+                    if (angular.isUndefined(logScaleFactor)) { // linear scale
+                        val = ((value - min) / (max - min));
+                    } else {
+                        if (value === min) {
+                            val = 0;
+                        } else {
+                            val = Math.pow(Math.log(value - min), logScaleFactor) / Math.pow(Math.log(max - min), logScaleFactor);
+                        }
+                    }
+                }
+                return val;
+            },
+            calibrateValueInClasses: function (nbClasses, value) {
+                var step, position, valStartClass, valEndClass, val;
+                step = 1 / nbClasses;
+                if (value === 1) {
+                    position = nbClasses - 1;
+                } else {
+                    position = Math.trunc(value / step);
+                }
+                valStartClass = position * step;
+                valEndClass = (position + 1) * step;
+                val = (valStartClass + valEndClass) / 2;
+
+                return [valStartClass, val, valEndClass];
+            },
+            computeRGBColor: function (rgbHigh, rgbLow, value) {
+                return "rgb(" +
+                    Math.floor(value * rgbHigh[0] + (1 - value) * rgbLow[0]) +
+                    "," +
+                    Math.floor(value * rgbHigh[1] + (1 - value) * rgbLow[1]) +
+                    "," +
+                    Math.floor(value * rgbHigh[2] + (1 - value) * rgbLow[2]) +
+                    ")";
+            }
+        }
+    });
+
+    mod.directive('odsAnalysis', ['ODSAPI', 'AnalysisHelper', function (ODSAPI, AnalysisHelper) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsAnalysis
@@ -15441,51 +15729,14 @@ mod.directive('infiniteScroll', [
          *  </example>
          */
 
-        var parseCustomExpression = function(serie, parentserie_for_subseries) {
-            var regex = /([A-Z_-]*?)\((.*?)\)/g;
-            var params2regex = /([A-Z_-]*?)\(([a-zA-Z0-9\._]+),\s?([0-9\.]+)\)/g;
-            var aggregates_holder = parentserie_for_subseries || serie;
-            var match;
-
-            serie.compiled_expr = "" + serie.expr;
-            aggregates_holder.aggregates = [];
-
-            var options = {};
-            while ((match = regex.exec(serie.expr))) {
-                var extended_match = params2regex.exec(match[0]);
-                if (extended_match && extended_match.length === 4) {
-                    match = extended_match;
-                }
-                if (match && (match.length === 3 || match.length === 4)) {
-                    if (match[2].indexOf('serie') === 0) {
-                        var compiled = "operators." + match[1].toLowerCase() + ".apply(null, accumulation['" + match[2] + "']";
-                        if (match.length === 4) {
-                            compiled += ", " + match[3];
-                        }
-                        compiled += ")";
-                        serie.compiled_expr = serie.compiled_expr.replace(match[0], compiled);
-                        aggregates_holder.aggregates.push(match[2]);
-                    } else { // we are really trying to get values from the index
-                        options['func'] = match[1];
-                        options['expr'] = match[2];
-                        if (match[3]) {
-                            options['subsets'] = match[3];
-                        }
-                        serie.compiled_expr += serie.compiled_expr.replace(match[0], 'y');
-                    }
-                }
-            }
-            return options;
-        };
-
         return {
             restrict: 'A',
             priority: 1001, // ng-repeat need to be executed when the results is in the scope.
-            controller: ['$scope', '$attrs', function($scope, $attrs) {
-                $scope[$attrs.odsAnalysisContext].wait().then(function() {
+            controller: ['$scope', '$attrs', function ($scope, $attrs) {
+                $scope[$attrs.odsAnalysisContext].wait().then(function () {
                     var analyze = ODSAPI.uniqueCall(ODSAPI.records.analyze);
 
-                    $scope.$watch($attrs.odsAnalysisContext, function(nv) {
+                    $scope.$watch($attrs.odsAnalysisContext, function (nv) {
                         var variable = $attrs.odsAnalysis || 'results';
                         var options = angular.extend({}, nv.parameters, {'maxpoints': $attrs.odsAnalysisMax || 0});
                         var aggregations = {}, series = {};
@@ -15495,12 +15746,12 @@ mod.directive('infiniteScroll', [
                             options.sort = $attrs.odsAnalysisSort;
                         }
 
-                        angular.forEach($attrs, function(value, attr) {
+                        angular.forEach($attrs, function (value, attr) {
                             var serie_name, cumulative;
                             if (attr.startsWith("odsAnalysisSerie")) {
                                 serie_name = attr.replace("odsAnalysisSerie", "");
                                 cumulative = false;
-                                if (serie_name.endsWith("Cumulative")){
+                                if (serie_name.endsWith("Cumulative")) {
                                     if (serie_name.replace("Cumulative", "").length > 0) {
                                         serie_name = serie_name.replace("Cumulative", "");
                                         cumulative = value;
@@ -15516,7 +15767,7 @@ mod.directive('infiniteScroll', [
                                     series[serie_name].cumulative = cumulative;
                                 } else {
                                     var serie = {'expr': value};
-                                    angular.extend(series[serie_name], parseCustomExpression(serie));
+                                    angular.extend(series[serie_name], AnalysisHelper.parseCustomExpression(serie));
                                 }
                             } else if (attr.startsWith("odsAnalysisAggregation")) {
                                 serie_name = attr.replace("odsAnalysisAggregation", "");
@@ -15535,7 +15786,7 @@ mod.directive('infiniteScroll', [
                             options.x = xs;
                         }
 
-                        angular.forEach(series, function(serie, name) {
+                        angular.forEach(series, function (serie, name) {
                             options["y." + name + ".expr"] = serie.expr;
                             options["y." + name + ".func"] = serie.func;
                             options["y." + name + ".cumulative"] = serie.cumulative || "false";
@@ -15549,7 +15800,7 @@ mod.directive('infiniteScroll', [
                             }
                         });
 
-                        analyze(nv, options).success(function(data) {
+                        analyze(nv, options).success(function (data) {
                             $scope[variable] = {};
                             if (angular.isArray(data)) {
                                 $scope[variable] = {
@@ -15565,8 +15816,195 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
+    mod.directive('odsColorGradient', ['ODSAPI', 'AnalysisHelper', function (ODSAPI, AnalysisHelper) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsColorGradient
+         * @scope
+         * @restrict A
+         * @param {string} odsColorGradient Variable name to use to output the color gradient data structure. variable['colors'] can be used in ods-maps. 'values', 'range' keys are salso available.
+         * @param {DatasetContext} odsColorGradientContext {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         * @param {string} odsColorGradientX The X axis of the analysis
+         * @param {string} odsColorGradientSerie FUNC(expression) where FUNC is AVG, SUM, MIN, MAX etc... and expression is the field id to work on.
+         * @param {string} [odsColorGradientHigh='rgb(0, 55, 237)'] RGB or HEX color code for highest value of the analysis serie. ex: "rgb(255, 0, 0)", "#abc"
+         * @param {string} [odsColorGradientLow='rgb(180, 197, 241)'] RGB or HEX color code for the lowest value of the analysis serie. ex: "rgb(125, 125, 125)", "#ff009a"
+         * @param {integer} [odsColorGradientNbClasses=undefined] Number of classes, ie number of color to compute. Mandatory to get a consistent legend with the corresponding number of grades/classes.
+         * @param {integer} [odsColorGradientLogarithmicScaleFactor=undefined] Set to 1 to activate the logarithmic scale. Set a value greater from 1 to 10 to flatten the log effect and tend to a more linear scale. (1 is log, 10 is very linear, 3/4/5 are most of the time good choices)
+         *
+         * @description
+         * This widget exposes the results of an analysis transposed to a set of colors for each X values.
+         * The results is available in the scope.
+         * It can be used directly on odsMap color-categories parameter with display=categories mode.
+         * It can also be used on AngularJS's ngRepeat to build custom scales.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="logarithmic-scale.html">
+         *          <ods-dataset-context context="regions,population"
+         *                               regions-dataset="contours-geographiques-des-regions-2019-copy"
+         *                               regions-domain="public"
+         *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)',
+         *                                                   'disjunctive.region':true}"
+         *                               population-dataset="population-millesimee-communes-2016"
+         *                               population-parameters="{'disjunctive.nom_reg':true}"
+         *                               population-domain="public">
+         *
+         *              <div ods-color-gradient="colorgradient"
+         *                   ods-color-gradient-context="population"
+         *                   ods-color-gradient-x="nom_reg"
+         *                   ods-color-gradient-serie="SUM(population_totale)"
+         *                   ods-color-gradient-high="rgb(20, 33, 96)"
+         *                   ods-color-gradient-low="rgb(180, 197, 241)">
+         *
+         *                  <ods-map>
+         *                      <ods-map-layer context="regions"
+         *                                     color-categories="colorgradient['colors']"
+         *                                     color-by-field="region"
+         *                                     color-categories-other="lightgrey"
+         *                                     display="categories"
+         *                                     shape-opacity="0.85"
+         *                                     title="Sum of cities population">
+         *                      </ods-map-layer>
+         *                  </ods-map>
+         *              </div>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
+         */
 
-    mod.directive('odsAnalysisSerie', [function() {
+        var rgbRe = /^rgb\([ \t]*(\d{1,3})[ \t]*,[ \t]*(\d{1,3})[ \t]*,[ \t]*(\d{1,3})[ \t]*\)$/;
+        var hexRe = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+
+        var getColorParam = function (color, defaultColor) {
+            var rgbMatch = rgbRe.exec(color);
+            if (rgbMatch && rgbMatch.length === 4) {
+                return rgbMatch.slice(1).map(function(element) { return parseInt(element, 10);});
+            } else {
+                var hexMatch = hexRe.exec(color);
+                if (hexMatch && hexMatch.length === 2) {
+                    var r, g, b;
+                    if (hexMatch[1].length == 6) {
+                        r = parseInt(hexMatch[1].slice(0, 2), 16);
+                        g = parseInt(hexMatch[1].slice(2, 4), 16);
+                        b = parseInt(hexMatch[1].slice(4, 6), 16);
+                    } else { // 3
+                        r = parseInt(hexMatch[1].slice(0, 1) + '' + hexMatch[1].slice(0, 1), 16);
+                        g = parseInt(hexMatch[1].slice(1, 2) + '' + hexMatch[1].slice(1, 2), 16);
+                        b = parseInt(hexMatch[1].slice(2, 3) + '' + hexMatch[1].slice(2, 3), 16);
+                    }
+                    return [r, g, b];
+                }
+            }
+            return defaultColor;
+        };
+
+        return {
+            restrict: 'A',
+            controller: ['$scope', '$attrs', function ($scope, $attrs) {
+                $scope[$attrs.odsColorGradient] = {};
+                $scope[$attrs.odsColorGradient]['colors'] = {};
+                $scope[$attrs.odsColorGradient]['values'] = {};
+                $scope[$attrs.odsColorGradient]['range'] = {'min': undefined, 'max': undefined};
+
+                var rgbhigh = getColorParam($attrs.odsColorGradientHigh, [0, 55, 237]);
+                var rgblow = getColorParam($attrs.odsColorGradientLow, [180, 197, 241]);
+                $scope[$attrs.odsColorGradient]['range']['high-color'] = 'rgb(' + rgbhigh[0] + ',' + rgbhigh[1] + ',' + rgbhigh[2] + ')';
+                $scope[$attrs.odsColorGradient]['range']['low-color'] = 'rgb(' + rgblow[0] + ',' + rgblow[1] + ',' + rgblow[2] + ')';
+
+                var logScaleFactor = parseInt($attrs.odsColorGradientLogarithmicScaleFactor) || undefined;
+                $scope[$attrs.odsColorGradient]['range']['logscalefactor'] = logScaleFactor;
+
+                $attrs.odsColorGradientNbClasses = parseInt($attrs.odsColorGradientNbClasses) || undefined;
+
+                var serie = {};
+                var x = [];
+
+                angular.forEach($attrs, function (value, attr) {
+                    var serie_name, cumulative;
+                    if (attr === "odsColorGradientSerie") {
+                        serie = AnalysisHelper.parseCustomExpression({'expr': value});
+                    } else if (attr === "odsColorGradientX") {
+                        x = value;
+                    }
+                });
+
+                $scope[$attrs.odsColorGradientContext].wait().then(function () {
+                    var analyze = ODSAPI.uniqueCall(ODSAPI.records.analyze);
+
+                    $scope.$watch($attrs.odsColorGradientContext, function (nv) {
+                        var options = angular.extend({}, nv.parameters, {'maxpoints': 0});
+                        if (x) {
+                            options.x = x;
+                        }
+
+                        options["y.serie.expr"] = serie.expr;
+                        options["y.serie.func"] = serie.func;
+                        if (serie.func === 'QUANTILES') {
+                            options["y.serie.subsets"] = serie.subsets || "50";
+                        }
+
+                        analyze(nv, options).success(function (data) {
+                            /* Compute min and max of each series */
+                            var min = undefined;
+                            var max = undefined;
+                            angular.forEach(data, function (result) {
+                                max = (result['serie'] >= (max || result['serie']) ? result['serie'] : max);
+                                min = (result['serie'] <= (min || result['serie']) ? result['serie'] : min);
+                            });
+                            $scope[$attrs.odsColorGradient]['range']['min'] = min;
+                            $scope[$attrs.odsColorGradient]['range']['max'] = max;
+
+                            //var nbClasses = ($attrs.odsColorGradientNbClasses > data.length ? data.length : $attrs.odsColorGradientNbClasses);
+                            var nbClasses = $attrs.odsColorGradientNbClasses;
+                            if (nbClasses)
+                                $scope[$attrs.odsColorGradient]['range']['classes'] = {};
+
+                            /* Reset all objects BUT BUT BUT Keep the parent objects !! only del the values !
+                             * if not : the ods-map watchers won't refresh as the watched object won't be the same any more */
+                            for (var key in $scope[$attrs.odsColorGradient]['colors'])
+                                delete $scope[$attrs.odsColorGradient]['colors'][key];
+                            for (var key in $scope[$attrs.odsColorGradient]['values'])
+                                delete $scope[$attrs.odsColorGradient]['values'][key];
+
+                            /* Compute color objects */
+                            var classesObj = {};
+                            angular.forEach(data, function (result) {
+                                $scope[$attrs.odsColorGradient]['values'][result.x] = result['serie'];
+                                var startClass, val, endClass, color = undefined;
+                                val = AnalysisHelper.calibrateValue(min, max, logScaleFactor, result['serie']);
+                                if (nbClasses) {
+                                    var res = AnalysisHelper.calibrateValueInClasses(nbClasses, val);
+                                    startClass = res[0];
+                                    val = res[1];
+                                    endClass = res[2];
+                                }
+                                color = AnalysisHelper.computeRGBColor(rgbhigh, rgblow, val);
+
+                                $scope[$attrs.odsColorGradient]['colors'][result.x] = color;
+                                if (angular.isDefined(startClass) && angular.isDefined(endClass)) {
+                                    var startValue, endValue;
+                                    var range = max - min;
+                                    startValue = min + range * startClass;
+                                    endValue = min + range * endClass;
+                                    classesObj[color] = {
+                                        'start': startValue,
+                                        'end': endValue,
+                                        'color': color
+                                    };
+                                }
+                            });
+
+                            $scope[$attrs.odsColorGradient]['range']['classes'] = Object.keys( classesObj ).map(function( sortedKey ) {
+                                return classesObj[ sortedKey ];
+                            });
+                        });
+                    }, true);
+                });
+            }]
+        };
+    }]);
+
+    mod.directive('odsAnalysisSerie', [function () {
         /**
          * @deprecated
          * @ngdoc directive
@@ -15639,36 +16077,36 @@ mod.directive('infiniteScroll', [
         return {
             restrict: 'A',
             scope: true,
-            controller: ['$scope', '$attrs', function($scope, $attrs) {
+            controller: ['$scope', '$attrs', function ($scope, $attrs) {
                 $scope.condition = '';
                 $scope.field = '';
-                $scope.$watch($attrs.odsAnalysisSerieCondition, function(nv) {
+                $scope.$watch($attrs.odsAnalysisSerieCondition, function (nv) {
                     if (!$attrs.odsAnalysisSerieCondition) {
                         return;
                     }
                     $scope.condition = $attrs.odsAnalysisSerieCondition;
                 }, true);
-                $scope.$watch($attrs.odsAnalysisSerieName, function(nv) {
+                $scope.$watch($attrs.odsAnalysisSerieName, function (nv) {
                     if (!$attrs.odsAnalysisSerieName) {
                         return;
                     }
                     $scope.name = $attrs.odsAnalysisSerieName;
                 }, true);
-                $scope.$watch($attrs.odsAnalysisSerieSeparateOnX, function(nv) {
+                $scope.$watch($attrs.odsAnalysisSerieSeparateOnX, function (nv) {
                     if (!$attrs.odsAnalysisSerieSeparateOnX) {
                         return;
                     }
                     $scope.separateOnX = $attrs.odsAnalysisSerieSeparateOnX;
                 }, true);
-                $scope.$watch($attrs.odsAnalysisSerieMode, function(nv) {
+                $scope.$watch($attrs.odsAnalysisSerieMode, function (nv) {
                     if (!$attrs.odsAnalysisSerieMode) {
                         return;
                     }
                     $scope.mode = $attrs.odsAnalysisSerieMode;
                 }, true);
             }],
-            link: function(scope, element, attrs) {
-                scope.$watch(attrs.odsAnalysisSerie, function(nv, ov) {
+            link: function (scope, element, attrs) {
+                scope.$watch(attrs.odsAnalysisSerie, function (nv, ov) {
                     var analysis = nv,
                         i,
                         result,
@@ -15686,32 +16124,32 @@ mod.directive('infiniteScroll', [
 
                         for (i = 0; i < analysis.length; i++) {
                             currentValue = analysis[i][scope.name];
-                            if ( scope.separateOnX ) {
+                            if (scope.separateOnX) {
                                 currentXAxis = analysis[i]['x'][scope.separateOnX];
                             } else {
                                 currentXAxis = "global";
                             }
-                            if ( checkCondition(scope, scope.condition, currentValue) ) {
-                                if ( !longest_results[currentXAxis] ) {
-                                     longest_results[currentXAxis] = [];
+                            if (checkCondition(scope, scope.condition, currentValue)) {
+                                if (!longest_results[currentXAxis]) {
+                                    longest_results[currentXAxis] = [];
                                 }
                                 longest_results[currentXAxis].push(analysis[i]);
                             } else {
-                                if ( longest_results[currentXAxis] ) {
-                                    if ( !result[currentXAxis] || result[currentXAxis].length < longest_results[currentXAxis].length ) {
+                                if (longest_results[currentXAxis]) {
+                                    if (!result[currentXAxis] || result[currentXAxis].length < longest_results[currentXAxis].length) {
                                         result[currentXAxis] = longest_results[currentXAxis];
                                     }
                                     longest_results[currentXAxis] = false;
                                 }
                             }
                         }
-                        angular.forEach(longest_results, function(longest_result, x) {
-                            if ( !result[x] || result[x].length < longest_result.length ) {
+                        angular.forEach(longest_results, function (longest_result, x) {
+                            if (!result[x] || result[x].length < longest_result.length) {
                                 result[x] = longest_result;
                             }
                         });
 
-                        if ( scope.mode == "reduce" && scope.separateOnX ) {
+                        if (scope.mode == "reduce" && scope.separateOnX) {
                             var keys = Object.keys(result);
                             var biggest = [];
                             for (i = 0; i < keys.length; i++) {
@@ -15729,7 +16167,7 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-    mod.directive('odsSubaggregation', ['ModuleLazyLoader', function(ModuleLazyLoader) {
+    mod.directive('odsSubaggregation', ['ModuleLazyLoader', function (ModuleLazyLoader) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsSubaggregation
@@ -15806,9 +16244,9 @@ mod.directive('infiniteScroll', [
             try {
                 valueY = scope.$eval(compiled_expr, {
                         operators: ss,
-                        accumulation: function(accumulations, needed_aggregates) {
+                        accumulation: function (accumulations, needed_aggregates) {
                             var res = {};
-                            angular.forEach(needed_aggregates, function(k) {
+                            angular.forEach(needed_aggregates, function (k) {
                                 res[k] = accumulations[k];
                             });
                             return res;
@@ -15825,15 +16263,15 @@ mod.directive('infiniteScroll', [
         return {
             restrict: 'A',
             scope: true,
-            controller: ['$scope', '$attrs', function($scope, $attrs) {
+            controller: ['$scope', '$attrs', function ($scope, $attrs) {
                 $scope.aggregations = {};
-                var cancel = $scope.$watch($attrs.odsSubaggregation, function(nv) {
+                var cancel = $scope.$watch($attrs.odsSubaggregation, function (nv) {
                     if (!nv) {
                         return;
                     }
                     var aggregations = {};
 
-                    angular.forEach($attrs, function(value, attr) {
+                    angular.forEach($attrs, function (value, attr) {
                         var serie_name, cumulative;
                         if (attr.startsWith("odsSubaggregationSerie")) {
                             serie_name = attr.replace("odsSubaggregationSerie", "");
@@ -15850,9 +16288,9 @@ mod.directive('infiniteScroll', [
                     cancel();
                 }, true);
             }],
-            link: function(scope, element, attrs) {
-                ModuleLazyLoader('simple-statistics').then(function() {
-                    scope.$watch(attrs.odsSubaggregation, function(nv, ov) {
+            link: function (scope, element, attrs) {
+                ModuleLazyLoader('simple-statistics').then(function () {
+                    scope.$watch(attrs.odsSubaggregation, function (nv, ov) {
                         var values = {},
                             analysis = nv,
                             i,
@@ -15864,19 +16302,19 @@ mod.directive('infiniteScroll', [
                         if (analysis) {
                             result = {};
 
-                            angular.forEach(scope.aggregations, function(aggregation, name) {
+                            angular.forEach(scope.aggregations, function (aggregation, name) {
                                 values[aggregation.needed_aggregates] = [];
                             });
 
                             for (i = 0; i < analysis.length; i++) {
-                                angular.forEach(values, function(useless, name) {
+                                angular.forEach(values, function (useless, name) {
                                     if (typeof analysis[i][name] !== "undefined") {
                                         values[name].push(analysis[i][name]);
                                     }
                                 });
                             }
 
-                            angular.forEach(scope.aggregations, function(aggregation, name) {
+                            angular.forEach(scope.aggregations, function (aggregation, name) {
                                 result[name] = compileAggrValue(scope, aggregation.compiled_expr, values, [aggregation.needed_aggregates]);
                             });
 
@@ -16444,6 +16882,8 @@ mod.directive('infiniteScroll', [
                                             filter == 'q.timerange' ||
                                             filter == 'geofilter.polygon' ||
                                             filter == 'geofilter.distance' ||
+                                            filter == 'geonav' ||
+                                            filter == 'geonav-asc' ||
                                             filter.indexOf('refine.') === 0 ||
                                             filter.match(queryPattern) ||
                                             (filter == 'q.geographic_area' && that.parameters['q.geographic_area'] && that.parameters['q.geographic_area'].length > 0);
@@ -18243,66 +18683,32 @@ mod.directive('infiniteScroll', [
          * @description
          * This widget displays a range slider to select the two bounds of a date range.
          *
-         *
-         *  @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
-         *              <ods-date-range-slider context="cibul"
-         *                               start-bound="'2018/01/01'"
-         *                               end-bound="'2019/12/31'"></ods-date-range-slider>
-         *              <ods-table context="cibul"></ods-table>
-         *          </ods-dataset-context>
-         *     </file>
-         * </example>
-         *
-         * @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
-         *              <ods-date-range-slider context="cibul"
-         *                               date-format="MM/YYYY"
-         *                               precision="month"
-         *                               initial-from="2018/01"
-         *                               initial-to="2019/12/31"
-         *                               start-bound="'2018/01/01'"
-         *                               end-bound="'2019/12/31'">
-         *              </ods-date-range-slider>
-         *              <ods-table context="cibul"></ods-table>
-         *          </ods-dataset-context>
-         *      </file>
-         * </example>
-         *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="ctx"
          *              ctx-dataset="evenements-publics-cibul@public"
          *              ctx-domain="public">
-         *              <div class="container">
-         *                  <div class="ods-box" ng-init="obj = {}">
-         *                      <ods-date-range-slider context="ctx"
-         *                          date-format="YYYY"
-         *                          precision="year"
-         *                          initial-from="2019/02/01"
-         *                          initial-to="2019/02/15"
-         *                          start-bound="'2000/01/01'"
-         *                          end-bound="'2020/03/30'"
-         *                          from="obj.from"
-         *                          to="obj.to">
-         *                      </ods-date-range-slider>
-         *                      <br/>
-         *                      <p>
-         *                          {{ obj.from }} -- {{ obj.to }}
-         *                      </p>
-         *                  </div>
+         *              <div class="ods-box" ng-init="obj = {}">
+         *                  <ods-date-range-slider context="ctx"
+         *                      date-format="YYYY"
+         *                      precision="year"
+         *                      initial-from="2019/02/01"
+         *                      initial-to="2019/02/15"
+         *                      start-bound="'2000/01/01'"
+         *                      end-bound="'2020/03/30'"
+         *                      from="obj.from"
+         *                      to="obj.to">
+         *                  </ods-date-range-slider>
+         *                  <br/>
+         *                  <p>
+         *                      {{ obj.from }} -- {{ obj.to }}
+         *                  </p>
          *              </div>
-         *              <div class="container-fluid">
-         *                  <ods-table context="ctx"></ods-table>
-         *              </div>
-         *         </ods-dataset-context>
+         *              <ods-table context="ctx"></ods-table>
+         *          </ods-dataset-context>
          *      </file>
-         * </example>
+         *  </example>
          *
          */
         var ionRangesliderOptions = {
@@ -18311,15 +18717,35 @@ mod.directive('infiniteScroll', [
             skin: "flat",
         };
 
-        var ODSDateFormat = 'YYYY-MM-DD';
+        var ODSDateFormats = {
+            year: 'YYYY',
+            month: 'YYYY-MM',
+            day: 'YYYY-MM-DD',
+        };
+
+        var forceDayStart = function (date) {
+            return date.startOf('day');
+        }
 
         var computeDate = function (value) {
+            var parsedDate;
             if (value === 'yesterday') {
-                return moment().subtract('days', 1);
+                return forceDayStart(moment.utc().subtract('days', 1));
             } else if (value === 'now') {
-                return moment();
+                return forceDayStart(moment.utc());
             } else if (angular.isString(value)) {
-                return moment(value);
+                // when parsing a date string that is not in ISO 8601, moment.js fallback to browser Date parsing implementation.
+                // YYYY format is not standard ISO format so we try this format explicitely before letting moment.js try other formats
+                parsedDate = moment.utc(value, ["YYYY"], true);
+                if (!parsedDate.isValid()) {
+                    // otherwise we let moment try by itself
+                    parsedDate = moment.utc(value);
+                }
+                return forceDayStart(parsedDate);
+            } else if (value instanceof Date) {
+                return forceDayStart(moment.utc(value));
+            } else if (value instanceof moment) {
+                return forceDayStart(value);
             } else {
                 return null;
             }
@@ -18447,14 +18873,14 @@ mod.directive('infiniteScroll', [
                     prettify: intToDate,
                     onStart: function (data) {
                         scope.$applyAsync(function () {
-                            scope.from = moment(scope.startBound).add(data.from, scope.precisionClean).format(ODSDateFormat);
-                            scope.to = moment(scope.startBound).add(data.to, scope.precisionClean).format(ODSDateFormat);
+                            scope.from = computeDate(scope.startBound).add(data.from, scope.precisionClean).format(ODSDateFormats[scope.precisionClean]);
+                            scope.to = computeDate(scope.startBound).add(data.to, scope.precisionClean).format(ODSDateFormats[scope.precisionClean]);
                         });
                     },
                     onFinish: function (data) {
                         scope.$applyAsync(function () {
-                            scope.from = moment(scope.startBound).add(data.from, scope.precisionClean).format(ODSDateFormat);
-                            scope.to = moment(scope.startBound).add(data.to, scope.precisionClean).format(ODSDateFormat);
+                            scope.from = computeDate(scope.startBound).add(data.from, scope.precisionClean).format(ODSDateFormats[scope.precisionClean]);
+                            scope.to = computeDate(scope.startBound).add(data.to, scope.precisionClean).format(ODSDateFormats[scope.precisionClean]);
                         });
                     }
                 }
@@ -18495,7 +18921,7 @@ mod.directive('infiniteScroll', [
                 };
 
                 var getDiffWithMin = function (date) {
-                    return moment(date).diff(computeDate(scope.startBound), scope.precisionClean);
+                    return computeDate(date).diff(computeDate(scope.startBound), scope.precisionClean);
                 };
 
                 if (!angular.isArray(scope.context)) {
@@ -19769,6 +20195,9 @@ mod.directive('infiniteScroll', [
                                 addRefinement(context, translate('Map filter'), context.parameters['q.mapfilter'], 'q.mapfilter');
                             }
 
+                            if (isParameterActive(context, 'geonav')) {
+                                addRefinement(context, translate('Location'), context.parameters['geonav'], 'geonav',  translate('Chosen territory'));
+                            }
 
                             // Handle query with suffix attribute (q.mysuffix)
                             angular.forEach(context.parameters, function (value, parameter) {
@@ -19941,6 +20370,379 @@ mod.directive('infiniteScroll', [
         };
     }]);
 })();
+;(function () {
+    'use strict';
+    var mod = angular.module('ods-widgets');
+
+    var shapeColor = "#00C7B1";
+    var disabledShapeColor = "#565656";
+
+    mod.directive('odsGeoNavigation', ['ModuleLazyLoader', 'ODSWidgetsConfig', 'ODSAPI', 'GeographicReferenceService', '$q', '$filter', function (ModuleLazyLoader, ODSWidgetsConfig, ODSAPI, GeographicReferenceService, $q, $filter) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsGeoNavigation
+         * @scope
+         * @restrict E
+         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog context} to use.
+         * @param {number} minLevel Highest level available for navigation (countries are 10, other levels depend on the country)
+         * @param {number} [maxLevel=none] Lowest level available for navigation (countries are 10, other levels depend on the country).
+         * If not set, the user will be able to navigate to the lowest available level.
+         * @param {string} defaultFilter Path of Geographic References leading to the filter's starting point
+         * (e.g. `world/world_fr/fr_40_52`).
+         *
+         * @description
+         * The geographic navigation filter can be used to navigate visually inside a catalog using a geographic
+         * metadata (currently, only the "Geographic coverage" metadata).
+         * The navigation is similar to `odsFacets`, but with a visual indication (map) of the current location used as
+         * a filter.
+         */
+        return {
+            restrict: 'E',
+            replace: true,
+            template: '' +
+                '<div class="odswidget odswidget-geo-navigation">' +
+                '    <div class="odswidget-geo-navigation__header-container">' +
+                '        <h3 class="odswidget-geo-navigation__header" translate>Territory</h3>' +
+                '        <div class="odswidget-geo-navigation__map" ng-click="enableFilter()"></div>' +
+                '        <div ng-if="!isFilterEnabled" ng-bind="defaultFilterLabel" ng-click="enableFilter()" class="odswidget-geo-navigation__default-label"></div>' +
+
+                '        <div ng-if="isFilterEnabled" class="odswidget-geo-navigation__current-filter">' +
+                '            <div class="odswidget-geo-navigation__current-filter-title" title="{{ currentFilterLabel }}">' +
+                '                <i class="fa fa-map-marker odswidget-geo-navigation__marker-icon"></i> {{ currentFilterLabel }}' +
+                '            </div>' +
+                '           <button class="odswidget-geo-navigation__cancel" ng-click="closeFilter()"><i class="fa fa-times-circle"></i></button>' +
+                '        </div>' +
+                '        <div ng-if="isFilterEnabled">' +
+                '            <div ng-click="selectParent()" ng-show="parentFilterLabel" class="odswidget-geo-navigation__navigation-control">' +
+                '                <i class="fa fa-chevron-left" aria-hidden="true"></i> <span translate>Back to {{parentFilterLabel}}</span>' +
+                '            </div>' +
+                '            <div ng-click="skipLevel()" ng-show="canBeSkipped && skipToLevelLabel" class="odswidget-geo-navigation__navigation-control">' +
+                '                <i class="fa fa-chevron-right" aria-hidden="true"></i> <span translate>Go to {{skipToLevelLabel}} level</span>' +
+                '            </div>' +
+                '            <div ng-click="unskipLevel()" ng-show="backToOriginalLevelLabel" class="odswidget-geo-navigation__navigation-control">' +
+                '                <i class="fa fa-chevron-left" aria-hidden="true"></i> <span translate>Back to {{backToOriginalLevelLabel}} level</span>' +
+                '            </div>' +
+                '        <div ng-show="showSearchbox" class="odswidget-geo-navigation__level-search-box-container">' +
+                '           <input type="text" ng-model="searchInLevel" placeholder="Search a location" translate="placeholder" class="odswidget-geo-navigation__level-search-box">' +
+                '           <i class="fa fa-search odswidget-geo-navigation__level-search-box-icon" aria-hidden="true"></i>' +
+                '        </div>' +
+                '            <hr ng-show="!showSearchbox && (parentFilterLabel || canBeSkipped && skipToLevelLabel) && choices.length" class="odswidget-geo-navigation__navigation-separator" />' +
+                '            <div ng-repeat="choice in choices|filter:searchValue(searchInLevel)" ng-show="isVisible($index)" ng-click="selectChoice(choice.path)" class="odswidget-geo-navigation__choice">' +
+                '                <div class="odswidget-geo-navigation__choice-label">{{choice.name}}</div>' +
+                '                <div class="odswidget-geo-navigation__choice-count">{{choice.count}}</div>' +
+                '            </div>' +
+                '            <label ng-show="showAscendingToggle" class="odswidget-geo-navigation__ascending-filter-container">' +
+                '               <button ng-click="onAscendingFilterToggle()" ng-class="{\'odswidget-geo-navigation__ascending-filter-button\': true, \'odswidget-geo-navigation__ascending-filter-button--enabled\': ascendingFilter, \'odswidget-geo-navigation__ascending-filter-button--disabled\': !ascendingFilter}">' +
+                '                   <i ng-class="{\'fa\': true, \'fa-toggle-off\': !ascendingFilter, \'fa-toggle-on\': ascendingFilter}"></i>' +
+                '               </button>' +
+                '               <div translate>Display all datasets that include {{ currentFilterLabel }}</div>' +
+                '            </label>' +
+                '            <div ng-if="(choices|filter:searchValue(searchInLevel)).length > 5" ' +
+                '                 class="odswidget-geo-navigation__expansion-control">' +
+                '                <a ng-hide="expanded" href="#" ng-click="toggleExpand(true)" class="odswidget-geo-navigation__expansion-control-link">' +
+                '                    <i class="fa fa-angle-right" aria-hidden="true"></i>' +
+                '                    <span translate>More</span>' +
+                '                </a>' +
+                '                <a ng-show="expanded" href="#" ng-click="toggleExpand(false)" class="odswidget-geo-navigation__expansion-control-link">' +
+                '                    <i class="fa fa-angle-right" aria-hidden="true"></i>' +
+                '                    <span translate>Less</span>' +
+                '                </a>' +
+                '            </div>' +
+                '        </div>' +
+                '    </div>' +
+                '</div>',
+            scope: {
+                context: '=',
+                minLevel: '@',
+                maxLevel: '@',
+                country: '@',
+                defaultFilter: '@'
+            },
+            link: function (scope, element, attrs) {
+                var mapContainer = element.find('div.odswidget-geo-navigation__map');
+                var mapReady = $q.defer();
+                ModuleLazyLoader('leaflet').then(function () {
+                    if (!scope.map) {
+                        scope.map = new L.ODSMap(mapContainer[0], {
+                            scrollWheelZoom: false,
+                            dragging: false,
+                            touchZoom: false,
+                            doubleClickZoom: false,
+                            boxZoom: false,
+                            keyboard: false,
+                            zoomControl: false,
+                            basemapsList: [ODSWidgetsConfig.neutralBasemap],
+                            maxBounds: [[-90, -180], [90, 180]],
+                            zoom: 13
+                        });
+                        scope.map.setView([0, 0], 0);
+                        mapReady.resolve(scope.map);
+                    }
+                });
+
+                var getShapeStyle = function() {
+                    var color = scope.isFilterEnabled ? shapeColor : disabledShapeColor;
+                    var dashArray = scope.isFilterEnabled ? null : "2, 2";
+                    return {
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.25,
+                        opacity: 1,
+                        weight: 1,
+                        clickable: false,
+                        dashArray: dashArray
+                    }
+                };
+
+                scope.displayShape = function(uid) {
+                    if (!uid || uid === 'world') {
+                        if (scope.currentShapeLayer) {
+                            scope.map.removeLayer(scope.currentShapeLayer);
+                            scope.currentShapeLayer = null;
+                        }
+                        return;
+                    }
+
+                    GeographicReferenceService.getEntity(uid).then(function(entity) {
+                        var shape = entity.geom_geonav || entity.geom;
+                        mapReady.promise.then(function(map) {
+                            if (scope.currentShapeLayer) {
+                                map.removeLayer(scope.currentShapeLayer);
+                            }
+                            scope.currentShapeLayer = L.geoJson(shape, getShapeStyle());
+                            map.addLayer(scope.currentShapeLayer);
+                            map.fitBounds(scope.currentShapeLayer.getBounds());
+                        });
+                    });
+                };
+            },
+            controller: ['$scope', 'translate', 'GeographicReferenceService', function($scope, translate, GeographicReferenceService) {
+                $scope.enableFilter = function() {
+                    $scope.context.parameters['geonav'] = $scope.defaultFilter || 'world';
+                };
+                $scope.closeFilter = function() {
+                    delete $scope.context.parameters['geonav'];
+                };
+
+                $scope.toggleExpand = function(expand) {
+                    $scope.expanded = expand;
+                };
+
+                $scope.isVisible = function(index) {
+                    // Used to show or hide items depending on more/less
+                    return index < 5 || $scope.expanded;
+                };
+
+                $scope.searchValue = function(search) {
+                    // Used to filter the items in the level, based on the search box
+                    if (!$scope.showSearchbox) { return function () { return true; }; }
+                    if (!search) { return function() { return true; }; }
+                    search = $filter('normalize')(search).toLowerCase();
+                    return function(searchedChoice) {
+                        var choiceName = $filter('normalize')(searchedChoice.name).toLowerCase();
+                        return choiceName.indexOf(search) > -1;
+                    };
+                };
+
+                $scope.onAscendingFilterToggle = function() {
+                    $scope.ascendingFilter = !$scope.ascendingFilter;
+                    if ($scope.ascendingFilter) {
+                        $scope.context.parameters['geonav-asc'] = true
+                    } else {
+                        delete $scope.context.parameters['geonav-asc'];
+                    }
+                };
+
+                var refreshChoices = function(skipLastLevel) {
+                    // If "skip last level", we'll add a * to the path so that we skip one level (e.g. "Skip EPCIs to Communes")
+                    GeographicReferenceService.getLabelPathFromUIDPath($scope.context.parameters['geonav']).then(
+                        function(labelPath) {
+                            var uidPath = $scope.context.parameters['geonav'];
+                            var labelPathTokens = labelPath.split('/');
+                            $scope.currentFilterLabel = decodeURIComponent(labelPathTokens.pop());
+                            if (uidPath === 'world') {
+                                $scope.parentFilterLabel = null;
+                            } else {
+                                var currentLevel = GeographicReferenceService.getLevelFromPath(uidPath);
+                                // Min and max level restrictions
+                                if (currentLevel && currentLevel.administrativeLevel <= $scope.minLevel) {
+                                    // We're at the highest level we can, we can't go above
+                                    $scope.parentFilterLabel = null;
+                                } else {
+                                    if (labelPath.split('/').length === 1) {
+                                        // We're at the top!
+                                        $scope.parentFilterLabel = translate('World');
+                                    } else {
+                                        $scope.parentFilterLabel = decodeURIComponent(labelPathTokens.pop());
+                                    }
+                                }
+                            }
+
+                            $scope.backToOriginalLevelLabel = null;
+                            if (skipLastLevel) {
+                                var originalLevel = GeographicReferenceService.getLevelFromPath(uidPath, 1)
+                                if (originalLevel) {
+                                    $scope.backToOriginalLevelLabel = originalLevel.label;
+                                }
+                            }
+
+                            // Is it the lowest level in the country?
+                            $scope.isMaxLevel = GeographicReferenceService.isMaxLevel(uidPath);
+                            // We allow ascending filter only if at least 2 level deep in a country
+                            $scope.showAscendingToggle = $scope.isMaxLevel && uidPath.split('/').length > 2;
+
+                            if (!$scope.isMaxLevel && (!currentLevel || (!$scope.maxLevel || (currentLevel.administrativeLevel < $scope.maxLevel)))) {
+                                if (skipLastLevel) {
+                                    labelPath += '/*';
+                                }
+
+                                var params = {
+                                    rows: 0,
+                                    geonav: '' // Make sure the previous choice doesn't apply in the navigation
+                                };
+                                if (labelPath) {
+                                    params['refine.explore.geographic_reference_path_labels'] = labelPath;
+                                } else {
+                                    params['facet'] = 'explore.geographic_reference_path_labels';
+                                }
+                                params['facetsort.explore.geographic_reference_path_labels'] = 'alphanum';
+                                ODSAPI.datasets.search($scope.context, params).success(function(data) {
+                                    if (!data.facet_groups || !data.facet_groups.length) {
+                                        // There is no facet group, which can happen if there are exactly 0 results
+                                        $scope.choices = [];
+                                        $scope.showSearchbox = false;
+                                        $scope.canBeSkipped = false;
+                                        $scope.backToOriginalLevelLabel = null;
+                                        return;
+                                    }
+
+                                    var current = data.facet_groups.filter(function (facetGroup) {
+                                        return facetGroup.name === 'explore.geographic_reference_path_labels';
+                                    })[0];
+
+                                    // Travel down the nodes until we reach the current situation.
+                                    if (labelPath) {
+                                        while (current.path !== labelPath) {
+                                            current = current.facets.filter(function (facet) {
+                                                // Two-part condition because a simple startswith without the / could confuse two places
+                                                // that start the same ("Boulogne" / "Boulogne-sur-Mer")
+                                                return labelPath.startsWith(facet.path + '/') || labelPath === facet.path;
+                                            })[0];
+                                        }
+                                    }
+
+                                    if (current.facets) {
+                                        $scope.choices = current.facets
+                                            .filter(function (facet) {
+                                                return facet.name !== '*';
+                                            })
+                                            .map(function (facet) {
+                                                facet.name = decodeURIComponent(facet.name);
+                                                return facet;
+                                            });
+                                        $scope.canBeSkipped = $scope.choices.length !== current.facets.length;
+                                        if ($scope.canBeSkipped) {
+                                            var skipToLevel = GeographicReferenceService.getLevelFromPath(uidPath, 2)
+                                            if (skipToLevel) {
+                                                $scope.skipToLevelLabel = skipToLevel.label;
+                                            }
+                                        }
+                                        $scope.showSearchbox = $scope.choices.length > 5;
+                                    } else {
+                                        $scope.choices = [];
+                                        $scope.showSearchbox = false;
+                                        $scope.canBeSkipped = false;
+                                        $scope.backToOriginalLevelLabel = null;
+                                    }
+                                });
+                            } else {
+                                $scope.choices = [];
+                                $scope.showSearchbox = false;
+                                $scope.canBeSkipped = false;
+                                $scope.backToOriginalLevelLabel = null;
+                            }
+                        }
+                    )
+                };
+
+                $scope.skipLevel = function() {
+                    refreshChoices(true);
+                };
+
+                $scope.unskipLevel = function() {
+                    // Get back to the original level without skipping it
+                    refreshChoices(false);
+                };
+
+                $scope.selectParent = function() {
+                    var parentPathTokens = $scope.context.parameters['geonav'].split('/');
+                    parentPathTokens.pop();
+                    $scope.context.parameters['geonav'] = parentPathTokens.join('/');
+                    if ($scope.ascendingFilter) {
+                        delete $scope.context.parameters['geonav-asc'];
+                    }
+                };
+
+                $scope.selectChoice = function(labelPath) {
+                    GeographicReferenceService.getUIDPathFromLabelPath(labelPath, $scope.context).then(function(uidPath) {
+                        $scope.context.parameters['geonav'] = uidPath;
+
+                        if ($scope.ascendingFilter && GeographicReferenceService.isMaxLevel(uidPath) && uidPath.split('/').length > 2) {
+                            // This is a level where ascending filter makes sense, we apply it to the effective filter
+                            $scope.context.parameters['geonav-asc'] = true;
+                        }
+                    });
+                };
+
+                $scope.isFilterEnabled = false;
+
+                var outsideParametersWatcher;
+
+                $scope.$watch("context.parameters.geonav", function(nv, ov) {
+                    if (!!nv) {
+                        $scope.isFilterEnabled = true;
+                        if ($scope.context.parameters['geonav-asc']) {
+                            $scope.ascendingFilter = true;
+                        }
+                        refreshChoices();
+                        if (nv) {
+                            $scope.displayShape(nv.split('/').pop());
+                        } else {
+                            $scope.displayShape(null);
+                        }
+
+                        outsideParametersWatcher = $scope.$watch("context.parameters", function(newValue, oldValue) {
+                            if (newValue === oldValue) {
+                                // Ignore first run during init
+                                return;
+                            }
+                            if (!newValue.geonav) {
+                                // This was triggered by the disabling of the filter, ignore
+                                return;
+                            }
+                            // Refresh the choices, keeping the "skip to" part if it was the case
+                            refreshChoices(Boolean($scope.backToOriginalLevelLabel));
+                        }, true);
+                    } else {
+                        $scope.isFilterEnabled = false;
+                        delete $scope.context.parameters['geonav-asc'];
+                        $scope.displayShape($scope.defaultFilter.split('/').pop());
+                        GeographicReferenceService.getLabelPathFromUIDPath($scope.defaultFilter || 'world').then(
+                            function(defaultLabelPath) {
+                                $scope.defaultFilterLabelPath = defaultLabelPath;
+                                $scope.defaultFilterLabel = decodeURIComponent(defaultLabelPath.split('/').pop());
+                            }
+                        );
+                        if (outsideParametersWatcher) {
+                            // Disable the big watcher on the context parameters
+                            outsideParametersWatcher();
+                        }
+                    }
+                });
+            }]
+        };
+    }]);
+}());
 ;(function () {
     'use strict';
     var mod = angular.module('ods-widgets');
@@ -20284,6 +21086,7 @@ mod.directive('infiniteScroll', [
                 '           </div>' +
                 '      </div>' +
                 '      <div ng-bind-html="htmlData"></div>' +
+                '      <div ng-bind-html="htmlError"></div>' +
                 '   </div>' +
                 '</div>',
             scope: {
@@ -20295,7 +21098,7 @@ mod.directive('infiniteScroll', [
                     scope.gistId = attrs.id;
                 }
                 var successTooltipMessage = '<i class="fa fa-check"></i> ' + translate('Copied');
-                scope.resetTooltipMessage = function() {
+                scope.resetTooltipMessage = function () {
                     scope.tooltipMessage = '<span style="text-align:center">' + translate('Copy to clipboard') + '</span>';
                 };
 
@@ -20303,24 +21106,31 @@ mod.directive('infiniteScroll', [
 
                 $http.jsonp(
                     'https://gist.github.com/' + scope.username + '/' + scope.gistId + '.json?callback=JSON_CALLBACK',
-                    {timeout: 1000}
-                ).then(function(result) {
-                    var data = result.data;
-                    jQuery(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
-                    var gistElement = jQuery(data.div);
+                    {timeout: 5000}
+                ).then(function (result) {
+                        var data = result.data;
+                        jQuery(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
+                        var gistElement = jQuery(data.div);
 
-                    scope.rawData = gistElement.find('.gist-data').text()
-                        .replace(/^[\s]*$\n/gm, '').replace(/^[ ]{8}/gm, '');
-                    scope.htmlData = gistElement.find('.gist-file').html();
-                    var textarea = element.find('textarea')[0];
-                    scope.copyToClipboard = function () {
-                        textarea.select();
-                        document.execCommand('copy');
-                        scope.tooltipMessage = successTooltipMessage;
-                        scope.$broadcast('refresh-tooltip');
-                        textarea.blur();
-                    };
-                });
+                        scope.rawData = gistElement.find('.gist-data').text()
+                            .replace(/^[\s]*$\n/gm, '').replace(/^[ ]{8}/gm, '');
+                        scope.htmlData = gistElement.find('.gist-file').html();
+                        var textarea = element.find('textarea')[0];
+                        scope.copyToClipboard = function () {
+                            textarea.select();
+                            document.execCommand('copy');
+                            scope.tooltipMessage = successTooltipMessage;
+                            scope.$broadcast('refresh-tooltip');
+                            textarea.blur();
+                        };
+                    },
+                    function (error) {
+                        scope.htmlError =
+                            "<div class=\"gist blob-code-inner ods-gist-error\">" +
+                                "<p translate>Impossible to load code resource</p>" +
+                                "<a target=\"_blank\" href=\"" + 'https://gist.github.com/' + scope.username + '/' + scope.gistId + "\" translate>Try directly on Github</a>" +
+                            "</div>";
+                    });
             }
         };
     }]);
@@ -20735,16 +21545,6 @@ mod.directive('infiniteScroll', [
                             pointFormat: serieTitle + ' <b>{point.low}</b> - <b>{point.high}</b>'
                         }
                     },
-                    boxplot: {
-                        tooltip: {
-                            pointFormat: serieTitle + '<br>' +
-                                            translate('Maximum:') + ' {point.high}<br>' +
-                                            translate('Upper quartile:') + ' {point.q3}<br>' +
-                                            translate('Median:') + ' {point.median}<br>' +
-                                            translate('Lower quartile:') + ' {point.q1}<br>' +
-                                            translate('Minimum:') + ' {point.low}<br>'
-                        }
-                    },
                     arearange: {
                         tooltip: {
                             pointFormat: serieTitle + ' <b>{point.low}</b> - <b>{point.high}</b>'
@@ -20863,16 +21663,20 @@ mod.directive('infiniteScroll', [
             }
 
             if (periodic === "month") {  // month of year
-                options.xAxis.labels.format = "{value: %B}";
+                if (precision === 'day') {
+                    options.xAxis.labels.format = "{value: %j}"; // day of year, yeah it's weird
+                } else {
+                    options.xAxis.labels.format = "{value: %B}"; // month of year
+                }
             } else if (periodic === "weekday") {  // day of week
                 options.xAxis.labels.format = "{value: %A}";
                 if (precision === "hour") {
-                    options.xAxis.labels.format = "{value: %A %Hh}";
+                    options.xAxis.labels.format = "{value: %a %H:00}";
                 }
             } else if (periodic === "day") {  // day of month
                 options.xAxis.labels.format = "{value: %d}";
             } else if (periodic === "hour") {
-                options.xAxis.labels.format = "{value: %H}";
+                options.xAxis.labels.format = "{value: %H:00}";
             }
 
             if (!precision) {
@@ -21015,6 +21819,10 @@ mod.directive('infiniteScroll', [
                 }
             }
 
+            if (serie.index) {
+                options.index = serie.index;
+            }
+
             if (serie.displayUnits && unit) {
                 options.tooltip.valueSuffix = ' ' + unit;
                 if (serie.displayValues && serie.type !== 'treemap') {
@@ -21048,7 +21856,7 @@ mod.directive('infiniteScroll', [
 
             function getTooltipFormatterFunction(functionName) {
                 var formatterFunction;
-                var template = translate('<span style="color: {color}">{name}</span>: <b style="display: inline-block">{value}</b>');
+                var template = '<div class="ods-highcharts__tooltip"><span style="color: {color}">{name}</span>&nbsp;<b style="display: inline-block">{value}</b></div>';
                 if (functionName === 'treemap') {
                     formatterFunction = function areaTooltip() {
                         var formattedValue = formatValue(this.value, decimals, serie.displayUnits ? unit : false);
@@ -21080,17 +21888,17 @@ mod.directive('infiniteScroll', [
                 } else if (functionName === 'boxplot') {
                     formatterFunction = function boxTooltip() {
                         var _format = function(value) {
-                            return '<span style="display:inline-block">' + formatValue(value, decimals, serie.displayUnits ? unit : false) + '</span>';
+                            return '<span>' + formatValue(value, decimals, serie.displayUnits ? unit : false) + '</span>';
                         };
+                        var points = [this.low, this.q1, this.median, this.q3, this.high];
+                        var value = '';
+                        for (var i = serie.charts.length - 1; i >= 0; i--) {
+                            value += ChartHelper.getYLabel(datasetid, serie.charts[i]) + ' ' + _format(points[i]) + '<br>';
+                        }
                         return format_string(template, {
                             name: this.series.name,
                             color: this.series.color,
-                            value: '' +
-                            '<br>' + translate('Maximum:') + ' ' + _format(this.high) +
-                            '<br>' + translate('Upper quartile:') + ' ' + _format(this.q3) +
-                            '<br>' + translate('Median:') + ' ' + _format(this.median) +
-                            '<br>' + translate('Lower quartile:') + ' ' + _format(this.q1) +
-                            '<br>' + translate('Minimum:') + ' ' + _format(this.low)
+                            value: value,
                         });
                     };
                 } else {
@@ -21445,7 +22253,7 @@ mod.directive('infiniteScroll', [
                                 });
                                 if (ctxsWithTz.length > 0) {
                                     if (!query.config.options) {
-                                        query.options = {};
+                                        query.config.options = {};
                                     }
                                     query.config.options.timezone = ctxsWithTz[0].dataset.metas.timezone;
                                     if (!$scope.tzsForced[query.config.dataset]) {
@@ -21929,8 +22737,7 @@ mod.directive('infiniteScroll', [
                             options.time = options.time || {};
                             options.time.useUTC = shouldUseUtc(parameters);
 
-
-                            // render the charts
+                                // render the charts
                             if ($scope.chart && options.chart.renderTo) {
                                 $scope.chart.destroy();
                                 chartplaceholder = $element.find('.chartplaceholder');
@@ -21971,6 +22778,12 @@ mod.directive('infiniteScroll', [
             link: function(scope, element, attrs, ctrls) {
                 var chartController = ctrls[0];
                 ModuleLazyLoader('highcharts').then(function() {
+                    // https://api.highcharts.com/class-reference/Highcharts#.dateFormats
+                    Highcharts.dateFormats = Highcharts.extend(Highcharts.dateFormats, {
+                        'j': function(timestamp) {
+                            return moment.utc(timestamp).dayOfYear();
+                        }
+                    });
                     chartController.highchartsLoaded(Highcharts, element);
                     scope.$watch('parameters', function(nv, ov) {
                         chartController.update(nv);
@@ -22591,6 +23404,7 @@ mod.directive('infiniteScroll', [
          * @param {integer} [min=null] minimum value to be displayed on the Y axis. If not defined, it is computed automatically.
          * @param {integer} [max=null] maximum value to be displayed on the Y axis. If not defined, it is computed automatically.
          * @param {integer} [step=null] specify the step between each tick on the Y axis. If not defined, it is computed automatically.
+         * @param {integer} [index=null] force the display order of the serie. The higher is on top, the lower is below (starts from 1)
          * @param {boolean} [scientificDisplay=true] When set to false, force the full display of the numbers on the Y axis.
          * @param {boolean} [displayUnits] enable the display of the units defined for the field in the tooltip
          * @param {boolean} [displayValues] enable the display of each invidual values in stacks
@@ -22649,6 +23463,7 @@ mod.directive('infiniteScroll', [
                     func: attrs.functionY || undefined,
                     yAxis: attrs.expressionY || undefined,
                     color: attrs.color || undefined,
+                    index: parseInt(attrs.index) || undefined,
                     cumulative: !!attrs.cumulative || false,
                     yLabelOverride: angular.isDefined(attrs.labelY) ? attrs.labelY : undefined,
                     scale: attrs.logarithmic ? 'logarithmic' : '',
@@ -23151,6 +23966,185 @@ mod.directive('infiniteScroll', [
                     refresh();
                 });
             }]
+        };
+    }]);
+
+}());
+;(function () {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('odsLegend', ['translate', 'AnalysisHelper', '$filter', function (translate, AnalysisHelper, $filter) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsLegend
+         * @scope
+         * @restrict E
+         *
+         * @param {object} colorGradient object that provides colors, values and range of value. Also number of classes for steps display mode.
+         * @param {string} title Legend title
+         * @param {string} [subtitle='']  Legend sub-title
+         * @param {string} [noValueColor=undefined] Display another step or square with the provided default color, can be any HTML color code.
+         * @param {integer} [decimalPrecision=0] Set the decimal values precision
+         * @param {string} [display=linear] Display mode, can be 'steps' or 'linear'
+         *
+         * @description
+         * This widget displays a map legend computed with the color gradient structure from odsColorGradient widget.
+         * 'steps' display is a legend with different steps, based on the range of values. Each step has it's own color and value range.
+         * 'linear' display is a single color gradient from the min to the max value.
+         *
+         * WARNING: 'steps' display mode is only possible if ods-color-gradient-nb-classes option has been provided on odsColorGradient widget !
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="legend.html">
+         *          <ods-dataset-context context="regions,population"
+         *                               regions-dataset="contours-geographiques-des-regions-2019-copy"
+         *                               regions-domain="public"
+         *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)',
+         *                                                   'disjunctive.region':true}"
+         *                               population-dataset="population-millesimee-communes-2016"
+         *                               population-parameters="{'disjunctive.nom_reg':true}"
+         *                               population-domain="public">
+         *
+         *              <div ods-color-gradient="colorgradient"
+         *                   ods-color-gradient-context="population"
+         *                   ods-color-gradient-x="nom_reg"
+         *                   ods-color-gradient-serie="SUM(population_totale)"
+         *                   ods-color-gradient-high="rgb(20, 33, 96)"
+         *                   ods-color-gradient-low="rgb(180, 197, 241)"
+         *                   ods-color-gradient-nb-classes="4">
+         *
+         *                  <ods-map>
+         *                      <ods-map-layer context="regions"
+         *                                     color-categories="colorgradient['colors']"
+         *                                     color-by-field="region"
+         *                                     color-categories-other="lightgrey"
+         *                                     display="categories"
+         *                                     shape-opacity="0.85"
+         *                                     title="Sum of cities population">
+         *                      </ods-map-layer>
+         *                  </ods-map>
+         *
+         *                  <ods-legend title="Population by region"
+         *                              color-gradient="colorgradient"
+         *                              display="steps"
+         *                              decimal-precision="0"
+         *                              subtitle="Cities population dataset - 2019"></ods-legend>
+         *                  <ods-legend title="A linear alternative"
+         *                              color-gradient="colorgradient"
+         *                              display="linear"
+         *                              no-value-color="lightgrey"
+         *                              subtitle="With default color"></ods-legend>
+         *              </div>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
+         */
+
+        var compare = function( a, b ) {
+            if ( a.start < b.start){
+                return -1;
+            }
+            if ( a.start > b.start ){
+                return 1;
+            }
+            return 0;
+        }
+
+        return {
+            restrict: 'E',
+            replace: true,
+            template:
+                '<div class="odswidget odswidget-legend">' +
+                '<div class="odswidget-legend__title" ng-bind="title" ng-if="title"></div>' +
+                '<div class="odswidget-legend__subtitle" ng-bind="subtitle" ng-if="subtitle"></div>' +
+                '<ul class="odswidget-legend__indexes odswidget-legend__steps_style"' +
+                '    ng-if="style == \'steps\' && indexes">' +
+                '   <li class="no-value" ng-hide="indexes" translate>No value available</li>' +
+                '   <li class="odswidget-legend__index" ' +
+                '       ng-repeat="i in (indexes | orderBy : \'value\')">' +
+                '       <div class="odswidget-legend__index-circle"' +
+                '            style="background-color: {{ i .color }}">' +
+                '       </div>' +
+                '       <div class="odswidget-legend__index-label" ng-if="i.start && i.end">' +
+                '           {{ i.start | number : decimalPrecision }} - {{ i.end | number : decimalPrecision }}' +
+                '       </div>' +
+                '       <div class="odswidget-legend__index-label" ng-if="i.text">' +
+                '           {{ i.text }}' +
+                '       </div>' +
+                '   </li>' +
+                '</ul>' +
+                '<div ng-if="style == \'linear\' && indexes">' +
+                '       <div class="odswidget-legend__inline_style">' +
+                '           <div class="odswidget-legend__inline_style__column"' +
+                '                ng-class="{\'odswidget-legend__inline_style__column__single-value\': indexes[0].color == indexes[1].color}"' +
+                '                style="{{ \'background: linear-gradient(\' + indexes[0].color + \', \' + indexes[1].color + \')\' }}">' +
+                '           </div>' +
+                '           <div class="odswidget-legend__inline_style__labels">' +
+                '               <div class="odswidget-legend__inline_style__first">{{ indexes[0].value | number : decimalPrecision }}</div>' +
+                '               <div class="odswidget-legend__inline_style__last"' +
+                '                    ng-if="indexes[0].value != indexes[1].value">{{ indexes[1].value | number : decimalPrecision }}</div>' +
+                '           </div>' +
+                '       </div>' +
+                '       <div class="odswidget-legend__inline_style odswidget-legend__inline_style__novalue" ng-if="indexes[2].color">' +
+                '           <div class="odswidget-legend__inline_style__novalue__color"' +
+                '                style="background-color: {{ indexes[2].color }}">' +
+                '           </div>' +
+                '           <div class="odswidget-legend__inline_style__novalue__label">' +
+                '                   {{ indexes[2].text }}' +
+                '           </div>' +
+                '       </div>' +
+                '</div>' +
+                '</div>' +
+                '</div>',
+            scope: {
+                title: '@',
+                subtitle: '@',
+                noValueColor: '@',
+                display: '@',
+                decimalPrecision: '@',
+                colorGradient: '='
+            },
+            link: function (scope) {
+                scope.decimalPrecision = scope.decimalPrecision || 0;
+
+                scope.$watch('colorGradient', function (nv, ov) {
+                    if (!nv.range.min) {
+                        return;
+                    }
+
+                    scope.indexes = [];
+                    scope.style = scope.display || 'linear';
+
+                    if (scope.style === 'steps') {
+                        if (typeof scope.colorGradient.range.classes === "undefined") {
+                            console.error('The classes must be defined in the color gradient structure to use display "steps".');
+                            return;
+                        }
+
+                        scope.colorGradient.range.classes.sort(compare).forEach(function (obj) {
+                            scope.indexes.push({
+                                'color': obj.color,
+                                'start': obj.start,
+                                'end': obj.end
+                            });
+                        })
+
+                        if (scope.noValueColor) {
+                            scope.indexes.push({'color': scope.noValueColor, 'text': translate('No value')});
+                        }
+                    } else {
+                        var mincolor = scope.colorGradient.range['low-color'];
+                        var maxcolor = scope.colorGradient.range['high-color'];
+
+                        scope.indexes.push({'color': mincolor, 'value': scope.colorGradient.range.min});
+                        scope.indexes.push({'color': maxcolor, 'value': scope.colorGradient.range.max});
+                        scope.indexes.push({'color': scope.noValueColor, 'text': translate('No value')});
+                    }
+                }, true);
+            }
         };
     }]);
 
@@ -25092,7 +26086,7 @@ mod.directive('infiniteScroll', [
             Documentation: https://community.algolia.com/places/rest.html
          */
         var options = {};
-        if (ODSWidgetsConfig.algoliaPlacesApplicationId) {
+        if (ODSWidgetsConfig.algoliaPlacesApplicationId && ODSWidgetsConfig.algoliaPlacesAPIKey) {
             options.headers = {
                 'X-Algolia-Application-Id': ODSWidgetsConfig.algoliaPlacesApplicationId,
                 'X-Algolia-API-Key': ODSWidgetsConfig.algoliaPlacesAPIKey
@@ -27565,6 +28559,8 @@ mod.directive('infiniteScroll', [
          * @scope
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
+         * @param {integer} [max=5] Amount of datasets to show in list
+         * @param {string} [orderBy=downloads] Order the list by most downloaded or popularity. Options: "downloads" or "popularity".
          * @description
          * This widget displays the top datasets of a catalog (default is the 5 top datasets), based on the number of downloads.
          *
@@ -27588,20 +28584,36 @@ mod.directive('infiniteScroll', [
                 '       <ods-theme-picto class="odswidget-most-popular-datasets__theme-picto" theme="{{dataset.metas.theme|firstValue}}"></ods-theme-picto>' +
                 '       <div class="odswidget-most-popular-datasets__dataset-details">' +
                 '           <div class="odswidget-most-popular-datasets__dataset-details-title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
-                '           <div class="odswidget-most-popular-datasets__dataset-details-count"><i class="fa fa-download" aria-hidden="true"></i> <span translate translate-n="dataset.extra_metas.explore.download_count" translate-plural="{{$count}} downloads">{{$count}} download</span></div>' +
+                '           <div ng-if="displayMode === \'download_count\' " class="odswidget-most-popular-datasets__dataset-details-count">' +
+                '               <i class="fa fa-download" aria-hidden="true"></i> <span translate translate-n="dataset.extra_metas.explore.download_count|number:0" translate-plural="{{$count}} downloads">{{$count}} download</span>' +
+                '           </div>' +
+                '           <div ng-if="displayMode === \'popularity_score\' " class="odswidget-most-popular-datasets__dataset-details-count">' +
+                '               <i class="fa fa-trophy" aria-hidden="true"></i> <span ods-tooltip="The popularity score is the result of a calculation that uses the number of downloads, reuses and API calls of a dataset. The higher the score is, the more the dataset is being used!" translate="ods-tooltip">{{ dataset.extra_metas.explore.popularity_score  | number:0}}</span>' +
+                '           </div>' +
                 '       </div>' +
                 '   </li>' +
                 '</ul>' +
                 '</div>',
             scope: {
                 context: '=',
-                max: '@'
+                max: '@',
+                orderBy: '@'
             },
             controller: ['$scope', function($scope) {
-                $scope.max = $scope.max || 5;
+                $scope.max = $scope.max || '5';
+
+                var displayMode = function() {
+                    if (['popularity'].indexOf($scope.orderBy) === 0) {
+                        return 'popularity_score';
+                    }
+                    return 'download_count';
+                };
+
+                $scope.displayMode = displayMode();
+
                 var search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
                 var refresh = function() {
-                    search($scope.context, {'rows': $scope.max, 'sort': 'explore.download_count', 'extrametas': true}).
+                    search($scope.context, {'rows': $scope.max, 'sort': 'explore.' + $scope.displayMode, 'extrametas': true}).
                         success(function(data) {
                             $scope.datasets = data.datasets;
                         });
@@ -28835,6 +29847,8 @@ mod.directive('infiniteScroll', [
          * @param {CatalogContext} [context=none] {@link ods-widgets.directive:odsCatalogContext Catalog Context} indicating the domain to redirect the user to show the search results.
          * If none, the search is done on the local domain (/explore/ of the current domain the user is).
          * @param {string} [autofocus] Add the autofocus attribute (no need for a value) to set the focus in the text search input
+         * @param {string} [formId=none] Configures the `id` attribute of the form generated internally by the widget, which can be used from other HTML elements (for example
+         * to submit the search from another button)
          *
          * @description
          * This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.
@@ -28845,7 +29859,7 @@ mod.directive('infiniteScroll', [
             replace: true,
             template: '' +
             '<div class="odswidget odswidget-searchbox">' +
-                '<form method="GET" action="{{ actionUrl }}" ng-show="actionUrl">' +
+                '<form method="GET" action="{{ actionUrl }}" ng-show="actionUrl" ng-attr-id="{{formId}}">' +
                     '<input class="odswidget-searchbox__box" name="q" type="text" placeholder="{{placeholder|translate}}">' +
                     '<input ng-if="sort" name="sort" value="{{ sort }}" type="hidden">' +
                 '</form>' +
@@ -28853,7 +29867,8 @@ mod.directive('infiniteScroll', [
             scope: {
                 placeholder: '@',
                 sort: '@',
-                context: '='
+                context: '=',
+                formId: '@?'
             },
             link: function (scope, element, attrs) {
                 if ('autofocus' in attrs) {

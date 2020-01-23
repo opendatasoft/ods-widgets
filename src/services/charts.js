@@ -717,7 +717,11 @@
                         var nameY = chart.yAxis || chart.expr;
                         var possibleYAxis = jQuery.grep(this.getAvailableY(datasetid), function(y){return y.name == nameY;});
                         if (possibleYAxis.length > 0 && chart.func !== "COUNT" && chart.func !== "CONSTANT" && chart.func !== "CUSTOM") {
-                            return funcLabel + ' ' + possibleYAxis[0].label;
+                            var label = funcLabel + ' ' + possibleYAxis[0].label;
+                            if (chart.func === "QUANTILES") {
+                                label = chart.subsets + ' ' + label;
+                            }
+                            return label;
                         } else {
                             return funcLabel;
                         }

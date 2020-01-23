@@ -8,14 +8,18 @@
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-most-popular-datasets
-       context="{CatalogContext}"&gt;
+       context="{CatalogContext}"
+       max="{integer}"
+       order-by="{string}"&gt;
 &lt;/ods-most-popular-datasets&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> to use</p>
-</div></td></tr></tbody></table></div>
+</div></td></tr><tr><td>max</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><p>Amount of datasets to show in list</p>
+</div> <p><em>(default: 5)</em></p></td></tr><tr><td>orderBy</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><p>Order the list by most downloaded or popularity. Options: &quot;downloads&quot; or &quot;popularity&quot;.</p>
+</div> <p><em>(default: downloads)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><h4 id="example_source">Source</h4>
 <div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-24" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>

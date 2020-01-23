@@ -53,16 +53,10 @@ L.ClusterMarker = L.FeatureGroup.extend({
         if (this._clusterShape) {
             // Handle the shape display on hovering
             this.on('mouseover', function(e) {
-                if (e.originalEvent.which === 0) {
-                    // Don't trigger this if there is a mouse button used (this is done to prevent triggering the style change
-                    // during a map move, which triggers a cascade of moveend events)
-                    e.target.setStyle(styles.highlight);
-                }
+                e.target.setStyle(styles.highlight);
             });
             this.on('mouseout', function(e) {
-                if (e.originalEvent.which === 0) {
-                    e.target.setStyle(styles['default']);
-                }
+                e.target.setStyle(styles['default']);
             });
         }
     },

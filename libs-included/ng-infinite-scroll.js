@@ -12,7 +12,7 @@ mod.directive('infiniteScroll', [
           var $scrollParent, checkWhenEnabled, elementTop, handler, scrollDistance, scrollEnabled, parentTop;
 
           $scrollParent = elem.parents().filter(function() {
-            return /(auto|scroll)/.test($.css(this, 'overflow') + $.css(this, 'overflow-y'));
+            return /(auto|scroll)/.test(jQuery.css(this, 'overflow') + jQuery.css(this, 'overflow-y'));
           }).eq(0);
 
           if ($scrollParent.length === 0) {

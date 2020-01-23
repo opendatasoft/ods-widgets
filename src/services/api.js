@@ -15,6 +15,10 @@
             url += path;
             params = ODS.URLUtils.cleanupAPIParams(params) || {};
 
+            if (context && context.type === 'catalog') {
+                params = ODS.URLUtils.computeCatalogFilterParams(params);
+            }
+
             if (context && context.dataset && context.dataset.metas && context.dataset.metas.timezone) {
                 params.timezone = context.dataset.metas.timezone;
             } else if (!params.timezone) {
@@ -49,7 +53,7 @@
                 }
                 options.headers['ODS-Widgets-Version'] = ODSWidgetsConfig.ODSWidgetsVersion;
             }
-            if (!context.domainUrl || Modernizr.cors) {
+            if (!context || !context.domainUrl || Modernizr.cors) {
                 return $http.
                     get(url, options).
                     error(function(data, status) {
@@ -174,6 +178,11 @@
             },
             'reuses': function(context, parameters, timeout) {
                 return request(context, '/api/reuses/', parameters, timeout);
+            },
+            'georeference': {
+                'uid': function(uid, timeout) {
+                    return request(null, '/api/georeference/v1/uid/'+uid+'/', {}, timeout);
+                }
             }
         };
     }]);

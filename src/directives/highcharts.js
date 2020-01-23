@@ -408,16 +408,6 @@
                             pointFormat: serieTitle + ' <b>{point.low}</b> - <b>{point.high}</b>'
                         }
                     },
-                    boxplot: {
-                        tooltip: {
-                            pointFormat: serieTitle + '<br>' +
-                                            translate('Maximum:') + ' {point.high}<br>' +
-                                            translate('Upper quartile:') + ' {point.q3}<br>' +
-                                            translate('Median:') + ' {point.median}<br>' +
-                                            translate('Lower quartile:') + ' {point.q1}<br>' +
-                                            translate('Minimum:') + ' {point.low}<br>'
-                        }
-                    },
                     arearange: {
                         tooltip: {
                             pointFormat: serieTitle + ' <b>{point.low}</b> - <b>{point.high}</b>'
@@ -536,16 +526,20 @@
             }
 
             if (periodic === "month") {  // month of year
-                options.xAxis.labels.format = "{value: %B}";
+                if (precision === 'day') {
+                    options.xAxis.labels.format = "{value: %j}"; // day of year, yeah it's weird
+                } else {
+                    options.xAxis.labels.format = "{value: %B}"; // month of year
+                }
             } else if (periodic === "weekday") {  // day of week
                 options.xAxis.labels.format = "{value: %A}";
                 if (precision === "hour") {
-                    options.xAxis.labels.format = "{value: %A %Hh}";
+                    options.xAxis.labels.format = "{value: %a %H:00}";
                 }
             } else if (periodic === "day") {  // day of month
                 options.xAxis.labels.format = "{value: %d}";
             } else if (periodic === "hour") {
-                options.xAxis.labels.format = "{value: %H}";
+                options.xAxis.labels.format = "{value: %H:00}";
             }
 
             if (!precision) {
@@ -688,6 +682,10 @@
                 }
             }
 
+            if (serie.index) {
+                options.index = serie.index;
+            }
+
             if (serie.displayUnits && unit) {
                 options.tooltip.valueSuffix = ' ' + unit;
                 if (serie.displayValues && serie.type !== 'treemap') {
@@ -721,7 +719,7 @@
 
             function getTooltipFormatterFunction(functionName) {
                 var formatterFunction;
-                var template = translate('<span style="color: {color}">{name}</span>: <b style="display: inline-block">{value}</b>');
+                var template = '<div class="ods-highcharts__tooltip"><span style="color: {color}">{name}</span>&nbsp;<b style="display: inline-block">{value}</b></div>';
                 if (functionName === 'treemap') {
                     formatterFunction = function areaTooltip() {
                         var formattedValue = formatValue(this.value, decimals, serie.displayUnits ? unit : false);
@@ -753,17 +751,17 @@
                 } else if (functionName === 'boxplot') {
                     formatterFunction = function boxTooltip() {
                         var _format = function(value) {
-                            return '<span style="display:inline-block">' + formatValue(value, decimals, serie.displayUnits ? unit : false) + '</span>';
+                            return '<span>' + formatValue(value, decimals, serie.displayUnits ? unit : false) + '</span>';
                         };
+                        var points = [this.low, this.q1, this.median, this.q3, this.high];
+                        var value = '';
+                        for (var i = serie.charts.length - 1; i >= 0; i--) {
+                            value += ChartHelper.getYLabel(datasetid, serie.charts[i]) + ' ' + _format(points[i]) + '<br>';
+                        }
                         return format_string(template, {
                             name: this.series.name,
                             color: this.series.color,
-                            value: '' +
-                            '<br>' + translate('Maximum:') + ' ' + _format(this.high) +
-                            '<br>' + translate('Upper quartile:') + ' ' + _format(this.q3) +
-                            '<br>' + translate('Median:') + ' ' + _format(this.median) +
-                            '<br>' + translate('Lower quartile:') + ' ' + _format(this.q1) +
-                            '<br>' + translate('Minimum:') + ' ' + _format(this.low)
+                            value: value,
                         });
                     };
                 } else {
@@ -1118,7 +1116,7 @@
                                 });
                                 if (ctxsWithTz.length > 0) {
                                     if (!query.config.options) {
-                                        query.options = {};
+                                        query.config.options = {};
                                     }
                                     query.config.options.timezone = ctxsWithTz[0].dataset.metas.timezone;
                                     if (!$scope.tzsForced[query.config.dataset]) {
@@ -1602,8 +1600,7 @@
                             options.time = options.time || {};
                             options.time.useUTC = shouldUseUtc(parameters);
 
-
-                            // render the charts
+                                // render the charts
                             if ($scope.chart && options.chart.renderTo) {
                                 $scope.chart.destroy();
                                 chartplaceholder = $element.find('.chartplaceholder');
@@ -1644,6 +1641,12 @@
             link: function(scope, element, attrs, ctrls) {
                 var chartController = ctrls[0];
                 ModuleLazyLoader('highcharts').then(function() {
+                    // https://api.highcharts.com/class-reference/Highcharts#.dateFormats
+                    Highcharts.dateFormats = Highcharts.extend(Highcharts.dateFormats, {
+                        'j': function(timestamp) {
+                            return moment.utc(timestamp).dayOfYear();
+                        }
+                    });
                     chartController.highchartsLoaded(Highcharts, element);
                     scope.$watch('parameters', function(nv, ov) {
                         chartController.update(nv);
@@ -2264,6 +2267,7 @@
          * @param {integer} [min=null] minimum value to be displayed on the Y axis. If not defined, it is computed automatically.
          * @param {integer} [max=null] maximum value to be displayed on the Y axis. If not defined, it is computed automatically.
          * @param {integer} [step=null] specify the step between each tick on the Y axis. If not defined, it is computed automatically.
+         * @param {integer} [index=null] force the display order of the serie. The higher is on top, the lower is below (starts from 1)
          * @param {boolean} [scientificDisplay=true] When set to false, force the full display of the numbers on the Y axis.
          * @param {boolean} [displayUnits] enable the display of the units defined for the field in the tooltip
          * @param {boolean} [displayValues] enable the display of each invidual values in stacks
@@ -2322,6 +2326,7 @@
                     func: attrs.functionY || undefined,
                     yAxis: attrs.expressionY || undefined,
                     color: attrs.color || undefined,
+                    index: parseInt(attrs.index) || undefined,
                     cumulative: !!attrs.cumulative || false,
                     yLabelOverride: angular.isDefined(attrs.labelY) ? attrs.labelY : undefined,
                     scale: attrs.logarithmic ? 'logarithmic' : '',

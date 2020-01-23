@@ -51,7 +51,7 @@
   background-color: white;
   color: #0086D6;
   border-radius: 4px;
-  padding: 8px;
+  padding: 12px;
   font-size: 0.833rem;
   line-height: 1.4;
 }
@@ -271,9 +271,6 @@ a:hover {
   padding: 0 13px;
   border-radius: 2px;
 }
-.form-search .search-query::-webkit-input-placeholder {
-  color: #898D92;
-}
 .form-search .search-query:-ms-input-placeholder {
   color: #898D92;
 }
@@ -331,7 +328,7 @@ a:hover {
 }
 @media all and (-ms-high-contrast: active), (-ms-high-contrast: none) {
   .content-nav-items {
-    margin: 4px 0 26px 0;
+    margin: 6px 0 26px 0;
   }
 }
 .nav-items {
@@ -437,7 +434,7 @@ a:hover {
    ========================================================================== */
 .breadcrumb {
   background-color: white;
-  padding: 4px 0;
+  padding: 6px 0;
   margin-bottom: 13px;
 }
 @media (min-width: 992px) {
@@ -588,7 +585,7 @@ pre.prettyprint {
   position: absolute;
   top: 0;
   left: 0;
-  padding: 2px 4px;
+  padding: 2px 6px;
   border-radius: 3px 0;
   font-size: 0.733rem;
   background-color: #EFB71B;

@@ -41,7 +41,7 @@
                                If that happens, only the values with the state "refined" should be kept. */
                             var isFacetDisjunctive = data.parameters.disjunctive && data.parameters.disjunctive[fieldName];
                             var isFacetRefined = data.parameters.refine && angular.isDefined(data.parameters.refine[fieldName]);
-                            var values = data.facet_groups[0]
+                            var values = data.facet_groups.filter(function(facetGroup) { return facetGroup.name === fieldName; })[0]
                                                 .facets
                                                 .filter(function (category) {
                                                     return !isFacetDisjunctive || !isFacetRefined || category.state === "refined";

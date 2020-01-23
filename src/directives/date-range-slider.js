@@ -23,66 +23,32 @@
          * @description
          * This widget displays a range slider to select the two bounds of a date range.
          *
-         *
-         *  @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
-         *              <ods-date-range-slider context="cibul"
-         *                               start-bound="'2018/01/01'"
-         *                               end-bound="'2019/12/31'"></ods-date-range-slider>
-         *              <ods-table context="cibul"></ods-table>
-         *          </ods-dataset-context>
-         *     </file>
-         * </example>
-         *
-         * @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *          <ods-dataset-context context="cibul" cibul-domain="public.opendatasoft.com" cibul-dataset="evenements-publics-cibul">
-         *              <ods-date-range-slider context="cibul"
-         *                               date-format="MM/YYYY"
-         *                               precision="month"
-         *                               initial-from="2018/01"
-         *                               initial-to="2019/12/31"
-         *                               start-bound="'2018/01/01'"
-         *                               end-bound="'2019/12/31'">
-         *              </ods-date-range-slider>
-         *              <ods-table context="cibul"></ods-table>
-         *          </ods-dataset-context>
-         *      </file>
-         * </example>
-         *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="ctx"
          *              ctx-dataset="evenements-publics-cibul@public"
          *              ctx-domain="public">
-         *              <div class="container">
-         *                  <div class="ods-box" ng-init="obj = {}">
-         *                      <ods-date-range-slider context="ctx"
-         *                          date-format="YYYY"
-         *                          precision="year"
-         *                          initial-from="2019/02/01"
-         *                          initial-to="2019/02/15"
-         *                          start-bound="'2000/01/01'"
-         *                          end-bound="'2020/03/30'"
-         *                          from="obj.from"
-         *                          to="obj.to">
-         *                      </ods-date-range-slider>
-         *                      <br/>
-         *                      <p>
-         *                          {{ obj.from }} -- {{ obj.to }}
-         *                      </p>
-         *                  </div>
+         *              <div class="ods-box" ng-init="obj = {}">
+         *                  <ods-date-range-slider context="ctx"
+         *                      date-format="YYYY"
+         *                      precision="year"
+         *                      initial-from="2019/02/01"
+         *                      initial-to="2019/02/15"
+         *                      start-bound="'2000/01/01'"
+         *                      end-bound="'2020/03/30'"
+         *                      from="obj.from"
+         *                      to="obj.to">
+         *                  </ods-date-range-slider>
+         *                  <br/>
+         *                  <p>
+         *                      {{ obj.from }} -- {{ obj.to }}
+         *                  </p>
          *              </div>
-         *              <div class="container-fluid">
-         *                  <ods-table context="ctx"></ods-table>
-         *              </div>
-         *         </ods-dataset-context>
+         *              <ods-table context="ctx"></ods-table>
+         *          </ods-dataset-context>
          *      </file>
-         * </example>
+         *  </example>
          *
          */
         var ionRangesliderOptions = {
@@ -91,15 +57,35 @@
             skin: "flat",
         };
 
-        var ODSDateFormat = 'YYYY-MM-DD';
+        var ODSDateFormats = {
+            year: 'YYYY',
+            month: 'YYYY-MM',
+            day: 'YYYY-MM-DD',
+        };
+
+        var forceDayStart = function (date) {
+            return date.startOf('day');
+        }
 
         var computeDate = function (value) {
+            var parsedDate;
             if (value === 'yesterday') {
-                return moment().subtract('days', 1);
+                return forceDayStart(moment.utc().subtract('days', 1));
             } else if (value === 'now') {
-                return moment();
+                return forceDayStart(moment.utc());
             } else if (angular.isString(value)) {
-                return moment(value);
+                // when parsing a date string that is not in ISO 8601, moment.js fallback to browser Date parsing implementation.
+                // YYYY format is not standard ISO format so we try this format explicitely before letting moment.js try other formats
+                parsedDate = moment.utc(value, ["YYYY"], true);
+                if (!parsedDate.isValid()) {
+                    // otherwise we let moment try by itself
+                    parsedDate = moment.utc(value);
+                }
+                return forceDayStart(parsedDate);
+            } else if (value instanceof Date) {
+                return forceDayStart(moment.utc(value));
+            } else if (value instanceof moment) {
+                return forceDayStart(value);
             } else {
                 return null;
             }
@@ -227,14 +213,14 @@
                     prettify: intToDate,
                     onStart: function (data) {
                         scope.$applyAsync(function () {
-                            scope.from = moment(scope.startBound).add(data.from, scope.precisionClean).format(ODSDateFormat);
-                            scope.to = moment(scope.startBound).add(data.to, scope.precisionClean).format(ODSDateFormat);
+                            scope.from = computeDate(scope.startBound).add(data.from, scope.precisionClean).format(ODSDateFormats[scope.precisionClean]);
+                            scope.to = computeDate(scope.startBound).add(data.to, scope.precisionClean).format(ODSDateFormats[scope.precisionClean]);
                         });
                     },
                     onFinish: function (data) {
                         scope.$applyAsync(function () {
-                            scope.from = moment(scope.startBound).add(data.from, scope.precisionClean).format(ODSDateFormat);
-                            scope.to = moment(scope.startBound).add(data.to, scope.precisionClean).format(ODSDateFormat);
+                            scope.from = computeDate(scope.startBound).add(data.from, scope.precisionClean).format(ODSDateFormats[scope.precisionClean]);
+                            scope.to = computeDate(scope.startBound).add(data.to, scope.precisionClean).format(ODSDateFormats[scope.precisionClean]);
                         });
                     }
                 }
@@ -275,7 +261,7 @@
                 };
 
                 var getDiffWithMin = function (date) {
-                    return moment(date).diff(computeDate(scope.startBound), scope.precisionClean);
+                    return computeDate(date).diff(computeDate(scope.startBound), scope.precisionClean);
                 };
 
                 if (!angular.isArray(scope.context)) {
