@@ -30,7 +30,9 @@
             if (context && context.source) {
                 params.source = context.source;
             }
-
+            if (ODSWidgetsConfig.language) {
+                params.lang = ODSWidgetsConfig.language;
+            }
             if (params.dataset) {
                 params.dataset = sourcedDatasetId(context, params.dataset);
             }

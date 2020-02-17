@@ -286,6 +286,26 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsGetElementLayout",
+      "shortName": "odsGetElementLayout",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Get the height and width of the element where odsGetElementLayout is set. The variable is an object that contains 2 keys : &#39;height&#39; and &#39;width&#39;",
+      "keywords": "api directive element height html layout module object ods-get-element-layout ods-widgets odsgetelementlayout px set variable width",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsGetWindowLayout",
+      "shortName": "odsGetWindowLayout",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Get the height and width of the window. The variable is an object that contains 2 keys : &#39;height&#39; and &#39;width&#39;",
+      "keywords": "api directive height html module mylayout object ods-get-window-layout ods-widgets px variable width window",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsGist",
       "shortName": "odsGist",
       "type": "directive",

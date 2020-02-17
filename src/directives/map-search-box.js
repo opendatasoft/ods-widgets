@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsMapSearchBox', ['$timeout', 'AlgoliaPlaces', 'MapHelper', 'PictoHelper', 'SVGInliner', function ($timeout, AlgoliaPlaces, MapHelper, PictoHelper, SVGInliner) {
+    mod.directive('odsMapSearchBox', ['$timeout', 'Geocoder', 'MapHelper', 'PictoHelper', 'SVGInliner', 'ODSWidgetsConfig', function ($timeout, Geocoder, MapHelper, PictoHelper, SVGInliner, ODSWidgetsConfig) {
         return {
             restrict: 'E',
             template: '' +
@@ -15,6 +15,7 @@
             '              class="odswidget-map-search-box__box"' +
             '              ng-class="{\'odswidget-map-search-box__box--datasearch\': dataSearchActive}"' +
             '              ng-model="userQuery" ' +
+            '              ng-model-options="{debounce: {\'default\': 200}}"' +
             '              ng-change="runQuery(userQuery)" ' +
             '              ng-keydown="handleKeyDown($event)"' +
             '              ng-focus="expandSearchBox()" >' +
@@ -50,8 +51,8 @@
             '           ng-click="moveToSuggestion(suggestion, $index + 1)"' +
             '           ng-class="[\'odswidget-map-search-box__suggestion\', {\'odswidget-map-search-box__suggestion--selected\': selectedIndex === $index + 1}]">' +
             '           <i ng-class="[\'odswidget-map-search-box__suggestion-icon\', getSuggestionIcon(suggestion)]"></i>' +
-            '           <span class="odswidget-map-search-box__suggestion-name" ng-bind-html="suggestion._highlightResult.locale_names[0].value"></span>' +
-            '           <span class="odswidget-map-search-box__suggestion-localization" ng-bind-html="getLocalization(suggestion)"></span>' +
+            '           <span class="odswidget-map-search-box__suggestion-name" ng-bind-html="suggestion.highlightedName"></span>' +
+            '           <span class="odswidget-map-search-box__suggestion-localization" ng-bind-html="suggestion.parents"></span>' +
             '       </li>' +
             '   </ul>' +
             '   <div class="odswidget-map-search-box__data-search" ng-if="dataSearchActive">' +
@@ -112,13 +113,21 @@
                 scope.suggestions = [];
                 scope.selectedIndex = 0;
                 scope.expanded = false;
+
                 scope.runQuery = function(userQuery) {
                     scope.removeSearchMarkers();
+
+                    if (!userQuery) {
+                        scope.selectedIndex = 0;
+                        scope.suggestions = [];
+                        return;
+                    }
+
                     var loc = MapHelper.getLocationStructure(mapCtrl.getCurrentPosition());
-                    AlgoliaPlaces(userQuery, loc.center.join(',')).then(
+                    Geocoder(userQuery, loc.center).then(
                         function success(response) {
                             scope.selectedIndex = 0;
-                            scope.suggestions = response.data.hits;
+                            scope.suggestions = response;
                         },
                         function error(response) {
 
@@ -182,19 +191,22 @@
                     if (angular.isDefined(index)) {
                         scope.selectedIndex = index;
                     }
-                    var zoom;
-                    if (suggestion.is_city) {
-                        zoom = 14;
-                    } else if (suggestion.is_country) {
-                        zoom = 5;
-                    } else if (suggestion.is_highway) {
-                        zoom = 18;
+                    if (suggestion.bbox) {
+                        mapCtrl.fitMapToBoundingBox(suggestion.bbox);
                     } else {
-                        zoom = 21;
+                        var zoom;
+                        if (suggestion.type === "city") {
+                            zoom = 14;
+                        } else if (suggestion.type === "country") {
+                            zoom = 5;
+                        } else if (suggestion.type === "street") {
+                            zoom = 18;
+                        } else {
+                            zoom = 21;
+                        }
+                        mapCtrl.moveMap(suggestion.location, zoom);
                     }
-
-                    scope.addSearchMarker(suggestion._geoloc);
-                    mapCtrl.moveMap(suggestion._geoloc, zoom);
+                    scope.addSearchMarker(suggestion.location);
                     scope.collapseSearchBox();
                     scope.resetSearch();
                 };
@@ -351,28 +363,13 @@
                 };
 
                 $scope.getSuggestionIcon = function(suggestion) {
-                    if (suggestion._tags.indexOf('railway') >= 0) {
+                    if (suggestion.type === 'railway') {
                         return 'fa fa-train';
-                    } else if (suggestion._tags.indexOf('aeroway') >= 0) {
+                    } else if (suggestion.type === 'aeroway') {
                         return 'fa fa-plane';
                     } else {
                         return 'fa fa-map-marker';
                     }
-                };
-
-                $scope.getLocalization = function(suggestion) {
-                    var localization = '';
-
-                    ['city', 'administrative', 'country'].forEach(function(prop) {
-                        if (angular.isDefined(suggestion[prop])) {
-                            if (localization.length > 0) {
-                                localization += ', ';
-                            }
-                            localization += suggestion[prop];
-                        }
-                    });
-
-                    return localization;
                 };
 
                 $scope.getResultTitle = function(dataset, record) {
@@ -431,31 +428,4 @@
             }]
         };
     }]);
-
-    mod.service('AlgoliaPlaces', ['$http', 'ODSWidgetsConfig', function($http, ODSWidgetsConfig) {
-        /*
-            Documentation: https://community.algolia.com/places/rest.html
-         */
-        var options = {};
-        if (ODSWidgetsConfig.algoliaPlacesApplicationId && ODSWidgetsConfig.algoliaPlacesAPIKey) {
-            options.headers = {
-                'X-Algolia-Application-Id': ODSWidgetsConfig.algoliaPlacesApplicationId,
-                'X-Algolia-API-Key': ODSWidgetsConfig.algoliaPlacesAPIKey
-            };
-        }
-        return function(query, aroundLatLng) {
-            var queryOptions = angular.extend({}, options);
-            queryOptions.params = {
-                'query': query,
-                'aroundLatLngViaIP': false,
-                'language': ODSWidgetsConfig.language || 'en',
-                'hitsPerPage': 5
-            };
-            if (aroundLatLng) {
-                queryOptions.params.aroundLatLng = aroundLatLng;
-            }
-            return $http.get('https://places-dsn.algolia.net/1/places/query', queryOptions);
-        };
-    }]);
-
 }());

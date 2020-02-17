@@ -794,12 +794,12 @@
                             }
                         } else {
                             if ('day' in object) {
-                                datePattern += ' ' + patterns['D'];
+                                datePattern += patterns['D'] + ' ';
                             }
                             if ('month' in object) {
-                                datePattern += ' ' + patterns['MMMM'];
+                                datePattern += patterns['MMMM'] + ' ';
                             }
-                            datePattern += ' ' + patterns['YYYY'];
+                            datePattern += patterns['YYYY'];
 
                             if ('hour' in object) {
                                 if ('minute' in object) {

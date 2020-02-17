@@ -339,18 +339,22 @@
                             $scope.displayShape(null);
                         }
 
-                        outsideParametersWatcher = $scope.$watch("context.parameters", function(newValue, oldValue) {
-                            if (newValue === oldValue) {
-                                // Ignore first run during init
-                                return;
-                            }
-                            if (!newValue.geonav) {
-                                // This was triggered by the disabling of the filter, ignore
-                                return;
-                            }
-                            // Refresh the choices, keeping the "skip to" part if it was the case
-                            refreshChoices(Boolean($scope.backToOriginalLevelLabel));
-                        }, true);
+                        if (!outsideParametersWatcher) {
+                            outsideParametersWatcher = $scope.$watch(function() {
+                                // We only want to watch non-geonav params, the geonav parameters are handled separately
+                                var paramsCopy = angular.copy($scope.context.parameters);
+                                delete paramsCopy.geonav;
+                                delete paramsCopy['geonav-asc'];
+                                return paramsCopy;
+                            }, function (newValue, oldValue) {
+                                if (newValue === oldValue) {
+                                    // Ignore first run during init
+                                    return;
+                                }
+                                // Refresh the choices, keeping the "skip to" part if it was the case
+                                refreshChoices(Boolean($scope.backToOriginalLevelLabel));
+                            }, true);
+                        }
                     } else {
                         $scope.isFilterEnabled = false;
                         delete $scope.context.parameters['geonav-asc'];
@@ -364,6 +368,7 @@
                         if (outsideParametersWatcher) {
                             // Disable the big watcher on the context parameters
                             outsideParametersWatcher();
+                            outsideParametersWatcher = null;
                         }
                     }
                 });

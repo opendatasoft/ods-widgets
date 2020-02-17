@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.4.2 - 2020-02-17
+### Fixed
+- `odsCrossTable`: Fixed an issue with the width of each cells after applying a filter on the data
+- `odsGeoNavigation`: Fixed multiple similar API calls when using another filter on the same context
+- `odsMap`: Support Jawg as a provider for the geocoding search on the map itself (requires `jawgGeocodingAPIKey` in
+  your `ODSWidgetsConfig`), default is Mapbox as previously
+
 ## 1.4.1 - 2020-01-23
 
 ### Added

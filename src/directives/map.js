@@ -1312,6 +1312,11 @@
                     $scope.map.fitBounds(layer.getBounds());
                 };
 
+                this.fitMapToBoundingBox = function(bbox) {
+                    // Bbox should be as [ [lat, lng], [lat, lng] ]
+                    $scope.map.fitBounds(bbox);
+                };
+
                 this.resetMapDataFilter = function() {
                     var contexts = MapHelper.MapConfiguration.getContextList($scope.mapConfig);
                     contexts.forEach(function(ctx) {

@@ -662,6 +662,8 @@
                             // synchronise frozen cells width
 
                             var synchronizeWidth = function ($bodyCell, $headerCellContent) {
+                                // Make sure the width is auto, before we measure the natural size
+                                $headerCellContent.css("width", "");
                                 var width = Math.max($headerCellContent.outerWidth(), $bodyCell.outerWidth());
                                 $headerCellContent.css({width: width});
                                 $bodyCell.find('.ods-cross-table__cell-content').css({width: width});

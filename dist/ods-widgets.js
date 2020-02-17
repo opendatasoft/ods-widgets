@@ -8753,7 +8753,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by Opendatasoft
     //  License: MIT
-    var version = '1.4.1';
+    var version = '1.4.2';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -8942,7 +8942,9 @@ mod.directive('infiniteScroll', [
             if (context && context.source) {
                 params.source = context.source;
             }
-
+            if (ODSWidgetsConfig.language) {
+                params.lang = ODSWidgetsConfig.language;
+            }
             if (params.dataset) {
                 params.dataset = sourcedDatasetId(context, params.dataset);
             }
@@ -10265,6 +10267,265 @@ mod.directive('infiniteScroll', [
         };
     }]);
 }());;(function () {
+    'use strict';
+    var mod = angular.module('ods-widgets');
+
+    mod.factory('Geocoder', ['ODSWidgetsConfig', 'AlgoliaPlaces', 'JawgGeocoder', function(ODSWidgetsConfig, AlgoliaPlaces, JawgGeocoder) {
+        /*
+        Returns the geocoding service deopending on ODSWidgetsConfig's `geocodingProvider` setting
+         */
+        if (ODSWidgetsConfig.geocodingProvider === 'jawg') {
+            return JawgGeocoder;
+        } else {
+            return AlgoliaPlaces;
+        }
+    }]);
+
+    /*
+    Calls to the following services should return an array of:
+        {
+            "location": {
+                "lat": 12,
+                "lng": 34
+            },
+            "bbox": [[lat1, lng1], [lat2, lng2]], // Optional
+            "name": "Paris",
+            "highlightedName": "<em>Par</em>is"
+            "parents": "Ile-de-France, France"
+            "type": "country"|"region"|"city"|"street"|"address"|"poi"|"railway"|"aeroway"
+     */
+
+    mod.service('AlgoliaPlaces', ['$http', 'ODSWidgetsConfig', '$q',  function($http, ODSWidgetsConfig, $q) {
+        /*
+            Documentation: https://community.algolia.com/places/rest.html
+         */
+        var computeParents = function(algoliaSuggestion) {
+            var parents = '';
+
+            ['city', 'administrative', 'country'].forEach(function(prop) {
+                if (angular.isDefined(algoliaSuggestion[prop])) {
+                    if (parents.length > 0) {
+                        parents += ', ';
+                    }
+                    parents += algoliaSuggestion[prop];
+                }
+            });
+
+            return parents;
+        };
+        var computeType = function(algoliaSuggestion) {
+            // Note: Algolia doesn't contain regions
+            if (algoliaSuggestion._tags.indexOf("aeroway") >= 0) {
+                return "aeroway";
+            } else if (algoliaSuggestion._tags.indexOf("railway") >= 0) {
+                return "railway";
+            } else if (algoliaSuggestion.is_country) {
+                return "country";
+            } else if (algoliaSuggestion.is_city) {
+                return "city";
+            } else if (algoliaSuggestion.is_highway) {
+                return "street";
+            } else {
+                return "address"; // Can't be more precise than that :/
+            }
+        };
+
+        var options = {};
+        if (ODSWidgetsConfig.algoliaPlacesApplicationId && ODSWidgetsConfig.algoliaPlacesAPIKey) {
+            options.headers = {
+                'X-Algolia-Application-Id': ODSWidgetsConfig.algoliaPlacesApplicationId,
+                'X-Algolia-API-Key': ODSWidgetsConfig.algoliaPlacesAPIKey
+            };
+        }
+
+        var currentRequest = null;
+        return function(query, aroundLatLng) {
+            var deferred = $q.defer();
+            var queryOptions = angular.extend({}, options);
+
+            if (currentRequest) {
+                currentRequest.resolve();
+            }
+            currentRequest = $q.defer();
+            queryOptions.timeout = currentRequest.promise;
+            queryOptions.params = {
+                'query': query,
+                'aroundLatLngViaIP': false,
+                'language': ODSWidgetsConfig.language || 'en',
+                'hitsPerPage': 5
+            };
+            if (aroundLatLng) {
+                queryOptions.params.aroundLatLng = aroundLatLng.join(',');
+            }
+
+            $http.get('https://places-dsn.algolia.net/1/places/query', queryOptions).success(function(result) {
+                var suggestions = [];
+                angular.forEach(result.hits, function(suggestion) {
+                    suggestions.push({
+                        location: suggestion._geoloc,
+                        name: suggestion.locale_names[0],
+                        highlightedName: suggestion._highlightResult.locale_names[0].value,
+                        parents: computeParents(suggestion),
+                        type: computeType(suggestion)
+                    })
+                });
+                deferred.resolve(suggestions);
+            }).error(function() {
+                deferred.reject();
+            });
+
+            return deferred.promise;
+        };
+    }]);
+
+    mod.service('JawgGeocoder', ['$http', 'ODSWidgetsConfig', '$q', function($http, ODSWidgetsConfig, $q) {
+        // https://www.jawg.io/docs/apidocs/places/autocomplete/#layers
+        // Regarding configuration: https://app.clubhouse.io/opendatasoft/story/17461/experiment-alternative-geocoding-api-as-a-backend-for-geosearch#activity-19300
+        var includedLayers = [
+            'address',
+            // 'venue',
+            'street',
+            // 'neighbourhood',
+            'locality',
+            // 'borough',
+            'localadmin',
+            'county',
+            // 'macrocounty',
+            'region',
+            'macroregion',
+            'country',
+            // 'coarse',
+            'postalcode'
+        ];
+
+        // https://github.com/pelias/openstreetmap/blob/master/config/category_map.js
+        // The categories parameter lets you select which types of OSM POIs are included in the data.
+        // Additionally, it adds a "category" property on results that help us determine their type.
+        // var includedCategories = [
+        //     'transport',
+        //     // 'recreation',
+        //     // 'religion',
+        //     // 'education',
+        //     // 'entertainment',
+        //     // 'nightlife',
+        //     // 'food',
+        //     'government',
+        //     'professional',
+        //     // 'finance',
+        //     // 'health',
+        //     // 'retail',
+        //     // 'accommodation',
+        //     // 'industry',
+        //     // 'recreation',
+        //     'natural',
+        // ];
+
+        var computeHighlight = function(query, result) {
+            // Best-effort client-side highlighting
+            // Try to account for spaces, quotes... that may match (e.g. "Saint-Nazaire" / "Saint Nazaire")
+            var whitespace = new RegExp(/\W/);
+            query = query.replace(whitespace, "\\W");
+            var re = new RegExp(query, 'i');
+            return result.replace(re, '<em>$&</em>');
+        };
+
+        var computeParents = function(jawgSuggestion) {
+            var parents = '';
+            var previousParent = null;
+
+            ['locality', 'region', 'country'].forEach(function(prop) {
+                var existingProp = jawgSuggestion.properties[prop];
+                if (angular.isDefined(existingProp) && existingProp !== jawgSuggestion.properties.name) {
+                    if (previousParent !== existingProp) {
+                        if (parents.length > 0) {
+                            parents += ', ';
+                        }
+                        parents += jawgSuggestion.properties[prop];
+                        previousParent = existingProp;
+                    }
+                }
+            });
+
+            return parents;
+        };
+
+        var computeType = function(jawgSuggestion) {
+            // Aeroway, Railway are unsupported
+            if (jawgSuggestion.properties.category && jawgSuggestion.properties.category.indexOf('transport:air') >= 0) {
+                return 'aeroway';
+            } else if (jawgSuggestion.properties.category
+                && (jawgSuggestion.properties.category.indexOf('transport:public') >= 0
+                || jawgSuggestion.properties.category.indexOf('transport:rail') >= 0)) {
+                // Somehow, parisian metro isn't rail
+                return 'railway';
+            } else if (jawgSuggestion.properties.layer === 'venue') {
+                return 'poi';
+            } else if (jawgSuggestion.properties.layer === 'country') {
+                return 'country';
+            } else if (jawgSuggestion.properties.layer === 'locality') {
+                return 'city';
+            } else if (jawgSuggestion.properties.layer === 'street') {
+                return 'street';
+            } else if (jawgSuggestion.properties.layer === 'region' || jawgSuggestion.properties.layer === 'macroregion') {
+                return 'region';
+            } else {
+                return 'address';
+            }
+        };
+
+        var currentRequest = null;
+
+        return function(query, aroundLatLng) {
+            var deferred = $q.defer();
+
+            if (currentRequest) {
+                currentRequest.resolve();
+            }
+            currentRequest = $q.defer();
+            var queryOptions = {
+                'params': {
+                    'focus.point.lat': aroundLatLng[0],
+                    'focus.point.lon': aroundLatLng[1],
+                    'layers': includedLayers.join(','),
+                    // 'categories': includedCategories.join(','),
+                    'text': query,
+                    'access-token': ODSWidgetsConfig.jawgGeocodingAPIKey,
+                    'size': 5
+                },
+                'timeout': currentRequest.promise
+            };
+
+            $http.get('https://api.jawg.io/places/v1/autocomplete', queryOptions).success(function(result) {
+                var suggestions = [];
+                angular.forEach(result.features, function(suggestion) {
+                    var normalizedSuggestion = {
+                        location: {
+                            lat: suggestion.geometry.coordinates[1],
+                            lng: suggestion.geometry.coordinates[0]
+                        },
+                        name: suggestion.name,
+                        highlightedName: computeHighlight(query, suggestion.properties.name), // The API doesn't provide highlight
+                        parents: computeParents(suggestion),
+                        type: computeType(suggestion)
+                    };
+
+                    if (suggestion.bbox) {
+                        normalizedSuggestion.bbox = [
+                            [suggestion.bbox[1], suggestion.bbox[0]],
+                            [suggestion.bbox[3], suggestion.bbox[2]],
+                        ];
+                    }
+                    suggestions.push(normalizedSuggestion);
+                });
+                deferred.resolve(suggestions);
+            }).error(function() {
+                deferred.reject();
+            });
+            return deferred.promise;
+        }
+    }]);
+}());
+;(function () {
     'use strict';
     var mod = angular.module('ods-widgets');
 
@@ -15344,12 +15605,12 @@ mod.directive('infiniteScroll', [
                             }
                         } else {
                             if ('day' in object) {
-                                datePattern += ' ' + patterns['D'];
+                                datePattern += patterns['D'] + ' ';
                             }
                             if ('month' in object) {
-                                datePattern += ' ' + patterns['MMMM'];
+                                datePattern += patterns['MMMM'] + ' ';
                             }
-                            datePattern += ' ' + patterns['YYYY'];
+                            datePattern += patterns['YYYY'];
 
                             if ('hour' in object) {
                                 if ('minute' in object) {
@@ -17629,6 +17890,8 @@ mod.directive('infiniteScroll', [
                             // synchronise frozen cells width
 
                             var synchronizeWidth = function ($bodyCell, $headerCellContent) {
+                                // Make sure the width is auto, before we measure the natural size
+                                $headerCellContent.css("width", "");
                                 var width = Math.max($headerCellContent.outerWidth(), $bodyCell.outerWidth());
                                 $headerCellContent.css({width: width});
                                 $bodyCell.find('.ods-cross-table__cell-content').css({width: width});
@@ -20711,18 +20974,22 @@ mod.directive('infiniteScroll', [
                             $scope.displayShape(null);
                         }
 
-                        outsideParametersWatcher = $scope.$watch("context.parameters", function(newValue, oldValue) {
-                            if (newValue === oldValue) {
-                                // Ignore first run during init
-                                return;
-                            }
-                            if (!newValue.geonav) {
-                                // This was triggered by the disabling of the filter, ignore
-                                return;
-                            }
-                            // Refresh the choices, keeping the "skip to" part if it was the case
-                            refreshChoices(Boolean($scope.backToOriginalLevelLabel));
-                        }, true);
+                        if (!outsideParametersWatcher) {
+                            outsideParametersWatcher = $scope.$watch(function() {
+                                // We only want to watch non-geonav params, the geonav parameters are handled separately
+                                var paramsCopy = angular.copy($scope.context.parameters);
+                                delete paramsCopy.geonav;
+                                delete paramsCopy['geonav-asc'];
+                                return paramsCopy;
+                            }, function (newValue, oldValue) {
+                                if (newValue === oldValue) {
+                                    // Ignore first run during init
+                                    return;
+                                }
+                                // Refresh the choices, keeping the "skip to" part if it was the case
+                                refreshChoices(Boolean($scope.backToOriginalLevelLabel));
+                            }, true);
+                        }
                     } else {
                         $scope.isFilterEnabled = false;
                         delete $scope.context.parameters['geonav-asc'];
@@ -20736,6 +21003,7 @@ mod.directive('infiniteScroll', [
                         if (outsideParametersWatcher) {
                             // Disable the big watcher on the context parameters
                             outsideParametersWatcher();
+                            outsideParametersWatcher = null;
                         }
                     }
                 });
@@ -21043,6 +21311,87 @@ mod.directive('infiniteScroll', [
             };
         }]);
 }());
+;(function () {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('odsGetElementLayout', ['$timeout', function ($timeout) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsGetElementLayout
+         * @scope
+         * @restrict A
+         * @description
+         * Get the height and width of the element where odsGetElementLayout is set. The variable is an object that contains 2 keys : 'height' and 'width'
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <div ods-get-element-layout="layout">
+         *              {{ layout.height }} px
+         *          </div>
+         *      </file>
+         *  </example>
+         */
+
+        return {
+            restrict: 'A',
+            controller: function ($scope, $element, $attrs) {
+                var output = $attrs.odsGetElementLayout;
+                var timeout;
+                if (angular.isDefined(output)) {
+                    $scope[output] = { 'height' : $element[0].offsetHeight, 'width' : $element[0].offsetWidth };
+
+                    jQuery(window).on('resize', function () {
+                        $timeout.cancel(timeout);
+                        timeout = $timeout(function () {
+                            $scope[output] = { 'height' : $element[0].offsetHeight, 'width' : $element[0].offsetWidth };
+                        }, 100);
+                    });
+                }
+            }
+        };
+    }]);
+
+    mod.directive('odsGetWindowLayout', ['$window', '$timeout', function ($window, $timeout) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsGetWindowLayout
+         * @scope
+         * @restrict A
+         * @description
+         * Get the height and width of the window. The variable is an object that contains 2 keys : 'height' and 'width'
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="index.html">
+         *          <div ods-get-window-Layout="mylayout">
+         *              {{ mylayout.width }} px
+         *          </div>
+         *      </file>
+         *  </example>
+         */
+
+        return {
+            restrict: 'A',
+            controller: function ($scope, $attrs) {
+                var output = $attrs.odsGetWindowLayout;
+                var timeout;
+                if (angular.isDefined(output)) {
+                    $scope[output] = { 'height': $window.innerHeight, 'width': $window.innerWidth };
+
+                    jQuery(window).on('resize', function () {
+                        $timeout.cancel(timeout);
+                        timeout = $timeout(function () {
+                            $scope[output] = { 'height': $window.innerHeight, 'width': $window.innerWidth };
+                        }, 100);
+                    });
+                }
+            }
+        };
+    }]);
+})();
 ;(function () {
     'use strict';
 
@@ -25652,7 +26001,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsMapSearchBox', ['$timeout', 'AlgoliaPlaces', 'MapHelper', 'PictoHelper', 'SVGInliner', function ($timeout, AlgoliaPlaces, MapHelper, PictoHelper, SVGInliner) {
+    mod.directive('odsMapSearchBox', ['$timeout', 'Geocoder', 'MapHelper', 'PictoHelper', 'SVGInliner', 'ODSWidgetsConfig', function ($timeout, Geocoder, MapHelper, PictoHelper, SVGInliner, ODSWidgetsConfig) {
         return {
             restrict: 'E',
             template: '' +
@@ -25664,6 +26013,7 @@ mod.directive('infiniteScroll', [
             '              class="odswidget-map-search-box__box"' +
             '              ng-class="{\'odswidget-map-search-box__box--datasearch\': dataSearchActive}"' +
             '              ng-model="userQuery" ' +
+            '              ng-model-options="{debounce: {\'default\': 200}}"' +
             '              ng-change="runQuery(userQuery)" ' +
             '              ng-keydown="handleKeyDown($event)"' +
             '              ng-focus="expandSearchBox()" >' +
@@ -25699,8 +26049,8 @@ mod.directive('infiniteScroll', [
             '           ng-click="moveToSuggestion(suggestion, $index + 1)"' +
             '           ng-class="[\'odswidget-map-search-box__suggestion\', {\'odswidget-map-search-box__suggestion--selected\': selectedIndex === $index + 1}]">' +
             '           <i ng-class="[\'odswidget-map-search-box__suggestion-icon\', getSuggestionIcon(suggestion)]"></i>' +
-            '           <span class="odswidget-map-search-box__suggestion-name" ng-bind-html="suggestion._highlightResult.locale_names[0].value"></span>' +
-            '           <span class="odswidget-map-search-box__suggestion-localization" ng-bind-html="getLocalization(suggestion)"></span>' +
+            '           <span class="odswidget-map-search-box__suggestion-name" ng-bind-html="suggestion.highlightedName"></span>' +
+            '           <span class="odswidget-map-search-box__suggestion-localization" ng-bind-html="suggestion.parents"></span>' +
             '       </li>' +
             '   </ul>' +
             '   <div class="odswidget-map-search-box__data-search" ng-if="dataSearchActive">' +
@@ -25761,13 +26111,21 @@ mod.directive('infiniteScroll', [
                 scope.suggestions = [];
                 scope.selectedIndex = 0;
                 scope.expanded = false;
+
                 scope.runQuery = function(userQuery) {
                     scope.removeSearchMarkers();
+
+                    if (!userQuery) {
+                        scope.selectedIndex = 0;
+                        scope.suggestions = [];
+                        return;
+                    }
+
                     var loc = MapHelper.getLocationStructure(mapCtrl.getCurrentPosition());
-                    AlgoliaPlaces(userQuery, loc.center.join(',')).then(
+                    Geocoder(userQuery, loc.center).then(
                         function success(response) {
                             scope.selectedIndex = 0;
-                            scope.suggestions = response.data.hits;
+                            scope.suggestions = response;
                         },
                         function error(response) {
 
@@ -25831,19 +26189,22 @@ mod.directive('infiniteScroll', [
                     if (angular.isDefined(index)) {
                         scope.selectedIndex = index;
                     }
-                    var zoom;
-                    if (suggestion.is_city) {
-                        zoom = 14;
-                    } else if (suggestion.is_country) {
-                        zoom = 5;
-                    } else if (suggestion.is_highway) {
-                        zoom = 18;
+                    if (suggestion.bbox) {
+                        mapCtrl.fitMapToBoundingBox(suggestion.bbox);
                     } else {
-                        zoom = 21;
+                        var zoom;
+                        if (suggestion.type === "city") {
+                            zoom = 14;
+                        } else if (suggestion.type === "country") {
+                            zoom = 5;
+                        } else if (suggestion.type === "street") {
+                            zoom = 18;
+                        } else {
+                            zoom = 21;
+                        }
+                        mapCtrl.moveMap(suggestion.location, zoom);
                     }
-
-                    scope.addSearchMarker(suggestion._geoloc);
-                    mapCtrl.moveMap(suggestion._geoloc, zoom);
+                    scope.addSearchMarker(suggestion.location);
                     scope.collapseSearchBox();
                     scope.resetSearch();
                 };
@@ -26000,28 +26361,13 @@ mod.directive('infiniteScroll', [
                 };
 
                 $scope.getSuggestionIcon = function(suggestion) {
-                    if (suggestion._tags.indexOf('railway') >= 0) {
+                    if (suggestion.type === 'railway') {
                         return 'fa fa-train';
-                    } else if (suggestion._tags.indexOf('aeroway') >= 0) {
+                    } else if (suggestion.type === 'aeroway') {
                         return 'fa fa-plane';
                     } else {
                         return 'fa fa-map-marker';
                     }
-                };
-
-                $scope.getLocalization = function(suggestion) {
-                    var localization = '';
-
-                    ['city', 'administrative', 'country'].forEach(function(prop) {
-                        if (angular.isDefined(suggestion[prop])) {
-                            if (localization.length > 0) {
-                                localization += ', ';
-                            }
-                            localization += suggestion[prop];
-                        }
-                    });
-
-                    return localization;
                 };
 
                 $scope.getResultTitle = function(dataset, record) {
@@ -26080,33 +26426,6 @@ mod.directive('infiniteScroll', [
             }]
         };
     }]);
-
-    mod.service('AlgoliaPlaces', ['$http', 'ODSWidgetsConfig', function($http, ODSWidgetsConfig) {
-        /*
-            Documentation: https://community.algolia.com/places/rest.html
-         */
-        var options = {};
-        if (ODSWidgetsConfig.algoliaPlacesApplicationId && ODSWidgetsConfig.algoliaPlacesAPIKey) {
-            options.headers = {
-                'X-Algolia-Application-Id': ODSWidgetsConfig.algoliaPlacesApplicationId,
-                'X-Algolia-API-Key': ODSWidgetsConfig.algoliaPlacesAPIKey
-            };
-        }
-        return function(query, aroundLatLng) {
-            var queryOptions = angular.extend({}, options);
-            queryOptions.params = {
-                'query': query,
-                'aroundLatLngViaIP': false,
-                'language': ODSWidgetsConfig.language || 'en',
-                'hitsPerPage': 5
-            };
-            if (aroundLatLng) {
-                queryOptions.params.aroundLatLng = aroundLatLng;
-            }
-            return $http.get('https://places-dsn.algolia.net/1/places/query', queryOptions);
-        };
-    }]);
-
 }());
 ;(function() {
     'use strict';
@@ -27627,6 +27946,11 @@ mod.directive('infiniteScroll', [
                 this.fitMapToShape = function(geoJson) {
                     var layer = L.geoJson(geoJson);
                     $scope.map.fitBounds(layer.getBounds());
+                };
+
+                this.fitMapToBoundingBox = function(bbox) {
+                    // Bbox should be as [ [lat, lng], [lat, lng] ]
+                    $scope.map.fitBounds(bbox);
                 };
 
                 this.resetMapDataFilter = function() {
