@@ -2943,6 +2943,10 @@ html[dir=rtl] .odswidget-text-search__reset {
   width: 100% !important;
   height: 100% !important;
 }
+.ods-slideshow:-moz-full-screen {
+  width: 100% !important;
+  height: 100% !important;
+}
 .ods-slideshow:-ms-fullscreen {
   width: 100% !important;
   height: 100% !important;

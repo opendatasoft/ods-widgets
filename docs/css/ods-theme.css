@@ -271,6 +271,9 @@ a:hover {
   padding: 0 13px;
   border-radius: 2px;
 }
+.form-search .search-query::-webkit-input-placeholder {
+  color: #898D92;
+}
 .form-search .search-query:-ms-input-placeholder {
   color: #898D92;
 }
