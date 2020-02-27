@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.4.3 - 2020-02-27
+### Added
+- A new `fromjson` filter, to parse a text containing JSON and obtain the object
+
 ## 1.4.2 - 2020-02-17
 ### Fixed
 - `odsCrossTable`: Fixed an issue with the width of each cells after applying a filter on the data

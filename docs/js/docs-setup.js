@@ -762,6 +762,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.filter:fromjson",
+      "shortName": "fromjson",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "keywords": "api filter json key object ods-widgets parsed string stringified",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.filter:imageify",
       "shortName": "imageify",
       "type": "filter",

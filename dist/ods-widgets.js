@@ -8753,7 +8753,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by Opendatasoft
     //  License: MIT
-    var version = '1.4.2';
+    var version = '1.4.3';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -13312,7 +13312,7 @@ mod.directive('infiniteScroll', [
                     if (getPromise) { deferred.resolve(element); }
                 } else if (url.indexOf('.svg') === -1) {
                     // Normal image
-                    element.append(angular.element('<img src="' + url + '"/>'));
+                    element.append(angular.element('<img src="' + encodeURI(url) + '"/>'));
                     if (getPromise) { deferred.resolve(element); }
                 } else {
                     // SVG
@@ -14807,6 +14807,34 @@ mod.directive('infiniteScroll', [
             // else
             return val;
         }
+    });
+
+    mod.filter('fromjson', function () {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:fromjson
+         *
+         * @function
+         * @param {string} A string value containing a stringified JSON object
+         * @return {json} The resulting, parsed, Json object
+         *
+         *
+         * @example
+         * <pre>
+         * value = '{\"key\":\"value\"}'
+         * </pre>
+         *
+         * <pre>value|fromjson</pre>
+         *
+         * <pre>
+         * {
+         *   "key": "value"
+         * }
+         * </pre>
+         */
+        return function (val) {
+            return angular.fromJson(val);
+        };
     });
 }());
 ;(function(target) {

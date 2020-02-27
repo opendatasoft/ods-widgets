@@ -326,7 +326,7 @@
                     if (getPromise) { deferred.resolve(element); }
                 } else if (url.indexOf('.svg') === -1) {
                     // Normal image
-                    element.append(angular.element('<img src="' + url + '"/>'));
+                    element.append(angular.element('<img src="' + encodeURI(url) + '"/>'));
                     if (getPromise) { deferred.resolve(element); }
                 } else {
                     // SVG

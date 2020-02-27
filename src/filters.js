@@ -991,4 +991,32 @@
             return val;
         }
     });
+
+    mod.filter('fromjson', function () {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:fromjson
+         *
+         * @function
+         * @param {string} A string value containing a stringified JSON object
+         * @return {json} The resulting, parsed, Json object
+         *
+         *
+         * @example
+         * <pre>
+         * value = '{\"key\":\"value\"}'
+         * </pre>
+         *
+         * <pre>value|fromjson</pre>
+         *
+         * <pre>
+         * {
+         *   "key": "value"
+         * }
+         * </pre>
+         */
+        return function (val) {
+            return angular.fromJson(val);
+        };
+    });
 }());
