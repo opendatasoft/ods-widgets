@@ -31,7 +31,7 @@ own needs and backend services: the project is licensed under the MIT license
 
 ### Quick example
 Let's show a map of the restaurants near our former office in Paris. The data
-can be browsed on http://public.opendatasoft.com/explore/dataset/restaurants_a_proximite_de_pepiniere_27/
+can be browsed on https://public.opendatasoft.com/explore/dataset/restaurants_a_proximite_de_pepiniere_27/
 ```html
 <!-- Expose a "dataset context" from the data -->
 <ods-dataset-context context="restaurants" restaurants-domain="public.opendatasoft.com" restaurants-dataset="restaurants_a_proximite_de_pepiniere_27">
@@ -41,15 +41,13 @@ can be browsed on http://public.opendatasoft.com/explore/dataset/restaurants_a_p
 ```
 
 ### Documentation
-There is a complete tutorial to help you build your first page around a simple example.
-Since it is build on public data, you can reproduce it by yourself and even use it as a basis
-for your first project.
-#### [> Tutorial to build your first page](https://help.opendatasoft.com/widgets/#/tutorial/)
+You'll find a tutorial on how to use widgets, built using public data and live example.
+#### [> Tutorial](https://help.opendatasoft.com/widgets/#/getting-started/)
 
 There is a complete reference documentation of all the available directives and all
 the parameters they support. It also contains more literature on the technical
 details of the library.
-#### [> Reference Documentation](https://help.opendatasoft.com/widgets)
+#### [> Reference Documentation](https://help.opendatasoft.com/widgets/#/getting-started/01widgetdoc)
 
 ### Compatibility
 Known to work on: (may not be exhaustive)
@@ -65,14 +63,15 @@ copy into your project.
 
 ### Setup
 The following libraries are required as dependencies in your pages for ODS-Widgets to work:
-- **jQuery** (2.1+ should work) *(note: we're looking to remove this dependency in the future)*
+- **jQuery** (2.1+ should work)
 - **AngularJS** 1.4.* and the **angular-sanitize** module
-- Some widgets are using icons from **[FontAwesome 4.4.0](http://fontawesome.io/icons/)** *(note: we're looking to remove this dependency in the future)*
+- Some widgets are using icons from **[FontAwesome 4.4.0](http://fontawesome.io/icons/)**
 
 To load ODS-Widgets, you can then simply load `ods-widgets.js` and `ods-widgets.css`, or their minified version also included
 in the distribution.
 
-Note: When including the scripts in your page, you need to include jQuery, then AngularJS, then angular-sanitize, then ODS-Widgets.
+Note: When including the scripts in your page, you need to include jQuery, then AngularJS, then angular-sanitize, then ODS-Widgets;
+in that specific order.
 
 ODS-Widgets require an AngularJS app to run, which can for example be done with a simple `ng-app="ods-widgets"`:
 ```html
@@ -85,7 +84,36 @@ ODS-Widgets require an AngularJS app to run, which can for example be done with 
 ```
 
 Some specific widgets can rely on specific "heavy" libraries (such as Highcharts, Leaflet...);
-in that case, they are lazily-loaded from a CDN when the widget initializes itself.
+in that case, they are lazily-loaded from a CDN when the widget initializes itself, with no necessary work on your part.
+
+The bare minimum for an HTML page is this template:
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ODS Widgets Sandbox</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://opendatasoft.github.io/ods-widgets/dist/ods-widgets.css">
+    </head>
+    <body>
+
+        <div ng-cloak ng-app="ods-widgets">
+
+            <!-- YOUR CODE HERE -->
+
+        </div>
+
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular-sanitize.min.js"></script>
+        <script type="text/javascript" src="//opendatasoft.github.io/ods-widgets/dist/ods-widgets.js"></script>
+    </body>
+</html>
+```
+Some features like URL synchronization and translations will require additional configuration. [You'll find more information
+in our Cookbook.](https://github.com/opendatasoft/ods-cookbook/tree/master/widgets/external-use)
 
 ### Available API and data sources
 Currently, ODS-Widgets only works with an API from an Opendatasoft domain, or any API

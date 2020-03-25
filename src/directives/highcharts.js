@@ -2164,6 +2164,8 @@
          * @description
          * odsChartQuery is the sub widget that defines the queries for the series defined inside.
          * see {@link ods-widgets.directive:odsChart odsChart} for complete examples.
+         *
+         * Note: All parameters are dynamic, which means that if they change, the chart will be refreshed accordingly.
          */
         return {
             restrict: 'E',
@@ -2178,24 +2180,32 @@
                         var query = {
                             config: {},
                             charts: [],
-                            xAxis: attrs.fieldX,
-                            maxpoints: attrs.maxpoints ? parseInt(attrs.maxpoints, 10): undefined,
-                            timescale: attrs.timescale,
-                            stacked: attrs.stacked,
-                            reverseStacks: attrs.reverseStacks === 'true',
-                            seriesBreakdown: attrs.seriesBreakdown,
-                            seriesBreakdownTimescale: attrs.seriesBreakdownTimescale,
-                            categoryColors: attrs.categoryColors ? scope.$eval(attrs.categoryColors) : undefined
                         };
 
-                        query.sort = '';
-                        if (attrs.sort === 'y') {
-                            query.sort = 'serie1';
-                        } else if (attrs.sort === '-y') {
-                            query.sort = '-serie1';
-                        } else {
-                            query.sort = attrs.sort;
+                        function updateQueryFromAttrs() {
+                            angular.extend(query, {
+                                xAxis: attrs.fieldX,
+                                maxpoints: attrs.maxpoints ? parseInt(attrs.maxpoints, 10) : undefined,
+                                timescale: attrs.timescale,
+                                stacked: attrs.stacked,
+                                reverseStacks: attrs.reverseStacks === 'true',
+                                seriesBreakdown: attrs.seriesBreakdown,
+                                seriesBreakdownTimescale: attrs.seriesBreakdownTimescale,
+                                categoryColors: attrs.categoryColors ? scope.$eval(attrs.categoryColors) : undefined
+                            });
+
+                            query.sort = '';
+                            if (attrs.sort === 'y') {
+                                query.sort = 'serie1';
+                            } else if (attrs.sort === '-y') {
+                                query.sort = '-serie1';
+                            } else {
+                                query.sort = attrs.sort;
+                            }
                         }
+
+                        updateQueryFromAttrs();
+
                         var forcedOptions = attrs.options || {};
 
                         angular.forEach(query, function(item, key) {
@@ -2209,6 +2219,7 @@
                                 query.charts.push(chart);
                             }
                         };
+
                         var pushQuery = function(context) {
                             if (context) {
                                 odsChartController.setQuery(query, context);
@@ -2241,6 +2252,18 @@
                                     query.config.options = angular.extend({}, nv, forcedOptions);
                                     pushQuery(scope[context]);
                                 }
+                            }, true);
+
+                            // Update the chart if an attribute changes
+                            scope.$watch(
+                                function() {
+                                    return attrs;
+                                },
+                                function(nv, ov) {
+                                    if (nv !== ov) {
+                                        updateQueryFromAttrs();
+                                        pushQuery(scope[context]);
+                                    }
                             }, true);
                         });
                     }

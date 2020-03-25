@@ -457,7 +457,7 @@
                 var searchOptions = {};
                 var defaultX = searchOptions.x || this.getAvailableX(datasetid, 0).name;
                 var defaultMaxpoints = 50;
-                var defaultTimescale = '';
+
                 if (!query.xAxis) {
                     query.xAxis = defaultX;
                 }
@@ -465,7 +465,6 @@
                 if (this.getFieldType(datasetid, query.xAxis) == 'date' || this.getFieldType(datasetid, query.xAxis) == 'datetime') {
                     // If the default X is a date/datetime, then we assume timeserie mode and we remove any limitation
                     defaultMaxpoints = '';
-                    defaultTimescale = searchOptions.timescale || 'year';
                 }
 
                 if (typeof query.maxpoints === "undefined") {
@@ -475,9 +474,6 @@
                     query.charts = [];
                 }
 
-                // if (defaultTimescale) {
-                //     query.timescale = query.timescale || defaultTimescale;
-                // }
                 var xAxis = query.xAxis;
                 var xType = this.getFieldType(datasetid, xAxis);
 

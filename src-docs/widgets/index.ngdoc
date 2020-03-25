@@ -2,10 +2,26 @@
 @name index
 @description
 
-This documentation contains the complete reference of available ODS Widgets, including examples.
+<h1>Welcome to Opendatasoft's widgets documentation!</h1>
 
-You can search and discover the available widgets using the list on the left of this page.
+<p>Widgets are components that allow the integration of interactive elements (data visualizations, KPIs, etc.), from data available on an Opendatasoft API, directly on a web page.</p>
 
-<a class="link_github" href="http://github.com/opendatasoft/ods-widgets">
-    <i class="icon-github-sign"></i> ODS Widgets on Github
-</a>
+<div class="ods-note">
+<i class="fa fa-pencil"></i> Opendatasoft widgets are based on AngularJS. You will thus most likely encounter elements in the Opendatasoft widgets documentations that are directly inherited from AngularJS, but no prior knowledge of AngularJS is required to use the widgets.
+</div>
+
+<p>Widgets can be used to build various types of web-based creations, such as:</p>
+
+<ul>
+    <li>a visualization (from the basic visualization to the visualization tool using several widgets) based on a public dataset, integrated into a blog article ;</li>
+    <li>an application, that allows users to design and build complex and interactive dashboards or visualization pages based on your data, using HTML tags ;</li>
+    <li>a website, either built on top of public data or your own data.</li>
+</ul>
+
+<p>This documentation references all Opendatasoft widgets, filters and services. Each of those has its own reference page, which describes them, indicates their parameters and gives examples of their usage.</p>
+
+<p>Use the menu on the left to navigate all available reference pages.</p>
+
+<div class="ods-link">
+<i class="fa fa-external-link" target="_blank"></i> For more technical information about our widgets, please refer to the <a class="link_github" href="http://github.com/opendatasoft/ods-widgets">README of the Opendatasoft widgets GitHub repository</a>.
+</div>

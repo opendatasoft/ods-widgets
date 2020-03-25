@@ -386,6 +386,11 @@ docsApp.controller.DocsController = function($scope, $location, $window, section
         search = $scope.search,
         bestMatch = {page: null, rank:0};
 
+    // Make sure the widgets are visible on every page's navigation
+    if ($location.path().split('/')[1] !== 'api') {
+      pages = pages.concat(sections.api);
+    }
+
     angular.forEach(pages, function(page) {
       var match,
         id = page.id,
@@ -399,7 +404,7 @@ docsApp.controller.DocsController = function($scope, $location, $window, section
 
       if (page.id == 'index') {
         //skip
-      } else if (!NG_DOCS.apis[section]) {
+      } else if (!NG_DOCS.apis[section] && page.url.indexOf('/api/') === -1) {
         otherPages.push(page);
       } else if (id == 'angular.Module') {
         module('ng', section).types.push(page);

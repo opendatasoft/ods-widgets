@@ -82,8 +82,9 @@ module.exports = function(grunt) {
             },
             ngdoc: {
                 files: [
-                    'src-docs/widgets/*.ngdoc',
-                    'src-docs/tutorial/*.ngdoc'
+                    'src-docs/getting-started/*.ngdoc',
+                    'src-docs/reference/*.ngdoc',
+                    'src-docs/widgets/*.ngdoc'
                 ],
                 tasks: ['ngdocs'],
                 options: {
@@ -118,7 +119,8 @@ module.exports = function(grunt) {
                 src: [
                     'ods-logo-helphub.svg',
                     'opendatasoft-logo.svg',
-                    'ods-favicon.ico'
+                    'ods-favicon.ico',
+                    'widget_doc_schema.png'
                 ],
                 dest: 'docs/assets'
             },
@@ -137,6 +139,10 @@ module.exports = function(grunt) {
                 cwd: 'src-docs/examples/',
                 src: ['*.html', '*.css'],
                 dest: 'docs/examples/'
+            },
+            ngdocsOverrides: {
+                src: 'src-docs/templates/js/docs.js',
+                dest: 'docs/js/docs.js'
             }
 		},
 		ngdocs: {
@@ -160,21 +166,26 @@ module.exports = function(grunt) {
                 image: 'assets/ods-logo-helphub.svg',
 				title: "ODS-Widgets",
 				bestMatch: false,
-                startPage: '/api'
+                startPage: '/introduction/'
 			},
-			all: {
-				src: [
-                    'src/directives/*.js',
+            introduction: {
+                src: ['src-docs/widgets/*.ngdoc'],
+                title: 'Introduction',
+                api: false
+            },
+            "getting-started": {
+			    src: ['src-docs/getting-started/*.ngdoc'],
+                title: 'Getting started',
+                api: false
+            },
+            api: {
+			    src: [
+			        'src/directives/*.js',
                     'src/filters.js',
                     'src/ods-widgets.js',
-                    'src-docs/widgets/*.ngdoc'
+			        'src-docs/widgets/index.ngdoc'
                 ],
-				title: 'Reference'
-			},
-            tutorial: {
-                src: ['src-docs/tutorial/*.ngdoc'],
-                title: 'Tutorial',
-                api: false
+                title: 'Widgets'
             }
 		},
 		// serves the documentation server
@@ -214,6 +225,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['dist']);
-    grunt.registerTask('dist', ['clean', 'uglify:dist', 'uglify:script', 'less:dist', 'less:dev', 'concat', 'autoprefixer', 'copy', 'ngdocs']);
+    grunt.registerTask('dist', ['clean', 'uglify:dist', 'uglify:script', 'less:dist', 'less:dev', 'concat', 'autoprefixer', 'copy', 'ngdocs', 'copy:ngdocsOverrides']);
     grunt.registerTask('server', ['default', 'connect', 'watch']);
 };

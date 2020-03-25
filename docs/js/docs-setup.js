@@ -1,17 +1,68 @@
 NG_DOCS={
   "sections": {
-    "api": "Reference",
-    "tutorial": "Tutorial"
+    "introduction": "Introduction",
+    "getting-started": "Getting started",
+    "api": "Widgets"
   },
   "pages": [
+    {
+      "section": "introduction",
+      "id": "index",
+      "shortName": "index",
+      "type": "overview",
+      "moduleName": "index",
+      "shortDescription": "Welcome to Opendatasoft&#39;s widgets documentation!",
+      "keywords": "_blank allow allows angularjs api application article based basic blog build built class complex components creations dashboards data dataset describes design directly documentation documentations elements encounter examples fa fa-external-link fa-pencil filters github href html http indicates inherited integrated integration interactive introduction knowledge kpis left link_github menu navigate ods-link ods-note opendatasoft overview parameters prior public refer reference references repository required services tags target technical tool top types usage users visualization visualizations web web-based website widgets",
+      "isDeprecated": false
+    },
+    {
+      "section": "getting-started",
+      "id": "index",
+      "shortName": "Getting started",
+      "type": "overview",
+      "moduleName": "Getting started",
+      "shortDescription": "Getting started",
+      "keywords": "_blank advanced aims autonomy beginner better buttons choice class clicking code comfortable complete concepts content context cookbook create creating css curiosity default displayed displays editable editor encouraged encouraging environment examples experiment explain explaining external fa fa-exclamation favorite feel filters find free getting-started guide highly href html https idea independently key link logic main ods-prerequisite opendatasoft overview play portal project read readme refer reference resourcefulness result same-named sandbox sandboxes sections started target topic understand understanding user view well-structured widget widgets widgets-based",
+      "isDeprecated": false
+    },
+    {
+      "section": "getting-started",
+      "id": "01widgetdoc",
+      "shortName": "1. Learning how to read & use a widget reference page",
+      "type": "overview",
+      "moduleName": "1. Learning how to read & use a widget reference page",
+      "shortDescription": "Learning how to read &amp; use a widget reference page",
+      "keywords": "_blank advice assets attention basic bit camelcase carefully class code common computer configuring context demo description details directive documentation don drop example fa fa-search features final focus form getting-started good great guide height href https implies indicate indicates indications instance interact learning lot mentions names news note-title notice ods-image-with-sidetext ods-image-with-sidetext__sidetext ods-zoom opendatasoft overview parameter parameters pay phrases pieces png point practice programming punctuations read reading reference result rules schema schemas sections share skip spaces specific src started structure style table target technical time tricky type usage ways widget widgets width writing written",
+      "isDeprecated": false
+    },
+    {
+      "section": "getting-started",
+      "id": "02context",
+      "shortName": "2. Understanding the context",
+      "type": "overview",
+      "moduleName": "2. Understanding the context",
+      "shortDescription": "Understanding the context",
+      "keywords": "_blank acts agatha align-items allows api appears async based border border-box box-sizing button catalog categories center class click code codepen configure consume consumes content context creating dark data data-default-tab data-editable data-height data-pen-title data-slug-hash data-theme-id data-user dataset datasets defined delete depending directive discovery display displayed dynamic exact example example-text exist external fa fa-external-link fa-pencil filter filters flex focus getting-started good guide height href html https indicates integrations interact interaction involving io js justify-content key link linked list live macdata margin meaning metadata modify nobel-prize ods ods-link ods-note odschart odsdatasetcontext odsfacets odsmap opendatasoft overview padding pen portal practice process project qbdrvjw refining relation represents result select services shared solid specific src started style surely target time true understanding utility widget widgets ylngwkj",
+      "isDeprecated": false
+    },
+    {
+      "section": "getting-started",
+      "id": "03filterdoc",
+      "shortName": "3. Learning how to use widget filters",
+      "type": "overview",
+      "moduleName": "3. Learning how to use widget filters",
+      "shortDescription": "Learning how to use widget filters",
+      "keywords": "_blank add adopt agatha align-items allow angular angularjs applying async based binding border border-box box-sizing build calculation calculations call called center change check class codepen columns configuration content dark data-based data-default-tab data-editable data-height data-pen-title data-slug-hash data-theme-id data-user decimals defined depending details directive display displayed documentation don easier environment environments exactly example example-text examples expected explanation fa fa-external-link fa-pencil fa-search filter filters fixes flex focus forget format generally getting-started great handy height help hesitate href html https indicate indicated indicates instance integrated io javascript js justify-content kind learned learning list lowercase macdata margin note-title number ods-link ods-note ods-zoom opendatasoft org overview padding parameter parameters pen pieces pipe point precisely problem projects read redirected reduce refer reference result round sentence separated sign solid src started statistics style subsections switch syntax table target template thing transformation true type understand usage variable variables widget widgets wvagoxe",
+      "isDeprecated": false
+    },
     {
       "section": "api",
       "id": "index",
       "shortName": "index",
       "type": "overview",
       "moduleName": "index",
-      "shortDescription": "This documentation contains the complete reference of available ODS Widgets, including examples.",
-      "keywords": "api class complete discover documentation examples github href http icon-github-sign including left link_github list ods overview reference search widgets",
+      "shortDescription": "Welcome to Opendatasoft&#39;s widgets documentation!",
+      "keywords": "_blank allow allows angularjs api application article based basic blog build built class complex components creations dashboards data dataset describes design directly documentation documentations elements encounter examples fa fa-external-link fa-pencil filters github href html http indicates inherited integrated integration interactive knowledge kpis left link_github menu navigate ods-link ods-note opendatasoft overview parameters prior public refer reference references repository required services tags target technical tool top types usage users visualization visualizations web web-based website widgets",
       "isDeprecated": false
     },
     {
@@ -91,7 +142,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "odsChartQuery is the sub widget that defines the queries for the series defined inside.",
-      "keywords": "active aggregated aggregation aggregations analysis api area bar break category chart charts color columns complete compute computed daily dataset datetime declared defined defines directive displayed example examples facet fetched ff0000 field fieldx inside interval level maximum month normal number object ods-widgets odschart odschartquery option order percent points queries query reverse serie series set singleyaxis spline stack stacked time timescale timeseries values widget works year",
+      "keywords": "active aggregated aggregation aggregations analysis api area bar break category change chart charts color columns complete compute computed daily dataset datetime declared defined defines directive displayed dynamic example examples facet fetched ff0000 field fieldx inside interval level maximum month normal note number object ods-widgets odschart odschartquery option order parameters percent points queries query refreshed reverse serie series set singleyaxis spline stack stacked time timescale timeseries values widget works year",
       "isDeprecated": false
     },
     {
@@ -1043,95 +1094,16 @@ NG_DOCS={
       "shortDescription": "Use ODSWidgetsConfigProvider to set configuration values used by various directives.",
       "keywords": "access account allow angular api app array basemap basemaps calls catalog chart chartcolors charts classic color colors config configuration configuring contact contexts create currently customconfig customer cycle dark dataset default defaultdomain defaults demos depending designs development directive directives disqusshortname documentation domain doubt existing free heavy higher io jawg jawg_apikey key label left light limited limits list local low making map mapbox mapbox_access_token maps method module number object objects ods-widgets odswidgetsconfigprovider opencycle openstreetmap org osmtransport override overriding parameter picto production provider providers rate reached real second service set setconfig sets settings shortname specific stamen start streets string suitable suited support themes token toner traffic transport untouched usage values var visualizations watercolor widget widgets world",
       "isDeprecated": false
-    },
-    {
-      "section": "api",
-      "id": "widgets",
-      "shortName": "ods-widgets",
-      "type": "overview",
-      "moduleName": "ods-widgets",
-      "shortDescription": "This Angular module contains all the ODS Widgets, together with helper services and filters.",
-      "keywords": "angular api filters helper module ods ods-widgets overview services widgets",
-      "isDeprecated": false
-    },
-    {
-      "section": "tutorial",
-      "id": "index",
-      "shortName": "index",
-      "type": "overview",
-      "moduleName": "index",
-      "shortDescription": "This section is dedicated to tutorials on how to use ODS Widgets, from basic uses (a simple visualization on your page) to",
-      "keywords": "achieve advanced applications basic building built dashboards data dedicated documented easily examples extend find interactive ods overview publicly reproduce simple start tutorial tutorials visualization widgets",
-      "isDeprecated": false
-    },
-    {
-      "section": "tutorial",
-      "id": "00setup",
-      "shortName": "Setup for the tutorials",
-      "type": "overview",
-      "moduleName": "Setup for the tutorials",
-      "shortDescription": "Setup for the tutorials",
-      "keywords": "bootstrapcdn charset class cloudflare code container-fluid content context create css data editor examples experience extend favorite github href html https initial-scale io jcdecaux_bike_data js local min ng-app ods-widgets opendatasoft overview plunkr public rel reproduce sandbox setup speed src stations stations-dataset stations-domain stylesheet template text tutorial tutorials type utf-8 viewport widgets width",
-      "isDeprecated": false
-    },
-    {
-      "section": "tutorial",
-      "id": "01firstpage",
-      "shortName": "1. First page",
-      "type": "overview",
-      "moduleName": "1. First page",
-      "shortDescription": "Tutorial: A first page",
-      "keywords": "add adding allow allows analog api attribute attributes books browsing build case catalog closely consumption content context contexts covers create crowdsourced data dataset datasets date_end directive display displayed documentation domain element ended evenements-publics-cibul events events-dataset events-domain exactly example features field fill filter filtered find frameborder full geographical happened height html identifier indicated inside interact interacting interaction job lack library list located location luckily mandatory map margin-left metadata month nice occurred ods odsmap odstimescale opendatasoft opening overview parameter perfect plug portal prefixed provide public range reading ready represents requires search select shared shelves simply source specific src step style syntax target time-field tool tutorial types users week widget widgets width",
-      "isDeprecated": false
-    },
-    {
-      "section": "tutorial",
-      "id": "02catalogpage",
-      "shortName": "2. Catalog homepage",
-      "type": "overview",
-      "moduleName": "2. Catalog homepage",
-      "shortDescription": "Tutorial: A catalog homepage",
-      "keywords": "achieve alive answer api build catalog catalog-domain catalogs class cloud collections context course create data dataset datasets declared directive doesn domain engage example explore exposes facet-name frameborder gathered good height help homepage html idea keyword keywords manner margin-left metadata ng-embed-app nice number ods-domain-statistics ods-widgets odsdomainstatistics odslastdatasetsfeed odsmostpopulardatasets odstagcloud open opendatasoft organized overview plugged popular portal preview public questions row-fluid sentence sexy simple span6 src statistics stats style tag talking tour tutorial variable variables visitors widget widgets width write",
-      "isDeprecated": false
-    },
-    {
-      "section": "tutorial",
-      "id": "03searchdatasets",
-      "shortName": "3. Dataset search page",
-      "type": "overview",
-      "moduleName": "3. Dataset search page",
-      "shortDescription": "Tutorial: A dataset search page",
-      "keywords": "achieve add adding allow api apply browse build built catalog catalog-domain catalog-parameters center class configured context custom data dataset datasets descending directive directly discover display displayed documentation drill eager earlier engine ensure explore faceted features filter filters finely frameborder full-text height help homepage html license ll margin-left max metas modification modified odsfacets odsresultenumerator odstextsearch offer offering open opendatasoft options ordered overview parameter plugging portal provide public requires row-fluid search show-hits-counter simple simply sort sorted span4 span8 src style text-align theme themes title tools treasures true tutorial visitors ways widgets width work",
-      "isDeprecated": false
-    },
-    {
-      "section": "tutorial",
-      "id": "04advancedmap",
-      "shortName": "4. Advanced dynamic map",
-      "type": "overview",
-      "moduleName": "4. Advanced dynamic map",
-      "shortDescription": "Tutorial: An advanced dynamic map",
-      "keywords": "ability advanced age allows attribute build categories checkbox chicago chicagoincidents chicagoincidents-dataset chicagoincidents-domain chronologically class clustered context data dataset default-from default-to define display displayed dynamic explore frameborder heatmap heatmapmode height html incident individual interact killings-by-law-enforcement-officers-in-the-usa layer layers map margin-left ng-model occurrences offer option overview public refine row-fluid show-if span4 span8 src style toggle tutorial type users victim volume width",
-      "isDeprecated": false
-    },
-    {
-      "section": "tutorial",
-      "id": "05filterwithmap",
-      "shortName": "5. Filter using a map",
-      "type": "overview",
-      "moduleName": "5. Filter using a map",
-      "shortDescription": "Tutorial: Filter data using zones on a map",
-      "keywords": "aggregate aggregation allows appears class click clicked colored contained context contexts create data dataset default-from default-to density depending display displayed districts draw enforcement ensure fields filter frameborder height html initialize join-context killing killings killings-by-law-enforcement-officers-in-the-usa killings-dataset killings-domain killingslist killingslist-dataset killingslist-domain killingslist-parameters law list ll local-key map margin-left meaning natural-earth-us-states-provinces-1110m officers overview particularities points public refine refine-on-click-context refined remain remote-key row-fluid scrollable second separate side sort span6 src states-dataset states-domain style tutorial usa users victim victims width zones",
-      "isDeprecated": false
     }
   ],
   "apis": {
-    "api": true,
-    "tutorial": false
+    "introduction": false,
+    "getting-started": false,
+    "api": true
   },
   "html5Mode": false,
   "editExample": true,
-  "startPage": "/api",
+  "startPage": "/introduction/",
   "scripts": [
     "jquery-2.1.4.min.js",
     "angular.js",

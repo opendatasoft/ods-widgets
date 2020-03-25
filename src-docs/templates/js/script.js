@@ -48,8 +48,8 @@
         }
     }
 
-    var navItemApi = document.getElementById("nav-api");
-    var navItemTutorial = document.getElementById("nav-tutorial");
+    var navItemIntroduction = document.getElementById("nav-introduction");
+    var navItemGettingStarted = document.getElementById("nav-getting-started");
     var sidebarMenuElement = document.getElementById("sidebar-nav");
     var classActivCurrentLink = "nav-items-link-active";
     var sidebarClassSpecialTutorial = "behaviourSidebarTutorial";
@@ -59,17 +59,20 @@
         var URLpage = window.location.href.split("#")[1];
 
         if (URLpage.indexOf("api") > -1) {
-            navItemApi.classList.add(classActivCurrentLink);
             sidebarMenuElement.classList.remove(sidebarClassSpecialTutorial);
-        } else {
-            navItemTutorial.classList.add(classActivCurrentLink);
+        } else if (URLpage.indexOf("getting-started") > -1 ){
+            navItemGettingStarted.classList.add(classActivCurrentLink);
             sidebarMenuElement.classList.add(sidebarClassSpecialTutorial);
+        } else {
+            // Introduction
+            navItemIntroduction.classList.add(classActivCurrentLink);
+            sidebarMenuElement.classList.remove(sidebarClassSpecialTutorial);
         }
     }
 
     function resetActiveCurrentItemNav () {
-        navItemApi.classList.remove(classActivCurrentLink);
-        navItemTutorial.classList.remove(classActivCurrentLink);
+        navItemIntroduction.classList.remove(classActivCurrentLink);
+        navItemGettingStarted.classList.remove(classActivCurrentLink);
     }
 
     setTimeout(function () {

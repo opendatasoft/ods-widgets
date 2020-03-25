@@ -8753,7 +8753,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by Opendatasoft
     //  License: MIT
-    var version = '1.4.3';
+    var version = '1.4.4';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -9561,7 +9561,7 @@ mod.directive('infiniteScroll', [
                 var searchOptions = {};
                 var defaultX = searchOptions.x || this.getAvailableX(datasetid, 0).name;
                 var defaultMaxpoints = 50;
-                var defaultTimescale = '';
+
                 if (!query.xAxis) {
                     query.xAxis = defaultX;
                 }
@@ -9569,7 +9569,6 @@ mod.directive('infiniteScroll', [
                 if (this.getFieldType(datasetid, query.xAxis) == 'date' || this.getFieldType(datasetid, query.xAxis) == 'datetime') {
                     // If the default X is a date/datetime, then we assume timeserie mode and we remove any limitation
                     defaultMaxpoints = '';
-                    defaultTimescale = searchOptions.timescale || 'year';
                 }
 
                 if (typeof query.maxpoints === "undefined") {
@@ -9579,9 +9578,6 @@ mod.directive('infiniteScroll', [
                     query.charts = [];
                 }
 
-                // if (defaultTimescale) {
-                //     query.timescale = query.timescale || defaultTimescale;
-                // }
                 var xAxis = query.xAxis;
                 var xType = this.getFieldType(datasetid, xAxis);
 
@@ -23678,6 +23674,8 @@ mod.directive('infiniteScroll', [
          * @description
          * odsChartQuery is the sub widget that defines the queries for the series defined inside.
          * see {@link ods-widgets.directive:odsChart odsChart} for complete examples.
+         *
+         * Note: All parameters are dynamic, which means that if they change, the chart will be refreshed accordingly.
          */
         return {
             restrict: 'E',
@@ -23692,24 +23690,32 @@ mod.directive('infiniteScroll', [
                         var query = {
                             config: {},
                             charts: [],
-                            xAxis: attrs.fieldX,
-                            maxpoints: attrs.maxpoints ? parseInt(attrs.maxpoints, 10): undefined,
-                            timescale: attrs.timescale,
-                            stacked: attrs.stacked,
-                            reverseStacks: attrs.reverseStacks === 'true',
-                            seriesBreakdown: attrs.seriesBreakdown,
-                            seriesBreakdownTimescale: attrs.seriesBreakdownTimescale,
-                            categoryColors: attrs.categoryColors ? scope.$eval(attrs.categoryColors) : undefined
                         };
 
-                        query.sort = '';
-                        if (attrs.sort === 'y') {
-                            query.sort = 'serie1';
-                        } else if (attrs.sort === '-y') {
-                            query.sort = '-serie1';
-                        } else {
-                            query.sort = attrs.sort;
+                        function updateQueryFromAttrs() {
+                            angular.extend(query, {
+                                xAxis: attrs.fieldX,
+                                maxpoints: attrs.maxpoints ? parseInt(attrs.maxpoints, 10) : undefined,
+                                timescale: attrs.timescale,
+                                stacked: attrs.stacked,
+                                reverseStacks: attrs.reverseStacks === 'true',
+                                seriesBreakdown: attrs.seriesBreakdown,
+                                seriesBreakdownTimescale: attrs.seriesBreakdownTimescale,
+                                categoryColors: attrs.categoryColors ? scope.$eval(attrs.categoryColors) : undefined
+                            });
+
+                            query.sort = '';
+                            if (attrs.sort === 'y') {
+                                query.sort = 'serie1';
+                            } else if (attrs.sort === '-y') {
+                                query.sort = '-serie1';
+                            } else {
+                                query.sort = attrs.sort;
+                            }
                         }
+
+                        updateQueryFromAttrs();
+
                         var forcedOptions = attrs.options || {};
 
                         angular.forEach(query, function(item, key) {
@@ -23723,6 +23729,7 @@ mod.directive('infiniteScroll', [
                                 query.charts.push(chart);
                             }
                         };
+
                         var pushQuery = function(context) {
                             if (context) {
                                 odsChartController.setQuery(query, context);
@@ -23755,6 +23762,18 @@ mod.directive('infiniteScroll', [
                                     query.config.options = angular.extend({}, nv, forcedOptions);
                                     pushQuery(scope[context]);
                                 }
+                            }, true);
+
+                            // Update the chart if an attribute changes
+                            scope.$watch(
+                                function() {
+                                    return attrs;
+                                },
+                                function(nv, ov) {
+                                    if (nv !== ov) {
+                                        updateQueryFromAttrs();
+                                        pushQuery(scope[context]);
+                                    }
                             }, true);
                         });
                     }

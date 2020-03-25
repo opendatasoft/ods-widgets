@@ -1,0 +1,53 @@
+@ngdoc overview
+@name 3. Learning how to use widget filters
+@description
+
+<h1>Learning how to use widget filters</h1>
+
+<p>At this point, you have learned enough information to build great data-based projects with Opendatasoft widgets. There is however one more thing that could come in handy when using some widgets: widget filters! Let's see how and when you could use these filters.</p>
+
+<p>For some widgets, especially those that are used for calculations and statistics, the only way to see their results is to call variables which content should be displayed. And it is precisely on these variables that widgets filters can be used.</p>
+
+<div class="ods-note">
+<i class="fa fa-pencil"></i>Variables are generally defined in the widget configuration. For their result to be displayed, they must be integrated into the page (e.g. in a sentence, table, etc.), using the following syntax: <code>{{ variable }}</code>. Don't hesitate to refer to <a href="https://code.angularjs.org/1.4.7/docs/guide/expression" target="_blank">the AngularJS documentation</a> for more information.
+</div>
+
+<p>Widgets filters allow any kind of transformation on the display of the content of the variable. For instance, a filter can change the format of a date, reduce the number of decimals of a number, or switch words to a lowercase format.</p>
+
+<p>Widget filters must be added after the name of the variable, and separated from it with a pipe sign ``|``.</p>
+
+<div class="example-text">In the example below, <a href="https://help.opendatasoft.com/widgets/#/api/ods-widgets.directive:odsAggregation" target="_blank">odsAggregation</a> is used for the calculation, whose result is called and displayed using the <code>{{tickets}}</code> variable. However, our calculation result has too many decimals. Let's see how using the <code>math</code> filter along with its <code>round</code> parameter fixes the problem and makes the result easier to read and understand! Add <code>math:"round"</code> in the variable (don't forget the pipe sign!), and check the result!</div>
+
+<p class="codepen" data-height="500" data-theme-id="dark" data-default-tab="html" data-user="opendatasoft" data-slug-hash="wvagOXe" data-editable="true" style="height: 500px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="Example 3 (Widgets Getting Started)">
+  <span>See the Pen <a href="https://codepen.io/opendatasoft/pen/wvagOXe">
+  Example 3 (Widgets Getting Started)</a> by Agatha MacData (<a href="https://codepen.io/opendatasoft">@opendatasoft</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+
+<div class="ods-zoom">
+
+    <div class="note-title">
+        <i class="fa fa-search"></i> <b>Zoom on the Usage section of a filter documentation</b>
+    </div>
+
+<i>The reference page of a widget filter is quite similar to that of a widget. Both contain a Usage section, which is the section which will give you the most information. Let's focus on these pieces of information that will help you the most when applying a filter to a widget variable.</i>
+
+<ul>
+    <li>
+        <p><b>"In HTML Template Binding"</b> and <b>"In JavaScript"</b>: although the example and explanation on this reference page are based on an HTML environment, widgets can be used in various environments, and the same goes for their filters. These 2 subsections show examples of how to use filters and which syntax to adopt depending on the environment in which they are used.</p>
+    </li>
+    <li>
+      <p><b>Parameters</b>: not only widgets take parameters, but widget filters also do as well! These parameters are indicated in the Parameters table which contains exactly the same columns as those in the widgets reference pages. Both indeed indicate the name of the parameter, its type, and details about how to use it.</p>
+    </li>
+    <li>
+      <p><b>Returns</b>: this part of the Usage section indicates what result should be expected when using the widget filter.</p>
+    </li>
+</ul>
+</div>
+
+
+<div class="ods-link">
+<i class="fa fa-external-link"></i> Since Opendatasoft widgets are based on AngularJS, it is possible to use the Angular widget filters instead of the Opendatasoft ones. <a href="https://code.angularjs.org/1.4.7/docs/api/ng/filter" target="_blank">Click here to be redirected to the Angular filters list and documentation</a>!
+</div>

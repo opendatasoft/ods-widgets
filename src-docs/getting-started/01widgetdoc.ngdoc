@@ -1,0 +1,47 @@
+@ngdoc overview
+@name 1. Learning how to read & use a widget reference page
+@description
+
+<h1>Learning how to read & use a widget reference page</h1>
+
+<p>Although widgets are different and can be used in various ways, they share common features. All widgets reference pages indeed share the same structure, mostly because a technical documentation implies following specific rules and schemas. This is good news: once you know how to read and use one Opendatasoft widget reference page, you can do the same with any other Opendatasoft widget reference page!</p>
+
+<p>But for now, let's focus on the following schema of an Opendatasoft widget reference page, and point out its different sections.</p>
+
+<div class="ods-image-with-sidetext">
+    <img src="assets/widget_doc_schema.png" style="width:305px; height:445px;"/>
+    <div class="ods-image-with-sidetext__sidetext">
+        <ol>
+            <li>
+                <p><b>Name of the widget</b></p>
+            </li>
+            <li>
+                <p><b>Description of the widget</b> <br> Don't skip reading the description: not only does it indicate what the widget should be used for and what is its final result, but it can sometimes contain useful usage advice!</p>
+            </li>
+            <li>
+                <p><b>Usage section</b> <br> Pay great attention to the example of code of the widget with all possible parameters used. Read very carefully the parameters table, which indicates all possible parameters and how to use them when configuring the widget.</p>
+            </li>
+            <li>
+                <p><b>Example & demo of the widget</b></p>
+            </li>
+        </ol>
+    </div>
+</div>
+
+<div class="ods-zoom">
+
+    <div class="note-title">
+        <i class="fa fa-search"></i> <b>Zoom on the Parameters table</b>
+    </div>
+
+<i>Although the Parameters table contains some of the most important indications, it can be a bit tricky. Here are details and pieces of advice to guide you.</i>
+
+<ul>
+    <li>
+        <p>The <b>parameter name</b> is always written in camelCase, which is a way of writing phrases and names without spaces or punctuations, that is quite often used in computer programming. In practice, when using a widget, you must drop the camelCase writing. For instance, for the <a href="https://help.opendatasoft.com/widgets/#/api/ods-widgets.directive:odsAggregation" target="_blank">odsAggregation widget</a>, the parameters table mentions the <code>odsAggregationContext</code> parameter. You can notice that it is written in camelCase. When configuring this parameter, you must use <code>ods-aggregation-context</code>, as shown in the example of code of the widget.</p>
+    </li>
+    <li>
+        <p>The <b>parameter type</b> indicates what form the value of the parameter must be. Most of the time, the parameter type is a basic type, such as <code>string</code>, <code>boolean</code> or <code>integer</code>, that are widely used in computer programming. Sometimes, the parameter type can also be <code>DatasetContext</code> or <code>CatalogContext</code>, since a lot a widgets interact with a context (see <a href="https://help.opendatasoft.com/widgets/#/getting-started/02context">Understanding the context</a>, the 2nd section of this Getting Started).</p>
+    </li>
+</ul>
+</div>

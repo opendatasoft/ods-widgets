@@ -1,0 +1,28 @@
+@ngdoc overview
+@name Getting started
+@description
+
+<h1>Getting started</h1>
+
+<p>This Getting Started guide aims at explaining key concepts for a better understanding of Opendatasoft widgets and their reference pages. Regardless of whether you are a complete beginner or a more advanced user, the idea behind this Getting Started is to guide you to autonomy, while encouraging your curiosity and resourcefulness.</p>
+
+<p>You will find 3 sections in this Getting Started guide, that can either be read one after the other or independently. They explain the 3 main concepts around the widgets topic.</p>
+
+<ul>
+   <li>How to read and use a widget reference page</li>
+   <li>How to link widgets together using the context</li>
+   <li>How to use widget filters</li>
+</ul>
+
+<p>At the end of this Getting Started, you should be able to use any Opendatasoft widget thanks to its reference page, as well as to understand well enough the whole logic behind the widgets to create any well-structured widgets-based project of your choice.</p>
+
+<div class="ods-prerequisite">
+    <p>
+        <i class="fa fa-exclamation"></i> All the examples of this Getting Started guide are displayed in editable sandboxes. You are highly encouraged to play with those sandboxes to try out our widgets and filters. Each sandbox displays the HTML code by default, but you can also view the result as well as the CSS code by clicking the same-named buttons.
+    </p>
+    <p>
+        To experiment on your own, outside the Getting Started guide, feel free to use any environment you feel comfortable with: the Opendatasoft environment (i.e. by creating a content page on an Opendatasoft portal) or an external environment (e.g. another sandbox or your own HTML page using your favorite editor). <br> For a complete guide to using Opendatasoft widgets in an external environment, please refer to <a href="https://github.com/opendatasoft/ods-cookbook/tree/master/widgets/external-use/" target="_blank">this Opendatasoft cookbook README</a>.
+    </p>
+</div>
+
+<p>Let's get started!</p>

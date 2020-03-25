@@ -198,6 +198,9 @@ a {
 ul {
   margin-bottom: 26px;
 }
+.ods-zoom ul:last-child {
+  margin-bottom: 0;
+}
 h1,
 h2,
 h3,
@@ -324,14 +327,14 @@ a:hover {
    ========================================================================== */
 .content-nav-items {
   padding: 0;
-  margin: 13px 0 26px 0;
+  margin: 13px 0 0 0;
   height: auto;
   width: 300px;
   list-style-type: none;
 }
 @media all and (-ms-high-contrast: active), (-ms-high-contrast: none) {
   .content-nav-items {
-    margin: 6px 0 26px 0;
+    margin: 6px 0 0 0;
   }
 }
 .nav-items {
@@ -495,9 +498,11 @@ a:hover {
 .content p {
   margin-bottom: 13px;
 }
+.ods-prerequisite p:last-child {
+  margin-bottom: 0;
+}
 code {
   white-space: normal;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif !important;
 }
 .hint {
   color: #898D92;
@@ -595,4 +600,74 @@ pre.prettyprint {
   text-transform: uppercase;
   color: #FFFFFF;
   vertical-align: middle;
+}
+/* ODS styles */
+.ods-prerequisite,
+.ods-link,
+.ods-note,
+.ods-zoom {
+  display: block;
+  padding: 13px;
+  border-radius: 4px;
+  margin-bottom: 26px;
+}
+.ods-zoom {
+  background-color: #fcfdfe;
+  border: 1px solid #DEE5EF;
+}
+.ods-prerequisite,
+.ods-note,
+.ods-link {
+  background-color: #e6f3fb;
+  border: 1px solid #80c3eb;
+}
+.ods-zoom .note-title {
+  font-size: 1.1em;
+}
+.ods-zoom .note-title .fa {
+  font-size: 2em;
+  vertical-align: sub;
+  margin-right: 6px;
+}
+.ods-prerequisite .fa:first-child,
+.ods-note .fa:first-child,
+.ods-link .fa:first-child {
+  font-size: 2em;
+  float: left;
+  margin-right: 0.5em;
+}
+.note-title {
+  margin-bottom: 13px;
+}
+.content code {
+  background-color: #DEE5EF;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+.content h1 code {
+  background-color: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  padding-left: 0;
+  padding-right: 0;
+}
+.content ul {
+  list-style-type: disc;
+}
+.ods-small-note {
+  font-style: italic;
+}
+.example-text {
+  font-style: italic;
+}
+.ods-image-with-sidetext {
+  display: -ms-flexbox;
+  display: flex;
+  margin: 26px 13px;
+}
+.ods-image-with-sidetext__sidetext {
+  margin-top: 13px;
+}
+.cp_embed_wrapper {
+  margin-top: 6px;
+  margin-bottom: 26px;
 }

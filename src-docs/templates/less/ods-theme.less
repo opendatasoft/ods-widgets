@@ -31,6 +31,10 @@ ul {
     margin-bottom: @spacing-200;
 }
 
+.ods-zoom ul:last-child {
+    margin-bottom: 0;
+}
+
 h1, h2, h3, h4, h5, h6 {
     font-weight: 400;
 }
@@ -165,7 +169,7 @@ a:hover {
 
 .content-nav-items {
     padding: 0;
-    margin: @spacing-100 0 @spacing-200 0;
+    margin: @spacing-100 0 0 0;
     height: auto;
     width: 300px;
     list-style-type: none;
@@ -173,7 +177,7 @@ a:hover {
     //- IE 10 / 11
     @media all and (-ms-high-contrast: active),
     (-ms-high-contrast:none) {
-        margin: @spacing-50 0 @spacing-200 0;
+        margin: @spacing-50 0 0 0;
     }
 }
 
@@ -366,9 +370,12 @@ a:hover {
     margin-bottom: @spacing-100;
 }
 
+.ods-prerequisite p:last-child {
+    margin-bottom: 0;
+}
+
 code {
     white-space: normal;
-    font-family: @basic-font!important;
 }
 
 .hint {
@@ -453,7 +460,7 @@ pre.prettyprint {
     font-size: 8px;
 }
 
-.in-html-template-binding, 
+.in-html-template-binding,
 .in-javascript {
     margin-bottom: @spacing-200;
 }
@@ -487,4 +494,90 @@ pre.prettyprint {
     text-transform: uppercase;
     color: @light-100;
     vertical-align: middle;
+}
+
+/* ODS styles */
+
+.ods-prerequisite,
+.ods-link,
+.ods-note,
+.ods-zoom {
+    display: block;
+    padding: 13px;
+    border-radius: 4px;
+    margin-bottom: @spacing-200;
+}
+
+.ods-zoom {
+    background-color: mix(@light-200, #fff, 30%);
+    border: 1px solid @light-300;
+}
+
+.ods-prerequisite,
+.ods-note,
+.ods-link {
+    background-color: mix(@identity-300, #fff, 10%);
+    border: 1px solid mix(@identity-300, #fff, 50%);
+}
+
+.ods-zoom .note-title {
+    font-size: 1.1em;
+}
+
+.ods-zoom .note-title .fa {
+    font-size: 2em;
+    vertical-align: sub;
+    margin-right: @spacing-50;
+}
+
+.ods-prerequisite .fa:first-child,
+.ods-note .fa:first-child,
+.ods-link .fa:first-child {
+    font-size: 2em;
+    float: left;
+    margin-right: 0.5em;
+}
+
+.note-title {
+    margin-bottom: @spacing-100;
+}
+
+.content code {
+    background-color: @light-300;
+    padding-left: @spacing-50;
+    padding-right: @spacing-50;
+}
+
+.content h1 code {
+    background-color: transparent;
+    font-family: @basic-font;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.content ul {
+    list-style-type: disc;
+}
+
+.ods-small-note {
+    font-style: italic;
+}
+
+.example-text {
+    font-style: italic;
+}
+
+.ods-image-with-sidetext {
+    display: flex;
+    margin: @spacing-200 @spacing-100;
+}
+
+.ods-image-with-sidetext__sidetext {
+    margin-top: @spacing-100;
+}
+
+.cp_embed_wrapper {
+    // Codepen editor
+    margin-top: @spacing-50;
+    margin-bottom: @spacing-200;
 }

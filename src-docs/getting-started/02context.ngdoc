@@ -1,0 +1,52 @@
+@ngdoc overview
+@name 2. Understanding the context
+@description
+
+<h1>Understanding the context</h1>
+
+<p>Knowing how to configure and use Opendatasoft widgets surely is one important part of the process of creating a data project involving widgets. But most of the time, the key to such a project, is the good use of context.</p>
+
+<p>The context is the link between data and widgets. It indicates what data should be used for the widget, and with which filters. Not only that, but the context also allows widgets to interact with one another, for an even more dynamic result!</p>
+
+<div class="ods-link">
+<i class="fa fa-external-link"></i> If you want to see a live example of how widgets and data are linked together, with a different or a shared context, <a href="https://discovery.opendatasoft.com/pages/concept-context/" target="_blank">it's this way</a>, on ODS Discovery!
+</div>
+
+<p>In practice, the context is an Opendatasoft widget: <a href="https://help.opendatasoft.com/widgets/#/api/ods-widgets.directive:odsDatasetContext" target="_blank">odsDatasetContext</a>, that represents a specific dataset, and allows interaction with its content, meaning its data.</p>
+
+<div class="ods-note">
+<i class="fa fa-pencil"></i> There is actually another context widget: <a href="https://help.opendatasoft.com/widgets/#/api/ods-widgets.directive:odsCatalogContext" target="_blank">odsCatalogContext</a> that represents a catalog of datasets, in other words, the list of datasets available on a given portal or API. It only allows interaction with the metadata of the datasets of the catalog, but not with the content of these datasets. We will however only focus on odsDatasetContext throughout the Getting Started guide.
+</div>
+
+<div class="example-text">In the example below, we have defined an <code>odsDatasetContext</code>, that is necessary for the <a href="https://help.opendatasoft.com/widgets/#/api/ods-widgets.directive:odsMap" target="_blank">odsMap widget</a> to be displayed. Try it out for yourself: delete <code>context="nobel-prize"</code> from the odsMap widget code, then click on the Result button: nothing appears! odsMap needs to be linked to the data on which it will be based.</div>
+
+<p class="codepen" data-height="500" data-theme-id="dark" data-default-tab="html" data-user="opendatasoft" data-slug-hash="qBdRvjw" data-editable="true" style="height: 500px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="Example 1 (Widgets Getting Started)">
+  <span>See the Pen <a href="https://codepen.io/opendatasoft/pen/qBdRvjw">
+  Example 1 (Widgets Getting Started)</a> by Agatha MacData (<a href="https://codepen.io/opendatasoft">@opendatasoft</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+
+<script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+
+<p>Although most widgets can and should interact with a context, all widgets do not have the same relation with this context. Depending on this relation, widgets can be placed in 2 different categories.</p>
+
+<ul>
+    <li>
+        Widgets that act on the context, meaning that they modify the context itself.
+    </li>
+    <li>
+        Widgets that are based on the context, meaning that they use the context to consume the data behind or to display it in a way or another.
+    </li>
+</ul>
+
+<div class="example-text">In the example below, <a href="https://help.opendatasoft.com/widgets/#/api/ods-widgets.directive:odsChart" target="_blank">odsChart</a> is based on the <code>nobelprize</code> context we have defined: odsChart indeed consumes the data that is behind the context. <a href="https://help.opendatasoft.com/widgets/#/api/ods-widgets.directive:odsFacets" target="_blank">odsFacets</a>, although also linked to the exact same context, does not quite have the same relation. odsFacets acts on the context: it allows to modify this context by refining it each time we select a filter.</div>
+
+<p class="codepen" data-height="500" data-theme-id="dark" data-default-tab="result" data-user="opendatasoft" data-slug-hash="yLNgwKj" data-editable="true" style="height: 500px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="Example 2 (Widgets Getting Started)">
+  <span>See the Pen <a href="https://codepen.io/opendatasoft/pen/yLNgwKj">
+  Example 2 (Widgets Getting Started)</a> by Agatha MacData (<a href="https://codepen.io/opendatasoft">@opendatasoft</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+
+<div class="ods-note">
+<i class="fa fa-pencil"></i>Some widgets do not need a context at all to exist. Most of the time, these widgets that exist alone without a context do not interact with data. They are external integrations, utility services, etc.
+</div>
