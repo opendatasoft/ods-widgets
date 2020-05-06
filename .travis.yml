@@ -1,9 +1,8 @@
 language: node_js
 env:
   global:
-  - secure: "JonR5GJedv/SbYQrYAhjFBUsF02GSUq8Fuk0wQRaOY1E/aBxfqLLVp6efaYYG9YMPkklHOu+HWSwVO0X6AeKblEb+4/h8oCUC4Q4KwXTF5xznVp/Bs98hPtqMmYT3XAIe13HeV5hbV4tKMtVYpwm8h4ZVhs1eUpnNpiVgUyWRqE="
-  - secure: "nbOagqTMyLRwN5E3zNuqkuq6IMmHRFKqcWNQauSICzZ629woRhLkofqPeLI9sJNvF13GT6BWJfroE45+juKSgbs27rtRp6/cN90/r+Jv1+STInobowcqJM2HoG2bGQ08Vx/P1PYJQF8X6ai6xFmTEuOhrew95S97ZUmu1adNsq4="
-  - secure: "Tye6/rssYfBQp+euo7fnSs7S+/hmCkBT1u0CWzW5R0mHRRpZf5MQRonqHwXrypFtHoZuLlqmJC7woy5T+yuyNZoGNL5r19kSlOWCcFDvDCZD/qghq9DoKN+u9AAoIu7phSNa0ve86NZM91hvad8evkRoIaHM2umjkx8fSmMRjkY="
+  - secure: "NSQzc92/y88tGELjiDUSLFkUgUL1pvUWa0r5p9L8Ybv05RIH27cBg07AH3gjg1ThCGuvLWyCZihs7ynap17v6gyLUhX4zqYWYkYB0lqMylBcDcwZLilY8H6ldKsSaSfYcWxsxllT3HeMlm8RQlIFAEUmQnIr7XwdPzgk4ma0qfE="
+  - secure: "KYFvcPSVKNFOCOi/FlSjzZ+j1IwTGhiABj5xeSM/dAwaOzmsDjTrc1vrYHY2oocJoOl0BHqTLShaSK6vIfGCSD8M134nihdiQq6CtTtALOiOF4vxAEaZCxr0U8YRhs/kz/3SSEouYBXVruDjif1HA2mw9HElOpxjzAAFMGW6Djg="
   - DEPLOY_BETA_PATH=/var/www/betahelp/widgets/
   - DEPLOY_PROD_PATH=/var/www/help/widgets/
 node_js:
@@ -32,7 +31,7 @@ deploy:
       tags: true
   - provider: releases
     api_key:
-      secure: "$API_KEY_GITHUB"
+      secure: Qv05pjUmwptNgHI/aFbJ8JEnBiR+qJTUXObUC7T1Rj6S5Agj4uYdMn9PJiErKjbgV9JD3Y7J+AN8qvpM1IFr8NQXd3a89rZ5LiOLIIL6kgoO857tL4pJP0QCs+2YZbg66xDTZ3KjiZp3PKo4UtwT9t7faSgj5e5JISpa0gptdT0=
     file: ./ods-widgets.zip
     skip_cleanup: true
     on:

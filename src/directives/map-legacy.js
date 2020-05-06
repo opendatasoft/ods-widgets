@@ -252,8 +252,7 @@
                     };
                 });
             },
-            controller: ['$scope', '$http', '$compile', '$q', '$filter', '$element', 'translate', 'ODSAPI', 'DebugLogger', 'ODSWidgetsConfig', '$attrs', function($scope, $http, $compile, $q, $filter, $element, translate, ODSAPI, DebugLogger, ODSWidgetsConfig, $attrs) {
-                DebugLogger.log('init map');
+            controller: ['$scope', '$http', '$compile', '$q', '$filter', '$element', 'translate', 'ODSAPI', 'ODSWidgetsConfig', '$attrs', function($scope, $http, $compile, $q, $filter, $element, translate, ODSAPI, ODSWidgetsConfig, $attrs) {
 
                 $scope.pendingRequests = $http.pendingRequests;
                 $scope.initialLoading = true;
@@ -589,7 +588,6 @@
                     var options = {};
                     options['geofilter.polygon'] = ODS.GeoFilter.getBoundsAsPolygonParameter($scope.map.getBounds());
                     jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters);
-                    DebugLogger.log('map -> download');
                     ODSAPI.records.download($scope.context, options).
                         success(function(data, status, headers, config) {
                             $scope.records = data;
@@ -693,7 +691,6 @@
                     // Don't fire at initialization time
                     if (newValue === oldValue) return;
                     if ($scope.initialLoading) return;
-                    DebugLogger.log('map -> searchOptions watch -> refresh records');
 
                     // If the polygon parameter didn't change, we can fit bounds. Else, it means the user dragged the map, and we
                     // don't want to fit again.
@@ -874,8 +871,6 @@
                         });
                     };
 
-                    DebugLogger.log('map -> dataset watch -> refresh records');
-
                     var mapInitWatcher = $scope.$watch('map', function(nv, ov){
                         if (nv) {
                             $scope.$watch('mapViewFilter', function(newValue, oldValue) {
@@ -921,25 +916,20 @@
                                 var deferred = $q.defer();
 
                                 if ($scope.mapContext.location) {
-                                    DebugLogger.log('Location found');
                                     var center = locationParameterFunctions.getCenterFromLocationParameter($scope.mapContext.location);
                                     var zoom = locationParameterFunctions.getZoomFromLocationParameter($scope.mapContext.location);
-                                    DebugLogger.log(center, zoom);
                                     nv.setView(center, zoom);
 
                                     refreshRecords(false);
 
                                     deferred.resolve();
                                 } else {
-                                    DebugLogger.log('Use boundsRetrieval');
                                     boundsRetrieval($scope.context.dataset).then(function(bounds) {
                                         if ($scope.context.parameters.mapviewport) {
-                                            DebugLogger.log('Deleted mapviewport');
                                             delete $scope.context.parameters.mapviewport;
                                         }
 
                                         // Fit to dataset boundingbox if there is no viewport or geofilter
-                                        DebugLogger.log(bounds);
                                         nv.fitBounds(bounds);
 
                                         deferred.resolve();
@@ -950,7 +940,6 @@
                             };
 
                             setMapView().then(function() {
-                                DebugLogger.log('First onViewportMove');
                                 onViewportMove($scope.map);
 
                                 $scope.map.on('moveend', function(e) {

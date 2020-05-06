@@ -14,6 +14,7 @@
             '       <input type="text" ' +
             '              class="odswidget-map-search-box__box"' +
             '              ng-class="{\'odswidget-map-search-box__box--datasearch\': dataSearchActive}"' +
+            '              placeholder="{{ \'Search for a location\' | translate }}" ' +
             '              ng-model="userQuery" ' +
             '              ng-model-options="{debounce: {\'default\': 200}}"' +
             '              ng-change="runQuery(userQuery)" ' +
@@ -45,7 +46,7 @@
             '       <li ng-show="userQuery"' +
             '           ng-click="runDataSearch(userQuery)"' +
             '           ng-class="[\'odswidget-map-search-box__search-suggestion\', {\'odswidget-map-search-box__search-suggestion--selected\': selectedIndex === 0}]">' +
-            '           <i class="fa fa-search"></i> Search {{userQuery}} in displayed data' +
+            '           <i class="fa fa-search"></i> <span translate>Search {{userQuery}} in displayed data</span>' +
             '       </li>' +
             '       <li ng-repeat="suggestion in suggestions" ' +
             '           ng-click="moveToSuggestion(suggestion, $index + 1)"' +
@@ -64,7 +65,7 @@
             '               ng-class="{\'odswidget-map-search-box__data-search__dataset--active\': selectedResult === result}">' +
             '               <div class="odswidget-map-search-box__data-search__dataset-title" ng-bind="::result.context.dataset.metas.title"></div>' +
             '               <div class="odswidget-map-search-box__data-search__dataset-count">' +
-            '                   {{result.nhits}} items' +
+            '                   <span translate translate-n="result.nhits" translate-plural="{{$count}} items">{{$count}} item</span>' +
             '               </div>' +
             '           </li>' +
             '       </ul>' +
@@ -80,11 +81,11 @@
             '           </li>' +
             '       </ul>' +
             '       <div class="odswidget-map-search-box__data-search__no-results" ng-if="!dataSearchWorking && datasetSearchDatasetsCount === 0">' +
-            '           No results found for your search' +
+            '           <span translate>No results found for your search</span>' +
             '       </div>' +
             '       <div class="odswidget-map-search-box__data-search__pagination" ng-if="!dataSearchWorking && datasetSearchDatasetsCount > 0">' +
             '           <div class="odswidget-map-search-box__data-search__pagination-counter">' +
-            '               {{ selectedResult.nhits }} results' +
+        '                   <span translate translate-n="selectedResult.nhits" translate-plural="{{$count}} results">{{$count}} result</span>' +
             '           </div>' +
             '           <div class="odswidget-map-search-box__data-search__pagination-pages">' +
             '               {{currentResultsStartIndex+1}}' +
@@ -383,8 +384,7 @@
                     - the first defined value in the fields
                     - null
                      */
-                    var value;
-                    var configuredTitle = dataset.getExtraMeta('explore', 'map_tooltip_title');
+                    var configuredTitle = dataset.getExtraMeta('visualization', 'map_tooltip_title');
                     if (configuredTitle && angular.isDefined(record.fields[configuredTitle])) {
                         return record.fields[configuredTitle];
                     } else {

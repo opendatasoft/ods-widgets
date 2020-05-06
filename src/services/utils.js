@@ -235,14 +235,61 @@
     });
 
     mod.factory("DebugLogger", ['$window', function($window) {
-        // TODO: Don't duplicate our own DebugLogger
-        return {
-            log: function() {
-                if ($window.location.hash == '#debug' || $window.location.hash.indexOf('debug=') >= 0 || jQuery(document.body).hasClass('showDebug')) {
-                    console.log.apply(console, arguments);
+        /*
+         * This Debug logger provides four types of loggin methods: log, error, trace and label.
+         * They have nice flashy colors so you can easily distinguish them from the old regular `console.log` method.
+         */
+
+        function main(key, args) {
+            var messages = Array.from(args);
+
+            if (['log', 'error', 'trace', 'label'].indexOf(key) === -1 || !messages || messages.length === 0) {
+                console.log('⚠️ You must call method %cDebugLogger.log%c or %cDebugLogger.error%c, with at least one argument.', 'background-color: #007bff; color: #ffffff; padding: 1px 5px 0 5px; border-radius: 3px; font-weight: bold; font-size: 10px;', '', 'background-color: #dc3545; color: #ffffff; padding: 1px 5px 0 5px; border-radius: 3px; font-weight: bold; font-size: 10px;', '');
+            } else {
+                var levels = {
+                    log: ['DEBUG LOG', 'background-color: #007bff; color: #ffffff; padding: 1px 0 0 5px; border-radius: 3px; font-weight: bold; font-size: 10px;'],
+                    error: ['DEBUG ERROR', 'background-color: #dc3545; color: #ffffff; padding: 1px 0 0 5px; border-radius: 3px; font-weight: bold; font-size: 10px;'],
+                    trace: ['DEBUG TRACE', 'background-color: #000000; color: #ffffff; padding: 1px 0 0 5px; border-radius: 3px; font-weight: bold; font-size: 10px;'],
+                    label: ['DEBUG ' + messages[0], 'background-color: #000000; color: #ffffff; padding: 1px 0 0 5px; border-radius: 3px; font-weight: bold; font-size: 10px;'],
+                };
+
+                messages.unshift('%c' + levels[key][0] + ' ', levels[key][1]);
+
+                if (key === 'log') {
+                    console.log.apply(console, messages);
+                } else if (key === 'error') {
+                    console.error.apply(console, messages);
+                }  else if (key === 'trace') {
+                    console.trace.apply(console, messages);
+                } else if (key === 'label') {
+                    if (messages.length > 2) {
+                        messages.splice(2, 1);
+                    }
+                    console.log.apply(console, messages);
                 }
             }
         };
+
+        if ($window.location.hash == '#debug'
+            || $window.location.hash.indexOf('debug=') >= 0
+            || jQuery(document.body).hasClass('showDebug')) {
+            return {
+                log: function() {
+                    main('log', arguments);
+                },
+                error: function() {
+                    main('error', arguments);
+                },
+                trace: function() {
+                    main('trace', arguments);
+                },
+                label: function() {
+                    main('label', arguments);
+                }
+            }
+        }
+
+        return { log: function() {}, error: function() {}, trace: function() {}, label: function() {} };
     }]);
 
     mod.factory("odsNotificationService", function() {
@@ -305,24 +352,33 @@
             '    <rect style="opacity: 0" x="0" y="0" width="19" height="19"></rect>' +
             '</svg>';
 
-        var loadImageInline = function(element, code, color) {
+        var colorSVGElements = function(node, color) {
+            node.css('fill', color);
+            node.find('path, polygon, circle, rect, text, ellipse').css('fill', color); // Needed for our legacy SVGs of various quality...
+        };
+
+        var loadImageInline = function(element, code, color, colorByNameMapping) {
             var svg = angular.element(code);
             if (color) {
-                svg.css('fill', color);
-                svg.find('path, polygon, circle, rect, text, ellipse').css('fill', color); // Needed for our legacy SVGs of various quality...
+                colorSVGElements(svg, color)
+            }
+            if (colorByNameMapping) {
+                angular.forEach(colorByNameMapping, function(elementColor, elementName) {
+                    colorSVGElements(svg.find('[name="'+elementName+'"]'), elementColor);
+                });
             }
             element.append(svg);
         };
 
         this.$get = ['$http', '$q', function($http, $q) {
-            var retrieve = function(url, color, getPromise) {
+            var retrieve = function(url, color, colorByNameMapping, getPromise) {
                 var deferred;
                 if (getPromise) {
                     deferred = $q.defer();
                 }
                 var element = angular.element('<div class="ods-svginliner__svg-container"></div>');
                 if (!url) {
-                    loadImageInline(element, FALLBACK, color);
+                    loadImageInline(element, FALLBACK, color, colorByNameMapping);
                     if (getPromise) { deferred.resolve(element); }
                 } else if (url.indexOf('.svg') === -1) {
                     // Normal image
@@ -332,14 +388,14 @@
                     // SVG
                     if (inlineImages[url]) {
                         if (inlineImages[url].code) {
-                            loadImageInline(element, inlineImages[url].code, color);
+                            loadImageInline(element, inlineImages[url].code, color, colorByNameMapping);
                             if (getPromise) { deferred.resolve(element); }
                         } else {
                             inlineImages[url].promise.success(function (data) {
-                                loadImageInline(element, data, color);
+                                loadImageInline(element, data, color, colorByNameMapping);
                                 if (getPromise) { deferred.resolve(element); }
                             }).error(function() {
-                                loadImageInline(element, FALLBACK, color);
+                                loadImageInline(element, FALLBACK, color, colorByNameMapping);
                                 if (getPromise) { deferred.resolve(element); }
                             });
                         }
@@ -349,13 +405,13 @@
                         inlineImages[url] = {promise: promise};
                         promise.success(function (data) {
                             inlineImages[url].code = data;
-                            loadImageInline(element, data, color);
+                            loadImageInline(element, data, color, colorByNameMapping);
                             if (getPromise) { deferred.resolve(element); }
                         }).error(function(data, status) {
                             // Ignore it silently
                             console.log('WARNING: Unable to fetch SVG image', url, 'HTTP status:', status);
                             inlineImages[url].code = FALLBACK;
-                            loadImageInline(element, FALLBACK, color);
+                            loadImageInline(element, FALLBACK, color, colorByNameMapping);
                             if (getPromise) { deferred.resolve(element); }
                         });
                     }
@@ -368,11 +424,11 @@
             };
 
             return {
-                getElement: function(url, color) {
-                    return retrieve(url, color);
+                getElement: function(url, color, colorByNameMapping) {
+                    return retrieve(url, color, colorByNameMapping);
                 },
-                getPromise: function(url, color) {
-                    return retrieve(url, color, true);
+                getPromise: function(url, color, colorByNameMapping) {
+                    return retrieve(url, color, colorByNameMapping, true);
                 }
             };
 

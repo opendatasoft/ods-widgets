@@ -2,6 +2,20 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.4.5 - 2020-03-25
+### Added
+- `odsPicto`: A new `colorByName` parameter can be used, to apply different colors to different areas of a SVG file
+  based on their `name` attribute. The parameter can be changed on the fly, to allow for dynamic coloring.
+- `odsResultEnumerator`: The `max` parameter can now be changed on the fly.
+- `odsResults`: The `odsResultsMax` parameter can now be changed on the fly.
+
+### Fixed
+- `odsMap`: A number of texts in the Search box where not properly translated
+- `odsMap`: The field used to display results when using the Search box is now the field used as the tooltip title
+  (if configured), as intended
+- `odsMediaGallery`: Fixed broken image when using TIFF (now displaying a placeholder since most browsers don't support it)
+- `odsVegaLite`: Fixed potential infinite loop when working with dynamic data
+
 ## 1.4.4 - 2020-03-25
 ### Added
 - `odsChartQuery`: all parameters are now dynamic, meaning that if they are set to a variable, and the variable

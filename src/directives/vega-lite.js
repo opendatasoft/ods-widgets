@@ -227,12 +227,13 @@
                 var watchData = function () {
                     angular.forEach(serieNames, function (serieName) {
                         scope.$watch(function () {
-                            return getSerieValues(scope, attrs, serieName);
+                            var data = getSerieValues(scope, attrs, serieName);
+                            return data;
                         }, function (nv, ov) {
                             if (typeof nv !== "undefined") {
-                                updateSerieValues(serieName, nv || []);
+                                updateSerieValues(serieName, angular.copy(nv) || []);
                             }
-                        });
+                        }, true);
                     });
                 };
 

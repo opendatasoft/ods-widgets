@@ -23,6 +23,7 @@
             template: '' +
                 '<div class="odswidget odswidget-record-image">' +
                 '   <img class="odswidget-record-image__image" ng-style="{ \'background-image\': prefetchBackground}" ng-if="imageUrl" ng-src="{{ imageUrl }}">' +
+                '   <div class="odswidget-record-image__image odswidget-record-image__image--tiff-placeholder" ng-if="tiffPlaceholder">' +
                 '   <div class="odswidget-record-image__image odswidget-record-image__image--placeholder" ng-if="placeholder">' +
                 '</div>',
             scope: {
@@ -32,10 +33,14 @@
             },
             link: function(scope) {
                 scope.imageUrl = null;
+                scope.placeholder = false;
+                scope.tiffPlaceholder = false;
                 var render = function() {
                     var image = scope.record.fields[scope.field];
                     if (image && typeof image !== 'object') {
                         console.error('Widget <record-image> requires a file field type');
+                    } else if (image && image.format.toLowerCase() === "tiff") {
+                        scope.tiffPlaceholder = true;
                     } else if (image.url) {
                         scope.imageUrl = image.url;
                         scope.placeholder = false;

@@ -103,18 +103,50 @@
       return v;
     }
 
+    function isDisjunctiveFacet(contextParameters, facetName) {
+        var disjunctive = false;
+        angular.forEach(contextParameters, function(value, key) {
+            if (key === "disjunctive." + facetName && value === true) {
+                disjunctive = true;
+            }
+        });
+        return disjunctive;
+    }
+
+    function isValidDateString(str) {
+        var detectObjectClass = Object.prototype.toString; // Using toString() to detect the object class
+        var date = new Date(str);
+        if (detectObjectClass.call(date) === "[object Date]") { // Check if the variable date is created by Date object
+            if (isNaN(date.getTime())) { // If the date is invalid then the getTime() method will return NaN
+                return false;
+            } else { // If the date is valid then the getTime() method will always be equal to itself
+                return true;
+            }
+        }
+        return false;
+    }
+
     var ODS = {
         Context: {
             toggleRefine: function(context, facetName, path, replace) {
                 var refineKey = 'refine.'+facetName;
                 var isHierarchical = false;
                 var refineSeparator = '/';
-                if (context.dataset) {
+                if (context.type === "dataset" && context.dataset) {
                     var field = context.dataset.getField(facetName);
                     var hierarchicalAnnotation = context.dataset.getFieldAnnotation(field, "hierarchical");
                     if (typeof hierarchicalAnnotation !== "undefined") {
                         isHierarchical = true;
                         refineSeparator = hierarchicalAnnotation.args[0] || refineSeparator;
+                    } else if (field.type === "date" || field.type === "datetime") {
+                        // In the context of a dataset, a datetime or date field is always hierachical.
+                        isHierarchical = true;
+                    }
+                } else if (context.type === "catalog") {
+                    // Since disjunctive facets can't be hierarchical, we assume that non-disjunctive facet might be.
+                    // Then we test if the facet's path can be parsed into a date object, if it can, we can safely assume that this facet is hierarchical.
+                    if (isDisjunctiveFacet(context.parameters, facetName) === false && isValidDateString(path) === true) {
+                        isHierarchical = true;
                     }
                 }
                 if (angular.isDefined(context.parameters[refineKey])) {
@@ -342,7 +374,7 @@
                 return input && input.indexOf(searchedString) === 0;
             },
             escapeHTML: function(text) {
-                return text
+                return text == null ? '' : String(text)
                     .replace(/&/g, "&amp;")
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;")

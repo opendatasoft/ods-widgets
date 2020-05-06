@@ -128,7 +128,7 @@
          *                          ods-analysis-context="tree"
          *                          ods-analysis-max="10"
          *                          ods-analysis-x="espece"
-         *                          ods-analysis-sort="circonference"
+         *                          ods-analysis-sort="girth"
          *                          ods-analysis-serie-height="AVG(hauteur)"
          *                          ods-analysis-serie-height-cumulative="false"
          *                          ods-analysis-serie-girth="AVG(circonference)"

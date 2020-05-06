@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsMediaGallery', ['$timeout', '$q', 'ODSAPI', function($timeout, $q, ODSAPI) {
+    mod.directive('odsMediaGallery', ['$q', 'ODSAPI', 'translate', function($q, ODSAPI, translate) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsMediaGallery
@@ -38,7 +38,7 @@
             defaultDetailsTemplate = "" +
                 '<div>' +
                     '<div class="ods-media-gallery__tooltip__image-container" width="{{ image.realwidth }}px" height="{{ image.realheight }}px">' +
-                    '   <img class="ods-media-gallery__tooltip__image" ng-src="{{ image.thumbnail_url }}">' +
+                    '   <ods-record-image record="image.record" field="{{image.fieldname}}" domain-url="{{context.domainUrl}}"></ods-record-image>' +
                     '</div>' +
                     '<div class="ods-media-gallery__tooltip__fields">' +
                         '<h2 ng-if="getRecordTitle(record)">' +
@@ -130,7 +130,7 @@
             '   <div class="odswidget-overlay" ng-if="fetching && !records"><ods-spinner></ods-spinner></div>' +
             '</div>',
             require: ['odsMediaGallery', '?odsWidgetTooltip', '?odsAutoResize', '?refineOnClick'],
-            controller: ['$scope', '$element', '$window', 'DebugLogger', '$filter', function($scope, $element, $window, DebugLogger, $filter) {
+            controller: ['$scope', '$element', '$window', '$filter', function($scope, $element, $window, $filter) {
                 // Infinite scroll parameters
                 $scope.page = 0;
                 $scope.resultsPerPage = 40;
@@ -273,7 +273,7 @@
                         $scope.imageFields = $scope.context.dataset.extra_metas.visualization.media_gallery_fields;
                     } else {
                         for (i = 0; i < dataset.fields.length; i++) {
-                            if (dataset.fields[i].type == "file") {
+                            if (dataset.fields[i].type == "file" && dataset.fields[i].annotations) {
                                 for (j = 0; j < dataset.fields[i].annotations.length; j++) {
                                     if (dataset.fields[i].annotations[j].name == "has_thumbnails" &&
                                         ($scope.imageFields.length === 0 || $scope.imageFields.indexOf(dataset.fields[i].name) > -1)) {
@@ -320,7 +320,12 @@
                         if (angular.isDefined(record.fields[titleField]) && record.fields[titleField] !== '' && field.type !== 'file') {
                             return $filter('formatFieldValue')(record.fields, field, $scope.context);
                         } else {
-                            return record.fields[titleField].filename;
+                            try {
+                                return record.fields[titleField].filename;
+                            } catch(e) {
+                                // If the record has no `titleField`, return default value
+                                return translate("Untitled");
+                            }
                         }
                     }
                     return null;

@@ -5,21 +5,38 @@
 .odswidget-record-image .odswidget-record-image__image {
     // The CSS rule has to be precise and !important because Leaflet has a style that overrides us, and with !important
     max-width: 100% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 }
 
-.odswidget-record-image__image--placeholder {
+.odswidget-record-image__image--placeholder,
+.odswidget-record-image__image--tiff-placeholder {
     border: dashed 1px #ddd;
     background-color: #eee;
     height: 200px;
     width: 300px;
 }
+
 .odswidget-record-image__image--placeholder:before {
     content: '\f03e';
     font-family: 'FontAwesome';
     font-size: 50px;
-    line-height: 200px;
     opacity: 0.4;
-    display: block;
-    text-align: center;
 }
 
+.odswidget-record-image__image--tiff-placeholder {
+    &:before {
+        content: '\f1c5';
+        font-family: 'FontAwesome';
+        font-size: 50px;
+        opacity: 0.4;
+    }
+    &:after {
+        content: '.TIFF';
+        font-weight: 600;
+        text-align: center;
+        opacity: 0.4;
+    }
+}

@@ -97,7 +97,7 @@
                        ' <div class="odswidget-overlay" ng-hide="fetching || records"><span class="odswidget-overlay__message" translate>No results</span></div>' +
                        ' <div class="odswidget-overlay" ng-hide="(!fetching || records) && !working"><ods-spinner></ods-spinner></div>' +
                     '</div>',
-            controller: ['$scope', '$element', '$timeout', '$document', '$window', 'ODSAPI', 'DebugLogger', '$filter', '$http', '$compile', '$transclude', '$q', function($scope, $element, $timeout, $document, $window, ODSAPI, DebugLogger, $filter, $http, $compile, $transclude, $q) {
+            controller: ['$scope', '$element', '$timeout', 'ODSAPI', '$filter', '$compile', '$transclude', '$q', function($scope, $element, $timeout, ODSAPI, $filter, $compile, $transclude, $q) {
                 $scope.displayedFieldsArray = null;
 
                 $scope.displayDatasetFeedback = false;
@@ -572,8 +572,6 @@
                         rows: $scope.resultsPerPage
                     };
 
-                    DebugLogger.log('table -> dataset watch -> refresh records');
-
                     var fieldsForVisualization = $filter('fieldsForVisualization')($scope.context.dataset.fields, 'table');
                     datasetFields = $filter('fieldsFilter')(fieldsForVisualization, $scope.displayedFieldsArray);
 
@@ -581,8 +579,6 @@
 
                     $scope.$watch('context.parameters', function() {
                         // Don't fire at initialization time
-
-                        DebugLogger.log('table -> searchOptions watch -> refresh records');
 
                         // Reset all variables for next time
                         $scope.layout = []; // Reset layout (layout depends on records data)

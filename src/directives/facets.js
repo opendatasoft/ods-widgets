@@ -237,8 +237,8 @@
                             }
                         }, true);
                     } else {
-                    // We're starting the queries from here because at that time we are sure the children (odsFacets tags)
-                    // are ready and have registered themselves.
+                        // We're starting the queries from here because at that time we are sure the children (odsFacets tags)
+                        // are ready and have registered themselves.
                         delayedInit();
                     }
                 };
@@ -250,10 +250,10 @@
 
                 $scope.facets = [];
                 $scope.init = function() {
-                    // Commented until we no longer need the call to refresh the nhits on the context
-//                    if ($scope.facets.length === 0) {
-//                        return;
-//                    }
+                    // NOTE: Commented until we no longer need the call to refresh the nhits on the context
+                    // if ($scope.facets.length === 0) {
+                    //     return;
+                    // }
                     $scope.$watch(function() {
                         // FIXME: Generalize this and use a whitelist https://github.com/opendatasoft/ods-widgets/issues/13
                         var params = angular.copy($scope.context.parameters);
@@ -355,6 +355,12 @@
                                 context: context,
                                 facetName: contextFacetName ? contextFacetName : name
                             });
+
+                            // The following check only makes sense if both contexts are dataset contexts
+                            if (context.type !== 'dataset' || $scope.context.type !== 'dataset') {
+                                return;
+                            }
+
                             // check that mapping is correct
                             var checkMappingType = function (originalContext, secondaryContext) {
                                 angular.forEach(originalContext.dataset.fields, function (originalField) {

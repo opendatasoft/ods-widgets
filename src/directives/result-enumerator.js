@@ -3,14 +3,14 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsResultEnumerator', ['ODSAPI', function(ODSAPI) {
+    mod.directive('odsResultEnumerator', function() {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsResultEnumerator
          * @scope
          * @restrict E
          * @param {CatalogContext|DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {number} [max=10] Maximum number of results to show
+         * @param {number} [max=10] Maximum number of results to show (can be changed dynamically using a variable)
          * @param {boolean} [showHitsCounter=false] Display the number of hits (search results). This is the number of results available on the API, not the number of results displayed in the widget.
          * @param {boolean} [showPagination=false] Display a pagination block below the results, to be able to browse them all.
          * @description
@@ -57,24 +57,23 @@
             },
             template: '' +
             '<div class="odswidget odswidget-result-enumerator">' +
-            '    <div ods-results="items" ods-results-context="context" ods-results-max="{{maxHits}}" class="odswidget-result-enumerator__results">' +
+            '    <div ods-results="items" ods-results-context="context" ods-results-max="{{max}}" class="odswidget-result-enumerator__results">' +
             '        <div ng-if="loading"><ods-spinner class="odswidget-spinner--large"></ods-spinner></div>' +
             '        <div ng-if="!loading && !items.length" class="odswidget-result-enumerator__no-results-message" translate>No results</div>' +
             '        <div ng-if="!loading && items.length && hitsCounter" class="odswidget-result-enumerator__results-count">{{context.nhits}} <span translate>results</span></div>' +
             '        <div ng-repeat="item in items" inject class="odswidget-result-enumerator__item"></div>' +
             '    </div>' +
-            '    <ods-pagination-block ng-if="pagination" context="context" per-page="{{maxHits}}" container-identifier="{{localId}}"></ods-pagination-block>' +
+            '    <ods-pagination-block ng-if="pagination" context="context" per-page="{{max}}" container-identifier="{{localId}}"></ods-pagination-block>' +
             '</div>',
             link: function(scope, element) {
                 scope.localId = 'odsResultEnumerator-'+ODS.StringUtils.getRandomUUID();
                 element.children()[0].id = scope.localId;
             },
             controller: ['$scope', function($scope) {
-                $scope.maxHits = $scope.max || 10;
                 $scope.hitsCounter = (angular.isString($scope.showHitsCounter) && $scope.showHitsCounter.toLowerCase() === 'true');
                 $scope.pagination = (angular.isString($scope.showPagination) && $scope.showPagination.toLowerCase() === 'true');
             }]
         };
-    }]);
+    });
 
 }());

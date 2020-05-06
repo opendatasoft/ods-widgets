@@ -5,7 +5,7 @@
     'use strict';
 
     var mod = angular.module('ods-widgets');
-    mod.directive("odsAnalyze", function (URLSynchronizer, $location, DebugLogger) {
+    mod.directive("odsAnalyze", function (URLSynchronizer, $location) {
         return {
             restrict: 'E',
             template: ''+

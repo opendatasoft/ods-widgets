@@ -650,9 +650,6 @@ pre.prettyprint {
   padding-left: 0;
   padding-right: 0;
 }
-.content ul {
-  list-style-type: disc;
-}
 .ods-small-note {
   font-style: italic;
 }

@@ -82,7 +82,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget exposes the results of an analysis (as an object containing a results array and optionally an aggregations object) in a variable available in the scope.",
-      "keywords": "aggregations analysis angularjs api array avg build catalog circonference class context dataset directive espece exposes false girth height html https invert les-arbres-remarquables-de-paris maximum module ng-repeat ngrepeat number object ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-girth ods-analysis-serie-height ods-analysis-serie-height-cumulative ods-analysis-sort ods-analysis-x ods-widgets odsanalysiscontext odsanalysissort opendatasoft optionally result scope serie simply sort table table-bordered table-condensed table-striped tree tree-dataset tree-domain variable widget",
+      "keywords": "aggregations analysis angularjs api array avg build catalog class context dataset directive espece exposes false girth height html https invert les-arbres-remarquables-de-paris maximum module ng-repeat ngrepeat number object ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-girth ods-analysis-serie-height ods-analysis-serie-height-cumulative ods-analysis-sort ods-analysis-x ods-widgets odsanalysiscontext odsanalysissort opendatasoft optionally result scope serie simply sort table table-bordered table-condensed table-striped tree tree-dataset tree-domain variable widget",
       "isDeprecated": false
     },
     {
@@ -202,7 +202,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "A &quot;dataset context&quot; represents a dataset, and a set of parameters used to query its data. A context can be used",
-      "keywords": "absolute access accessible active additional ae allow alphanum alphanumerical angularjs api apikey applied apply assume attribute attributes automatically based behavior boolean build california call case change characters child cities clocks clocks-dataset clocks-domain comma commas configure configured construct context contexts conventions create created creates csv current currently data dataset declare default defaultdomain delay demographics described dict dictionary directive directives directly displayed displays domain domainurl download element enable enabled evenements-publics-openagenda-extract events example export exposed exposes expression field fields filter filters find format full geojson getdownloadurl getquerystringurl holding hostname https identifier including indicate initialize initially inside json key les-arbres-remarquables-de-paris links list local lowercase map method milliseconds minimum mycontext-domain mydomain named names naming nest note number object ods-widgets odsdatasetcontext odswidgetsconfig odswidgetsconfigprovider opendatasoft optional options original parameter parameters parametersfromcontext pass path places plugged prefixed properties queries query refine refinement refresh refresh-delay refreshing replicate represents retrieved returns root santa scope separated set settings share simple single sort specific stations-dataset stations-domain stations-parameters string suffix synchronization table time trees trees-dataset trees-domain trees-in-paris unpredictable url urlsync us-cities-demographics use_labels_for_header user variable view wait widgets-examples won",
+      "keywords": "absolute access accessible active additional ae allow alphanum alphanumerical angularjs api apikey applied apply assume attribute attributes automatically based behavior boolean build california call case change characters child cities comma commas configure configured construct context contexts conventions create created creates csv current currently data dataset declare default defaultdomain delay demographics demographics-dataset demographics-domain demographics-parameters described dict dictionary directive directives directly displayed displays domain domainurl download element enable enabled evenements-publics-openagenda-extract events events-dataset events-domain example export exposed exposes expression field fields filter filters find format full geojson getdownloadurl getquerystringurl holding hostname https identifier including indicate initialize initially inside json key les-arbres-remarquables-de-paris links list local lowercase map method milliseconds minimum mycontext-domain mydomain named names naming nest note number object ods-widgets odsdatasetcontext odswidgetsconfig odswidgetsconfigprovider opendatasoft optional options original parameter parameters parametersfromcontext pass path places plugged prefixed properties queries query refine refinement refresh refresh-delay refreshing replicate represents retrieved returns root santa scope separated set settings share simple single sort specific string suffix synchronization table time trees trees-dataset trees-domain trees-in-paris unpredictable url urlsync us-cities-demographics use_labels_for_header user variable view wait widgets-examples won",
       "isDeprecated": false
     },
     {
@@ -521,7 +521,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a &quot;picto&quot; specified by a url and force a fill color on it.",
-      "keywords": "api apply assets classes color defs directive directly display displays element example expect fill force hardcoded height html image implement javascript litterals ll module ods-widgets parameters picto provide quotes strings style styled svg url variables vectorial widget width wrap",
+      "keywords": "api apply assets attribute classes color colorbyname colors corresponding defs directive directly display displays element elements example expect fill force hardcoded height html image implement javascript litterals ll mapping matching module names object ods-widgets parameters picto provide quotes strings style styled svg url variables vectorial widget width wrap",
       "isDeprecated": false
     },
     {
@@ -571,7 +571,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget enumerates the results of a search (records for a Dataset Context, datasets for a Catalog Context) and repeats the template (the content of the directive element) for each of them.",
-      "keywords": "_blank angularjs api belongs block browse catalog content context dataset datasetid datasets directive display displayed domainurl element enumerates example example-domain fields geojson geometrical geometry hits hold holding holds html https identifier item key maximum metadata metas module ng-href number object ods-widgets opendatasoft pagination record repeats representation result search target template title variables widget",
+      "keywords": "_blank angularjs api belongs block browse catalog changed content context dataset datasetid datasets directive display displayed domainurl dynamically element enumerates example example-domain fields geojson geometrical geometry hits hold holding holds html https identifier item key maximum metadata metas module ng-href number object ods-widgets opendatasoft pagination record repeats representation result search target template title variable variables widget",
       "isDeprecated": false
     },
     {
@@ -581,7 +581,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget exposes the results of a search (as an array) in a variable available in the scope. It can be",
-      "keywords": "adds adresse angularjs api array build catalog class context dataset directive exposes fields html https item items les-arbres-remarquables-de-paris libellefrancais list matching maximum module ng-repeat ngrepeat nhits number ods-results ods-results-context ods-results-max ods-widgets odsresultscontext odsresultsmax opendatasoft property query records scope search simply sort table table-bordered table-condensed table-striped total tree tree-dataset tree-domain tree-parameters trees variable widget",
+      "keywords": "adds adresse angularjs api array build catalog changed class context dataset directive dynamically exposes fields html https item items les-arbres-remarquables-de-paris libellefrancais list matching maximum module ng-repeat ngrepeat nhits number ods-results ods-results-context ods-results-max ods-widgets odsresultscontext odsresultsmax opendatasoft property query records scope search simply sort table table-bordered table-condensed table-striped total tree tree-dataset tree-domain tree-parameters trees variable widget",
       "isDeprecated": false
     },
     {

@@ -11,7 +11,7 @@
          * @restrict A
          * @param {string} [odsResults=results] Variable name to use
          * @param {CatalogContext|DatasetContext} odsResultsContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {number} [odsResultsMax=10] Maximum number of results to show
+         * @param {number} [odsResultsMax=10] Maximum number of results to show (can be changed dynamically using a variable)
          * @description
          * This widget exposes the results of a search (as an array) in a variable available in the scope. It can be
          * used with AngularJS's ngRepeat to simply build a list of results.
@@ -68,7 +68,8 @@
                 var dataset_search = ODSAPI.uniqueCall(ODSAPI.records.search),
                     catalog_search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
 
-                var loadResults = function (context) {
+                var loadResults = function () {
+                    var context = $scope.$eval($attrs.odsResultsContext);
                     var options = angular.extend({}, context.parameters, {'rows': $attrs.odsResultsMax});
                     var variable = $attrs.odsResults || 'results';
                     $scope.loading = true;
@@ -94,13 +95,22 @@
                         });
                     }
                 };
-                var firstLoad = true;
-                $scope.$watch($attrs.odsResultsContext, function(nv, ov) {
-                    if (!!(nv.type === 'catalog' || (nv.type === 'dataset' && nv.dataset)) &&
-                        (!angular.equals(nv.parameters, ov.parameters) || firstLoad)) {
-                        firstLoad = false;
-                        loadResults(nv);
-                    }
+
+                var firstLoad = false;
+                $scope.$watch(
+                    function() {
+                        // We're only interested in context parameters and max results
+                        var ctx = $scope.$eval($attrs.odsResultsContext);
+                        var params = ctx.type === 'catalog' || ctx.dataset ? ctx.parameters : null;
+                        return [params, $attrs.odsResultsMax];
+                    },
+                    function(nv, ov) {
+                        // In the case of a catalog context, everything is there when the watch first initializes so
+                        // ov and nv will be the same in that case.
+                        if (nv !== ov || (nv[0] && !firstLoad)) {
+                            loadResults();
+                            firstLoad = true;
+                        }
                 }, true);
             }]
         };

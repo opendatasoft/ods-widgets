@@ -1029,7 +1029,7 @@
                         if (layerList.length > layerCountLimit) {
                             var otherLayerCount = layerList.length - layerCountLimit;
                             layerList.splice(0, layerCountLimit);
-                            var text = translatePlural(otherLayerCount, '... and {{ $count }} more layer', '... and {{ $count }} more layers');
+                            var text = translatePlural(otherLayerCount, '... and {{ $count }} more layer', '... and {{ $count }} more layers', {});
                             layerList.push('<em>' + text + '</em>');
                         }
                         return layerList.join("<br>");

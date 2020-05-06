@@ -85,20 +85,20 @@
          *  <ods-dataset-context context="trees,events"
          *                       trees-dataset="les-arbres-remarquables-de-paris"
          *                       trees-domain="https://widgets-examples.opendatasoft.com/"
-         *                       clocks-dataset="evenements-publics-openagenda-extract"
-         *                       clocks-domain="widgets-examples">
+         *                       events-dataset="evenements-publics-openagenda-extract"
+         *                       events-domain="widgets-examples">
          *      <!-- Shows a list of the trees -->
          *      <ods-table context="trees"></ods-table>
-         *      <!-- Shows a map of clocks -->
+         *      <!-- Shows a map of events -->
          *      <ods-map context="events"></ods-map>
          *  </ods-dataset-context>
          *  </pre>
          *
          *  <pre>
          *  <ods-dataset-context context="demographics"
-         *                       stations-dataset="us-cities-demographics"
-         *                       stations-domain="https://widgets-examples.opendatasoft.com/"
-         *                       stations-parameters="{'q': 'Santa', 'refine.state': 'California'}">
+         *                       demographics-dataset="us-cities-demographics"
+         *                       demographics-domain="https://widgets-examples.opendatasoft.com/"
+         *                       demographics-parameters="{'q': 'Santa', 'refine.state': 'California'}">
          *      <!-- Demographics for all cities in California that have 'Santa' in their name -->
          *      <ods-table context="demographics"></ods-table>
          *  </ods-dataset-context>

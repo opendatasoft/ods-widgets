@@ -2119,8 +2119,17 @@ html[dir=rtl] .odswidget-most-popular-datasets__theme-picto {
 }
 .odswidget-record-image .odswidget-record-image__image {
   max-width: 100% !important;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+      align-items: center;
+  -ms-flex-pack: center;
+      justify-content: center;
+  -ms-flex-direction: column;
+      flex-direction: column;
 }
-.odswidget-record-image__image--placeholder {
+.odswidget-record-image__image--placeholder,
+.odswidget-record-image__image--tiff-placeholder {
   border: dashed 1px #ddd;
   background-color: #eee;
   height: 200px;
@@ -2130,10 +2139,19 @@ html[dir=rtl] .odswidget-most-popular-datasets__theme-picto {
   content: '\f03e';
   font-family: 'FontAwesome';
   font-size: 50px;
-  line-height: 200px;
   opacity: 0.4;
-  display: block;
+}
+.odswidget-record-image__image--tiff-placeholder:before {
+  content: '\f1c5';
+  font-family: 'FontAwesome';
+  font-size: 50px;
+  opacity: 0.4;
+}
+.odswidget-record-image__image--tiff-placeholder:after {
+  content: '.TIFF';
+  font-weight: 600;
   text-align: center;
+  opacity: 0.4;
 }
 .odswidget-reuses {
   height: 400px;
