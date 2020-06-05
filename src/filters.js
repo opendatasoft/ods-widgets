@@ -235,6 +235,30 @@
         };
     });
 
+    mod.filter('fieldsForLanguageDisplay', function() {
+        return function(fields, language) {
+            if (angular.isUndefined(fields)) { return fields; }
+            if (!language) { return fields; }
+
+            return fields.filter(function(field) {
+                if (!field.annotations) {
+                    return true;
+                }
+                var annotations = field.annotations.filter(function(anno) { return anno.name === 'display_languages'});
+                if (!annotations.length) {
+                    // The annotation isn't there
+                    return true;
+                }
+                var displayLanguagesAnnotation = annotations[0];
+                if (displayLanguagesAnnotation.args.length && displayLanguagesAnnotation.args.indexOf(language) === -1) {
+                    // We don't want to display that field in that language
+                    return false;
+                }
+                return true;
+            });
+        };
+    });
+
     mod.filter('formatFieldValue', ['$filter', '$sce', function($filter, $sce) {
         var DATASETID_RE = /^\/(explore\/(embed\/)?dataset|publish)\/([\w_@-]+)\//;
         var getPrecision = function(field) {
@@ -1019,4 +1043,65 @@
             return angular.fromJson(val);
         };
     });
+
+    mod.filter('uriEncode', ['$window', function($window) {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:uriEncode
+         *
+         * @function
+         * @description This filter can be used to prepare a string to be used when building a link.
+         * It's important to understand that this filter encodes a string but ignores protocol prefix ('http://') and domain name.
+         * This filter uses the 'encodeURI' JavaScript function under the hood.
+         * @param {string} A string.
+         * @return {string} A URL encoded value (but ignores protocol prefix ('http://') and domain name).
+         *
+         * @example
+         * <pre>
+         * value = 'https://website.com?x=шеллы'
+         * </pre>
+         *
+         * <pre>
+         * value|uriEncode
+         * </pre>
+         *
+         * <pre>
+         * https://website.com?x=%D1%88%D0%B5%D0%BB%D0%BB%D1%8B
+         * </pre>
+         */
+        return function(input) {
+            return angular.isString(input) ? $window.encodeURI(input) : input;
+        };
+    }]);
+
+    mod.filter('uriComponentEncode', ['$window', function($window) {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:uriComponentEncode
+         *
+         * @function
+         * @description This filter can be used to prepare a string to be used as a parameter when building a link.
+         * It's important to understand that 'uriComponentEncode' filters the entire string, whereas 'uriEncode' (see {@link ods-widgets.filter:uriEncode reference page}) filter ignores
+         * protocol prefix ('http://') and domain name.
+         * This filter uses the 'encodeURIComponent' JavaScript function under the hood.
+         * @param {string} A string.
+         * @return {string} A URL encoded value (be aware that this filter will also encode protocol prefix ('http://') and domain name).
+         *
+         * @example
+         * <pre>
+         * value = 'cats&dogs'
+         * </pre>
+         *
+         * <pre>
+         * value|uriComponentEncode
+         * </pre>
+         *
+         * <pre>
+         * cats%26dogs
+         * </pre>
+         */
+        return function(input) {
+            return angular.isString(input) ? $window.encodeURIComponent(input) : input;
+        };
+    }]);
 }());

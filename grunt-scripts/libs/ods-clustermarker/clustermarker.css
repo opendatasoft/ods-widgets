@@ -1,0 +1,23 @@
+.cluster-marker .cluster-marker-circle {
+            /*animation: fadein, 0.4s;*/
+       /*-moz-animation: fadein, 0.4s;*/
+    /*-webkit-animation: fadein, 0.4s;*/
+
+            /*transition: opacity linear 0.4s;*/
+       /*-moz-transition: opacity linear 0.4s;*/
+    /*-webkit-transition: opacity linear 0.4s;*/
+
+    border-radius: 50%;
+    text-align: center;
+    position: absolute;
+    background-clip: padding-box;
+    /*font-weight: bold;*/
+    font-family: "Lucida Console", Monaco, monospace;
+    box-sizing: content-box;
+}
+
+.cluster-marker .cluster-marker-circle span {
+    display:inline-block;
+    margin-top:auto;
+    margin-bottom:auto;
+}

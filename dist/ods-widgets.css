@@ -3424,7 +3424,7 @@ html[dir=rtl] .odswidget-geo-navigation__choice {
   padding-bottom: 0.1rem;
 }
 .odswidget-geo-navigation__level-search-box-container {
-  padding: 1rem 0;
+  padding-bottom: 1rem;
 }
 .odswidget-geo-navigation__level-search-box-icon {
   position: absolute;

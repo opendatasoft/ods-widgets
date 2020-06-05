@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.4.6 - 2020-06-05
+### Added
+- `uriEncode` and `uriComponentEncode`: two new filters to help building links directly in the template. 
+  They respectively apply the javascript functions `encodeURI` and `encodeURIComponent` to the filtered string.
+- `odsFacets` and `odsTable`: the two widgets now support selection of fields for a specific language.
+- `odsGeoNavigation`: it nows displays more familiar country shapes instead of exhaustive one.
+- `odsGeoNavigation`: add a new `ascendingFilter` parameter that activate the
+  "Display all datasets that include current selection" by default
+
+### Changed
+- `odsPicto`: the `colorByName` attribute has been replaced by `colorByAttribute`. It now applies the given colors
+  to svg element using their id.
+
 ## 1.4.5 - 2020-03-25
 ### Added
 - `odsPicto`: A new `colorByName` parameter can be used, to apply different colors to different areas of a SVG file

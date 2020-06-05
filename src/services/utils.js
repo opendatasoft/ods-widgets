@@ -357,28 +357,29 @@
             node.find('path, polygon, circle, rect, text, ellipse').css('fill', color); // Needed for our legacy SVGs of various quality...
         };
 
-        var loadImageInline = function(element, code, color, colorByNameMapping) {
+        var loadImageInline = function(element, code, color, colorByAttributeMapping) {
             var svg = angular.element(code);
             if (color) {
                 colorSVGElements(svg, color)
             }
-            if (colorByNameMapping) {
-                angular.forEach(colorByNameMapping, function(elementColor, elementName) {
-                    colorSVGElements(svg.find('[name="'+elementName+'"]'), elementColor);
+
+            if (colorByAttributeMapping) {
+                angular.forEach(colorByAttributeMapping, function(elementColor, elementFillId) {
+                    colorSVGElements(svg.find('[data-fill-id="'+elementFillId.replace(/"/g, "\\\"")+'"]'), elementColor);
                 });
             }
             element.append(svg);
         };
 
         this.$get = ['$http', '$q', function($http, $q) {
-            var retrieve = function(url, color, colorByNameMapping, getPromise) {
+            var retrieve = function(url, color, colorByAttributeMapping, getPromise) {
                 var deferred;
                 if (getPromise) {
                     deferred = $q.defer();
                 }
                 var element = angular.element('<div class="ods-svginliner__svg-container"></div>');
                 if (!url) {
-                    loadImageInline(element, FALLBACK, color, colorByNameMapping);
+                    loadImageInline(element, FALLBACK, color, colorByAttributeMapping);
                     if (getPromise) { deferred.resolve(element); }
                 } else if (url.indexOf('.svg') === -1) {
                     // Normal image
@@ -388,14 +389,14 @@
                     // SVG
                     if (inlineImages[url]) {
                         if (inlineImages[url].code) {
-                            loadImageInline(element, inlineImages[url].code, color, colorByNameMapping);
+                            loadImageInline(element, inlineImages[url].code, color, colorByAttributeMapping);
                             if (getPromise) { deferred.resolve(element); }
                         } else {
                             inlineImages[url].promise.success(function (data) {
-                                loadImageInline(element, data, color, colorByNameMapping);
+                                loadImageInline(element, data, color, colorByAttributeMapping);
                                 if (getPromise) { deferred.resolve(element); }
                             }).error(function() {
-                                loadImageInline(element, FALLBACK, color, colorByNameMapping);
+                                loadImageInline(element, FALLBACK, color, colorByAttributeMapping);
                                 if (getPromise) { deferred.resolve(element); }
                             });
                         }
@@ -405,13 +406,13 @@
                         inlineImages[url] = {promise: promise};
                         promise.success(function (data) {
                             inlineImages[url].code = data;
-                            loadImageInline(element, data, color, colorByNameMapping);
+                            loadImageInline(element, data, color, colorByAttributeMapping);
                             if (getPromise) { deferred.resolve(element); }
                         }).error(function(data, status) {
                             // Ignore it silently
                             console.log('WARNING: Unable to fetch SVG image', url, 'HTTP status:', status);
                             inlineImages[url].code = FALLBACK;
-                            loadImageInline(element, FALLBACK, color, colorByNameMapping);
+                            loadImageInline(element, FALLBACK, color, colorByAttributeMapping);
                             if (getPromise) { deferred.resolve(element); }
                         });
                     }
@@ -424,11 +425,11 @@
             };
 
             return {
-                getElement: function(url, color, colorByNameMapping) {
-                    return retrieve(url, color, colorByNameMapping);
+                getElement: function(url, color, colorByAttributeMapping) {
+                    return retrieve(url, color, colorByAttributeMapping);
                 },
-                getPromise: function(url, color, colorByNameMapping) {
-                    return retrieve(url, color, colorByNameMapping, true);
+                getPromise: function(url, color, colorByAttributeMapping) {
+                    return retrieve(url, color, colorByAttributeMapping, true);
                 }
             };
 

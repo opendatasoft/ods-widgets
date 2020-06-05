@@ -182,8 +182,8 @@
                 return request(context, '/api/reuses/', parameters, timeout);
             },
             'georeference': {
-                'uid': function(uid, timeout) {
-                    return request(null, '/api/georeference/v1/uid/'+uid+'/', {}, timeout);
+                'uid': function(uid, parameters, timeout) {
+                    return request(null, '/api/georeference/v1/uid/'+uid+'/', parameters || {}, timeout);
                 }
             }
         };

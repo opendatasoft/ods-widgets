@@ -17,6 +17,8 @@
          * If not set, the user will be able to navigate to the lowest available level.
          * @param {string} defaultFilter Path of Geographic References leading to the filter's starting point
          * (e.g. `world/world_fr/fr_40_52`).
+         * @param {boolean} [ascendingFilter=false] If true, the "Display all datasets that include current selection"
+         * (ascending filter) option will be active by default.
          *
          * @description
          * The geographic navigation filter can be used to navigate visually inside a catalog using a geographic
@@ -50,21 +52,21 @@
                 '            <div ng-click="unskipLevel()" ng-show="backToOriginalLevelLabel" class="odswidget-geo-navigation__navigation-control">' +
                 '                <i class="fa fa-chevron-left" aria-hidden="true"></i> <span translate>Back to {{backToOriginalLevelLabel}} level</span>' +
                 '            </div>' +
-                '        <div ng-show="showSearchbox" class="odswidget-geo-navigation__level-search-box-container">' +
-                '           <input type="text" ng-model="searchInLevel" placeholder="Search a location" translate="placeholder" class="odswidget-geo-navigation__level-search-box">' +
-                '           <i class="fa fa-search odswidget-geo-navigation__level-search-box-icon" aria-hidden="true"></i>' +
-                '        </div>' +
-                '            <hr ng-show="!showSearchbox && (parentFilterLabel || canBeSkipped && skipToLevelLabel) && choices.length" class="odswidget-geo-navigation__navigation-separator" />' +
-                '            <div ng-repeat="choice in choices|filter:searchValue(searchInLevel)" ng-show="isVisible($index)" ng-click="selectChoice(choice.path)" class="odswidget-geo-navigation__choice">' +
-                '                <div class="odswidget-geo-navigation__choice-label">{{choice.name}}</div>' +
-                '                <div class="odswidget-geo-navigation__choice-count">{{choice.count}}</div>' +
-                '            </div>' +
                 '            <label ng-show="showAscendingToggle" class="odswidget-geo-navigation__ascending-filter-container">' +
                 '               <button ng-click="onAscendingFilterToggle()" ng-class="{\'odswidget-geo-navigation__ascending-filter-button\': true, \'odswidget-geo-navigation__ascending-filter-button--enabled\': ascendingFilter, \'odswidget-geo-navigation__ascending-filter-button--disabled\': !ascendingFilter}">' +
                 '                   <i ng-class="{\'fa\': true, \'fa-toggle-off\': !ascendingFilter, \'fa-toggle-on\': ascendingFilter}"></i>' +
                 '               </button>' +
                 '               <div translate>Display all datasets that include {{ currentFilterLabel }}</div>' +
                 '            </label>' +
+                '            <div ng-show="showSearchbox" class="odswidget-geo-navigation__level-search-box-container">' +
+                '                <input type="text" ng-model="searchInLevel" placeholder="Search a location" translate="placeholder" class="odswidget-geo-navigation__level-search-box">' +
+                '                <i class="fa fa-search odswidget-geo-navigation__level-search-box-icon" aria-hidden="true"></i>' +
+                '            </div>' +
+                '            <hr ng-show="!showSearchbox && (parentFilterLabel || canBeSkipped && skipToLevelLabel) && choices.length" class="odswidget-geo-navigation__navigation-separator" />' +
+                '            <div ng-repeat="choice in choices|filter:searchValue(searchInLevel)" ng-show="isVisible($index)" ng-click="selectChoice(choice.path)" class="odswidget-geo-navigation__choice">' +
+                '                <div class="odswidget-geo-navigation__choice-label">{{choice.name}}</div>' +
+                '                <div class="odswidget-geo-navigation__choice-count" ng-hide="ascendingFilter">{{choice.count}}</div>' +
+                '            </div>' +
                 '            <div ng-if="(choices|filter:searchValue(searchInLevel)).length > 5" ' +
                 '                 class="odswidget-geo-navigation__expansion-control">' +
                 '                <a ng-hide="expanded" href="#" ng-click="toggleExpand(true)" class="odswidget-geo-navigation__expansion-control-link">' +
@@ -84,7 +86,8 @@
                 minLevel: '@',
                 maxLevel: '@',
                 country: '@',
-                defaultFilter: '@'
+                defaultFilter: '@',
+                ascendingFilter: '='
             },
             link: function (scope, element, attrs) {
                 var mapContainer = element.find('div.odswidget-geo-navigation__map');
@@ -132,7 +135,7 @@
                     }
 
                     GeographicReferenceService.getEntity(uid).then(function(entity) {
-                        var shape = entity.geom_geonav || entity.geom;
+                        var shape = entity.geom;
                         mapReady.promise.then(function(map) {
                             if (scope.currentShapeLayer) {
                                 map.removeLayer(scope.currentShapeLayer);
@@ -147,6 +150,12 @@
             controller: ['$scope', 'translate', 'GeographicReferenceService', function($scope, translate, GeographicReferenceService) {
                 $scope.enableFilter = function() {
                     $scope.context.parameters['geonav'] = $scope.defaultFilter || 'world';
+
+                    if ($scope.ascendingFilter) {
+                        $scope.context.parameters['geonav-asc'] = true
+                    } else {
+                        delete $scope.context.parameters['geonav-asc'];
+                    }
                 };
                 $scope.closeFilter = function() {
                     delete $scope.context.parameters['geonav'];
@@ -217,7 +226,7 @@
                             // Is it the lowest level in the country?
                             $scope.isMaxLevel = GeographicReferenceService.isMaxLevel(uidPath);
                             // We allow ascending filter only if at least 2 level deep in a country
-                            $scope.showAscendingToggle = $scope.isMaxLevel && uidPath.split('/').length > 2;
+                            $scope.showAscendingToggle = uidPath.split('/').length > 2;
 
                             if (!$scope.isMaxLevel && (!currentLevel || (!$scope.maxLevel || (currentLevel.administrativeLevel < $scope.maxLevel)))) {
                                 if (skipLastLevel) {
@@ -306,7 +315,8 @@
                     var parentPathTokens = $scope.context.parameters['geonav'].split('/');
                     parentPathTokens.pop();
                     $scope.context.parameters['geonav'] = parentPathTokens.join('/');
-                    if ($scope.ascendingFilter) {
+                    if ($scope.ascendingFilter && parentPathTokens.length === 2) {
+                        // Remove when reaching the country level
                         delete $scope.context.parameters['geonav-asc'];
                     }
                 };
@@ -315,7 +325,7 @@
                     GeographicReferenceService.getUIDPathFromLabelPath(labelPath, $scope.context).then(function(uidPath) {
                         $scope.context.parameters['geonav'] = uidPath;
 
-                        if ($scope.ascendingFilter && GeographicReferenceService.isMaxLevel(uidPath) && uidPath.split('/').length > 2) {
+                        if ($scope.ascendingFilter && uidPath.split('/').length > 2) {
                             // This is a level where ascending filter makes sense, we apply it to the effective filter
                             $scope.context.parameters['geonav-asc'] = true;
                         }

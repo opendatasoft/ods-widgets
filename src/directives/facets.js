@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsFacets', ['$compile', 'translate', '$q', function($compile, translate, $q) {
+    mod.directive('odsFacets', ['ODSWidgetsConfig', '$compile', 'translate', '$q', '$filter', function(ODSWidgetsConfig, $compile, translate, $q, $filter) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsFacets
@@ -211,7 +211,7 @@
                                     scope.init();
                                 } else {
                                     scope.context.wait().then(function(){
-                                        facets = angular.copy(scope.context.dataset.getFacets());
+                                        facets = $filter('fieldsForLanguageDisplay')(angular.copy(scope.context.dataset.getFacets()), ODSWidgetsConfig.language);
                                         angular.forEach(facets, function(f) {
                                             f.title = f.label;
                                             delete f.label;

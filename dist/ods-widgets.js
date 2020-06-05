@@ -8753,7 +8753,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by Opendatasoft
     //  License: MIT
-    var version = '1.4.5';
+    var version = '1.4.6';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -9094,8 +9094,8 @@ mod.directive('infiniteScroll', [
                 return request(context, '/api/reuses/', parameters, timeout);
             },
             'georeference': {
-                'uid': function(uid, timeout) {
-                    return request(null, '/api/georeference/v1/uid/'+uid+'/', {}, timeout);
+                'uid': function(uid, parameters, timeout) {
+                    return request(null, '/api/georeference/v1/uid/'+uid+'/', parameters || {}, timeout);
                 }
             }
         };
@@ -10692,7 +10692,7 @@ mod.directive('infiniteScroll', [
                     var deferred = $q.defer();
                     entityFetchRequests[uid] = deferred.promise;
 
-                    ODSAPI.georeference.uid(uid).success(function(entity) {
+                    ODSAPI.georeference.uid(uid, {geom: 'schematic'}).success(function(entity) {
                         addMappingsFromEntity(entity);
                         deferred.resolve(entity);
                     });
@@ -13339,28 +13339,29 @@ mod.directive('infiniteScroll', [
             node.find('path, polygon, circle, rect, text, ellipse').css('fill', color); // Needed for our legacy SVGs of various quality...
         };
 
-        var loadImageInline = function(element, code, color, colorByNameMapping) {
+        var loadImageInline = function(element, code, color, colorByAttributeMapping) {
             var svg = angular.element(code);
             if (color) {
                 colorSVGElements(svg, color)
             }
-            if (colorByNameMapping) {
-                angular.forEach(colorByNameMapping, function(elementColor, elementName) {
-                    colorSVGElements(svg.find('[name="'+elementName+'"]'), elementColor);
+
+            if (colorByAttributeMapping) {
+                angular.forEach(colorByAttributeMapping, function(elementColor, elementFillId) {
+                    colorSVGElements(svg.find('[data-fill-id="'+elementFillId.replace(/"/g, "\\\"")+'"]'), elementColor);
                 });
             }
             element.append(svg);
         };
 
         this.$get = ['$http', '$q', function($http, $q) {
-            var retrieve = function(url, color, colorByNameMapping, getPromise) {
+            var retrieve = function(url, color, colorByAttributeMapping, getPromise) {
                 var deferred;
                 if (getPromise) {
                     deferred = $q.defer();
                 }
                 var element = angular.element('<div class="ods-svginliner__svg-container"></div>');
                 if (!url) {
-                    loadImageInline(element, FALLBACK, color, colorByNameMapping);
+                    loadImageInline(element, FALLBACK, color, colorByAttributeMapping);
                     if (getPromise) { deferred.resolve(element); }
                 } else if (url.indexOf('.svg') === -1) {
                     // Normal image
@@ -13370,14 +13371,14 @@ mod.directive('infiniteScroll', [
                     // SVG
                     if (inlineImages[url]) {
                         if (inlineImages[url].code) {
-                            loadImageInline(element, inlineImages[url].code, color, colorByNameMapping);
+                            loadImageInline(element, inlineImages[url].code, color, colorByAttributeMapping);
                             if (getPromise) { deferred.resolve(element); }
                         } else {
                             inlineImages[url].promise.success(function (data) {
-                                loadImageInline(element, data, color, colorByNameMapping);
+                                loadImageInline(element, data, color, colorByAttributeMapping);
                                 if (getPromise) { deferred.resolve(element); }
                             }).error(function() {
-                                loadImageInline(element, FALLBACK, color, colorByNameMapping);
+                                loadImageInline(element, FALLBACK, color, colorByAttributeMapping);
                                 if (getPromise) { deferred.resolve(element); }
                             });
                         }
@@ -13387,13 +13388,13 @@ mod.directive('infiniteScroll', [
                         inlineImages[url] = {promise: promise};
                         promise.success(function (data) {
                             inlineImages[url].code = data;
-                            loadImageInline(element, data, color, colorByNameMapping);
+                            loadImageInline(element, data, color, colorByAttributeMapping);
                             if (getPromise) { deferred.resolve(element); }
                         }).error(function(data, status) {
                             // Ignore it silently
                             console.log('WARNING: Unable to fetch SVG image', url, 'HTTP status:', status);
                             inlineImages[url].code = FALLBACK;
-                            loadImageInline(element, FALLBACK, color, colorByNameMapping);
+                            loadImageInline(element, FALLBACK, color, colorByAttributeMapping);
                             if (getPromise) { deferred.resolve(element); }
                         });
                     }
@@ -13406,11 +13407,11 @@ mod.directive('infiniteScroll', [
             };
 
             return {
-                getElement: function(url, color, colorByNameMapping) {
-                    return retrieve(url, color, colorByNameMapping);
+                getElement: function(url, color, colorByAttributeMapping) {
+                    return retrieve(url, color, colorByAttributeMapping);
                 },
-                getPromise: function(url, color, colorByNameMapping) {
-                    return retrieve(url, color, colorByNameMapping, true);
+                getPromise: function(url, color, colorByAttributeMapping) {
+                    return retrieve(url, color, colorByAttributeMapping, true);
                 }
             };
 
@@ -14101,6 +14102,30 @@ mod.directive('infiniteScroll', [
                 throw 'Unknown visualization type "' + viz + "'";
             }
             return fields.filter(function(field) { return blacklist[viz].indexOf(field.type) === -1; });
+        };
+    });
+
+    mod.filter('fieldsForLanguageDisplay', function() {
+        return function(fields, language) {
+            if (angular.isUndefined(fields)) { return fields; }
+            if (!language) { return fields; }
+
+            return fields.filter(function(field) {
+                if (!field.annotations) {
+                    return true;
+                }
+                var annotations = field.annotations.filter(function(anno) { return anno.name === 'display_languages'});
+                if (!annotations.length) {
+                    // The annotation isn't there
+                    return true;
+                }
+                var displayLanguagesAnnotation = annotations[0];
+                if (displayLanguagesAnnotation.args.length && displayLanguagesAnnotation.args.indexOf(language) === -1) {
+                    // We don't want to display that field in that language
+                    return false;
+                }
+                return true;
+            });
         };
     });
 
@@ -14888,6 +14913,67 @@ mod.directive('infiniteScroll', [
             return angular.fromJson(val);
         };
     });
+
+    mod.filter('uriEncode', ['$window', function($window) {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:uriEncode
+         *
+         * @function
+         * @description This filter can be used to prepare a string to be used when building a link.
+         * It's important to understand that this filter encodes a string but ignores protocol prefix ('http://') and domain name.
+         * This filter uses the 'encodeURI' JavaScript function under the hood.
+         * @param {string} A string.
+         * @return {string} A URL encoded value (but ignores protocol prefix ('http://') and domain name).
+         *
+         * @example
+         * <pre>
+         * value = 'https://website.com?x=шеллы'
+         * </pre>
+         *
+         * <pre>
+         * value|uriEncode
+         * </pre>
+         *
+         * <pre>
+         * https://website.com?x=%D1%88%D0%B5%D0%BB%D0%BB%D1%8B
+         * </pre>
+         */
+        return function(input) {
+            return angular.isString(input) ? $window.encodeURI(input) : input;
+        };
+    }]);
+
+    mod.filter('uriComponentEncode', ['$window', function($window) {
+        /**
+         * @ngdoc filter
+         * @name ods-widgets.filter:uriComponentEncode
+         *
+         * @function
+         * @description This filter can be used to prepare a string to be used as a parameter when building a link.
+         * It's important to understand that 'uriComponentEncode' filters the entire string, whereas 'uriEncode' (see {@link ods-widgets.filter:uriEncode reference page}) filter ignores
+         * protocol prefix ('http://') and domain name.
+         * This filter uses the 'encodeURIComponent' JavaScript function under the hood.
+         * @param {string} A string.
+         * @return {string} A URL encoded value (be aware that this filter will also encode protocol prefix ('http://') and domain name).
+         *
+         * @example
+         * <pre>
+         * value = 'cats&dogs'
+         * </pre>
+         *
+         * <pre>
+         * value|uriComponentEncode
+         * </pre>
+         *
+         * <pre>
+         * cats%26dogs
+         * </pre>
+         */
+        return function(input) {
+            return angular.isString(input) ? $window.encodeURIComponent(input) : input;
+        };
+    }]);
 }());
 ;(function(target) {
     // Used for character normalization
@@ -19681,7 +19767,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsFacets', ['$compile', 'translate', '$q', function($compile, translate, $q) {
+    mod.directive('odsFacets', ['ODSWidgetsConfig', '$compile', 'translate', '$q', '$filter', function(ODSWidgetsConfig, $compile, translate, $q, $filter) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsFacets
@@ -19889,7 +19975,7 @@ mod.directive('infiniteScroll', [
                                     scope.init();
                                 } else {
                                     scope.context.wait().then(function(){
-                                        facets = angular.copy(scope.context.dataset.getFacets());
+                                        facets = $filter('fieldsForLanguageDisplay')(angular.copy(scope.context.dataset.getFacets()), ODSWidgetsConfig.language);
                                         angular.forEach(facets, function(f) {
                                             f.title = f.label;
                                             delete f.label;
@@ -20770,6 +20856,8 @@ mod.directive('infiniteScroll', [
          * If not set, the user will be able to navigate to the lowest available level.
          * @param {string} defaultFilter Path of Geographic References leading to the filter's starting point
          * (e.g. `world/world_fr/fr_40_52`).
+         * @param {boolean} [ascendingFilter=false] If true, the "Display all datasets that include current selection"
+         * (ascending filter) option will be active by default.
          *
          * @description
          * The geographic navigation filter can be used to navigate visually inside a catalog using a geographic
@@ -20803,21 +20891,21 @@ mod.directive('infiniteScroll', [
                 '            <div ng-click="unskipLevel()" ng-show="backToOriginalLevelLabel" class="odswidget-geo-navigation__navigation-control">' +
                 '                <i class="fa fa-chevron-left" aria-hidden="true"></i> <span translate>Back to {{backToOriginalLevelLabel}} level</span>' +
                 '            </div>' +
-                '        <div ng-show="showSearchbox" class="odswidget-geo-navigation__level-search-box-container">' +
-                '           <input type="text" ng-model="searchInLevel" placeholder="Search a location" translate="placeholder" class="odswidget-geo-navigation__level-search-box">' +
-                '           <i class="fa fa-search odswidget-geo-navigation__level-search-box-icon" aria-hidden="true"></i>' +
-                '        </div>' +
-                '            <hr ng-show="!showSearchbox && (parentFilterLabel || canBeSkipped && skipToLevelLabel) && choices.length" class="odswidget-geo-navigation__navigation-separator" />' +
-                '            <div ng-repeat="choice in choices|filter:searchValue(searchInLevel)" ng-show="isVisible($index)" ng-click="selectChoice(choice.path)" class="odswidget-geo-navigation__choice">' +
-                '                <div class="odswidget-geo-navigation__choice-label">{{choice.name}}</div>' +
-                '                <div class="odswidget-geo-navigation__choice-count">{{choice.count}}</div>' +
-                '            </div>' +
                 '            <label ng-show="showAscendingToggle" class="odswidget-geo-navigation__ascending-filter-container">' +
                 '               <button ng-click="onAscendingFilterToggle()" ng-class="{\'odswidget-geo-navigation__ascending-filter-button\': true, \'odswidget-geo-navigation__ascending-filter-button--enabled\': ascendingFilter, \'odswidget-geo-navigation__ascending-filter-button--disabled\': !ascendingFilter}">' +
                 '                   <i ng-class="{\'fa\': true, \'fa-toggle-off\': !ascendingFilter, \'fa-toggle-on\': ascendingFilter}"></i>' +
                 '               </button>' +
                 '               <div translate>Display all datasets that include {{ currentFilterLabel }}</div>' +
                 '            </label>' +
+                '            <div ng-show="showSearchbox" class="odswidget-geo-navigation__level-search-box-container">' +
+                '                <input type="text" ng-model="searchInLevel" placeholder="Search a location" translate="placeholder" class="odswidget-geo-navigation__level-search-box">' +
+                '                <i class="fa fa-search odswidget-geo-navigation__level-search-box-icon" aria-hidden="true"></i>' +
+                '            </div>' +
+                '            <hr ng-show="!showSearchbox && (parentFilterLabel || canBeSkipped && skipToLevelLabel) && choices.length" class="odswidget-geo-navigation__navigation-separator" />' +
+                '            <div ng-repeat="choice in choices|filter:searchValue(searchInLevel)" ng-show="isVisible($index)" ng-click="selectChoice(choice.path)" class="odswidget-geo-navigation__choice">' +
+                '                <div class="odswidget-geo-navigation__choice-label">{{choice.name}}</div>' +
+                '                <div class="odswidget-geo-navigation__choice-count" ng-hide="ascendingFilter">{{choice.count}}</div>' +
+                '            </div>' +
                 '            <div ng-if="(choices|filter:searchValue(searchInLevel)).length > 5" ' +
                 '                 class="odswidget-geo-navigation__expansion-control">' +
                 '                <a ng-hide="expanded" href="#" ng-click="toggleExpand(true)" class="odswidget-geo-navigation__expansion-control-link">' +
@@ -20837,7 +20925,8 @@ mod.directive('infiniteScroll', [
                 minLevel: '@',
                 maxLevel: '@',
                 country: '@',
-                defaultFilter: '@'
+                defaultFilter: '@',
+                ascendingFilter: '='
             },
             link: function (scope, element, attrs) {
                 var mapContainer = element.find('div.odswidget-geo-navigation__map');
@@ -20885,7 +20974,7 @@ mod.directive('infiniteScroll', [
                     }
 
                     GeographicReferenceService.getEntity(uid).then(function(entity) {
-                        var shape = entity.geom_geonav || entity.geom;
+                        var shape = entity.geom;
                         mapReady.promise.then(function(map) {
                             if (scope.currentShapeLayer) {
                                 map.removeLayer(scope.currentShapeLayer);
@@ -20900,6 +20989,12 @@ mod.directive('infiniteScroll', [
             controller: ['$scope', 'translate', 'GeographicReferenceService', function($scope, translate, GeographicReferenceService) {
                 $scope.enableFilter = function() {
                     $scope.context.parameters['geonav'] = $scope.defaultFilter || 'world';
+
+                    if ($scope.ascendingFilter) {
+                        $scope.context.parameters['geonav-asc'] = true
+                    } else {
+                        delete $scope.context.parameters['geonav-asc'];
+                    }
                 };
                 $scope.closeFilter = function() {
                     delete $scope.context.parameters['geonav'];
@@ -20970,7 +21065,7 @@ mod.directive('infiniteScroll', [
                             // Is it the lowest level in the country?
                             $scope.isMaxLevel = GeographicReferenceService.isMaxLevel(uidPath);
                             // We allow ascending filter only if at least 2 level deep in a country
-                            $scope.showAscendingToggle = $scope.isMaxLevel && uidPath.split('/').length > 2;
+                            $scope.showAscendingToggle = uidPath.split('/').length > 2;
 
                             if (!$scope.isMaxLevel && (!currentLevel || (!$scope.maxLevel || (currentLevel.administrativeLevel < $scope.maxLevel)))) {
                                 if (skipLastLevel) {
@@ -21059,7 +21154,8 @@ mod.directive('infiniteScroll', [
                     var parentPathTokens = $scope.context.parameters['geonav'].split('/');
                     parentPathTokens.pop();
                     $scope.context.parameters['geonav'] = parentPathTokens.join('/');
-                    if ($scope.ascendingFilter) {
+                    if ($scope.ascendingFilter && parentPathTokens.length === 2) {
+                        // Remove when reaching the country level
                         delete $scope.context.parameters['geonav-asc'];
                     }
                 };
@@ -21068,7 +21164,7 @@ mod.directive('infiniteScroll', [
                     GeographicReferenceService.getUIDPathFromLabelPath(labelPath, $scope.context).then(function(uidPath) {
                         $scope.context.parameters['geonav'] = uidPath;
 
-                        if ($scope.ascendingFilter && GeographicReferenceService.isMaxLevel(uidPath) && uidPath.split('/').length > 2) {
+                        if ($scope.ascendingFilter && uidPath.split('/').length > 2) {
                             // This is a level where ascending filter makes sense, we apply it to the effective filter
                             $scope.context.parameters['geonav-asc'] = true;
                         }
@@ -29339,8 +29435,8 @@ mod.directive('infiniteScroll', [
          * @restrict E
          * @param {string} url The url of the svg or image to display
          * @param {string} color The color to use to fill the SVG
-         * @param {Object} colorByName An object containing a mapping between element names within the SVG, and colors.
-         * The elements within the SVG with a matching `name` attribute will take the corresponding color.
+         * @param {Object} colorByAttribute An object containing a mapping between elements within the SVG, and colors.
+         * The elements within the SVG with a matching `data-fill-id` attribute will take the corresponding color.
          * @param {string} classes The classes to directly apply to the svg element
          * @description
          * This widget displays a "picto" specified by a url and force a fill color on it.
@@ -29363,14 +29459,14 @@ mod.directive('infiniteScroll', [
             scope: {
                 url: '=',
                 color: '=',
-                colorByName: '=',
+                colorByAttribute: '=',
                 classes: '='
             },
 
             template: '<div class="odswidget odswidget-picto {{ classes }}"></div>',
             link: function(scope, element) {
                 var svgContainer;
-                scope.$watch('[url, color, colorByName]', function(nv) {
+                scope.$watch('[url, color, colorByAttribute]', function(nv) {
                     if (nv[0]) {
                         if (Modernizr && !Modernizr.svg) {
                             return;
@@ -29378,7 +29474,7 @@ mod.directive('infiniteScroll', [
                         if (svgContainer) {
                             element.empty();
                         }
-                        svgContainer = SVGInliner.getElement(scope.url, scope.color, scope.colorByName);
+                        svgContainer = SVGInliner.getElement(scope.url, scope.color, scope.colorByAttribute);
                         if (!scope.color) {
                             svgContainer.addClass('ods-svginliner__svg-container--colorless');
                         }
@@ -30942,7 +31038,7 @@ mod.directive('infiniteScroll', [
                        '         <thead class="odswidget-table__internal-header-table-header">' +
                        '         <tr>' +
                        '             <th class="odswidget-table__header-cell odswidget-table__header-cell--spinner"><div class="odswidget-table__cell-container"><ods-spinner ng-show="fetching" class="odswidget-spinner--large"></ods-spinner></div></th>' +
-                       '             <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray"' +
+                       '             <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage"' +
                        '                 title="{{ field.description || field.label }}"' +
                        '                 ng-click="toggleSort(field)"' +
                        '                 >' +
@@ -30967,7 +31063,7 @@ mod.directive('infiniteScroll', [
                        '         <thead class="odswidget-table__internal-table-header">' +
                        '             <tr>' +
                        '                 <th class="odswidget-table__header-cell odswidget-table__header-cell--spinner"><div class="odswidget-table__cell-container"><ods-spinner ng-show="fetching" class="odswidget-spinner--large"></ods-spinner></div></th>' +
-                       '                 <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray"' +
+                       '                 <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage"' +
                        '                     title="{{ field.name }}">' +
                        '                     <div class="odswidget-table__cell-container">' +
                        '                         <span ng-bind="field.label"></span>' +
@@ -30995,8 +31091,9 @@ mod.directive('infiniteScroll', [
                        ' <div class="odswidget-overlay" ng-hide="fetching || records"><span class="odswidget-overlay__message" translate>No results</span></div>' +
                        ' <div class="odswidget-overlay" ng-hide="(!fetching || records) && !working"><ods-spinner></ods-spinner></div>' +
                     '</div>',
-            controller: ['$scope', '$element', '$timeout', 'ODSAPI', '$filter', '$compile', '$transclude', '$q', function($scope, $element, $timeout, ODSAPI, $filter, $compile, $transclude, $q) {
+            controller: ['$scope', '$element', '$timeout', 'ODSAPI', 'ODSWidgetsConfig', '$filter', '$compile', '$transclude', '$q', function($scope, $element, $timeout, ODSAPI, ODSWidgetsConfig, $filter, $compile, $transclude, $q) {
                 $scope.displayedFieldsArray = null;
+                $scope.displayLanguage = ODSWidgetsConfig.language;
 
                 $scope.displayDatasetFeedback = false;
                 $scope.forcedTimezone = null;
@@ -31471,7 +31568,10 @@ mod.directive('infiniteScroll', [
                     };
 
                     var fieldsForVisualization = $filter('fieldsForVisualization')($scope.context.dataset.fields, 'table');
+                    // Keep the fields that were explicitely asked for
                     datasetFields = $filter('fieldsFilter')(fieldsForVisualization, $scope.displayedFieldsArray);
+                    // Discards fields that shouldn't appear in the current language
+                    datasetFields = $filter('fieldsForLanguageDisplay')(datasetFields, $scope.displayLanguage);
 
                     refreshRecords(true);
 

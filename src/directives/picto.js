@@ -11,8 +11,8 @@
          * @restrict E
          * @param {string} url The url of the svg or image to display
          * @param {string} color The color to use to fill the SVG
-         * @param {Object} colorByName An object containing a mapping between element names within the SVG, and colors.
-         * The elements within the SVG with a matching `name` attribute will take the corresponding color.
+         * @param {Object} colorByAttribute An object containing a mapping between elements within the SVG, and colors.
+         * The elements within the SVG with a matching `data-fill-id` attribute will take the corresponding color.
          * @param {string} classes The classes to directly apply to the svg element
          * @description
          * This widget displays a "picto" specified by a url and force a fill color on it.
@@ -35,14 +35,14 @@
             scope: {
                 url: '=',
                 color: '=',
-                colorByName: '=',
+                colorByAttribute: '=',
                 classes: '='
             },
 
             template: '<div class="odswidget odswidget-picto {{ classes }}"></div>',
             link: function(scope, element) {
                 var svgContainer;
-                scope.$watch('[url, color, colorByName]', function(nv) {
+                scope.$watch('[url, color, colorByAttribute]', function(nv) {
                     if (nv[0]) {
                         if (Modernizr && !Modernizr.svg) {
                             return;
@@ -50,7 +50,7 @@
                         if (svgContainer) {
                             element.empty();
                         }
-                        svgContainer = SVGInliner.getElement(scope.url, scope.color, scope.colorByName);
+                        svgContainer = SVGInliner.getElement(scope.url, scope.color, scope.colorByAttribute);
                         if (!scope.color) {
                             svgContainer.addClass('ods-svginliner__svg-container--colorless');
                         }

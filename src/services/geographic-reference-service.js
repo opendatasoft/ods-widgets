@@ -169,7 +169,7 @@
                     var deferred = $q.defer();
                     entityFetchRequests[uid] = deferred.promise;
 
-                    ODSAPI.georeference.uid(uid).success(function(entity) {
+                    ODSAPI.georeference.uid(uid, {geom: 'schematic'}).success(function(entity) {
                         addMappingsFromEntity(entity);
                         deferred.resolve(entity);
                     });

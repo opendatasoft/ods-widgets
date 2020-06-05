@@ -312,7 +312,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "The geographic navigation filter can be used to navigate visually inside a catalog using a geographic",
-      "keywords": "api catalog context country coverage current defaultfilter depend directive filter geographic highest indication inside leading level levels location lowest metadata minlevel navigate navigation ods-widgets odsfacets path point references set starting user visual visually world",
+      "keywords": "active api catalog context country coverage current datasets default defaultfilter depend directive display filter geographic highest include indication inside leading level levels location lowest metadata minlevel navigate navigation ods-widgets odsfacets option path point references selection set starting true user visual visually world",
       "isDeprecated": false
     },
     {
@@ -521,7 +521,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a &quot;picto&quot; specified by a url and force a fill color on it.",
-      "keywords": "api apply assets attribute classes color colorbyname colors corresponding defs directive directly display displays element elements example expect fill force hardcoded height html image implement javascript litterals ll mapping matching module names object ods-widgets parameters picto provide quotes strings style styled svg url variables vectorial widget width wrap",
+      "keywords": "api apply assets attribute classes color colorbyattribute colors corresponding data-fill-id defs directive directly display displays element elements example expect fill force hardcoded height html image implement javascript litterals ll mapping matching module object ods-widgets parameters picto provide quotes strings style styled svg url variables vectorial widget width wrap",
       "isDeprecated": false
     },
     {
@@ -1055,6 +1055,26 @@ NG_DOCS={
       "type": "filter",
       "moduleName": "ods-widgets",
       "keywords": "api chars filter full input length max ods-widgets original shorter text truncate truncated",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:uriComponentEncode",
+      "shortName": "uriComponentEncode",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This filter can be used to prepare a string to be used as a parameter when building a link.",
+      "keywords": "api aware building cats domain encode encoded encodeuricomponent entire filter filters function hood http ignores javascript link ods-widgets parameter prefix prepare protocol reference string understand uricomponentencode uriencode url",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.filter:uriEncode",
+      "shortName": "uriEncode",
+      "type": "filter",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This filter can be used to prepare a string to be used when building a link.",
+      "keywords": "api building domain encoded encodes encodeuri filter function hood http https ignores javascript link ods-widgets prefix prepare protocol string understand url",
       "isDeprecated": false
     },
     {

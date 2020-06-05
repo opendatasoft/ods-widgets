@@ -44,7 +44,7 @@
                        '         <thead class="odswidget-table__internal-header-table-header">' +
                        '         <tr>' +
                        '             <th class="odswidget-table__header-cell odswidget-table__header-cell--spinner"><div class="odswidget-table__cell-container"><ods-spinner ng-show="fetching" class="odswidget-spinner--large"></ods-spinner></div></th>' +
-                       '             <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray"' +
+                       '             <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage"' +
                        '                 title="{{ field.description || field.label }}"' +
                        '                 ng-click="toggleSort(field)"' +
                        '                 >' +
@@ -69,7 +69,7 @@
                        '         <thead class="odswidget-table__internal-table-header">' +
                        '             <tr>' +
                        '                 <th class="odswidget-table__header-cell odswidget-table__header-cell--spinner"><div class="odswidget-table__cell-container"><ods-spinner ng-show="fetching" class="odswidget-spinner--large"></ods-spinner></div></th>' +
-                       '                 <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray"' +
+                       '                 <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage"' +
                        '                     title="{{ field.name }}">' +
                        '                     <div class="odswidget-table__cell-container">' +
                        '                         <span ng-bind="field.label"></span>' +
@@ -97,8 +97,9 @@
                        ' <div class="odswidget-overlay" ng-hide="fetching || records"><span class="odswidget-overlay__message" translate>No results</span></div>' +
                        ' <div class="odswidget-overlay" ng-hide="(!fetching || records) && !working"><ods-spinner></ods-spinner></div>' +
                     '</div>',
-            controller: ['$scope', '$element', '$timeout', 'ODSAPI', '$filter', '$compile', '$transclude', '$q', function($scope, $element, $timeout, ODSAPI, $filter, $compile, $transclude, $q) {
+            controller: ['$scope', '$element', '$timeout', 'ODSAPI', 'ODSWidgetsConfig', '$filter', '$compile', '$transclude', '$q', function($scope, $element, $timeout, ODSAPI, ODSWidgetsConfig, $filter, $compile, $transclude, $q) {
                 $scope.displayedFieldsArray = null;
+                $scope.displayLanguage = ODSWidgetsConfig.language;
 
                 $scope.displayDatasetFeedback = false;
                 $scope.forcedTimezone = null;
@@ -573,7 +574,10 @@
                     };
 
                     var fieldsForVisualization = $filter('fieldsForVisualization')($scope.context.dataset.fields, 'table');
+                    // Keep the fields that were explicitely asked for
                     datasetFields = $filter('fieldsFilter')(fieldsForVisualization, $scope.displayedFieldsArray);
+                    // Discards fields that shouldn't appear in the current language
+                    datasetFields = $filter('fieldsForLanguageDisplay')(datasetFields, $scope.displayLanguage);
 
                     refreshRecords(true);
 
