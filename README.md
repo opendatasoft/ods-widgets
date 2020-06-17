@@ -95,7 +95,7 @@ The bare minimum for an HTML page is this template:
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <link rel="stylesheet" href="https://opendatasoft.github.io/ods-widgets/dist/ods-widgets.css">
+        <link rel="stylesheet" href="//static.opendatasoft.com/ods-widgets/latest/ods-widgets.min.css">
     </head>
     <body>
 
@@ -108,7 +108,7 @@ The bare minimum for an HTML page is this template:
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular-sanitize.min.js"></script>
-        <script type="text/javascript" src="//opendatasoft.github.io/ods-widgets/dist/ods-widgets.js"></script>
+        <script type="text/javascript" src="//static.opendatasoft.com/ods-widgets/latest/ods-widgets.min.js"></script>
     </body>
 </html>
 ```

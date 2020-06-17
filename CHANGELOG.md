@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.4.7 - 2020-06-17
+### Added
+- `odsSelect`: This is a new widget built to offer a selection (single or multiple) between a list of options, with many
+formatting options. For example it can be used as an alternative to the usual filters so that users may choose a number
+of values.
+- `odsSimpleTabs`: This new widget lets you easily build a tab system for your content within your page.
+
 ## 1.4.6 - 2020-06-05
 ### Added
 - `uriEncode` and `uriComponentEncode`: two new filters to help building links directly in the template. 

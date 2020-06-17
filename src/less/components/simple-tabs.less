@@ -1,0 +1,46 @@
+/* Simple Tabs
+========================================================================== */
+
+.ods-simple-tabs-container {
+    margin-bottom: 1.5rem;
+}
+
+.ods-simple-tab-content {
+    display: none;
+}
+
+.ods-simple-tab-content-active {
+    display: block;
+}
+
+.ods-simple-tabs-nav {
+    display: flex;
+    flex-wrap: nowrap;
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0;
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.ods-simple-tabs-nav-link {
+    color: @simpleTabs-nav-link-color;
+    text-align: center;
+    font-weight: 500;
+    display: block;
+    padding: .7rem 1.5rem .6rem 1.5rem;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+}
+
+.ods-simple-tabs-nav-link:hover,
+.ods-simple-tabs-nav-link:focus {
+    border-bottom-color: @simpleTabs-nav-link-hover-border;
+    text-decoration: none;
+}
+
+.ods-simple-tabs-nav-link.ods-simple-tabs-nav-link-active {
+    color: @simpleTabs-nav-link-active-color;
+    border-bottom-color: @simpleTabs-nav-link-active-color;
+}

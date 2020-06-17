@@ -67,6 +67,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsAdvAnalysis",
+      "shortName": "odsAdvAnalysis",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "keywords": "api directive ods-widgets",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsAggregation",
       "shortName": "odsAggregation",
       "type": "directive",
@@ -602,6 +611,35 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.",
       "keywords": "add api attribute autofocus button catalog configures context current default directive display displays domain elements empty example explore focus form generated homepage html indicating input internally local ods-widgets placeholder redirect redirects search searchbox set sort submit text user wide widget",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsSelect",
+      "shortName": "odsSelect",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget allows the selection of one or more items from a list of options. This list can be made up of strings or objects.",
+      "keywords": "a_simple_example_with_a_dataset advanced_use_of_labelmodifier_and_valuemodifier_parameters allows api applied apply array automatically calculated context describes directive disabled domanialite dynamic element elements espece evaluate expected expression false feeds field fields finally handle hint html https individual input items key keytouse label label-modifier labels length les-arbres-remarquables-de-paris libellefrancais list menu module multiple ng-init object objects ods-results ods-results-context ods-results-max ods-widgets opendatasoft option options parameter parameters placeholder provided representing represents result select selected selected-values selectedtrees selectedvalues selection selections short simple species specifies store stored string strings support trees trees-dataset trees-domain true value-modifier values variable widget",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsSimpleTab",
+      "shortName": "odsSimpleTab",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "keywords": "api content deselection destroy directive displayed fa- font-awesome fontawesomeclass icon label ng-if ods-widgets odssimpletabs pane panel prefix rebuild selected tab",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsSimpleTabs",
+      "shortName": "odsSimpleTabs",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "Generate a tabbed interface that allows you to switch between separate views.",
+      "keywords": "active allows api current directive generate interface ods-widgets parent scope separate simpletabactive switch sync tab tabbed variable views",
       "isDeprecated": false
     },
     {
