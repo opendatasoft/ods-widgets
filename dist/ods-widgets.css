@@ -3631,7 +3631,6 @@ html[dir=rtl] .odswidget-geo-navigation__choice {
 .odswidget-select .odswidget-select-dropdown .odswidget-select-dropdown-menu {
   position: absolute;
   z-index: 1;
-  margin-top: 6px;
   border: 1px solid #cccccc;
   border-radius: 4px;
   background-color: #ffffff;
@@ -3797,6 +3796,69 @@ html[dir=rtl] .odswidget-geo-navigation__choice {
 .ods-simple-tabs-nav-link.ods-simple-tabs-nav-link-active {
   color: #0088cc;
   border-bottom-color: #0088cc;
+}
+div.odswidget-adv-table-container {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-flow: column;
+      flex-flow: column;
+  padding: 5px;
+  border-radius: 4px;
+  background-color: #ffffff;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15);
+}
+div.odswidget-adv-table-container div.odswidget-adv-table-wrapper {
+  overflow: auto;
+}
+div.odswidget-adv-table-container table {
+  table-layout: auto;
+  width: 100%;
+  border-collapse: collapse;
+}
+div.odswidget-adv-table-container table.odswidget-adv-table-sticky {
+  position: relative;
+}
+div.odswidget-adv-table-container table.odswidget-adv-table-sticky.horizontally-scrolled tbody tr td:first-child,
+div.odswidget-adv-table-container table.odswidget-adv-table-sticky.horizontally-scrolled thead tr th:first-child {
+  box-shadow: 2px 0px 2px 0px rgba(0, 0, 0, 0.07);
+  transition: box-shadow 0.3s ease-in-out;
+}
+div.odswidget-adv-table-container table.odswidget-adv-table-sticky tr {
+  z-index: 1;
+  display: -ms-flexbox;
+  display: flex;
+}
+div.odswidget-adv-table-container table.odswidget-adv-table-sticky tbody tr td:first-child {
+  z-index: 0;
+  background-color: #ffffff;
+}
+div.odswidget-adv-table-container table tr:last-child td {
+  border-bottom: none;
+}
+div.odswidget-adv-table-container table tr td,
+div.odswidget-adv-table-container table tr th {
+  padding: 10px;
+  border-bottom: 1px solid #dee5ef;
+  color: #565656;
+  vertical-align: top;
+  text-align: left;
+  white-space: nowrap;
+}
+div.odswidget-adv-table-container table tr th {
+  padding: 7px 10px;
+  background-color: #f6f8fb;
+  color: #142e7b;
+  font-weight: normal;
+}
+div.odswidget-adv-table-container table tr th:first-child {
+  border-top-left-radius: 4px;
+}
+div.odswidget-adv-table-container table tr th:last-child {
+  border-top-right-radius: 4px;
+}
+div.odswidget-adv-table-container table tr th i.fa {
+  padding-left: 5px;
+  font-size: 0.8rem;
 }
 .odswidget.odswidget-imagified {
   max-width: 100% !important;

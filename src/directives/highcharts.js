@@ -12,6 +12,16 @@
             || ['hour', 'minute', 'second'].indexOf(timeSerieMode) !== -1;
     }
 
+    function escapeHTMLForAxisLabels(text) {
+        // Highcharts doesn't support the escaped character for single quotes (&#039;) within the labels for axes
+        // In this instance, the single quote isn't a menace on its own
+        return text == null ? '' : String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
     mod.factory("requestData", ['ODSAPI', '$q', 'ChartHelper', 'AggregationHelper', function(ODSAPI, $q, ChartHelper, AggregationHelper) {
         var buildTimescaleX = ODS.DateFieldUtils.getTimescaleX;
 
@@ -355,7 +365,7 @@
                 series: [],
                 xAxis: {
                     title: {
-                        text: parameters.xLabel
+                        text: escapeHTMLForAxisLabels(parameters.xLabel)
                     },
                     labels: {
                         step: 1,
@@ -382,7 +392,10 @@
                 legend: {
                     enabled: !!parameters.displayLegend,
                     useHTML: true,
-                    rtl: ODSWidgetsConfig.language === 'ar'
+                    rtl: ODSWidgetsConfig.language === 'ar',
+                    labelFormatter: function() {
+                        return ODS.StringUtils.escapeHTML(this.name);
+                    }
                 },
                 // legend: {
                 //     align: 'right',
@@ -424,10 +437,11 @@
                         },
                         dataLabels: {
                             formatter: function() {
+                                var sanitizedValue = ODS.StringUtils.escapeHTML(this.key);
                                 if (this.key.length > parameters.labelsXLength) {
-                                    return '<span title="' + this.key.replace('"', '') + '" alt="' + this.key.replace('"', '') + '">' + this.key.substring(0, parameters.labelsXLength - 3) + '...' + "</span>";
+                                    return '<span title="' + sanitizedValue.replace('"', '') + '" alt="' + sanitizedValue.replace('"', '') + '">' + ODS.StringUtils.escapeHTML(this.key.substring(0, parameters.labelsXLength - 3)) + '...' + "</span>";
                                 } else {
-                                    return this.key;
+                                    return sanitizedValue;
                                 }
                             },
                             style: {
@@ -447,10 +461,11 @@
                                 textOutline: 'none'
                             },
                             formatter: function() {
+                                var sanitizedValue = ODS.StringUtils.escapeHTML(this.key);
                                 if (this.key.length > parameters.labelsXLength) {
-                                    return '<span title="' + this.key.replace('"', '') + '" alt="' + this.key.replace('"', '') + '">' + this.key.substring(0, parameters.labelsXLength - 3) + '...' + "</span>";
+                                    return '<span title="' + sanitizedValue.replace('"', '') + '" alt="' + sanitizedValue.replace('"', '') + '">' + ODS.StringUtils.escapeHTML(this.key.substring(0, parameters.labelsXLength - 3)) + '...' + "</span>";
                                 } else {
-                                    return this.key;
+                                    return sanitizedValue;
                                 }
                             },
                             useHTML: true
@@ -468,7 +483,6 @@
                             series = items[0].series,
                             s = [];
 
-                        // build the header
                         s = [tooltip.tooltipFooterHeaderFormatter(items[0])];
 
                         // build the values
@@ -544,10 +558,11 @@
 
             if (!precision) {
                 options.xAxis.labels.formatter = function() {
+                    var sanitizedValue = ODS.StringUtils.escapeHTML(this.value);
                     if (this.value.length > parameters.labelsXLength) {
-                        return '<span title="' + this.value.replace('"', '') + '" alt="' + this.value.replace('"', '') + '">' + this.value.substring(0, parameters.labelsXLength - 3) + '...' + "</span>";
+                        return '<span title="' + sanitizedValue.replace('"', '') + '" alt="' + sanitizedValue.replace('"', '') + '">' + ODS.StringUtils.escapeHTML(this.value.substring(0, parameters.labelsXLength - 3)) + '...' + "</span>";
                     } else {
-                        return this.value;
+                        return sanitizedValue;
                     }
                 };
             } else {
@@ -724,7 +739,7 @@
                     formatterFunction = function areaTooltip() {
                         var formattedValue = formatValue(this.value, decimals, serie.displayUnits ? unit : false);
                         return format_string(template, {
-                            name: this.series.name,
+                            name: ODS.StringUtils.escapeHTML(this.series.name),
                             color: this.series.color,
                             value: formattedValue
                         });
@@ -734,7 +749,7 @@
                         var formattedLow = formatValue(this.low, decimals, serie.displayUnits ? unit : false);
                         var formattedHigh = formatValue(this.high, decimals, serie.displayUnits ? unit : false);
                         return format_string(template, {
-                            name: this.series.name,
+                            name: ODS.StringUtils.escapeHTML(this.series.name),
                             color: this.series.color,
                             value: formattedLow + ' - ' + formattedHigh
                         });
@@ -743,7 +758,7 @@
                     formatterFunction = function singleValueTooltip() {
                         var formattedValue = formatValue(this.y, decimals, serie.displayUnits ? unit : false);
                         return format_string(template, {
-                            name: this.series.name,
+                            name: ODS.StringUtils.escapeHTML(this.series.name),
                             color: this.series.color,
                             value: formattedValue + ' (' + Highcharts.numberFormat(this.percentage, 1) + '%)'
                         });
@@ -756,10 +771,10 @@
                         var points = [this.low, this.q1, this.median, this.q3, this.high];
                         var value = '';
                         for (var i = serie.charts.length - 1; i >= 0; i--) {
-                            value += ChartHelper.getYLabel(datasetid, serie.charts[i]) + ' ' + _format(points[i]) + '<br>';
+                            value += ODS.StringUtils.escapeHTML(ChartHelper.getYLabel(datasetid, serie.charts[i])) + ' ' + _format(points[i]) + '<br>';
                         }
                         return format_string(template, {
-                            name: this.series.name,
+                            name: ODS.StringUtils.escapeHTML(this.series.name),
                             color: this.series.color,
                             value: value,
                         });
@@ -771,7 +786,7 @@
                             formattedValue = formattedValue + ' (' + Highcharts.numberFormat(this.percentage, 1) + '%)';
                         }
                         return format_string(template, {
-                            name: this.series.name,
+                            name: ODS.StringUtils.escapeHTML(this.series.name),
                             color: this.series.color,
                             value: formattedValue
                         });
@@ -852,7 +867,7 @@
             var hasMax = typeof chart.yRangeMax !== "undefined" && chart.yRangeMax !== '';
             var yAxis = {
                 title: {
-                    text: yLabel || "",
+                    text: yLabel && escapeHTMLForAxisLabels(yLabel) || "",
                     style: {
                         color: chart.color
                     }

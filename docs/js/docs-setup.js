@@ -67,15 +67,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "ods-widgets.directive:odsAdvAnalysis",
-      "shortName": "odsAdvAnalysis",
-      "type": "directive",
-      "moduleName": "ods-widgets",
-      "keywords": "api directive ods-widgets",
-      "isDeprecated": false
-    },
-    {
-      "section": "api",
       "id": "ods-widgets.directive:odsAggregation",
       "shortName": "odsAggregation",
       "type": "directive",

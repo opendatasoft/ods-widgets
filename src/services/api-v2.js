@@ -73,6 +73,9 @@
                 };
             },
             datasets: {
+                records: function(context, parameters, timeout) {
+                    return request(context, '/api/v2/catalog/datasets/' + context.dataset.datasetid + '/records', parameters, timeout);
+                },
                 aggregates: function(context, parameters, timeout) {
                     return request(context, '/api/v2/catalog/datasets/' + context.dataset.datasetid + '/aggregates', parameters, timeout);
                 }

@@ -33,7 +33,7 @@
          * @scope
          * @restrict E
          * @param {array} selectedValues The variable name to use to store the selected options' values.
-         * @param {boolean} [multiple=false] If true, the specified <code>selected-values</code> variable will be an array and the menu will support multiple selections.
+         * @param {boolean} [multiple=false] If true, the menu will support multiple selections.
          * @param {array} options The input array of value which feeds the select menu.
          * @param {expression} [labelModifier] An expression to apply on the options' label.
          * @param {expression} [valueModifier] An expression to apply on the options' value.
@@ -43,8 +43,10 @@
          *
          * @description
          * This widget allows the selection of one or more items from a list of options. This list can be made up of strings or objects.
+         *
          * If the "options" variable provided to the widget represents a simple array of string, the labels and values of these options will be automatically calculated by the widget.
          * But if the options provided to the widget are objects, it will be necessary to specify how to handle them using the "label-modifier" and "value-modifier" parameters.
+         *
          * The "label-modifier" and "value-modifier" parameters each take an expression that will be applied to the each individual object representing an option.
          * And finally, the result of the selection will be stored in the variable specified in the "selected-values" parameter.
          *
@@ -199,7 +201,6 @@
             '',
             controller: ['$scope', '$attrs', '$filter', '$parse', function($scope, $attrs, $filter, $parse) {
                 // Internal objects
-                $scope._isFirstMount = true;
                 $scope._items = [];
                 $scope._displayedItems = [];
                 $scope._selectedLabels = [];
@@ -209,8 +210,10 @@
                 // Default attributes values
                 $scope.multiple = !!$scope.multiple;
 
-                if (!$scope.selectedValues) {
+                if (typeof $scope.selectedValues === 'undefined' || $scope.selectedValues === null || $scope.selectedValues === '') {
                     $scope.selectedValues = [];
+                } else if (Array.isArray($scope.selectedValues) === false) {
+                    $scope.selectedValues = [$scope.selectedValues];
                 }
 
                 if (!$scope.placeholder) {
@@ -221,24 +224,24 @@
                 /* Utils                                                                      */
                 /* -------------------------------------------------------------------------- */
 
-                function initializeItems(useCache) {
+                function initializeItems() {
                     // Initialize filters.
                     $scope._inputTextFilter = '';
 
                     var items = [];
 
                     // Parse and filter the given options.
-                    items = parseOptions($scope.options, useCache);
+                    items = parseOptions($scope.options);
 
                     // Remove the duplicated or the not fully defined items.
                     items = cleanItems(items);
 
                     setSelectedItems(items);
+
                     $scope._items = items;
-                    $scope._isFirstMount = false;
                 };
 
-                function parseOptions(options, useCache) {
+                function parseOptions(options) {
                     // Parse and filter the given options.
                     var items;
 
@@ -247,15 +250,7 @@
                         var value = $scope.valueModifier ? $parse($scope.valueModifier)(option) : option;
                         var selected = false;
 
-                        if (useCache) {
-                            // If some options have already been selected, we need to identify them and
-                            // ... conserve their "selected" state.
-                            $scope._items.forEach(function(i) {
-                                    if (i.selected && i.value === value) {
-                                        selected = true;
-                                    }
-                                });
-                        } else if ($scope.selectedValues.length) {
+                        if ($scope.selectedValues && $scope.selectedValues.length) {
                             // Compute the default selected items using the initial "selectedValues"
                             // ... variable given to the widget or when the "selectedValues" has
                             // ... been mutated from the outside.
@@ -311,7 +306,7 @@
                     // ... It has to be very versatile, many things can be done using this
                     // ... attribute's expression, therefore we have to call the outer scope
                     // ... ($scope.$parent) to evaluate it.
-                    $scope.$evalAsync(function() {
+                    $timeout(function() {
                         $scope.$parent.$eval($attrs.onChange);
                     });
                 };
@@ -389,19 +384,15 @@
                 /* Watchers & Observers                                                       */
                 /* -------------------------------------------------------------------------- */
 
-                $scope.$watch('[options, selectedValues]', function(newVal, oldVal) {
-                    if (angular.isDefined(newVal[0]) && !$scope.disabled) {
-                        var useCache = true;
+                $scope.$watch('options', function(newVal, oldVal) {
+                    if (angular.isDefined(newVal) && !angular.equals(newVal, oldVal) && !$scope.disabled) {
+                        initializeItems();
+                    }
+                }, true);
 
-                        if ($scope._isFirstMount || !angular.equals(newVal[1], oldVal[1])) {
-                            // If the widget has just been initialized or if the "selectedValues"
-                            // ... variable has been mutated from the outside, we don't use the
-                            // ... cached "selected" state of the items. Instead we'll use the
-                            // ... "selectedValues" variable as the only source of truth.
-                            useCache = false;
-                        }
-
-                        initializeItems(useCache);
+                $scope.$watch('selectedValues', function(newVal, oldVal) {
+                    if (angular.isDefined($scope.options) && !angular.equals(newVal, oldVal) && !$scope.disabled) {
+                        initializeItems();
                     }
                 }, true);
 

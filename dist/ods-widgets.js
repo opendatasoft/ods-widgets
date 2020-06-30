@@ -8753,7 +8753,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by Opendatasoft
     //  License: MIT
-    var version = '1.4.7';
+    var version = '1.4.8';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -8985,6 +8985,9 @@ mod.directive('infiniteScroll', [
                 };
             },
             datasets: {
+                records: function(context, parameters, timeout) {
+                    return request(context, '/api/v2/catalog/datasets/' + context.dataset.datasetid + '/records', parameters, timeout);
+                },
                 aggregates: function(context, parameters, timeout) {
                     return request(context, '/api/v2/catalog/datasets/' + context.dataset.datasetid + '/aggregates', parameters, timeout);
                 }
@@ -16003,12 +16006,6 @@ mod.directive('infiniteScroll', [
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsAdvAnalysis', ['ODSAPIv2', function (ODSAPIv2) {
-        /**
-         * @ngdoc directive
-         * @name ods-widgets.directive:odsAdvAnalysis
-         * @scope
-         * @restrict A
-         */
         return {
             restrict: 'A',
             scope: true,
@@ -16029,7 +16026,7 @@ mod.directive('infiniteScroll', [
                         })
                 };
 
-                $scope.queryCallback = function(values) {
+                this.queryCallback = function(values) {
                     if (!values) {
                         values = {};
                     }
@@ -16054,8 +16051,427 @@ mod.directive('infiniteScroll', [
                         $attrs,
                         $scope[$attrs.odsAdvAnalysisContext].parameters
                     ]
-                }, $scope.queryCallback, true);
+                }, this.queryCallback, true);
             }]
+        };
+    }]);
+}());
+;(function() {
+    'use strict';
+
+    var mod = angular.module('ods-widgets');
+
+    mod.directive('odsAdvResults', ['ODSAPIv2', function (ODSAPIv2) {
+        return {
+            restrict: 'A',
+            scope: true,
+            controller: ['$scope', '$attrs', function($scope, $attrs) {
+                var runQuery = function(variableName, context, select, where, orderBy, rows) {
+                    ODSAPIv2
+                        .uniqueCall(ODSAPIv2.datasets.records)(context, {
+                            select: select,
+                            where: where,
+                            order_by: orderBy,
+                            rows: rows || undefined
+                        })
+                        .success(function(result) {
+                            $scope[variableName] = result.records.map(function(entry) { return entry.record.fields; });
+                        })
+                        .error(function(error) {
+                            console.error('odsAdvResults: API error\n\n', error.message);
+                        })
+                };
+
+                this.queryCallback = function(values) {
+                    if (!values) {
+                        values = {};
+                    }
+
+                    var variableName = $attrs.odsAdvResults;
+                    var contextName = $attrs.odsAdvResultsContext;
+                    var querySelect = $attrs.odsAdvResultsSelect;
+                    var queryWhere = $attrs.odsAdvResultsWhere;
+                    var queryOrderBy = values.orderBy || $attrs.odsAdvResultsOrderBy;
+                    var queryRows = $attrs.odsAdvResultsRows;
+
+                    var context = $scope[contextName];
+
+                    context.wait()
+                        .then(function() {
+                            runQuery(variableName, context, querySelect, queryWhere, queryOrderBy, queryRows)
+                        });
+                };
+
+                $scope.$watch(function() {
+                    return [
+                        $attrs,
+                        $scope[$attrs.odsAdvResultsContext].parameters
+                    ]
+                }, this.queryCallback, true);
+            }]
+        };
+    }]);
+}());
+;(function() {
+    'use strict';
+    var mod = angular.module('ods-widgets');
+
+    /* -------------------------------------------------------------------------- */
+    /* Directive                                                                  */
+    /* -------------------------------------------------------------------------- */
+
+    mod.directive('odsAdvTable', ['$timeout', function($timeout) {
+        return {
+            restrict: 'E',
+            replace: true,
+            require: ['^?odsAdvAnalysis'],
+            scope: {
+                data: '=',
+                columnsOrder: '=?',
+                stickyHeader: '=?',
+                stickyFirstColumn: '=?',
+            },
+            template: '' +
+                '<div class="odswidget-adv-table-container" ng-show="!!data.length">' +
+                '    <div class="odswidget-adv-table-wrapper">' +
+                '        <table>' +
+                '            <thead>' +
+                '                <tr>' +
+                '                    <th ng-repeat="column in headerColumns track by $index">' +
+                '                        <span ng-click="orderBy(column)">' +
+                '                        {{column.field}}' +
+                '                        <i aria-hidden="true" class="fa"' +
+                '                            ng-if="!!advancedAnalysisCallback"' +
+                '                            ng-class="{' +
+                '                                \'fa-sort\': column.orderBy === null,' +
+                '                                \'fa-sort-desc\': column.orderBy === \'DESC\',' +
+                '                                \'fa-sort-asc\': column.orderBy === \'ASC\',' +
+                '                            }"></i>' +
+                '                        </span>' +
+                '                    </th>' +
+                '                </tr>' +
+                '            </thead>' +
+                '            <tbody>' +
+                '                <tr ng-repeat="row in data track by $index">' +
+                '                    <td ng-repeat="column in headerColumns track by $index">' +
+                '                        {{row[column.field]}}&nbsp;' +
+                '                    </td>' +
+                '                </tr>' +
+                '            </tbody>' +
+                '        </table>' +
+                '    </div>' +
+                '</div>' +
+            '',
+            controller: ['$scope', function($scope) {
+                $scope.headerColumns = [];
+
+                function checkAttributes() {
+                    if (typeof $scope.data === 'undefined' || $scope.data === null || $scope.data === '') {
+                        $scope.data = [];
+                    } else if (Array.isArray($scope.data) === false) {
+                        console.error('Given "data" is not well formatted. It must be an array of objects.');
+                    } else {
+                        var errorFound = false;
+
+                        $scope.data.forEach(function(row) {
+                            if (typeof row !== 'object') {
+                                errorFound = true;
+                            }
+                        })
+
+                        if (errorFound) {
+                            console.error('Given "data" is not well formatted. It must be an array of objects.');
+                        }
+                    }
+
+                    if (typeof $scope.columnsOrder === 'undefined' || $scope.columnsOrder === null || $scope.columnsOrder === '') {
+                        $scope.columnsOrder = [];
+                    } else if (Array.isArray($scope.columnsOrder) === false) {
+                        console.error('Given "columns-order" is not well formatted. It must be an array of strings.');
+                    } else {
+                        var errorFound = false;
+
+                        $scope.columnsOrder.forEach(function(column) {
+                            if (typeof column !== 'string') {
+                                errorFound = true;
+                            }
+                        });
+
+                        if (errorFound) {
+                            console.error('Given "columns-order" is not well formatted. It must be an array of strings.');
+                        }
+                    }
+                }
+
+                function initializeHeaderColumns() {
+                    var headerColumns = setHeaderColumns();
+                    headerColumns = rememberSortingState(headerColumns);
+                    $scope.headerColumns = headerColumns;
+                }
+
+                function setHeaderColumns() {
+                    // This function loop through each key of the data objects and build the
+                    // ... headers from it.
+                    var headerColumns = [];
+
+                    $scope.data.forEach(function(row) {
+                        angular.forEach(row, function(_, column) {
+                            if (headerColumns.indexOf(column) === -1) {
+                                headerColumns.push(column);
+                            }
+                        });
+                    });
+
+                    if ($scope.columnsOrder && $scope.columnsOrder.length) {
+                        headerColumns.sort(function(a, b) {
+                            var posA = $scope.columnsOrder.indexOf(a);
+                            var posB = $scope.columnsOrder.indexOf(b);
+
+                            if (posA === -1) {
+                                return 1;
+                            } else if (posB === -1) {
+                                return -1;
+                            }
+
+                            return posA - posB;
+                        });
+                    }
+
+                    return headerColumns;
+                }
+
+                function rememberSortingState(headerColumns) {
+                    return headerColumns.map(function(column) {
+                        var orderBy = null;
+
+                        $scope.headerColumns.forEach(function(oldColumn) {
+                            if (oldColumn.field === column) {
+                                orderBy = oldColumn.orderBy;
+                            }
+                        });
+
+                        return { field: column, orderBy: orderBy };
+                    });
+                }
+
+                /* -------------------------------------------------------------------------- */
+                /* User's actions                                                             */
+                /* -------------------------------------------------------------------------- */
+
+                $scope.orderBy = function(column) {
+                    if (!$scope.advancedAnalysisCallback) {
+                        return;
+                    }
+
+                    var request = null;
+
+                    // Toggle sorting state of the column.
+                    if (!column.orderBy) {
+                        column.orderBy = 'ASC';
+                    } else if (column.orderBy === 'ASC') {
+                        column.orderBy = 'DESC';
+                    } else if (column.orderBy === 'DESC') {
+                        column.orderBy = null;
+                    }
+
+                    // Clear the sorting state of the other columns.
+                    $scope.headerColumns = $scope.headerColumns.map(function(c) {
+                        if (c.field !== column.field) {
+                            c.orderBy = null;
+                        }
+                        return c;
+                    });
+
+                    if (column.orderBy) {
+                        request = '`' + column.field + '`' + ' ' + column.orderBy;
+                    }
+
+                    $scope.advancedAnalysisCallback({ orderBy: request });
+                };
+
+                /* -------------------------------------------------------------------------- */
+                /* Watchers                                                                   */
+                /* -------------------------------------------------------------------------- */
+
+                $scope.$watch('data', function(newVal) {
+                    if (angular.isDefined(newVal)) {
+                        checkAttributes();
+                        initializeHeaderColumns();
+                    }
+                }, true);
+            }],
+            link: function(scope, element, attrs, controllers) {
+                if (controllers.length && controllers[0]) {
+                    scope.advancedAnalysisCallback = controllers[0].queryCallback;
+                } else {
+                    scope.advancedAnalysisCallback = null;
+                }
+
+                scope.UIState = {};
+                scope.initializeLayout = true;
+
+                /* -------------------------------------------------------------------------- */
+                /* DOM manipulations                                                          */
+                /* -------------------------------------------------------------------------- */
+
+                function saveTableDimensions() {
+                    if (scope.initializeLayout === false) {
+                        return;
+                    } else {
+                        scope.initializeLayout = false;
+                    }
+
+                    scope.UIState = {
+                        container: {
+                            width: 0,
+                        },
+                        header: {
+                            height: 0,
+                            cells: [],
+                        },
+                        body: {
+                            firstColumnWidth: 0,
+                            hasVerticalScroll: false,
+                            hasHorizontalScroll: false,
+                        },
+                    };
+
+                    // Container ----------
+                    scope.UIState.container.width = element.width();
+
+                    // Header -------------
+                    scope.UIState.header.height = element.find('table thead tr th').outerHeight();
+
+                    element.find('table thead tr th')
+                        .each(function() {
+                            var width = $(this).innerWidth();
+                            var height = $(this).innerHeight();
+                            scope.UIState.header.cells.push({ width: width, height: height });
+                        });
+
+                    // Body ---------------
+                    var tableWrapper = element.find('div.odswidget-adv-table-wrapper')[0];
+                    scope.UIState.body.firstColumnWidth = element.find('table tbody tr td').outerWidth();
+                    scope.UIState.body.hasVerticalScroll = tableWrapper.scrollHeight > tableWrapper.clientHeight;
+                    scope.UIState.body.hasHorizontalScroll = tableWrapper.scrollWidth > tableWrapper.clientWidth;
+                }
+
+                function setSticky() {
+                    var tableElement = element.find('table');
+
+                    // Since the columns width are relative to each other, we need to
+                    // ... hard set their width before manipulating their display.
+                    tableElement.find('thead tr th, tbody tr td')
+                        .each(function() {
+                            $(this).width($(this).width());
+                        });
+
+                    tableElement.addClass('odswidget-adv-table-sticky');
+
+                    tableElement.find('thead tr').css('position', 'absolute');
+                    tableElement.find('tbody tr td:first-child').css('position', 'absolute');
+
+                    // We just positioned the header and the first column as absolute, therefore we
+                    // need to push them using CSS.
+                    tableElement.find('tbody tr').eq(0).css('paddingTop', scope.UIState.header.height);
+                    tableElement.find('tbody tr td:nth-child(2)').css('marginLeft', scope.UIState.body.firstColumnWidth);
+
+                    var tableWrapper = element.find('div.odswidget-adv-table-wrapper');
+
+                    // We only build the fixed header if the wrapper has vertical scroll.
+                    if (!!scope.stickyHeader && scope.UIState.body.hasVerticalScroll) {
+                        // We listen to scroll events on the table wrapper to apply the correct
+                        // ... position to the detached sticky header.
+
+                        var fixedHeader = tableElement.find('thead tr');
+
+                        // In order to avoid multiple binding on the scroll event, we first need to
+                        // ... differentiate the horizontal and vertical scroll events. To do so, we
+                        // ... use two different namespaces (`scroll.horizontal` and
+                        // ... `scroll.vertical`). Then, we simply unbind those namespaces prior to
+                        // ... binding.
+                        $(tableWrapper).unbind('scroll.vertical').bind('scroll.vertical', function(event) {
+                            fixedHeader.css({
+                                marginTop: event.currentTarget.scrollTop,
+                                marginRight: event.currentTarget.scrollLeft,
+                            });
+                        });
+                    }
+
+                    // We only build the fixed first column if the wrapper has horizontal scroll.
+                    if (!!scope.stickyFirstColumn && scope.UIState.body.hasHorizontalScroll) {
+                        // We listen to scroll events on the table wrapper to apply the correct
+                        // ... position to the detached sticky first column.
+
+                        tableElement.find('thead tr th:first-child').css('position', 'absolute');
+                        tableElement.find('thead tr th:nth-child(2)').css('marginLeft', scope.UIState.body.firstColumnWidth);
+
+                        var prevScrollState = false;
+                        var fixedColumn = tableElement.find('tbody tr td:first-child, thead tr th:first-child');
+
+                        // In order to avoid multiple binding on the scroll event, we first need to
+                        // ... differentiate the horizontal and vertical scroll events. To do so, we
+                        // ... use two different namespaces (`scroll.horizontal` and
+                        // ... `scroll.vertical`). Then, we simply unbind those namespaces prior to
+                        // ... binding.
+                        $(tableWrapper).unbind('scroll.horizontal').bind('scroll.horizontal', function(event) {
+                            var currentScrollState = !!event.currentTarget.scrollLeft;
+                            if (prevScrollState !== currentScrollState) {
+                                setShadows(tableElement, currentScrollState);
+                            }
+                            prevScrollState = !!event.currentTarget.scrollLeft;
+
+                            fixedColumn.css({
+                                marginLeft: event.currentTarget.scrollLeft,
+                            });
+                        });
+                    }
+                }
+
+                function setShadows(tableElement, addShadow) {
+                    if (addShadow) {
+                        tableElement.addClass('horizontally-scrolled');
+                    } else {
+                        tableElement.removeClass('horizontally-scrolled');
+                    }
+                }
+
+                /* -------------------------------------------------------------------------- */
+                /* Watchers utils                                                             */
+                /* -------------------------------------------------------------------------- */
+
+                function tableIsVisible() {
+                    // The trick to know when the widget related DOM has been updated, is to
+                    // ... observe the height of the table's wrapper div element.
+                    return !!element.find('div.odswidget-adv-table-wrapper')[0].scrollHeight;
+                }
+
+                /* -------------------------------------------------------------------------- */
+                /* Watchers                                                                   */
+                /* -------------------------------------------------------------------------- */
+                scope.$watch(tableIsVisible, function(newVal, oldVal) {
+                    // Since the widget can be under an "ng-if" and therefore his DOM elements could
+                    // ... be invisible, we need to re-trigger the functions which manipulate the
+                    // ... DOM if there any change.
+                    $timeout(function() {
+                        if (!!newVal && newVal !== oldVal && (!!scope.stickyHeader || !!scope.stickyFirstColumn)) {
+                            scope.initializeLayout = true;
+                            saveTableDimensions();
+                            setSticky();
+                        }
+                    });
+                }, true);
+
+                scope.$watch('data', function(newVal) {
+                    $timeout(function() {
+                        var isVisible = tableIsVisible();
+                        if (isVisible && angular.isDefined(newVal) && newVal.length && (!!scope.stickyHeader || !!scope.stickyFirstColumn)) {
+                            saveTableDimensions();
+                            setSticky();
+                        }
+                    });
+                }, true);
+            },
         };
     }]);
 }());
@@ -21857,6 +22273,16 @@ mod.directive('infiniteScroll', [
             || ['hour', 'minute', 'second'].indexOf(timeSerieMode) !== -1;
     }
 
+    function escapeHTMLForAxisLabels(text) {
+        // Highcharts doesn't support the escaped character for single quotes (&#039;) within the labels for axes
+        // In this instance, the single quote isn't a menace on its own
+        return text == null ? '' : String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
     mod.factory("requestData", ['ODSAPI', '$q', 'ChartHelper', 'AggregationHelper', function(ODSAPI, $q, ChartHelper, AggregationHelper) {
         var buildTimescaleX = ODS.DateFieldUtils.getTimescaleX;
 
@@ -22200,7 +22626,7 @@ mod.directive('infiniteScroll', [
                 series: [],
                 xAxis: {
                     title: {
-                        text: parameters.xLabel
+                        text: escapeHTMLForAxisLabels(parameters.xLabel)
                     },
                     labels: {
                         step: 1,
@@ -22227,7 +22653,10 @@ mod.directive('infiniteScroll', [
                 legend: {
                     enabled: !!parameters.displayLegend,
                     useHTML: true,
-                    rtl: ODSWidgetsConfig.language === 'ar'
+                    rtl: ODSWidgetsConfig.language === 'ar',
+                    labelFormatter: function() {
+                        return ODS.StringUtils.escapeHTML(this.name);
+                    }
                 },
                 // legend: {
                 //     align: 'right',
@@ -22269,10 +22698,11 @@ mod.directive('infiniteScroll', [
                         },
                         dataLabels: {
                             formatter: function() {
+                                var sanitizedValue = ODS.StringUtils.escapeHTML(this.key);
                                 if (this.key.length > parameters.labelsXLength) {
-                                    return '<span title="' + this.key.replace('"', '') + '" alt="' + this.key.replace('"', '') + '">' + this.key.substring(0, parameters.labelsXLength - 3) + '...' + "</span>";
+                                    return '<span title="' + sanitizedValue.replace('"', '') + '" alt="' + sanitizedValue.replace('"', '') + '">' + ODS.StringUtils.escapeHTML(this.key.substring(0, parameters.labelsXLength - 3)) + '...' + "</span>";
                                 } else {
-                                    return this.key;
+                                    return sanitizedValue;
                                 }
                             },
                             style: {
@@ -22292,10 +22722,11 @@ mod.directive('infiniteScroll', [
                                 textOutline: 'none'
                             },
                             formatter: function() {
+                                var sanitizedValue = ODS.StringUtils.escapeHTML(this.key);
                                 if (this.key.length > parameters.labelsXLength) {
-                                    return '<span title="' + this.key.replace('"', '') + '" alt="' + this.key.replace('"', '') + '">' + this.key.substring(0, parameters.labelsXLength - 3) + '...' + "</span>";
+                                    return '<span title="' + sanitizedValue.replace('"', '') + '" alt="' + sanitizedValue.replace('"', '') + '">' + ODS.StringUtils.escapeHTML(this.key.substring(0, parameters.labelsXLength - 3)) + '...' + "</span>";
                                 } else {
-                                    return this.key;
+                                    return sanitizedValue;
                                 }
                             },
                             useHTML: true
@@ -22313,7 +22744,6 @@ mod.directive('infiniteScroll', [
                             series = items[0].series,
                             s = [];
 
-                        // build the header
                         s = [tooltip.tooltipFooterHeaderFormatter(items[0])];
 
                         // build the values
@@ -22389,10 +22819,11 @@ mod.directive('infiniteScroll', [
 
             if (!precision) {
                 options.xAxis.labels.formatter = function() {
+                    var sanitizedValue = ODS.StringUtils.escapeHTML(this.value);
                     if (this.value.length > parameters.labelsXLength) {
-                        return '<span title="' + this.value.replace('"', '') + '" alt="' + this.value.replace('"', '') + '">' + this.value.substring(0, parameters.labelsXLength - 3) + '...' + "</span>";
+                        return '<span title="' + sanitizedValue.replace('"', '') + '" alt="' + sanitizedValue.replace('"', '') + '">' + ODS.StringUtils.escapeHTML(this.value.substring(0, parameters.labelsXLength - 3)) + '...' + "</span>";
                     } else {
-                        return this.value;
+                        return sanitizedValue;
                     }
                 };
             } else {
@@ -22569,7 +23000,7 @@ mod.directive('infiniteScroll', [
                     formatterFunction = function areaTooltip() {
                         var formattedValue = formatValue(this.value, decimals, serie.displayUnits ? unit : false);
                         return format_string(template, {
-                            name: this.series.name,
+                            name: ODS.StringUtils.escapeHTML(this.series.name),
                             color: this.series.color,
                             value: formattedValue
                         });
@@ -22579,7 +23010,7 @@ mod.directive('infiniteScroll', [
                         var formattedLow = formatValue(this.low, decimals, serie.displayUnits ? unit : false);
                         var formattedHigh = formatValue(this.high, decimals, serie.displayUnits ? unit : false);
                         return format_string(template, {
-                            name: this.series.name,
+                            name: ODS.StringUtils.escapeHTML(this.series.name),
                             color: this.series.color,
                             value: formattedLow + ' - ' + formattedHigh
                         });
@@ -22588,7 +23019,7 @@ mod.directive('infiniteScroll', [
                     formatterFunction = function singleValueTooltip() {
                         var formattedValue = formatValue(this.y, decimals, serie.displayUnits ? unit : false);
                         return format_string(template, {
-                            name: this.series.name,
+                            name: ODS.StringUtils.escapeHTML(this.series.name),
                             color: this.series.color,
                             value: formattedValue + ' (' + Highcharts.numberFormat(this.percentage, 1) + '%)'
                         });
@@ -22601,10 +23032,10 @@ mod.directive('infiniteScroll', [
                         var points = [this.low, this.q1, this.median, this.q3, this.high];
                         var value = '';
                         for (var i = serie.charts.length - 1; i >= 0; i--) {
-                            value += ChartHelper.getYLabel(datasetid, serie.charts[i]) + ' ' + _format(points[i]) + '<br>';
+                            value += ODS.StringUtils.escapeHTML(ChartHelper.getYLabel(datasetid, serie.charts[i])) + ' ' + _format(points[i]) + '<br>';
                         }
                         return format_string(template, {
-                            name: this.series.name,
+                            name: ODS.StringUtils.escapeHTML(this.series.name),
                             color: this.series.color,
                             value: value,
                         });
@@ -22616,7 +23047,7 @@ mod.directive('infiniteScroll', [
                             formattedValue = formattedValue + ' (' + Highcharts.numberFormat(this.percentage, 1) + '%)';
                         }
                         return format_string(template, {
-                            name: this.series.name,
+                            name: ODS.StringUtils.escapeHTML(this.series.name),
                             color: this.series.color,
                             value: formattedValue
                         });
@@ -22697,7 +23128,7 @@ mod.directive('infiniteScroll', [
             var hasMax = typeof chart.yRangeMax !== "undefined" && chart.yRangeMax !== '';
             var yAxis = {
                 title: {
-                    text: yLabel || "",
+                    text: yLabel && escapeHTMLForAxisLabels(yLabel) || "",
                     style: {
                         color: chart.color
                     }
@@ -30640,7 +31071,7 @@ mod.directive('infiniteScroll', [
          * @scope
          * @restrict E
          * @param {array} selectedValues The variable name to use to store the selected options' values.
-         * @param {boolean} [multiple=false] If true, the specified <code>selected-values</code> variable will be an array and the menu will support multiple selections.
+         * @param {boolean} [multiple=false] If true, the menu will support multiple selections.
          * @param {array} options The input array of value which feeds the select menu.
          * @param {expression} [labelModifier] An expression to apply on the options' label.
          * @param {expression} [valueModifier] An expression to apply on the options' value.
@@ -30650,8 +31081,10 @@ mod.directive('infiniteScroll', [
          *
          * @description
          * This widget allows the selection of one or more items from a list of options. This list can be made up of strings or objects.
+         *
          * If the "options" variable provided to the widget represents a simple array of string, the labels and values of these options will be automatically calculated by the widget.
          * But if the options provided to the widget are objects, it will be necessary to specify how to handle them using the "label-modifier" and "value-modifier" parameters.
+         *
          * The "label-modifier" and "value-modifier" parameters each take an expression that will be applied to the each individual object representing an option.
          * And finally, the result of the selection will be stored in the variable specified in the "selected-values" parameter.
          *
@@ -30806,7 +31239,6 @@ mod.directive('infiniteScroll', [
             '',
             controller: ['$scope', '$attrs', '$filter', '$parse', function($scope, $attrs, $filter, $parse) {
                 // Internal objects
-                $scope._isFirstMount = true;
                 $scope._items = [];
                 $scope._displayedItems = [];
                 $scope._selectedLabels = [];
@@ -30816,8 +31248,10 @@ mod.directive('infiniteScroll', [
                 // Default attributes values
                 $scope.multiple = !!$scope.multiple;
 
-                if (!$scope.selectedValues) {
+                if (typeof $scope.selectedValues === 'undefined' || $scope.selectedValues === null || $scope.selectedValues === '') {
                     $scope.selectedValues = [];
+                } else if (Array.isArray($scope.selectedValues) === false) {
+                    $scope.selectedValues = [$scope.selectedValues];
                 }
 
                 if (!$scope.placeholder) {
@@ -30828,24 +31262,24 @@ mod.directive('infiniteScroll', [
                 /* Utils                                                                      */
                 /* -------------------------------------------------------------------------- */
 
-                function initializeItems(useCache) {
+                function initializeItems() {
                     // Initialize filters.
                     $scope._inputTextFilter = '';
 
                     var items = [];
 
                     // Parse and filter the given options.
-                    items = parseOptions($scope.options, useCache);
+                    items = parseOptions($scope.options);
 
                     // Remove the duplicated or the not fully defined items.
                     items = cleanItems(items);
 
                     setSelectedItems(items);
+
                     $scope._items = items;
-                    $scope._isFirstMount = false;
                 };
 
-                function parseOptions(options, useCache) {
+                function parseOptions(options) {
                     // Parse and filter the given options.
                     var items;
 
@@ -30854,15 +31288,7 @@ mod.directive('infiniteScroll', [
                         var value = $scope.valueModifier ? $parse($scope.valueModifier)(option) : option;
                         var selected = false;
 
-                        if (useCache) {
-                            // If some options have already been selected, we need to identify them and
-                            // ... conserve their "selected" state.
-                            $scope._items.forEach(function(i) {
-                                    if (i.selected && i.value === value) {
-                                        selected = true;
-                                    }
-                                });
-                        } else if ($scope.selectedValues.length) {
+                        if ($scope.selectedValues && $scope.selectedValues.length) {
                             // Compute the default selected items using the initial "selectedValues"
                             // ... variable given to the widget or when the "selectedValues" has
                             // ... been mutated from the outside.
@@ -30918,7 +31344,7 @@ mod.directive('infiniteScroll', [
                     // ... It has to be very versatile, many things can be done using this
                     // ... attribute's expression, therefore we have to call the outer scope
                     // ... ($scope.$parent) to evaluate it.
-                    $scope.$evalAsync(function() {
+                    $timeout(function() {
                         $scope.$parent.$eval($attrs.onChange);
                     });
                 };
@@ -30996,19 +31422,15 @@ mod.directive('infiniteScroll', [
                 /* Watchers & Observers                                                       */
                 /* -------------------------------------------------------------------------- */
 
-                $scope.$watch('[options, selectedValues]', function(newVal, oldVal) {
-                    if (angular.isDefined(newVal[0]) && !$scope.disabled) {
-                        var useCache = true;
+                $scope.$watch('options', function(newVal, oldVal) {
+                    if (angular.isDefined(newVal) && !angular.equals(newVal, oldVal) && !$scope.disabled) {
+                        initializeItems();
+                    }
+                }, true);
 
-                        if ($scope._isFirstMount || !angular.equals(newVal[1], oldVal[1])) {
-                            // If the widget has just been initialized or if the "selectedValues"
-                            // ... variable has been mutated from the outside, we don't use the
-                            // ... cached "selected" state of the items. Instead we'll use the
-                            // ... "selectedValues" variable as the only source of truth.
-                            useCache = false;
-                        }
-
-                        initializeItems(useCache);
+                $scope.$watch('selectedValues', function(newVal, oldVal) {
+                    if (angular.isDefined($scope.options) && !angular.equals(newVal, oldVal) && !$scope.disabled) {
+                        initializeItems();
                     }
                 }, true);
 

@@ -4,12 +4,6 @@
     var mod = angular.module('ods-widgets');
 
     mod.directive('odsAdvAnalysis', ['ODSAPIv2', function (ODSAPIv2) {
-        /**
-         * @ngdoc directive
-         * @name ods-widgets.directive:odsAdvAnalysis
-         * @scope
-         * @restrict A
-         */
         return {
             restrict: 'A',
             scope: true,
@@ -30,7 +24,7 @@
                         })
                 };
 
-                $scope.queryCallback = function(values) {
+                this.queryCallback = function(values) {
                     if (!values) {
                         values = {};
                     }
@@ -55,7 +49,7 @@
                         $attrs,
                         $scope[$attrs.odsAdvAnalysisContext].parameters
                     ]
-                }, $scope.queryCallback, true);
+                }, this.queryCallback, true);
             }]
         };
     }]);

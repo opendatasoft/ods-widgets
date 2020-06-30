@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.4.8 - 2020-06-30
+### Changed
+- `odsSelect`: `selectedValues` will always be an array, to ensure the behavior is consistent both in single and
+multiple modes.
+- `odsSelect`: `onChange` callback will be run after the changes triggered by the user's selection have been propagated.
+### Fixed
+- `odsChart`: Special character are now properly handled in axes' labels
+- `odsSelect`: Fixed various issues that prevented the active selection to be kept when the options were updated.
+
 ## 1.4.7 - 2020-06-17
 ### Added
 - `odsSelect`: This is a new widget built to offer a selection (single or multiple) between a list of options, with many
