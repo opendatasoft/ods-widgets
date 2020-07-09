@@ -8,51 +8,60 @@
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-text-search
+       context="{CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]}"
        placeholder="{string}"
-       button="{string}"
        field="{string}"
        suffix="{string}"
-       context="{CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]}"
-       [autofocus]="{string}"
-       [id]="{string}"&gt;
+       autofocus="{string}"
+       id="{string}"&gt;
 &lt;/ods-text-search&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>placeholder</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>the text to display as a placeholder when the searchbox is empty</p>
-</div></td></tr><tr><td>button</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>the text to display in the &quot;search&quot; button</p>
-</div></td></tr><tr><td>field</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>The name of a field you want to restrict the search on (i.e. only search on the
-textual content of a specific field). If you want to specify different fields for each context, use the
-syntax &quot;mycontext-field&quot;. If you don&#39;t specify explicitely a field name for a context, it will default to the
-value of the &quot;field&quot; parameter.
-The search will be a simple text search and won&#39;t support any query language or operators.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>suffix</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Changes the query parameter (&quot;q&quot; by default) so that it works on &quot;q.suffixValue&quot;. This prevents widgets from overriding each other (useful when you want multiple text-search widgets on the same page.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext[]</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext[]</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use, or array of context to use.</p>
-</div></td></tr><tr><td>[autofocus]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Add the autofocus attribute (no need for a value) to set the focus in the text</p>
-</div></td></tr><tr><td>[id]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Add an id attribute to the inner input
-search&#39;s input.</p>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext[]</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext[]</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p><i>(mandatory)</i> <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a>, <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>, or array of context to use.</p>
+</div></td></tr><tr><td>placeholder</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Text to display as a placeholder when the searchbox is empty.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>field</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Name of a field the search will be restricted on (i.e. the widget will only allow search on the textual content of the chosen field).
+If more than one contexts are declared, it is possible to specify different fields depending on these contexts, using the following syntax: <code>mycontext-field</code>. If a specific field is not set for a context, the value of the <strong>field</strong> parameter will be used by default. The search will be a simple text search that won&#39;t support query languages and operators.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>suffix</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Changes the default <code>q</code> query parameter into <code>q.suffixValue</code>. This parameter prevents widgets from overriding one another, for instance when multiple odsTextSearch widgets are used on the same page.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>autofocus</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Makes the search box automatically selected at loading of the page, to allow to start typing the search without having to select manually the search box beforehand. No value is required for this parameter to function.</p>
+</div></td></tr><tr><td>id</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><p>Adds an <code>id</code> attribute to the search&#39;s textbox, e.g. to integrate the widget to a clickable label.</p>
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odstextsearch-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-41" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
-<div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-41" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-41">
-    <ods-dataset-context context="events,trees"
-                         events-domain="https://widgets-examples.opendatasoft.com/"
-                         events-dataset="evenements-publics-openagenda-extract"
-                         trees-domain="https://widgets-examples.opendatasoft.com/"
-                         trees-dataset="les-arbres-remarquables-de-paris">
-        <ods-text-search context="[events,trees]"
-                         events-field="titre"
-                         trees-field="libellefrancais"></ods-text-search>
-        <ods-table context="events"></ods-table>
-        <ods-table context="trees"></ods-table>
-    </ods-dataset-context>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="simple_text_search.html" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="simple_text_search.html">
+<pre class="prettyprint linenums" ng-set-text="simple_text_search.html"></pre>
+<script type="text/ng-template" id="simple_text_search.html">
+     <ods-dataset-context context="events"
+                          events-domain="https://widgets-examples.opendatasoft.com/"
+                          events-dataset="evenements-publics-openagenda-extract">
+         <ods-text-search context="events" field="titre"></ods-text-search>
+         <ods-table context="events"></ods-table>
+     </ods-dataset-context>
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-41" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="simple_text_search.html" ng-eval-javascript=""></div>
+<h4 id="example_source">Source</h4>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="text_search_with_multiple_contexts.html" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="text_search_with_multiple_contexts.html">
+<pre class="prettyprint linenums" ng-set-text="text_search_with_multiple_contexts.html"></pre>
+<script type="text/ng-template" id="text_search_with_multiple_contexts.html">
+     <ods-dataset-context context="events,trees"
+                          events-domain="https://widgets-examples.opendatasoft.com/"
+                          events-dataset="evenements-publics-openagenda-extract"
+                          trees-domain="https://widgets-examples.opendatasoft.com/"
+                          trees-dataset="les-arbres-remarquables-de-paris">
+         <ods-text-search context="[events,trees]"
+                          events-field="titre"
+                          trees-field="libellefrancais"></ods-text-search>
+         <ods-table context="events"></ods-table>
+         <ods-table context="trees"></ods-table>
+     </ods-dataset-context>
+ </script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="text_search_with_multiple_contexts.html" ng-eval-javascript=""></div>
 </div></div>
 </div>

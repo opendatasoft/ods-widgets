@@ -483,7 +483,13 @@
                             series = items[0].series,
                             s = [];
 
-                        s = [tooltip.tooltipFooterHeaderFormatter(items[0])];
+                        // We copy the item for the header formatting, so that we can sanitize it with no side effects
+                        var headerItem = angular.copy(items[0]);
+                        if (angular.isString(headerItem.key)) {
+                            headerItem.key = ODS.StringUtils.escapeHTML(headerItem.key);
+                        }
+
+                        s = [tooltip.tooltipFooterHeaderFormatter(headerItem)];
 
                         // build the values
                         angular.forEach(items, function (item) {
@@ -493,7 +499,6 @@
                         });
                         // footer
                         s.push(tooltip.options.footerFormat || '');
-
                         // Add this in RTL to prevent the text-align:left on .highcharts-container added by highcharts to counter the direction
                         if (ODSWidgetsConfig.language === 'ar'){
                             s.unshift('<div style="text-align:right">');

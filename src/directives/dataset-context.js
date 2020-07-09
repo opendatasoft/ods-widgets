@@ -10,99 +10,76 @@
          *  @name ods-widgets.directive:odsDatasetContext
          *  @scope
          *  @restrict AE
-         *  @param {string} context A name (or list of names separated by commas) of contexts to declare. The contexts are further
-         *  configured using specific attributes, as described below.
+         *  @param {string} context <i>(mandatory)</i> Name, or list of names separated by commas, of context(s) to declare. Context names must be in lowercase, can only contain alphanumerical characters, and cannot begin with a number, "data", or "x".
+         *  @param {string} dataset <i>(mandatory)</i> Identifier of the dataset(s) on which the context is based.
+         *  @param {string} [domain=ODSWidgetsConfig.defaultDomain] Domain where the dataset(s) can be found. Since the domain value is used to construct a URL to an API root, it can be:
+         *
+         *  - an alphanum string (e.g. *mydomain*): it will assume that it is an Opendatasoft domain (e.g. *mydomain.opendatasoft.com*)
+         *  - a hostname (e.g. *data.mydomain.com*)
+         *  - a relative path (e.g. _/monitoring_): it will be relative to the hostname of the current page
+         *  - a hostname and a path (e.g. *data.mydomain.com/monitoring*)
+         *
+         * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
+         *
+         *  @param {string} [apikey=none] API key to use in every API call for the context (see {@link https://help.opendatasoft.com/platform/en/managing_account/02_generating_api_key/generating_api_key.html#id1 Generating an API key}).
+         *  @param {string} [sort=none] Sort expression to apply by default to all widgets plugged to the declared context. The expression should be written using one of the following syntaxes:
+         *
+         *  - `field` for an ascending order,
+         *  - `-field` for a descending order.
+         *
+         *  @param {object} [parameters=none] Object holding parameters to apply to the context when it is created. Any parameter from the API can be used here (such as `q`, `refine.FIELD` etc.)
+         *  @param {number} [refreshDelay=none] Number of milliseconds to wait before the context is automatically refreshed. If this parameter is not set, the context will not automatically refresh. The minimum delay is 10000ms.
+         *  @param {string} [parametersFromContext=none] Name of another declared context to replicate the parameters and queries from. Any modification on the parameters of this context or the original one will be applied to both.
+         *  @param {boolean} [urlSync=none] Enables synchronization of the parameters to the page's parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change as well. Note that if this parameter is enabled, `parameters` and `parametersFromContext` won't have any effect. There can only be a single context with URL synchronization enabled, else the behavior will be unpredictable.
+         *
          *  @description
-         *  A "dataset context" represents a dataset, and a set of parameters used to query its data. A context can be used
-         *  by one or more directives, so that they can share information (generally the query parameters). For example, a directive
-         *  that displays a time filter can be "plugged" on the same context as a table view directive, so that the user
-         *  can filter the data displayed in the table.
          *
-         *  The `odsDatasetContext` creates a new child scope, and exposes its contexts into it. In other words, the contexts
-         *  will be available to any directive that is inside the `odsDatasetContext` element. You can nest `odsDatasetContext` directives inside each others.
+         *  The odsDatasetContext widget represents a dataset from a chosen domain, and a set of parameters used to query its data. odsDatasetContext can be used by one or more widgets: it allows them sharing information (i.e. the query parameters).
          *
-         *  A single `odsDatasetContext` can declare one or more context at once. To initialize contexts, you declare
-         *  them in the **context** attribute. Then, you can configure them further using attributes prefixed by the context
-         *  name (**CONTEXTNAME-SETTING**, e.g. mycontext-domain). The available settings are:
+         *  For instance, a widget that displays a filter ({@link ods-widgets.directive:odsFacets odsFacets}) can be plugged on the same context as a table view widgets ({@link ods-widgets.directive:odsTable odsTable}), so that the user can filter the data displayed in the table.
          *
-         *  * **`domain`** - {@type string} - (optional) Indicate the "domain" (used to construct an URL to an API root) where to find the dataset.
-         * Domain value can be:
+         *  odsDatasetContext creates a new child scope, within which its declared contexts are available for any other widget used inside that odsDatasetContext element. odsDatasetContext widgets can also be nested inside each others.
          *
-         *      * a simple alphanum string (e.g. *mydomain*): it will assume it is an Opendatasoft domain (so in this example *mydomain.opendatasoft.com*)
+         *  A single odsDatasetContext can declare one or several contexts, which are initialized when declared through the **context** parameter. Each context is configured using parameters prefixed by the context name (`contextname-setting`, e.g. mycontext-domain).
          *
-         *      * a hostname (e.g. *data.mydomain.com*)
+         *  <b>Properties of odsDatasetContext used as variable</b>
          *
-         *      * an absolute path (e.g. _/monitoring_), it will be absolute to the hostname of the current page
+         *  Once created, the context is accessible as a variable named after it. The context contains properties that can be accessed directly:
          *
-         *      * a hostname and a path (e.g. *data.mydomain.com/monitoring*)
-         *
-         *      * nothing: in that case, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used
-         *
-         *  * **`dataset`** - {@type string} Identifier of the dataset
-         *
-         *  * **`apikey`** {@type string} (optional) API Key to use in every API call for this context
-         *
-         *  * **`sort`** {@type string} (optional) Sort expression to apply initially (*field* or *-field*)
-         *
-         *  * **`parameters`** {@type Object} (optional) An object holding parameters to apply to the context when it is created. Any parameter from the API can be used here (such as `q`, `refine.FIELD` ...)
-         *
-         *  * **`refresh-delay`** {@type Number} (optional) The number of milliseconds to wait before refreshing the context. If this parameter is omitted, the context does not automatically refresh. Minimum delay is 10000ms.
-         *
-         *  * **`parametersFromContext`** {@type string} (optional) The name of a context to replicate the parameters from. Any change of the parameters
-         *  in this context or the original context will be applied to both.
-         *
-         *  * **`urlsync`** {@type Boolean} Enable synchronization of the parameters to the page's parameters (query string). If you share the page with parameters in the URL, the context will
-         *  use them; and if the context parameters change, the URL parameters will change as well. If enabled, **`parameters`** and **`parametersFromContext`** won't have any effect.
-         *  Note that there can only be a single context with URL synchronization enabled, else the behavior will be unpredictable.
-         *
-         *  Once created, the context is exposed and accessible as a variable named after it. The context contains properties that you can access directly:
-         *
-         *  * domainUrl: a full URL the the domain of the context, that can be used to create links
-         *
-         *  * parameters: the parameters object of the context
-         *
-         *  * dataset: the dataset object for this context
-         *
-         *  * getDownloadURL(format[, dict options]): a method that returns an URL to download the data, including currently active filters (refinements, queries...). By default
-         *  the URL will allow to download a CSV export, but you can pass another format such as "geojson" or "json".
-         *  Two optional parameters : `{'use_labels_for_header': '<true/false>', 'fields': '<list of comma separated field name>'}`
-         *
-         *  * getQueryStringURL([dict options]): a method that build the URL suffix (`?key1=value1&key2=value2&...`) based on context parameters (active filters, refinement, sort, query...).
-         *  The optional dictionary parameter allow to build the URL with additional key/value parameters.
-         *
-         *  **Note:** Due to naming conventions in various places (HTML attributes, AngularJS...), context names
-         *  have to be lowercase, can only contain alphanumerical characters, and can't begin with a number, "data", or "x".
+         *  * domainUrl: full URL of the domain of the context, that can be used to create links
+         *  * parameters: parameters object of the context
+         *  * dataset: dataset object for the context
+         *  * getDownloadURL(format[, dict options]): method that returns a URL to download the data, including currently active filters (e.g. refinements, queries etc.). By default the URL will allow downloading a CSV export, but another format can be passed, such as "geojson" or "json". Two optional parameters are also available: `{'use_labels_for_header': '<true/false>', 'fields': '<list of comma separated field name>'}`
+         *  * getQueryStringURL([dict options]): method that builds the URL suffix (`?key1=value1&key2=value2&...`) based on context parameters (active filters, refinement, sort, query, etc.). The optional dictionary parameter allows building the URL with additional key/value parameters.
          *
          *  @example
-         *  <pre>
-         *  <ods-dataset-context context="trees" trees-dataset="trees-in-paris">
-         *      <!-- Retrieved from a local API (no domain for the context)-->
-         *      A dataset from {{trees.domainUrl}}.
-         *  </ods-dataset-context>
-         *  </pre>
          *
-         *  <pre>
-         *  <ods-dataset-context context="trees,events"
-         *                       trees-dataset="les-arbres-remarquables-de-paris"
-         *                       trees-domain="https://widgets-examples.opendatasoft.com/"
-         *                       events-dataset="evenements-publics-openagenda-extract"
-         *                       events-domain="widgets-examples">
-         *      <!-- Shows a list of the trees -->
-         *      <ods-table context="trees"></ods-table>
-         *      <!-- Shows a map of events -->
-         *      <ods-map context="events"></ods-map>
-         *  </ods-dataset-context>
-         *  </pre>
+         *  <example module="ods-widgets">
+         *      <file name="visualizations_based_on_dataset_context.html">
+         *          <ods-dataset-context context="trees,events"
+         *                               trees-dataset="les-arbres-remarquables-de-paris"
+         *                               trees-domain="https://widgets-examples.opendatasoft.com/"
+         *                               clocks-dataset="evenements-publics-openagenda-extract"
+         *                               clocks-domain="widgets-examples">
+         *               <!-- Shows a list of the trees -->
+         *               <ods-table context="trees"></ods-table>
+         *               <!-- Shows a map of clocks -->
+         *               <ods-map context="events"></ods-map>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
          *
-         *  <pre>
-         *  <ods-dataset-context context="demographics"
-         *                       demographics-dataset="us-cities-demographics"
-         *                       demographics-domain="https://widgets-examples.opendatasoft.com/"
-         *                       demographics-parameters="{'q': 'Santa', 'refine.state': 'California'}">
-         *      <!-- Demographics for all cities in California that have 'Santa' in their name -->
-         *      <ods-table context="demographics"></ods-table>
-         *  </ods-dataset-context>
-         *  </pre>
+         *  <example module="ods-widgets">
+         *      <file name="dataset_context_with_parameters.html">
+         *          <ods-dataset-context context="demographics"
+         *                               demographics-dataset="us-cities-demographics"
+         *                               demographics-domain="https://widgets-examples.opendatasoft.com/"
+         *                               demographics-parameters="{'q': 'Santa', 'refine.state': 'California'}">
+         *                <!-- Demographics for all cities in California that have 'Santa' in their name -->
+         *                <ods-table context="demographics"></ods-table>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
          */
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
         var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext, source, urlSync, schema, refreshDelay) {

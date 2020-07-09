@@ -101,13 +101,31 @@
          * @name ods-widgets.directive:odsAnalysis
          * @scope
          * @restrict A
-         * @param {string} [odsAnalysis=analysis] Variable name to use
-         * @param {DatasetContext} odsAnalysisContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {number} [odsAnalysisMax=all] Maximum number of results to show
-         * @param {string} odsAnalysisSort name of serie to sort on (or -serieName to invert the sort)
+         * @param {string} [odsAnalysis=analysis] <i>(mandatory)</i> Name of the variable
+         * @param {DatasetContext} odsAnalysisContext <i>(mandatory)</i> {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use.
+         * @param {number} [odsAnalysisMax=all] Maximum number of results to show.
+         * @param {string} [odsAnalysisX=none] Name of the field used as X axis (e.g. date or datetime field, facet, etc.)
+         * @param {string} [odsAnalysisSort=none] Name of serie to sort on.
+         *
+         * Note that `-` before the name of the serie indicates that the sorting will be descending instead of ascending (e.g. `-serieName`).
+         *
+         * @param {string} [odsAnalysisSerieName=none] Function to apply:
+         *
+         * - AVG: average
+         * - COUNT
+         * - MIN: minimum
+         * - MAX: maximum
+         * - STDDEV: standard deviation
+         * - SUM
+         *
+         * Must be written in the following form: `FUNCTION(fieldname)`.
+         *
          * @description
-         * This widget exposes the results of an analysis (as an object containing a results array and optionally an aggregations object) in a variable available in the scope.
-         * It can be used with AngularJS's ngRepeat to simply build a table of analysis results.
+         * The odsAnalysis widget creates a variable that contains the result of an analysis (i.e. an object containing a results array and optionally an aggregations object).
+         *
+         * odsAnalysis allows applying functions to chosen groups of data, to analyze them with the same logic as that of a chart visualization. For instance, an analysis can consist in obtaining the average value for several series of data, broken down by a chosen field used as an X axis. The result can then be sorted by another serie.
+         *
+         * odsAnalysis can be used with AngularJS's ngRepeat to build a table of analysis results.
          *
          * @example
          *  <example module="ods-widgets">
@@ -133,8 +151,8 @@
          *                          ods-analysis-serie-height-cumulative="false"
          *                          ods-analysis-serie-girth="AVG(circonference)"
          *
-         *                          ng-repeat="result in analysis.results"
-         *                      >
+         *                          ng-repeat="result in analysis.results">
+         *
          *                          <td>{{ result.x }}</td>
          *                          <td>{{ result.height|number:2 }}</td>
          *                          <td>{{ result.girth|number:2 }}</td>
@@ -260,8 +278,7 @@
          *          <ods-dataset-context context="regions,population"
          *                               regions-dataset="contours-geographiques-des-regions-2019-copy"
          *                               regions-domain="public"
-         *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)',
-         *                                                   'disjunctive.region':true}"
+         *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)', 'disjunctive.region':true}"
          *                               population-dataset="population-millesimee-communes-2016"
          *                               population-parameters="{'disjunctive.nom_reg':true}"
          *                               population-domain="public">

@@ -4,25 +4,40 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>This widget exposes the results of an analysis (as an object containing a results array and optionally an aggregations object) in a variable available in the scope.
-It can be used with AngularJS&#39;s ngRepeat to simply build a table of analysis results.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>The odsAnalysis widget creates a variable that contains the result of an analysis (i.e. an object containing a results array and optionally an aggregations object).</p>
+<p>odsAnalysis allows applying functions to chosen groups of data, to analyze them with the same logic as that of a chart visualization. For instance, an analysis can consist in obtaining the average value for several series of data, broken down by a chosen field used as an X axis. The result can then be sorted by another serie.</p>
+<p>odsAnalysis can be used with AngularJS&#39;s ngRepeat to build a table of analysis results.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as attribute<pre class="prettyprint linenums">&lt;ANY ods-analysis="{string}"
      ods-analysis-context="{DatasetContext}"
      ods-analysis-max="{number}"
-     ods-analysis-sort="{string}"&gt;
+     ods-analysis-x="{string}"
+     ods-analysis-sort="{string}"
+     ods-analysis-serie-name="{string}"&gt;
    ...
 &lt;/ANY&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>odsAnalysis</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Variable name to use</p>
-</div> <p><em>(default: analysis)</em></p></td></tr><tr><td>odsAnalysisContext</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
-</div></td></tr><tr><td>odsAnalysisMax</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Maximum number of results to show</p>
-</div> <p><em>(default: all)</em></p></td></tr><tr><td>odsAnalysisSort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>name of serie to sort on (or -serieName to invert the sort)</p>
-</div></td></tr></tbody></table></div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>odsAnalysis</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p><i>(mandatory)</i> Name of the variable</p>
+</div> <p><em>(default: analysis)</em></p></td></tr><tr><td>odsAnalysisContext</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p><i>(mandatory)</i> <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use.</p>
+</div></td></tr><tr><td>odsAnalysisMax</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Maximum number of results to show.</p>
+</div> <p><em>(default: all)</em></p></td></tr><tr><td>odsAnalysisX</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Name of the field used as X axis (e.g. date or datetime field, facet, etc.)</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>odsAnalysisSort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Name of serie to sort on.</p>
+<p>Note that <code>-</code> before the name of the serie indicates that the sorting will be descending instead of ascending (e.g. <code>-serieName</code>).</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>odsAnalysisSerieName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Function to apply:</p>
+<ul>
+<li>AVG: average</li>
+<li>COUNT</li>
+<li>MIN: minimum</li>
+<li>MAX: maximum</li>
+<li>STDDEV: standard deviation</li>
+<li>SUM</li>
+</ul>
+<p>Must be written in the following form: <code>FUNCTION(fieldname)</code>.</p>
+</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><h4 id="example_source">Source</h4>
 <div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
@@ -50,8 +65,8 @@ It can be used with AngularJS&#39;s ngRepeat to simply build a table of analysis
                     ods-analysis-serie-height-cumulative="false"
                     ods-analysis-serie-girth="AVG(circonference)"
 
-                    ng-repeat="result in analysis.results"
-                >
+                    ng-repeat="result in analysis.results">
+
                     <td>{{ result.x }}</td>
                     <td>{{ result.height|number:2 }}</td>
                     <td>{{ result.girth|number:2 }}</td>

@@ -5,26 +5,66 @@
 
     mod.directive('odsFacets', ['ODSWidgetsConfig', '$compile', 'translate', '$q', '$filter', function(ODSWidgetsConfig, $compile, translate, $q, $filter) {
         /**
-         * @ngdoc directive
-         * @name ods-widgets.directive:odsFacets
-         * @scope
-         * @restrict E
-         * @param {DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @description
-         * This widget displays filters (facets) for a dataset or a domain's catalog of datasets, allowing the users
-         * to dynamically "refine" on one or more categories for the context, typically to restrict the data displayed
-         * by another widget such as {@link ods-widgets.directive:odsTable odsTable}.
+         *  @ngdoc directive
+         *  @name ods-widgets.directive:odsFacets
+         *  @scope
+         *  @restrict E
+         *  @param {DatasetContext} context <i>(mandatory)</i> {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use.
+         *  @param {string} name <i>(mandatory)</i> Name of the field the filter is based on.
+         *  @param {string} [title=none] Title to display above the filter
+         *  @param {string} [sort=-count] Sorting method used on the categories:
          *
-         * Used alone without any configuration, the widget will display by default filters from all the "facet" fields
-         * of a dataset if it is used with a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, or based on
-         * typical metadata from a dataset catalog if used with a {@link ods-widgets.directive:odsCatalogContext Catalog Context}.
+         *  - `count` or `-count` to sort by number of items in each category
+         *  - `num` or `-num` to sort by the name of category, if it is a number
+         *  - `alphanum` or `-alphanum` to sort by the name of the category
+         *
+         *  Note that `-` before the name of the sorting method indicates that the sorting will be descending instead of ascending.
+         *
+         *  Configuring a specific order is also possible, by setting a list of value: `['value1', 'value2']`.
+         *
+         *  @param {number} [visibleItems=6] Number of categories to show. If there are more categories for the filter, they are collapsed by default, but can be expanded by clicking on a "more" link.
+         *  @param {boolean} [hideIfSingleCategory=false] If `true`, hides filters if only one category to refine on is available.
+         *  @param {string} [hideCategoryIf=none] AngularJS expression to evaluate: if it evaluates to `true`, the category is displayed. In the expression, the following elements can be used:
+         *
+         *  - `category.name` (value of the category)
+         *  - `category.path` (complete path to the category, including hierarchical levels)
+         *  - `category.state` (refined, excluded, or displayed)
+         *
+         *  @param {boolean} [disjunctive=false] If `true`, the filter is in disjunctive mode, which means that after a first value is selected, other available values can also be selected. All selected values are combined as "or". E.g. after clicking "red", "green" and "blue" can also be clicked, and the resulting values can be either green, red, or blue.
+         *
+         *  Note that this parameter is directly related to the schema of the dataset: for this parameter to function, the field must allow multiple selection in filters (see {@link https://help.opendatasoft.com/platform/en/publishing_data/05_processing_data/defining_a_dataset_schema.html#configuration-options-for-facets Defining a dataset schema}).
+         *  @param {boolean} [timerangeFilter=false] If `true`, an option to filter using a time range is displayed above the categories. This parameter only works for date and datetime fields, and must be used with a context (see **context** parameter).
+         *  @param {string} [context=none] Name of the context to refine on. This parameter is mandatory for the **timerangeFilter** parameter.
+         *  @param {string} [valueSearch=none] If `true`, a search box is displayed above the categories, to search within the available categories. If `suggest`, the matching categories are not displayed until there is at least one character typed into the search box, effectively making it into a suggest-like search box.
+         *  @param {DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]} [refineAlso=none] Enables the widget to apply its refinements on other contexts, e.g. for contexts which share common date. The value of this parameter should be the name of another context, or a list of contexts.
+         *  @param {string} [[contextname]FacetName=Current facet's name] Name of the facet in one of the other contexts, defined through the **refineAlso** parameter, that the original facet should be mapped on. `[contextname]` must be replaced with the name of that other context.
+         *
+         *  @description
+         *
+         *  The odsFacets widget displays filters based on a dataset or a domain's catalog of datasets, allowing the users to dynamically refine on one or more categories for the defined context (i.e. each filter being composed of several categories, which are values of the field the filter is based on).
+         *
+         *  For instance, odsFacet could be used to refine the data displayed in a table ({@link ods-widgets.directive:odsTable odsTable}), to see only the specific data one is interested in.
+         *
+         *  Used alone without any configuration, the widget will display by default filters from all the "facet" fields of a dataset if it is used with a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, or based on typical metadata from a dataset catalog if used with a {@link ods-widgets.directive:odsCatalogContext Catalog Context}.
          *
          * <pre>
          *     <ods-facets context="mycontext"></ods-facets>
          * </pre>
          *
-         * To configure which facets are displayed, you can use the odsFacet directive within the odsFacets widget. You can also
-         * use regular HTML within the odsFacets widget:
+         * <b>odsFacet</b>
+         *
+         * The odsFacet widget is a widget that can only be used based on odsFacets. It is used to configure which facets should be displayed by odsFacets, since odsFacets used alone does not allow to display only specific facets among all the default ones of the dataset. odsFacet supports the following parameters:
+         *
+         * - name
+         * - sort
+         * - visibleItems
+         * - hideIfSingleCategory
+         * - hideCategoryIf
+         *
+         * Note: these parameters are the same as some used for odsFacets, refer to the odsFacets parameters table below for more information on how to configure them.
+         *
+         * odsFacet allows to configure which facets are displayed, using the **name** parameter.
+         *
          * <pre>
          *     <ods-facets context="mycontext">
          *         <h3>First field</h3>
@@ -35,60 +75,15 @@
          *     </ods-facets>
          * </pre>
          *
+         * Regular HTML is supported within the odsFacet tag to change the display template of each category. The available variables within the template are:
          *
-         * The odsFacet directive supports the following parameters:
+         * - `facetName`: name of the field that the filter is based on
+         * - `category.name`: value of the category
+         * - `category.path`: complete path to the category, including hierarchical levels
+         * - `category.state`: refined, excluded, or displayed
          *
-         * - **`name`** {@type string} the name of the field to display the filter on
-         *
-         * - **`title`** {@type string} (optional) a title to display above the filters
-         *
-         * - **`sort`** {@type string} (optional, default is count) How to sort the categories: either `count`, `-count` (sort by number of items in each category),
-         * `num`, `-num` (sort by the name of category if it is a number), `alphanum`, `-alphanum` (sort by the name of the category).
-         * It is also possible to configure a specific order by setting a list of values: `['value1', 'value2']`.
-         *
-         * - **`visible-items`** {@type number} (optional, default 6) the number of categories to show; if there are more,
-         * they are collapsed and can be expanded by clicking on a "more" link.
-         *
-         * - **`hide-if-single-category`** {@type boolean} (optional) if 'true', don't show the filter for that facet if there is
-         * only one available category to refine on.
-         *
-         * - **`hide-category-if`** {@type string} (optional) an AngularJS expression to evaluate; if it evaluates to true, then
-         * the category is displayed. You can use `category.name` (the value of the category), `category.path` (the complete path
-         * to the category, including hierarchical levels) and `category.state` (refined, excluded, or displayed) in the expression.
-         *
-         * - **`disjunctive`** {@type boolean} (optional) if 'true', then the facet is in "disjunctive" mode, which means that after a first value selected,
-         * you can select other possibles values that are all combined as "or". For example, if you click "red", then you can also click "green" and "blue",
-         * and the resulting values can be green, red, or blue.
-         *
-         * - **`timerangeFilter`** {@type boolean} (optional) if 'true', then an option to filter with on a time range is displayed above the facets categories.
-         * Only works for date and datetime fields. Must be used with a context (see below).
-         *
-         * - **`context`** {@type string} (optional) name of the context to refine on. Mandatory with timerange filter.
-         *
-         * - **`valueSearch`** {@type string} (optional) if 'true', then a search box is displayed above the categories, so that you can search within them easily.
-         * If 'suggest', then the matching categories are not displayed until there is at least one character typed into the search box, effectively making it
-         * into a suggest-like search box.
-         *
-         * - **`refineAlso`** {@type DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]} (optional) An
-         * other context (or a list of contexts) that you want to filter based on your primary context's facets. This
-         * is especially usefull for contexts who share common data.
-         *
-         * - **`mysecondarycontextFacetName`** {@type string} (optional) The name of the facet in one of your secondary
-         * contexts (defined through the `refineAlso` parameter) that you want to map your original's facet on. You can
-         * see an example below of such a behaviour.
-         *
-         * <pre>
-         *     <ods-facets context="mycontext">
-         *         <ods-facet name="myfield" sort="-num" visible-items="10"></ods-facet>
-         *         <ods-facet name="mysecondfield" hide-if-single-category="true" hide-category-if="category.name == 'hiddencategory'"></ods-facet>
-         *     </ods-facets>
-         * </pre>
-         *
-         * You can write HTML within the odsFacet tag to change the display template of each category. The available variables
-         * within the template are `facetName` (the name of the field that the filter is based on), `category.name`
-         * (the value of the category), `category.path` (the complete path to the category, including hierarchical levels)
-         * and `category.state` (refined, excluded, or displayed).
-         * For this to work properly, you must use an `ng-non-bindable` wrapper element around your display template.
+         * An `ng-non-bindable` wrapper element must be used around the display template for it to work properly.
+         * Note: There must not be any space character between the odsFacet tag and the span element, as it may prevent the widget from working properly.
          *
          * <pre>
          *     <ods-facets context="mycontext">
@@ -98,24 +93,9 @@
          *     </ods-facets>
          * </pre>
          *
-         * You can filter multiple contexts through this widget. To illustrate how this works, we'll consider 3 datasets
-         * containing information relative to zipcodes: one containing the geo-shape of each zipcode (the zipcode being
-         * stored in the column `zipcode`), one containing the population (again, the zipcode is stored in the `zipcode`
-         * column) and a last one containing the name of the area (the zipcode being this time stored in the
-         * `code_postal` column because this is a french dataset). In order to have a single zipcode facet that will
-         * refine all 3 contexts simultaneously, we need to write the following.
-         *
-         * <pre>
-         *     <ods-facets context="shapes">
-         *         <ods-facet name="zipcode"
-         *                    refine-also="[population,areanames]"
-         *                    areanames-facet-name="code_postal"></ods-facet>
-         *     </ods-facets>
-         * </pre>
-         *
          *  @example
          *  <example module="ods-widgets">
-         *      <file name="index.html">
+         *      <file name="odsFacets_with_odsFacet.html">
          *          <ods-dataset-context context="events"
          *                               events-domain="https://widgets-examples.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
@@ -128,7 +108,7 @@
          *                          </h3>
          *                          <ods-facet name="mots_cles">
          *                              <div ng-non-bindable>
-         *                                  <i class="icon-tag"></i> {{category.name}}
+         *                                  {{category.name}}
          *                              </div>
          *                          </ods-facet>
          *                      </ods-facets>
@@ -137,6 +117,22 @@
          *                      <ods-map context="events"></ods-map>
          *                  </div>
          *              </div>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
+         *
+         *  <example module="ods-widgets">
+         *      <file name="refineAlso_parameter.html">
+         *          <ods-dataset-context context="volcaniceruption, countries"
+         *                               volcaniceruption-domain="https://widgets-examples.opendatasoft.com/"
+         *                               volcaniceruption-dataset="significant-volcanic-eruption-database"
+         *                               countries-domain="https://widgets-examples.opendatasoft.com/"
+         *                               countries-dataset="natural-earth-countries-150m">
+         *              <ods-facets context="volcaniceruption">
+         *                    <ods-facet name="country"
+         *                               refine-also="[countries]"
+         *                               countries-facet-name="sovereignt"></ods-facet>
+         *              </ods-facets>
          *          </ods-dataset-context>
          *      </file>
          *  </example>

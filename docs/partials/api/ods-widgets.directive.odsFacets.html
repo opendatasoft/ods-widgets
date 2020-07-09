@@ -4,116 +4,103 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>This widget displays filters (facets) for a dataset or a domain&#39;s catalog of datasets, allowing the users
-to dynamically &quot;refine&quot; on one or more categories for the context, typically to restrict the data displayed
-by another widget such as <a href="#/api/ods-widgets.directive:odsTable">odsTable</a>.</p>
-<p>Used alone without any configuration, the widget will display by default filters from all the &quot;facet&quot; fields
-of a dataset if it is used with a <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>, or based on
-typical metadata from a dataset catalog if used with a <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a>.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>The odsFacets widget displays filters based on a dataset or a domain&#39;s catalog of datasets, allowing the users to dynamically refine on one or more categories for the defined context (i.e. each filter being composed of several categories, which are values of the field the filter is based on).</p>
+<p>For instance, odsFacet could be used to refine the data displayed in a table (<a href="#/api/ods-widgets.directive:odsTable">odsTable</a>), to see only the specific data one is interested in.</p>
+<p>Used alone without any configuration, the widget will display by default filters from all the &quot;facet&quot; fields of a dataset if it is used with a <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>, or based on typical metadata from a dataset catalog if used with a <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a>.</p>
 <pre class="prettyprint linenums">
-    &lt;ods-facets context="mycontext"&gt;&lt;/ods-facets&gt;
+   &lt;ods-facets context="mycontext"&gt;&lt;/ods-facets&gt;
 </pre>
-<p>To configure which facets are displayed, you can use the odsFacet directive within the odsFacets widget. You can also
-use regular HTML within the odsFacets widget:
-<pre class="prettyprint linenums">
-    &lt;ods-facets context="mycontext"&gt;
-        &lt;h3&gt;First field&lt;/h3&gt;
-        &lt;ods-facet name="myfield"&gt;&lt;/ods-facet&gt;
-
-        &lt;h3&gt;Second field&lt;/h3&gt;
-        &lt;ods-facet name="mysecondfield"&gt;&lt;/ods-facet&gt;
-    &lt;/ods-facets&gt;
-</pre>
-<p>The odsFacet directive supports the following parameters:</p>
+<p><b>odsFacet</b></p>
+<p>The odsFacet widget is a widget that can only be used based on odsFacets. It is used to configure which facets should be displayed by odsFacets, since odsFacets used alone does not allow to display only specific facets among all the default ones of the dataset. odsFacet supports the following parameters:</p>
 <ul>
-<li><p><strong><code>name</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> the name of the field to display the filter on</p>
-</li>
-<li><p><strong><code>title</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional) a title to display above the filters</p>
-</li>
-<li><p><strong><code>sort</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional, default is count) How to sort the categories: either <code>count</code>, <code>-count</code> (sort by number of items in each category),
-<code>num</code>, <code>-num</code> (sort by the name of category if it is a number), <code>alphanum</code>, <code>-alphanum</code> (sort by the name of the category).
-It is also possible to configure a specific order by setting a list of values: <code>[&#39;value1&#39;, &#39;value2&#39;]</code>.</p>
-</li>
-<li><p><strong><code>visible-items</code></strong> <a href="#" class="label type-hint type-hint-number">number</a> (optional, default 6) the number of categories to show; if there are more,
-they are collapsed and can be expanded by clicking on a &quot;more&quot; link.</p>
-</li>
-<li><p><strong><code>hide-if-single-category</code></strong> <a href="#" class="label type-hint type-hint-boolean">boolean</a> (optional) if &#39;true&#39;, don&#39;t show the filter for that facet if there is
-only one available category to refine on.</p>
-</li>
-<li><p><strong><code>hide-category-if</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional) an AngularJS expression to evaluate; if it evaluates to true, then
-the category is displayed. You can use <code>category.name</code> (the value of the category), <code>category.path</code> (the complete path
-to the category, including hierarchical levels) and <code>category.state</code> (refined, excluded, or displayed) in the expression.</p>
-</li>
-<li><p><strong><code>disjunctive</code></strong> <a href="#" class="label type-hint type-hint-boolean">boolean</a> (optional) if &#39;true&#39;, then the facet is in &quot;disjunctive&quot; mode, which means that after a first value selected,
-you can select other possibles values that are all combined as &quot;or&quot;. For example, if you click &quot;red&quot;, then you can also click &quot;green&quot; and &quot;blue&quot;,
-and the resulting values can be green, red, or blue.</p>
-</li>
-<li><p><strong><code>timerangeFilter</code></strong> <a href="#" class="label type-hint type-hint-boolean">boolean</a> (optional) if &#39;true&#39;, then an option to filter with on a time range is displayed above the facets categories.
-Only works for date and datetime fields. Must be used with a context (see below).</p>
-</li>
-<li><p><strong><code>context</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional) name of the context to refine on. Mandatory with timerange filter.</p>
-</li>
-<li><p><strong><code>valueSearch</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional) if &#39;true&#39;, then a search box is displayed above the categories, so that you can search within them easily.
-If &#39;suggest&#39;, then the matching categories are not displayed until there is at least one character typed into the search box, effectively making it
-into a suggest-like search box.</p>
-</li>
-<li><p><strong><code>refineAlso</code></strong> <a href="#" class="label type-hint type-hint-datasetcontext">DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]</a> (optional) An
-other context (or a list of contexts) that you want to filter based on your primary context&#39;s facets. This
-is especially usefull for contexts who share common data.</p>
-</li>
-<li><p><strong><code>mysecondarycontextFacetName</code></strong> <a href="#" class="label type-hint type-hint-string">string</a> (optional) The name of the facet in one of your secondary
-contexts (defined through the <code>refineAlso</code> parameter) that you want to map your original&#39;s facet on. You can
-see an example below of such a behaviour.</p>
-</li>
+<li>name</li>
+<li>sort</li>
+<li>visibleItems</li>
+<li>hideIfSingleCategory</li>
+<li>hideCategoryIf</li>
 </ul>
+<p>Note: these parameters are the same as some used for odsFacets, refer to the odsFacets parameters table below for more information on how to configure them.</p>
+<p>odsFacet allows to configure which facets are displayed, using the <strong>name</strong> parameter.</p>
 <pre class="prettyprint linenums">
-    &lt;ods-facets context="mycontext"&gt;
-        &lt;ods-facet name="myfield" sort="-num" visible-items="10"&gt;&lt;/ods-facet&gt;
-        &lt;ods-facet name="mysecondfield" hide-if-single-category="true" hide-category-if="category.name == 'hiddencategory'"&gt;&lt;/ods-facet&gt;
-    &lt;/ods-facets&gt;
+   &lt;ods-facets context="mycontext"&gt;
+       &lt;h3&gt;First field&lt;/h3&gt;
+       &lt;ods-facet name="myfield"&gt;&lt;/ods-facet&gt;
+
+       &lt;h3&gt;Second field&lt;/h3&gt;
+       &lt;ods-facet name="mysecondfield"&gt;&lt;/ods-facet&gt;
+   &lt;/ods-facets&gt;
 </pre>
-<p>You can write HTML within the odsFacet tag to change the display template of each category. The available variables
-within the template are <code>facetName</code> (the name of the field that the filter is based on), <code>category.name</code>
-(the value of the category), <code>category.path</code> (the complete path to the category, including hierarchical levels)
-and <code>category.state</code> (refined, excluded, or displayed).
-For this to work properly, you must use an <code>ng-non-bindable</code> wrapper element around your display template.</p>
+<p>Regular HTML is supported within the odsFacet tag to change the display template of each category. The available variables within the template are:</p>
+<ul>
+<li><code>facetName</code>: name of the field that the filter is based on</li>
+<li><code>category.name</code>: value of the category</li>
+<li><code>category.path</code>: complete path to the category, including hierarchical levels</li>
+<li><code>category.state</code>: refined, excluded, or displayed</li>
+</ul>
+<p>An <code>ng-non-bindable</code> wrapper element must be used around the display template for it to work properly.
+Note: There must not be any space character between the odsFacet tag and the span element, as it may prevent the widget from working properly.</p>
 <pre class="prettyprint linenums">
-    &lt;ods-facets context="mycontext"&gt;
-        &lt;ods-facet name="myfield"&gt;&lt;span ng-non-bindable&gt;
-            {{category.name}} @ {{category.state}}
-        &lt;/span&gt;&lt;/ods-facet&gt;
-    &lt;/ods-facets&gt;
-</pre>
-<p>You can filter multiple contexts through this widget. To illustrate how this works, we&#39;ll consider 3 datasets
-containing information relative to zipcodes: one containing the geo-shape of each zipcode (the zipcode being
-stored in the column <code>zipcode</code>), one containing the population (again, the zipcode is stored in the <code>zipcode</code>
-column) and a last one containing the name of the area (the zipcode being this time stored in the
-<code>code_postal</code> column because this is a french dataset). In order to have a single zipcode facet that will
-refine all 3 contexts simultaneously, we need to write the following.</p>
-<pre class="prettyprint linenums">
-    &lt;ods-facets context="shapes"&gt;
-        &lt;ods-facet name="zipcode"
-                   refine-also="[population,areanames]"
-                   areanames-facet-name="code_postal"&gt;&lt;/ods-facet&gt;
-    &lt;/ods-facets&gt;
+   &lt;ods-facets context="mycontext"&gt;
+       &lt;ods-facet name="myfield"&gt;&lt;span ng-non-bindable&gt;
+           {{category.name}} @ {{category.state}}
+       &lt;/span&gt;&lt;/ods-facet&gt;
+   &lt;/ods-facets&gt;
 </pre>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-facets
-       context="{DatasetContext}"&gt;
+       context="{DatasetContext}"
+       name="{string}"
+       title="{string}"
+       sort="{string}"
+       visible-items="{number}"
+       hide-if-single-category="{boolean}"
+       hide-category-if="{string}"
+       disjunctive="{boolean}"
+       timerange-filter="{boolean}"
+       context="{string}"
+       value-search="{string}"
+       refine-also="{DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]}"
+       [contextname]-facet-name="{string}"&gt;
 &lt;/ods-facets&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
-</div></td></tr></tbody></table></div>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p><i>(mandatory)</i> <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use.</p>
+</div></td></tr><tr><td>name</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p><i>(mandatory)</i> Name of the field the filter is based on.</p>
+</div></td></tr><tr><td>title</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Title to display above the filter</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>sort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Sorting method used on the categories:</p>
+<ul>
+<li><code>count</code> or <code>-count</code> to sort by number of items in each category</li>
+<li><code>num</code> or <code>-num</code> to sort by the name of category, if it is a number</li>
+<li><p><code>alphanum</code> or <code>-alphanum</code> to sort by the name of the category</p>
+<p>Note that <code>-</code> before the name of the sorting method indicates that the sorting will be descending instead of ascending.</p>
+<p>Configuring a specific order is also possible, by setting a list of value: <code>[&#39;value1&#39;, &#39;value2&#39;]</code>.</p>
+</li>
+</ul>
+</div> <p><em>(default: -count)</em></p></td></tr><tr><td>visibleItems</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Number of categories to show. If there are more categories for the filter, they are collapsed by default, but can be expanded by clicking on a &quot;more&quot; link.</p>
+</div> <p><em>(default: 6)</em></p></td></tr><tr><td>hideIfSingleCategory</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>If <code>true</code>, hides filters if only one category to refine on is available.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>hideCategoryIf</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>AngularJS expression to evaluate: if it evaluates to <code>true</code>, the category is displayed. In the expression, the following elements can be used:</p>
+<ul>
+<li><code>category.name</code> (value of the category)</li>
+<li><code>category.path</code> (complete path to the category, including hierarchical levels)</li>
+<li><code>category.state</code> (refined, excluded, or displayed)</li>
+</ul>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>disjunctive</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>If <code>true</code>, the filter is in disjunctive mode, which means that after a first value is selected, other available values can also be selected. All selected values are combined as &quot;or&quot;. E.g. after clicking &quot;red&quot;, &quot;green&quot; and &quot;blue&quot; can also be clicked, and the resulting values can be either green, red, or blue.</p>
+<p> Note that this parameter is directly related to the schema of the dataset: for this parameter to function, the field must allow multiple selection in filters (see <a href="https://help.opendatasoft.com/platform/en/publishing_data/05_processing_data/defining_a_dataset_schema.html#configuration-options-for-facets">Defining a dataset schema</a>).</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>timerangeFilter</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>If <code>true</code>, an option to filter using a time range is displayed above the categories. This parameter only works for date and datetime fields, and must be used with a context (see <strong>context</strong> parameter).</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>context</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Name of the context to refine on. This parameter is mandatory for the <strong>timerangeFilter</strong> parameter.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>valueSearch</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>If <code>true</code>, a search box is displayed above the categories, to search within the available categories. If <code>suggest</code>, the matching categories are not displayed until there is at least one character typed into the search box, effectively making it into a suggest-like search box.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>refineAlso</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext[]</a><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext[]</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Enables the widget to apply its refinements on other contexts, e.g. for contexts which share common date. The value of this parameter should be the name of another context, or a list of contexts.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>[contextname]FacetName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Name of the facet in one of the other contexts, defined through the <strong>refineAlso</strong> parameter, that the original facet should be mapped on. <code>[contextname]</code> must be replaced with the name of that other context.</p>
+</div> <p><em>(default: Current facet's name)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-13" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
-<div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-13" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-13">
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="odsFacets_with_odsFacet.html" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="odsFacets_with_odsFacet.html">
+<pre class="prettyprint linenums" ng-set-text="odsFacets_with_odsFacet.html"></pre>
+<script type="text/ng-template" id="odsFacets_with_odsFacet.html">
     <ods-dataset-context context="events"
                          events-domain="https://widgets-examples.opendatasoft.com/"
                          events-dataset="evenements-publics-openagenda-extract">
@@ -126,7 +113,7 @@ refine all 3 contexts simultaneously, we need to write the following.</p>
                     </h5>
                     <ods-facet name="mots_cles">
                         <div ng-non-bindable>
-                            <i class="icon-tag"></i> {{category.name}}
+                            {{category.name}}
                         </div>
                     </ods-facet>
                 </ods-facets>
@@ -139,6 +126,26 @@ refine all 3 contexts simultaneously, we need to write the following.</p>
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-13" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="odsFacets_with_odsFacet.html" ng-eval-javascript=""></div>
+<h4 id="example_source">Source</h4>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="refineAlso_parameter.html" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="refineAlso_parameter.html">
+<pre class="prettyprint linenums" ng-set-text="refineAlso_parameter.html"></pre>
+<script type="text/ng-template" id="refineAlso_parameter.html">
+    <ods-dataset-context context="volcaniceruption, countries"
+                         volcaniceruption-domain="https://widgets-examples.opendatasoft.com/"
+                         volcaniceruption-dataset="significant-volcanic-eruption-database"
+                         countries-domain="https://widgets-examples.opendatasoft.com/"
+                         countries-dataset="natural-earth-countries-150m">
+        <ods-facets context="volcaniceruption">
+              <ods-facet name="country"
+                         refine-also="[countries]"
+                         countries-facet-name="sovereignt"></ods-facet>
+        </ods-facets>
+    </ods-dataset-context>
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="refineAlso_parameter.html" ng-eval-javascript=""></div>
 </div></div>
 </div>

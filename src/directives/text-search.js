@@ -8,25 +8,20 @@
          * @name ods-widgets.directive:odsTextSearch
          * @scope
          * @restrict E
-         * @param {string} placeholder the text to display as a placeholder when the searchbox is empty
-         * @param {string} button the text to display in the "search" button
-         * @param {string} [field=none] The name of a field you want to restrict the search on (i.e. only search on the
-         * textual content of a specific field). If you want to specify different fields for each context, use the
-         * syntax "mycontext-field". If you don't specify explicitely a field name for a context, it will default to the
-         * value of the "field" parameter.
-         * The search will be a simple text search and won't support any query language or operators.
-         * @param {string} [suffix=none] Changes the query parameter ("q" by default) so that it works on "q.suffixValue". This prevents widgets from overriding each other (useful when you want multiple text-search widgets on the same page.
-         * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use, or array of context to use.
-         * @param {string} [autofocus] Add the autofocus attribute (no need for a value) to set the focus in the text
-         * @param {string} [id] Add an id attribute to the inner input
-         * search's input.
+         * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context <i>(mandatory)</i> {@link ods-widgets.directive:odsCatalogContext Catalog Context}, {@link ods-widgets.directive:odsDatasetContext Dataset Context}, or array of context to use.
+         * @param {string} [placeholder=none] Text to display as a placeholder when the searchbox is empty.
+         * @param {string} [field=none] Name of a field the search will be restricted on (i.e. the widget will only allow search on the textual content of the chosen field).
+         * If more than one contexts are declared, it is possible to specify different fields depending on these contexts, using the following syntax: `mycontext-field`. If a specific field is not set for a context, the value of the **field** parameter will be used by default. The search will be a simple text search that won't support query languages and operators.
+         * @param {string} [suffix=none] Changes the default `q` query parameter into `q.suffixValue`. This parameter prevents widgets from overriding one another, for instance when multiple odsTextSearch widgets are used on the same page.
+         * @param {string} autofocus Makes the search box automatically selected at loading of the page, to allow to start typing the search without having to select manually the search box beforehand. No value is required for this parameter to function.
+         * @param {string} id Adds an `id` attribute to the search's textbox, e.g. to integrate the widget to a clickable label.
          *
          * @description
          * This widget displays a search box that can be used to do a full-text search on a context.
          *
          *  @example
          *  <example module="ods-widgets">
-         *      <file name="index.html">
+         *      <file name="simple_text_search.html">
          *          <ods-dataset-context context="events"
          *                               events-domain="https://widgets-examples.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
@@ -36,27 +31,8 @@
          *     </file>
          * </example>
          *
-         * Example with multiple text search widgets with suffix and field
-         * @example
          *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *          <ods-dataset-context context="events"
-         *                               events-domain="https://widgets-examples.opendatasoft.com/"
-         *                               events-dataset="evenements-publics-openagenda-extract">
-         *              <ods-text-search context="events" suffix="primary"></ods-text-search>
-         *              <ods-text-search context="events" suffix="secondary"></ods-text-search>
-         *              <ods-text-search context="events" field="titre"></ods-text-search>
-         *              <ods-table context="events"></ods-table>
-         *          </ods-dataset-context>
-         *     </file>
-         * </example>
-         *
-         *
-         * Example with multiple contexts.
-         *
-         *  @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
+         *      <file name="text_search_with_multiple_contexts.html">
          *          <ods-dataset-context context="events,trees"
          *                               events-domain="https://widgets-examples.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract"
@@ -178,7 +154,7 @@
                             // If a suffix has been defined in scope, the queryKey will work on that value.
                             if ($scope.suffix) {
                                 queryParameter += '.' + $scope.suffix;
-                            } 
+                            }
                             config[context.name] = {
                                 field: fieldValue,
                                 parameter: queryParameter

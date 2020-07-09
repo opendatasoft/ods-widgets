@@ -8753,7 +8753,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by Opendatasoft
     //  License: MIT
-    var version = '1.4.8';
+    var version = '1.4.9';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -16486,23 +16486,32 @@ mod.directive('infiniteScroll', [
          * @name ods-widgets.directive:odsAggregation
          * @scope
          * @restrict A
-         * @param {string} [odsAggregation=aggregation] Variable name to use. For multiple aggregations, separate variable names with commas.
-         * @param {DatasetContext} odsAggregationContext {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {DatasetContext} odsAggregationXxxContext Specific context for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.
-         * @param {string} [odsAggregationFunction=COUNT] Aggregation function to apply (AVG, COUNT, MIN, MAX, STDDEV, SUM)
-         * @param {string} [odsAggregationXxxFunction=COUNT] Specific function for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.
-         * @param {string} [odsAggregationExpression=none] Expression to apply the function on, typically the name of a field. Optional only when the function is "COUNT".
-         * @param {string} [odsAggregationXxxExpression=none] Specific expression for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.
+         * @param {string} [odsAggregation=aggregation] <i>(mandatory)</i> Name of the variable that holds the result of the aggregation. For multiple aggregations, variable names must be separated with commas.
+         * @param {DatasetContext} odsAggregationContext <i>(mandatory)</i> {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use.
+         * @param {DatasetContext} odsAggregation[MY_VARIABLE]Context Context specific to the <code>[MY_VARIABLE]</code> aggregation. `[MY_VARIABLE]` must be replaced with the name of the variable, declared through the **odsAggregation** parameter.
+         * @param {string} [odsAggregationFunction=COUNT] <i>(mandatory)</i> Aggregation function to apply:
+         *
+         * - AVG: average
+         * - COUNT
+         * - MIN: minimum
+         * - MAX: maximum
+         * - STDDEV: standard deviation
+         * - SUM
+         *
+         * @param {string} [odsAggregation[MY_VARIABLE]Function=COUNT] Function specific to the <code>[MY_VARIABLE]</code> aggregation. `[MY_VARIABLE]` must be replaced with the name of the variable, declared through the **odsAggregation** parameter.
+         * @param {string} [odsAggregationExpression=none] <i>(optional only if function is COUNT)</i> Expression to apply the function on, e.g. the name of a field.
+         * @param {string} [odsAggregation[MY_VARIABLE]Expression=none] Expression specific to the <code>[MY_VARIABLE]</code> aggregation. `[MY_VARIABLE]` must be replaced with the name of the variable, declared through the **odsAggregation** parameter.
          *
          * @description
-         * This widget exposes the results of an aggregation function over a context. Can be used for example to expose the average temperature of a weather dataset.
-         * The result is exposed into a new variable that you can use in other widgets or directly in your HTML.
-         * If aggregation returns no result, the result value will be null.
-         * This widget supports multiple declaration of aggregations.
+         * The odsAggregation widget creates a variable that contains the result of an aggregation function based on a context.
          *
-         * Single aggregation example:
+         * Aggregations are functions that enable to group records and compute statistical values for numeric fields. For instance, aggregations can determine, based on several records, what is the smallest or biggest value among them, compute the average value or count the number of values for a chosen field.
          *
-         * <pre>
+         * odsAggregation supports multiple declarations of aggregations.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="simple_aggregation.html">
          *  <ods-dataset-context context="tree"
          *                       tree-dataset="les-arbres-remarquables-de-paris"
          *                       tree-domain="https://widgets-examples.opendatasoft.com/">
@@ -16513,32 +16522,31 @@ mod.directive('infiniteScroll', [
          *          Average height is {{ height | number }} meters.
          *      </div>
          *  </ods-dataset-context>
-         * </pre>
+         *      </file>
+         *  </example>
          *
-         * Multiple aggregations example:
-         *
-         * <pre>
+         *  <example module="ods-widgets">
+         *      <file name="multiple_aggregations.html">
          *  <ods-dataset-context context="commute,demographics"
          *                       commute-dataset="commute-time-us-counties"
          *                       commute-domain="https://widgets-examples.opendatasoft.com/"
          *                       demographics-dataset="us-cities-demographics"
-         *                       demographics-domain="https://widgets-examples.opendatasoft.com/"
-         *  >
-         *      <div ods-aggregation="population, time"
-         *           ods-aggregation-population-context="demographics"
-         *           ods-aggregation-population-function="SUM"
+         *                       demographics-domain="https://widgets-examples.opendatasoft.com/">
+         *      <div ods-aggregation="people, time"
+         *           ods-aggregation-people-context="demographics"
+         *           ods-aggregation-people-function="SUM"
+         *           ods-aggregation-people-expression="count"
          *           ods-aggregation-time-context="commute"
          *           ods-aggregation-time-function="AVG"
-         *           ods-aggregation-time-expression="mean_commuting_time"
-         *      >
-         *          The average commute time in the US in 2015 was {{ time|number:2 }} minutes for a population of {{ population }} people.
+         *           ods-aggregation-time-expression="mean_commuting_time">
+         *          For {{ people }} people in the US, the average commute time in 2015 was {{ time|number:0 }} minutes.
          *      </div>
          *  </ods-dataset-context>
-         * </pre>
+         *      </file>
+         *  </example>
          *
-         * Multiple aggregations using the same context example:
-         *
-         * <pre>
+         *  <example module="ods-widgets">
+         *      <file name="multiple_aggregations_same_context.html">
          *  <ods-dataset-context context="tree"
          *                       tree-dataset="les-arbres-remarquables-de-paris"
          *                       tree-domain="https://widgets-examples.opendatasoft.com/">
@@ -16549,10 +16557,12 @@ mod.directive('infiniteScroll', [
          *           ods-aggregation-maxgirth-function="MAX"
          *           ods-aggregation-mingirth-expression="circonference"
          *           ods-aggregation-mingirth-function="MIN">
-         *          There are {{ total }} remarkable trees in paris, with girth ranging from {{ mingirth }} to {{ maxgirth }} cm.
-         *      </ div>
+         *          There are {{ total }} remarkable trees in Paris, with girth ranging from {{ mingirth }} to {{ maxgirth }} cm.
+         *      </div>
          *  </ods-dataset-context>
-         * </pre>
+         *      </file>
+         *  </example>
+         *
          */
         return {
             restrict: 'A',
@@ -16704,13 +16714,31 @@ mod.directive('infiniteScroll', [
          * @name ods-widgets.directive:odsAnalysis
          * @scope
          * @restrict A
-         * @param {string} [odsAnalysis=analysis] Variable name to use
-         * @param {DatasetContext} odsAnalysisContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {number} [odsAnalysisMax=all] Maximum number of results to show
-         * @param {string} odsAnalysisSort name of serie to sort on (or -serieName to invert the sort)
+         * @param {string} [odsAnalysis=analysis] <i>(mandatory)</i> Name of the variable
+         * @param {DatasetContext} odsAnalysisContext <i>(mandatory)</i> {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use.
+         * @param {number} [odsAnalysisMax=all] Maximum number of results to show.
+         * @param {string} [odsAnalysisX=none] Name of the field used as X axis (e.g. date or datetime field, facet, etc.)
+         * @param {string} [odsAnalysisSort=none] Name of serie to sort on.
+         *
+         * Note that `-` before the name of the serie indicates that the sorting will be descending instead of ascending (e.g. `-serieName`).
+         *
+         * @param {string} [odsAnalysisSerieName=none] Function to apply:
+         *
+         * - AVG: average
+         * - COUNT
+         * - MIN: minimum
+         * - MAX: maximum
+         * - STDDEV: standard deviation
+         * - SUM
+         *
+         * Must be written in the following form: `FUNCTION(fieldname)`.
+         *
          * @description
-         * This widget exposes the results of an analysis (as an object containing a results array and optionally an aggregations object) in a variable available in the scope.
-         * It can be used with AngularJS's ngRepeat to simply build a table of analysis results.
+         * The odsAnalysis widget creates a variable that contains the result of an analysis (i.e. an object containing a results array and optionally an aggregations object).
+         *
+         * odsAnalysis allows applying functions to chosen groups of data, to analyze them with the same logic as that of a chart visualization. For instance, an analysis can consist in obtaining the average value for several series of data, broken down by a chosen field used as an X axis. The result can then be sorted by another serie.
+         *
+         * odsAnalysis can be used with AngularJS's ngRepeat to build a table of analysis results.
          *
          * @example
          *  <example module="ods-widgets">
@@ -16736,8 +16764,8 @@ mod.directive('infiniteScroll', [
          *                          ods-analysis-serie-height-cumulative="false"
          *                          ods-analysis-serie-girth="AVG(circonference)"
          *
-         *                          ng-repeat="result in analysis.results"
-         *                      >
+         *                          ng-repeat="result in analysis.results">
+         *
          *                          <td>{{ result.x }}</td>
          *                          <td>{{ result.height|number:2 }}</td>
          *                          <td>{{ result.girth|number:2 }}</td>
@@ -16863,8 +16891,7 @@ mod.directive('infiniteScroll', [
          *          <ods-dataset-context context="regions,population"
          *                               regions-dataset="contours-geographiques-des-regions-2019-copy"
          *                               regions-domain="public"
-         *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)',
-         *                                                   'disjunctive.region':true}"
+         *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)', 'disjunctive.region':true}"
          *                               population-dataset="population-millesimee-communes-2016"
          *                               population-parameters="{'disjunctive.nom_reg':true}"
          *                               population-domain="public">
@@ -17796,58 +17823,54 @@ mod.directive('infiniteScroll', [
          * @name ods-widgets.directive:odsCatalogContext
          * @scope
          * @restrict AE
-         *  @param {string} context A name (or list of names separated by commas) of contexts to declare. The contexts are further
-         *  configured using specific attributes, as described below.
+         *  @param {string} context <i>(mandatory)</i> Name, or list of names separated by commas, of context(s) to declare. Context names must be in lowercase, can only contain alphanumerical characters, and cannot begin with a number, "data", or "x".
+         *  @param {string} [domain=ODSWidgetsConfig.defaultDomain] Domain where the dataset(s) can be found. Since the domain value is used to construct an URL to an API root, it can be:
+         *
+         *  - an alphanum string (e.g. *mydomain*): it will assume that it is an Opendatasoft domain (e.g. *mydomain.opendatasoft.com*)
+         *  - a hostname (e.g. *data.mydomain.com*)
+         *  - a relative path (e.g. _/monitoring_): it will be relative to the hostname of the current page
+         *  - a hostname and a path (e.g. *data.mydomain.com/monitoring*)
+         *
+         * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
+         *
+         *  @param {string} [apikey=none] API key to use in every API call for the context (see {@link https://help.opendatasoft.com/platform/en/managing_account/02_generating_api_key/generating_api_key.html#id1 Generating an API key}).
+         *  @param {object} [parameters=none] Object holding parameters to apply to the context when it is created.
+         *  @param {boolean} [urlSync=none] Enables synchronization of the parameters to the page's parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change as well. Note that if this parameter is enabled, `parameters` and `parametersFromContext` won't have any effect. There can also only be a single context with URL synchronization enabled, else the behavior will be unpredictable.
+         *
          *  @description
-         *  A "catalog context" represents the entire catalog (list) of datasets from a given domain, and a set of parameters used to query this catalog. A context can be used
-         *  by one or more directives, so that they can share information (generally the query parameters). For example, a directive
-         *  that displays a time filter can be "plugged" on the same context as a results list, to filter the displayed results.
          *
-         *  The `odsCatalogContext` creates a new child scope, and exposes its contexts into it. In other words, the contexts
-         *  will be available to any directive that is inside the `odsCatalogContext` element. You can nest `odsCatalogContext` directives inside each others.
+         *  The odsCatalogContext widget represents the entire catalog of datasets of a chosen domain, and a set of parameters used to query this catalog. A catalog context can be used by one or more widgets: it allows them sharing information (i.e. the query parameters).
          *
-         *  A single `odsCatalogContext` can declare one or more context at once. To initialize contexts, you declare
-         *  them in the **context** attribute. Then, you can configure them further using attributes prefixed by the context
-         *  name (**CONTEXTNAME-SETTING**, e.g. mycontext-domain). The available settings are:
+         *  For instance, a widget that displays a time filter ({@link ods-widgets.directive:odsTimerange odsTimerange}) can be plugged on the same context as a results list ({@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}), so that the user can filter the displayed results.
          *
-         *  * **`domain`** - {@type string} - (optional) Indicate the "domain" (used to construct an URL to an API root) where to find the dataset.
-         * Domain value can be:
+         *  odsCatalogContext creates a new child scope, within which its declared contexts are available for any other widget used inside that odsCatalogContext element. odsCatalogContext widgets can also be nested inside each others.
          *
-         *      * a simple alphanum string (e.g. *mydomain*): it will assume it is an Opendatasoft domain (so in this example *mydomain.opendatasoft.com*)
+         *  A single odsCatalogContext can declare one or several contexts, which are initialized when declared through the **context** parameter. Each context is configured using parameters prefixed by the context name (`contextname-setting`, e.g. mycontext-domain).
          *
-         *      * a hostname (e.g. *data.mydomain.com*)
+         *  <b>Properties of odsCatalogContext used as variable</b>
          *
-         *      * an absolute path (e.g. _/monitoring_), it will be absolute to the hostname of the current page
+         *  Once created, the context is accessible as a variable named after it. The context contains properties that can be accessed directly:
          *
-         *      * a hostname and a path (e.g. *data.mydomain.com/monitoring*)
-         *
-         *      * nothing: in that case, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used
-         *
-         *  * **`apikey`** {@type string} (optional) API Key to use in every API call for this context
-         *
-         *  * **`parameters`** {@type Object} (optional) An object holding parameters to apply to the context when it is created.
-         *
-         *  * **`urlsync`** {@type Boolean} Enable synchronization of the parameters to the page's parameters (query string). If you share the page with parameters in the URL, the context will
-         *  use them; and if the context parameters change, the URL parameters will change as well. If enabled, **`parameters`** won't have any effect. Note that there can only be a single context
-         *  with URL synchronization enabled, else the behavior will be unpredictable.
-         *
-         *  Once created, the context is exposed and accessible as a variable named after it. The context contains properties that you can access directly:
-         *
-         *  * domainUrl: a full URL the the domain of the context, that can be used to create links
-         *
-         *  * parameters: the parameters object of the context
-         *
-         *  **Note:** Due to naming conventions in various places (HTML attributes, AngularJS...), context names
-         *  have to be lowercase, can only contain alphanumerical characters, and can't begin with a number, "data", or "x".
+         *  * domainUrl: full URL of the domain of the context, that can be used to create links
+         *  * parameters: parameters object of the context
          *
          *  @example
          *  <example module="ods-widgets">
-         *      <file name="index.html">
+         *      <file name="simple_example.html">
          *          <ods-catalog-context context="examples"
          *                               examples-domain="https://widgets-examples.opendatasoft.com/">
-         *              <pre>{{ examples }}</pre>
+         *              <ods-most-popular-datasets context="examples"></ods-most-popular-datasets>
+         *          </ods-catalog-context>
+         *      </file>
+         *  </example>
+         *
+         *  <example module="ods-widgets">
+         *      <file name="odsresultenumerator_with_catalog_context.html">
+         *          <ods-catalog-context context="examples"
+         *                               examples-domain="https://widgets-examples.opendatasoft.com/">
+         *                 {{ examples }}
          *              <ods-result-enumerator context="examples">
-         *                  <p>{{item.datasetid}}</p>
+         *                 {{item.datasetid}}
          *              </ods-result-enumerator>
          *          </ods-catalog-context>
          *      </file>
@@ -19002,99 +19025,76 @@ mod.directive('infiniteScroll', [
          *  @name ods-widgets.directive:odsDatasetContext
          *  @scope
          *  @restrict AE
-         *  @param {string} context A name (or list of names separated by commas) of contexts to declare. The contexts are further
-         *  configured using specific attributes, as described below.
+         *  @param {string} context <i>(mandatory)</i> Name, or list of names separated by commas, of context(s) to declare. Context names must be in lowercase, can only contain alphanumerical characters, and cannot begin with a number, "data", or "x".
+         *  @param {string} dataset <i>(mandatory)</i> Identifier of the dataset(s) on which the context is based.
+         *  @param {string} [domain=ODSWidgetsConfig.defaultDomain] Domain where the dataset(s) can be found. Since the domain value is used to construct a URL to an API root, it can be:
+         *
+         *  - an alphanum string (e.g. *mydomain*): it will assume that it is an Opendatasoft domain (e.g. *mydomain.opendatasoft.com*)
+         *  - a hostname (e.g. *data.mydomain.com*)
+         *  - a relative path (e.g. _/monitoring_): it will be relative to the hostname of the current page
+         *  - a hostname and a path (e.g. *data.mydomain.com/monitoring*)
+         *
+         * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
+         *
+         *  @param {string} [apikey=none] API key to use in every API call for the context (see {@link https://help.opendatasoft.com/platform/en/managing_account/02_generating_api_key/generating_api_key.html#id1 Generating an API key}).
+         *  @param {string} [sort=none] Sort expression to apply by default to all widgets plugged to the declared context. The expression should be written using one of the following syntaxes:
+         *
+         *  - `field` for an ascending order,
+         *  - `-field` for a descending order.
+         *
+         *  @param {object} [parameters=none] Object holding parameters to apply to the context when it is created. Any parameter from the API can be used here (such as `q`, `refine.FIELD` etc.)
+         *  @param {number} [refreshDelay=none] Number of milliseconds to wait before the context is automatically refreshed. If this parameter is not set, the context will not automatically refresh. The minimum delay is 10000ms.
+         *  @param {string} [parametersFromContext=none] Name of another declared context to replicate the parameters and queries from. Any modification on the parameters of this context or the original one will be applied to both.
+         *  @param {boolean} [urlSync=none] Enables synchronization of the parameters to the page's parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change as well. Note that if this parameter is enabled, `parameters` and `parametersFromContext` won't have any effect. There can only be a single context with URL synchronization enabled, else the behavior will be unpredictable.
+         *
          *  @description
-         *  A "dataset context" represents a dataset, and a set of parameters used to query its data. A context can be used
-         *  by one or more directives, so that they can share information (generally the query parameters). For example, a directive
-         *  that displays a time filter can be "plugged" on the same context as a table view directive, so that the user
-         *  can filter the data displayed in the table.
          *
-         *  The `odsDatasetContext` creates a new child scope, and exposes its contexts into it. In other words, the contexts
-         *  will be available to any directive that is inside the `odsDatasetContext` element. You can nest `odsDatasetContext` directives inside each others.
+         *  The odsDatasetContext widget represents a dataset from a chosen domain, and a set of parameters used to query its data. odsDatasetContext can be used by one or more widgets: it allows them sharing information (i.e. the query parameters).
          *
-         *  A single `odsDatasetContext` can declare one or more context at once. To initialize contexts, you declare
-         *  them in the **context** attribute. Then, you can configure them further using attributes prefixed by the context
-         *  name (**CONTEXTNAME-SETTING**, e.g. mycontext-domain). The available settings are:
+         *  For instance, a widget that displays a filter ({@link ods-widgets.directive:odsFacets odsFacets}) can be plugged on the same context as a table view widgets ({@link ods-widgets.directive:odsTable odsTable}), so that the user can filter the data displayed in the table.
          *
-         *  * **`domain`** - {@type string} - (optional) Indicate the "domain" (used to construct an URL to an API root) where to find the dataset.
-         * Domain value can be:
+         *  odsDatasetContext creates a new child scope, within which its declared contexts are available for any other widget used inside that odsDatasetContext element. odsDatasetContext widgets can also be nested inside each others.
          *
-         *      * a simple alphanum string (e.g. *mydomain*): it will assume it is an Opendatasoft domain (so in this example *mydomain.opendatasoft.com*)
+         *  A single odsDatasetContext can declare one or several contexts, which are initialized when declared through the **context** parameter. Each context is configured using parameters prefixed by the context name (`contextname-setting`, e.g. mycontext-domain).
          *
-         *      * a hostname (e.g. *data.mydomain.com*)
+         *  <b>Properties of odsDatasetContext used as variable</b>
          *
-         *      * an absolute path (e.g. _/monitoring_), it will be absolute to the hostname of the current page
+         *  Once created, the context is accessible as a variable named after it. The context contains properties that can be accessed directly:
          *
-         *      * a hostname and a path (e.g. *data.mydomain.com/monitoring*)
-         *
-         *      * nothing: in that case, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used
-         *
-         *  * **`dataset`** - {@type string} Identifier of the dataset
-         *
-         *  * **`apikey`** {@type string} (optional) API Key to use in every API call for this context
-         *
-         *  * **`sort`** {@type string} (optional) Sort expression to apply initially (*field* or *-field*)
-         *
-         *  * **`parameters`** {@type Object} (optional) An object holding parameters to apply to the context when it is created. Any parameter from the API can be used here (such as `q`, `refine.FIELD` ...)
-         *
-         *  * **`refresh-delay`** {@type Number} (optional) The number of milliseconds to wait before refreshing the context. If this parameter is omitted, the context does not automatically refresh. Minimum delay is 10000ms.
-         *
-         *  * **`parametersFromContext`** {@type string} (optional) The name of a context to replicate the parameters from. Any change of the parameters
-         *  in this context or the original context will be applied to both.
-         *
-         *  * **`urlsync`** {@type Boolean} Enable synchronization of the parameters to the page's parameters (query string). If you share the page with parameters in the URL, the context will
-         *  use them; and if the context parameters change, the URL parameters will change as well. If enabled, **`parameters`** and **`parametersFromContext`** won't have any effect.
-         *  Note that there can only be a single context with URL synchronization enabled, else the behavior will be unpredictable.
-         *
-         *  Once created, the context is exposed and accessible as a variable named after it. The context contains properties that you can access directly:
-         *
-         *  * domainUrl: a full URL the the domain of the context, that can be used to create links
-         *
-         *  * parameters: the parameters object of the context
-         *
-         *  * dataset: the dataset object for this context
-         *
-         *  * getDownloadURL(format[, dict options]): a method that returns an URL to download the data, including currently active filters (refinements, queries...). By default
-         *  the URL will allow to download a CSV export, but you can pass another format such as "geojson" or "json".
-         *  Two optional parameters : `{'use_labels_for_header': '<true/false>', 'fields': '<list of comma separated field name>'}`
-         *
-         *  * getQueryStringURL([dict options]): a method that build the URL suffix (`?key1=value1&key2=value2&...`) based on context parameters (active filters, refinement, sort, query...).
-         *  The optional dictionary parameter allow to build the URL with additional key/value parameters.
-         *
-         *  **Note:** Due to naming conventions in various places (HTML attributes, AngularJS...), context names
-         *  have to be lowercase, can only contain alphanumerical characters, and can't begin with a number, "data", or "x".
+         *  * domainUrl: full URL of the domain of the context, that can be used to create links
+         *  * parameters: parameters object of the context
+         *  * dataset: dataset object for the context
+         *  * getDownloadURL(format[, dict options]): method that returns a URL to download the data, including currently active filters (e.g. refinements, queries etc.). By default the URL will allow downloading a CSV export, but another format can be passed, such as "geojson" or "json". Two optional parameters are also available: `{'use_labels_for_header': '<true/false>', 'fields': '<list of comma separated field name>'}`
+         *  * getQueryStringURL([dict options]): method that builds the URL suffix (`?key1=value1&key2=value2&...`) based on context parameters (active filters, refinement, sort, query, etc.). The optional dictionary parameter allows building the URL with additional key/value parameters.
          *
          *  @example
-         *  <pre>
-         *  <ods-dataset-context context="trees" trees-dataset="trees-in-paris">
-         *      <!-- Retrieved from a local API (no domain for the context)-->
-         *      A dataset from {{trees.domainUrl}}.
-         *  </ods-dataset-context>
-         *  </pre>
          *
-         *  <pre>
-         *  <ods-dataset-context context="trees,events"
-         *                       trees-dataset="les-arbres-remarquables-de-paris"
-         *                       trees-domain="https://widgets-examples.opendatasoft.com/"
-         *                       events-dataset="evenements-publics-openagenda-extract"
-         *                       events-domain="widgets-examples">
-         *      <!-- Shows a list of the trees -->
-         *      <ods-table context="trees"></ods-table>
-         *      <!-- Shows a map of events -->
-         *      <ods-map context="events"></ods-map>
-         *  </ods-dataset-context>
-         *  </pre>
+         *  <example module="ods-widgets">
+         *      <file name="visualizations_based_on_dataset_context.html">
+         *          <ods-dataset-context context="trees,events"
+         *                               trees-dataset="les-arbres-remarquables-de-paris"
+         *                               trees-domain="https://widgets-examples.opendatasoft.com/"
+         *                               clocks-dataset="evenements-publics-openagenda-extract"
+         *                               clocks-domain="widgets-examples">
+         *               <!-- Shows a list of the trees -->
+         *               <ods-table context="trees"></ods-table>
+         *               <!-- Shows a map of clocks -->
+         *               <ods-map context="events"></ods-map>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
          *
-         *  <pre>
-         *  <ods-dataset-context context="demographics"
-         *                       demographics-dataset="us-cities-demographics"
-         *                       demographics-domain="https://widgets-examples.opendatasoft.com/"
-         *                       demographics-parameters="{'q': 'Santa', 'refine.state': 'California'}">
-         *      <!-- Demographics for all cities in California that have 'Santa' in their name -->
-         *      <ods-table context="demographics"></ods-table>
-         *  </ods-dataset-context>
-         *  </pre>
+         *  <example module="ods-widgets">
+         *      <file name="dataset_context_with_parameters.html">
+         *          <ods-dataset-context context="demographics"
+         *                               demographics-dataset="us-cities-demographics"
+         *                               demographics-domain="https://widgets-examples.opendatasoft.com/"
+         *                               demographics-parameters="{'q': 'Santa', 'refine.state': 'California'}">
+         *                <!-- Demographics for all cities in California that have 'Santa' in their name -->
+         *                <ods-table context="demographics"></ods-table>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
          */
         // TODO: Ability to preset parameters, either by a JS object, or by individual parameters (e.g. context-refine=)
         var exposeContext = function(domain, datasetID, scope, contextName, apikey, parameters, parametersFromContext, source, urlSync, schema, refreshDelay) {
@@ -20330,26 +20330,66 @@ mod.directive('infiniteScroll', [
 
     mod.directive('odsFacets', ['ODSWidgetsConfig', '$compile', 'translate', '$q', '$filter', function(ODSWidgetsConfig, $compile, translate, $q, $filter) {
         /**
-         * @ngdoc directive
-         * @name ods-widgets.directive:odsFacets
-         * @scope
-         * @restrict E
-         * @param {DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @description
-         * This widget displays filters (facets) for a dataset or a domain's catalog of datasets, allowing the users
-         * to dynamically "refine" on one or more categories for the context, typically to restrict the data displayed
-         * by another widget such as {@link ods-widgets.directive:odsTable odsTable}.
+         *  @ngdoc directive
+         *  @name ods-widgets.directive:odsFacets
+         *  @scope
+         *  @restrict E
+         *  @param {DatasetContext} context <i>(mandatory)</i> {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use.
+         *  @param {string} name <i>(mandatory)</i> Name of the field the filter is based on.
+         *  @param {string} [title=none] Title to display above the filter
+         *  @param {string} [sort=-count] Sorting method used on the categories:
          *
-         * Used alone without any configuration, the widget will display by default filters from all the "facet" fields
-         * of a dataset if it is used with a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, or based on
-         * typical metadata from a dataset catalog if used with a {@link ods-widgets.directive:odsCatalogContext Catalog Context}.
+         *  - `count` or `-count` to sort by number of items in each category
+         *  - `num` or `-num` to sort by the name of category, if it is a number
+         *  - `alphanum` or `-alphanum` to sort by the name of the category
+         *
+         *  Note that `-` before the name of the sorting method indicates that the sorting will be descending instead of ascending.
+         *
+         *  Configuring a specific order is also possible, by setting a list of value: `['value1', 'value2']`.
+         *
+         *  @param {number} [visibleItems=6] Number of categories to show. If there are more categories for the filter, they are collapsed by default, but can be expanded by clicking on a "more" link.
+         *  @param {boolean} [hideIfSingleCategory=false] If `true`, hides filters if only one category to refine on is available.
+         *  @param {string} [hideCategoryIf=none] AngularJS expression to evaluate: if it evaluates to `true`, the category is displayed. In the expression, the following elements can be used:
+         *
+         *  - `category.name` (value of the category)
+         *  - `category.path` (complete path to the category, including hierarchical levels)
+         *  - `category.state` (refined, excluded, or displayed)
+         *
+         *  @param {boolean} [disjunctive=false] If `true`, the filter is in disjunctive mode, which means that after a first value is selected, other available values can also be selected. All selected values are combined as "or". E.g. after clicking "red", "green" and "blue" can also be clicked, and the resulting values can be either green, red, or blue.
+         *
+         *  Note that this parameter is directly related to the schema of the dataset: for this parameter to function, the field must allow multiple selection in filters (see {@link https://help.opendatasoft.com/platform/en/publishing_data/05_processing_data/defining_a_dataset_schema.html#configuration-options-for-facets Defining a dataset schema}).
+         *  @param {boolean} [timerangeFilter=false] If `true`, an option to filter using a time range is displayed above the categories. This parameter only works for date and datetime fields, and must be used with a context (see **context** parameter).
+         *  @param {string} [context=none] Name of the context to refine on. This parameter is mandatory for the **timerangeFilter** parameter.
+         *  @param {string} [valueSearch=none] If `true`, a search box is displayed above the categories, to search within the available categories. If `suggest`, the matching categories are not displayed until there is at least one character typed into the search box, effectively making it into a suggest-like search box.
+         *  @param {DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]} [refineAlso=none] Enables the widget to apply its refinements on other contexts, e.g. for contexts which share common date. The value of this parameter should be the name of another context, or a list of contexts.
+         *  @param {string} [[contextname]FacetName=Current facet's name] Name of the facet in one of the other contexts, defined through the **refineAlso** parameter, that the original facet should be mapped on. `[contextname]` must be replaced with the name of that other context.
+         *
+         *  @description
+         *
+         *  The odsFacets widget displays filters based on a dataset or a domain's catalog of datasets, allowing the users to dynamically refine on one or more categories for the defined context (i.e. each filter being composed of several categories, which are values of the field the filter is based on).
+         *
+         *  For instance, odsFacet could be used to refine the data displayed in a table ({@link ods-widgets.directive:odsTable odsTable}), to see only the specific data one is interested in.
+         *
+         *  Used alone without any configuration, the widget will display by default filters from all the "facet" fields of a dataset if it is used with a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, or based on typical metadata from a dataset catalog if used with a {@link ods-widgets.directive:odsCatalogContext Catalog Context}.
          *
          * <pre>
          *     <ods-facets context="mycontext"></ods-facets>
          * </pre>
          *
-         * To configure which facets are displayed, you can use the odsFacet directive within the odsFacets widget. You can also
-         * use regular HTML within the odsFacets widget:
+         * <b>odsFacet</b>
+         *
+         * The odsFacet widget is a widget that can only be used based on odsFacets. It is used to configure which facets should be displayed by odsFacets, since odsFacets used alone does not allow to display only specific facets among all the default ones of the dataset. odsFacet supports the following parameters:
+         *
+         * - name
+         * - sort
+         * - visibleItems
+         * - hideIfSingleCategory
+         * - hideCategoryIf
+         *
+         * Note: these parameters are the same as some used for odsFacets, refer to the odsFacets parameters table below for more information on how to configure them.
+         *
+         * odsFacet allows to configure which facets are displayed, using the **name** parameter.
+         *
          * <pre>
          *     <ods-facets context="mycontext">
          *         <h3>First field</h3>
@@ -20360,60 +20400,15 @@ mod.directive('infiniteScroll', [
          *     </ods-facets>
          * </pre>
          *
+         * Regular HTML is supported within the odsFacet tag to change the display template of each category. The available variables within the template are:
          *
-         * The odsFacet directive supports the following parameters:
+         * - `facetName`: name of the field that the filter is based on
+         * - `category.name`: value of the category
+         * - `category.path`: complete path to the category, including hierarchical levels
+         * - `category.state`: refined, excluded, or displayed
          *
-         * - **`name`** {@type string} the name of the field to display the filter on
-         *
-         * - **`title`** {@type string} (optional) a title to display above the filters
-         *
-         * - **`sort`** {@type string} (optional, default is count) How to sort the categories: either `count`, `-count` (sort by number of items in each category),
-         * `num`, `-num` (sort by the name of category if it is a number), `alphanum`, `-alphanum` (sort by the name of the category).
-         * It is also possible to configure a specific order by setting a list of values: `['value1', 'value2']`.
-         *
-         * - **`visible-items`** {@type number} (optional, default 6) the number of categories to show; if there are more,
-         * they are collapsed and can be expanded by clicking on a "more" link.
-         *
-         * - **`hide-if-single-category`** {@type boolean} (optional) if 'true', don't show the filter for that facet if there is
-         * only one available category to refine on.
-         *
-         * - **`hide-category-if`** {@type string} (optional) an AngularJS expression to evaluate; if it evaluates to true, then
-         * the category is displayed. You can use `category.name` (the value of the category), `category.path` (the complete path
-         * to the category, including hierarchical levels) and `category.state` (refined, excluded, or displayed) in the expression.
-         *
-         * - **`disjunctive`** {@type boolean} (optional) if 'true', then the facet is in "disjunctive" mode, which means that after a first value selected,
-         * you can select other possibles values that are all combined as "or". For example, if you click "red", then you can also click "green" and "blue",
-         * and the resulting values can be green, red, or blue.
-         *
-         * - **`timerangeFilter`** {@type boolean} (optional) if 'true', then an option to filter with on a time range is displayed above the facets categories.
-         * Only works for date and datetime fields. Must be used with a context (see below).
-         *
-         * - **`context`** {@type string} (optional) name of the context to refine on. Mandatory with timerange filter.
-         *
-         * - **`valueSearch`** {@type string} (optional) if 'true', then a search box is displayed above the categories, so that you can search within them easily.
-         * If 'suggest', then the matching categories are not displayed until there is at least one character typed into the search box, effectively making it
-         * into a suggest-like search box.
-         *
-         * - **`refineAlso`** {@type DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]} (optional) An
-         * other context (or a list of contexts) that you want to filter based on your primary context's facets. This
-         * is especially usefull for contexts who share common data.
-         *
-         * - **`mysecondarycontextFacetName`** {@type string} (optional) The name of the facet in one of your secondary
-         * contexts (defined through the `refineAlso` parameter) that you want to map your original's facet on. You can
-         * see an example below of such a behaviour.
-         *
-         * <pre>
-         *     <ods-facets context="mycontext">
-         *         <ods-facet name="myfield" sort="-num" visible-items="10"></ods-facet>
-         *         <ods-facet name="mysecondfield" hide-if-single-category="true" hide-category-if="category.name == 'hiddencategory'"></ods-facet>
-         *     </ods-facets>
-         * </pre>
-         *
-         * You can write HTML within the odsFacet tag to change the display template of each category. The available variables
-         * within the template are `facetName` (the name of the field that the filter is based on), `category.name`
-         * (the value of the category), `category.path` (the complete path to the category, including hierarchical levels)
-         * and `category.state` (refined, excluded, or displayed).
-         * For this to work properly, you must use an `ng-non-bindable` wrapper element around your display template.
+         * An `ng-non-bindable` wrapper element must be used around the display template for it to work properly.
+         * Note: There must not be any space character between the odsFacet tag and the span element, as it may prevent the widget from working properly.
          *
          * <pre>
          *     <ods-facets context="mycontext">
@@ -20423,24 +20418,9 @@ mod.directive('infiniteScroll', [
          *     </ods-facets>
          * </pre>
          *
-         * You can filter multiple contexts through this widget. To illustrate how this works, we'll consider 3 datasets
-         * containing information relative to zipcodes: one containing the geo-shape of each zipcode (the zipcode being
-         * stored in the column `zipcode`), one containing the population (again, the zipcode is stored in the `zipcode`
-         * column) and a last one containing the name of the area (the zipcode being this time stored in the
-         * `code_postal` column because this is a french dataset). In order to have a single zipcode facet that will
-         * refine all 3 contexts simultaneously, we need to write the following.
-         *
-         * <pre>
-         *     <ods-facets context="shapes">
-         *         <ods-facet name="zipcode"
-         *                    refine-also="[population,areanames]"
-         *                    areanames-facet-name="code_postal"></ods-facet>
-         *     </ods-facets>
-         * </pre>
-         *
          *  @example
          *  <example module="ods-widgets">
-         *      <file name="index.html">
+         *      <file name="odsFacets_with_odsFacet.html">
          *          <ods-dataset-context context="events"
          *                               events-domain="https://widgets-examples.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
@@ -20453,7 +20433,7 @@ mod.directive('infiniteScroll', [
          *                          </h3>
          *                          <ods-facet name="mots_cles">
          *                              <div ng-non-bindable>
-         *                                  <i class="icon-tag"></i> {{category.name}}
+         *                                  {{category.name}}
          *                              </div>
          *                          </ods-facet>
          *                      </ods-facets>
@@ -20462,6 +20442,22 @@ mod.directive('infiniteScroll', [
          *                      <ods-map context="events"></ods-map>
          *                  </div>
          *              </div>
+         *          </ods-dataset-context>
+         *      </file>
+         *  </example>
+         *
+         *  <example module="ods-widgets">
+         *      <file name="refineAlso_parameter.html">
+         *          <ods-dataset-context context="volcaniceruption, countries"
+         *                               volcaniceruption-domain="https://widgets-examples.opendatasoft.com/"
+         *                               volcaniceruption-dataset="significant-volcanic-eruption-database"
+         *                               countries-domain="https://widgets-examples.opendatasoft.com/"
+         *                               countries-dataset="natural-earth-countries-150m">
+         *              <ods-facets context="volcaniceruption">
+         *                    <ods-facet name="country"
+         *                               refine-also="[countries]"
+         *                               countries-facet-name="sovereignt"></ods-facet>
+         *              </ods-facets>
          *          </ods-dataset-context>
          *      </file>
          *  </example>
@@ -22744,7 +22740,13 @@ mod.directive('infiniteScroll', [
                             series = items[0].series,
                             s = [];
 
-                        s = [tooltip.tooltipFooterHeaderFormatter(items[0])];
+                        // We copy the item for the header formatting, so that we can sanitize it with no side effects
+                        var headerItem = angular.copy(items[0]);
+                        if (angular.isString(headerItem.key)) {
+                            headerItem.key = ODS.StringUtils.escapeHTML(headerItem.key);
+                        }
+
+                        s = [tooltip.tooltipFooterHeaderFormatter(headerItem)];
 
                         // build the values
                         angular.forEach(items, function (item) {
@@ -22754,7 +22756,6 @@ mod.directive('infiniteScroll', [
                         });
                         // footer
                         s.push(tooltip.options.footerFormat || '');
-
                         // Add this in RTL to prevent the text-align:left on .highcharts-container added by highcharts to counter the direction
                         if (ODSWidgetsConfig.language === 'ar'){
                             s.unshift('<div style="text-align:right">');
@@ -27483,210 +27484,71 @@ mod.directive('infiniteScroll', [
          * @name ods-widgets.directive:odsMap
          * @scope
          * @restrict E
-         * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {boolean} [syncToUrl] If true, persists the `location` and `basemap` in the page's URL.
-         * @param {Object} [syncToObject] An object where the `location` and `basemap` selection is kept. You can use it from
-         * another widget to read the location or basemap.
-         * @param {string} [location] The default location of the map upon initialization, under the following format: "zoom,latitude,longitude".
-         * For example, to have a map centered on Paris, France, you can use "12,48.85218,2.36996". By default, if a location is not specified,
-         * the map will try to fit all the displayed data when initializing.
-         * @param {string} [basemap] The identifier of the basemap to use by default, as defined in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.basemaps}. By default,
-         * the first available basemap will be used.
-         * @param {string} [tooltipSort] The identifier of the field used to define the tooltips rendering order at a same spot. Use "field" for default sort, use "-field" for reversed sort.
-         * By default, numeric fields are sorted in decreasing order, date and datetime are sorted chronologically, and text fields are sorted alphanumerically.
-         * @param {boolean} [staticMap] If "true", then users won't be able to move or zoom on the map. They will still be able to click on markers.
-         * @param {boolean} [noRefit] By default, the map refits its view whenever the displayed data changes.
-         * If "true", then the map will stay at the same location instead.
-         * @param {boolean} [toolbarGeolocation=true] If "false", then the "geolocate" button won't be displayed in the map's toolbar.
-         * @param {boolean} [toolbarDrawing=true] If "false", then the drawing tools (to draw filter areas) won't be displayed in the map's toolbar.
-         * @param {boolean} [toolbarFullscreen=true] If "false", then the "go fullscreen" button won't be displayed in the map's toolbar.
-         * @param {boolean} [scrollWheelZoom=true] If "false", then scrolling your mouse wheel over the map won't zoom/unzoom it.
+         * @param {DatasetContext} context <i>(mandatory)</i> {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use. If the **context** parameter is managed with {@link ods-widgets.directive:odsMapLayer odsMapLayer}, it should not be configured for odsMap.
+         * @param {string} location Default location of the map upon initialization, under the following format: `zoom,latitude,longitude`. E.g. to have a map centered on Paris, France, `12,48.85218,2.36996` should be used. By default, if a location is not specified, the map will try to fit all the displayed data when initializing.
+         * @param {string} basemap Identifier of the basemap to use by default, as defined in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.basemaps}. By default, the first available basemap will be used.
          * @param {integer} [minZoom=none] Limits the map to a minimum zoom value. By default this is defined by the minimum zoom of the basemap.
          * @param {integer} [maxZoom=none] Limits the map to a maximum zoom value. By default this is defined by the maximum zoom of the basemap.
-         * @param {boolean} [odsAutoResize] see {@link ods-widgets.directive:odsAutoResize Auto Resize} for more informations
-         * @param {boolean} [autoGeolocation=false] If "true", then the geolocation (center and zoom the map on the location of the user) is automatically done upon initialization.
-         * Only available when there is no `location` parameter on the widget.
-         * Warning: location sharing must be allowed priorly for Firefox users when multiple odsMap widget are set with autoGeolocation=true on the same page
-         * @param {boolean} [displayControl=false] If true, displays a control to toggle display of groups (or single datasets outside groups). Note:
-         * it shouldn't be combined with the usage of `showIf` on `odsMapLayer`, as it will lead to inconsistencies in the user interface.
-         * @param {boolean} [displayControlSingleLayer=false] If true, only one layer will be displayed at a time using the control to toggle the display of groups.
-         * @param {boolean} [searchBox=false] If true, a search box will appear in the map, allowing you to jump to locations, or search data on the map.
+         * @param {boolean} [scrollWheelZoom=true] If `true`, scrolling the mouse wheel over the map can be used to zoom in or zoom out.
+         * @param {boolean} [staticMap=false] If `true`, the map can't be zoomed in/out or moved. Markers are still clickable.
+         * @param {boolean} [noRefit=false] By default, the map refits its view whenever the displayed data changes. If `true`, the map stays at the same location.
+         * @param {boolean} [toolbarGeolocation=true] If `true`, the "geolocate" button is displayed in the map's toolbar.
+         * @param {boolean} [autoGeolocation=false] If `true`, the geolocation which centers and zooms the map on the location of the user, is automatically done upon initialization. autoGeolocation is only available when there is no **location** parameter set for the widget. Caution: location sharing must be allowed priorly for Firefox users when multiple odsMap widget are set with `autoGeolocation=true` on the same page.
+         * @param {boolean} [toolbarDrawing=true] If `false`, the drawing tools, to draw filter areas, are not displayed in the map's toolbar.
+         * @param {boolean} [toolbarFullscreen=true] If `false`, the "fullscreen" button is not displayed in the map's toolbar.
+         * @param {boolean} [displayControl=false] If `true`, displays a control to choose whether or not groups or single datasets outside groups should be displayed, using toggle buttons. Note: it shouldn't be combined with the usage of **showIf** on {@link ods-widgets.directive:odsMapLayer odsMapLayer}, as it will lead to inconsistencies in the user interface.
+         * @param {boolean} [displayControlSingleLayer=false] If `true`, only one layer is displayed at a time using the control of groups and single datasets display.
+         * @param {boolean} odsAutoResize see {@link ods-widgets.directive:odsAutoResize Auto Resize} for more informations
+         * @param {boolean} [searchBox=false] If `true`, a search box is displayed on the map, to jump to another locations through a search, or search specific data on the map.
+         * @param {boolean} [displayLegend=true] If `true`, displays a caption in the bottom right corner of the map.
+         * @param {boolean} [syncToUrl=none] If `true`, the settings of the **location** and **basemap** parameters are used in the page's URL.
+         * @param {Object} [syncToObject=none] An object that is updated by the map's settings for the **location** and **basemap** parameters corresponding to new changes of location and basemap.
          *
          * @description
-         * This widget allows you to build a map visualization and show data using various modes of display using layers.
-         * Each layer is based on a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, a mode of display (clusters...), and various properties to define the
-         * display itself, such as colors.
+         * The odsMap widget allows to build a map visualization and display data through various modes that can be composed of several dynamic layers, each being based on a {@link ods-widgets.directive:odsDatasetContext Dataset Context}.
          *
-         * Layers can be combined, so that you map shows various data sources in various ways.
          *
-         * Layers are dynamic, which means that if a context changes (e.g. a new refine is added), the layer will be refreshed and display the new relevant data.
+         * odsMap is a base widget. Used on its own, it can only display a simple map with default configurations.
          *
-         * This widget can also be used to control other widgets: you can configure a layer to act as a refine control on another context, so that for example
-         * if you click on a road you get a {@link ods-widgets.directive:odsTable table view} of the traffic on that road. You can also draw zones on the map,
-         * which will accordingly refine the context.
-         *
-         * You can use the widget alone to propose a simple map using default settings, such as this:
          * <pre>
-         *     <!-- Displays a map of Paris using the data from mycontext and an automatic visualization mode (clusters or shapes depending on the zoom level) -->
+         *     <!-- Displays a map of Paris using the data from mycontext and an automatic visualization mode -->
          *     <ods-map context="mycontext" location="12,48.85218,2.36996"></ods-map>
          * </pre>
          *
-         * However, the ability to build a more advanced and configurable map comes with a second `odsMapLayer` tag, used to define a layer:
+         * odsMap can be combined with 2 related map widgets to create more complex maps and fully configure their modes and behaviors.
+         *
+         *  - {@link ods-widgets.directive:odsMapLayer odsMapLayer}, allows to declare a layer of data to display on the map
+         *  - {@link ods-widgets.directive:odsMapLayerGroup odsMapLayerGroup}, allows to declare a group of layers
+         *
+         * In its fullest form, a map visualization would then be composed of several layers organised in groups (see {@link ods-widgets.directive:odsMapLayer odsMapLayer} and {@link ods-widgets.directive:odsMapLayerGroup odsMapLayerGroup} widgets reference pages for more information on how to use and configure them).
          *
          * <pre>
-         *     <!-- A map containing a single layer to display data from mycontext, in a specific color, and as clusters. -->
-         *     <ods-map>
-         *         <ods-map-layer context="mycontext" color="#FF0000" display="clusters"></ods-map-layer>
-         *     </ods-map>
-         * </pre>
-         *
-         * You can have several layers, each with their own configuration and context:
-         *
-         * <pre>
-         *     <ods-map>
-         *         <ods-map-layer context="mycontext" color="#FF0000" display="clusters"></ods-map-layer>
-         *         <ods-map-layer context="mycontext2" display="heatmap"></ods-map-layer>
-         *         <ods-map-layer context="mycontext3" display="raw" color="#0000FF"></ods-map-layer>
-         *     </ods-map>
-         * </pre>
-         *
-         * You can show or hide layers using the `showIf` property, similar to Angular's `ngIf`.
-         *
-         * <pre>
-         *     <ods-map>
-         *         <ods-map-layer context="mycontext" color="#FF0000" display="clusters"></ods-map-layer>
-         *         <ods-map-layer context="mycontext2" display="heatmap" show-if="showHeatmap"></ods-map-layer>
-         *     </ods-map>
-         * </pre>
-         *
-         * You can also configure layers to only be visible between certain zoom levels, using `showZoomMin`,
-         * `showZoomMax`, or both.
-         *
-         * <pre>
-         *     <!-- In this example I want to show only one layer at a time, but change it as the user zooms in the map. -->
-         *     <ods-map>
-         *         <!-- This layer is only visible up to zoom 8 -->
-         *         <ods-map-layer context="mycontext1" show-zoom-max="8"></ods-map-layer>
-         *         <!-- This layer appears between zoom 9 and 14 -->
-         *         <ods-map-layer context="mycontext2" show-zoom-min="9" show-zoom-max="14"></ods-map-layer>
-         *         <!-- This layer is visible starting at zoom 15 -->
-         *         <ods-map-layer context="mycontext3" show-zoom-min="15"></ods-map-layer>
-         *     </ods-map>
-         * </pre>
-         *
-         * Several display modes are available, under two categories: visualization of the data itself (each point is a record),
-         * and visualization of an aggregation of data (each point is the result of an aggregation function).
-         *
-         * - `auto`: depending on the number of points and the type of geometry, the best display mode is automatically chosen. This is the default display
-         * mode, and makes sense mot of the time of you want to simply represent geo data.
-         * - `raw`: data is downloaded and displayed directly as is, with no clustering or simplification of any kind. Do not
-         * use on large (1000+) datasets, as it may freeze the user's browser.
-         * - `clusters`: data is aggregated spatially into clusters; each cluster represents two or more "close" points. When at maximum
-         * zoom, all points are shown.
-         * - `clustersforced`: data is aggregated spatially into clusters, but the number on the cluster is the result of an aggregation function.
-         * - `heatmap`: data is displayed as a heatmap; by default it represents the density of points, but it can be the result of an aggregation function.
-         * - `aggregation`: data is aggregated based on their geo shape (e.g. two records with the exact same associated shape); by default the color represents
-         * the number of aggregated records, but it can be the result of an aggregation function. This mode supports aggregating the context
-         * using a join with another context that contains geometrical shapes: use a `joinContext` property, and `localKey` and `remoteKey` to configure
-         * the field names of the local and joined datasets; you can also configure one of the fields from the "remote" dataset to be displayed when the mouse
-         * hovers the shapes, using `hoverField` and the name of a field.
-         *
-         * You can specify aggregation functions on display modes that support it (`aggregation`, `heatmap`, `clustersforced`).
-         * This is done using two parameters: `function` (AVG for average, MIN for minimum, MAX for maximum, STDDEV for standard deviation,
-         * COUNT to count the number of records, SUM for the sum of values), and `expression` to define the value used for the
-         * function, usually the name of a field (`expression` is not required when the function is COUNT).
-         *
-         * <pre>
-         *     <ods-map>
-         *         <!-- Display a heatmap of the average value -->
-         *         <ods-map-layer context="mycontext" display="heatmap" expression="value" function="AVG"></ods-map-layer>
-         *     </ods-map>
-         * </pre>
-         *
-         * Apart from `heatmap`, all display modes support color configuration. Three types of configurations are available, depending on the display mode.
-         *
-         * - `color`: a simple color, as an hex code (#FF0F05) or a simple CSS color name like "red". Available for any mode except `heatmap`.
-         * - `colorScale`: the name of a ColorBrewer [http://colorbrewer2.org/] scheme, like "YlGnBu". Available for `aggregation`.
-         * - `colorRanges`: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example "red;20;orange;40;#00CE00" to color anything between
-         * 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a decimal or integer field name in `colorByField` to configure which field will be
-         * used to decide on the color (for `raw`) or with `function` and `expression` to determine the calculation used for the color (for `aggregation`). Available for `raw` and `aggregation`.
-         *
-         * An additional `colorFunction` property can contain the `log` value to use logarithmic scales (instead of the default linear scale) for generating the color scale. Available for `aggregation` and with `color` and `colorScale` display modes (or when none is specified).
-         *
-         * On top of color configuration, the icon used as a marker on the map can be configured through the `picto`
-         * property. The property supports the keywords listed in the <a href="https://help.opendatasoft.com/platform/en/other_resources/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a>
-         *
-         * When displaying shapes, you can also use `borderColor` and `opacity` to configure the color of the shape border and the opacity of the shape's fill.
-         *
-         * If you are displaying data where multiple points or shapes are stacked, you can configure the order in which the items will be
-         * displayed in the tooltip, using `tooltipSort` and the name of a field, prefixed by `-` to have a reversed sort.
-         * Note: by default, numeric fields are sorted in decreasing order, date and datetime are sorted chronologically, and text fields are sorted
-         * alphanumerically.
-         *
-         * <pre>
-         *     <ods-map>
-         *         <!-- Reverse sort on 'field' -->
-         *         <ods-map-layer context="mycontext" tooltip-sort="-field"></ods-map-layer>
-         *     </ods-map>
-         * </pre>
-         *
-         *
-         * By default, tooltips show the values associated with a point or shape in a simple template. You can configure your own template by adding
-         * HTML inside the `<ods-map-layer></ods-map-layer>` tag. Your template is AngularJS-enabled and will be provided with a `record` object; this object contains
-         * a `fields` object with all the values associated with the clicked point or shape.
-         *
-         * <pre>
-         *    <ods-map location="12,48.86167,2.34146">
-         *        <ods-map-layer context="mycontext">
-         *            <div>my value is: {{record.fields.myvalue}}</div>
-         *        </ods-map-layer>
+         *    <ods-map ...>
+         *       <ods-map-layer-group ...>
+         *          <ods-map-layer ...></ods-map-layer>
+         *          <ods-map-layer ...></ods-map-layer>
+         *       </ods-map-layer-group>
+         *       <ods-map-layer-group ...>
+         *          <ods-map-layer ...></ods-map-layer>
+         *       </ods-map-layer-group>
          *    </ods-map>
          * </pre>
          *
+         * odsMap, when used for a complex map visualization, is mostly used set the basic configurations of the map (e.g. basemap, location). odsMap also helps settings all map-controlling options, such as zoom configurations, buttons and search bar display, as well as groups and layers behavior control.
          *
-         * If tooltips are not relevant for your data, you can disable them by using the `tooltip-disabled="true"` option.
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="odsMap_used_alone.html">
+         *  <ods-dataset-context context="countries"
+         *                       countries-dataset="natural-earth-countries-150m"
+         *                       countries-domain="https://widgets-examples.opendatasoft.com/">
+         *      <ods-map context="countries"
+         *               location="2,41.88759,0.90273"
+         *               basemap="jawg.light"></ods-map>
+         *  </ods-dataset-context>
+         *      </file>
+         *  </example>
          *
-         * <pre>
-         *    <ods-map>
-         *        <ods-map-layer context="mycontext" tooltip-disabled="true"></ods-map-layer>
-         *    </ods-map>
-         * </pre>
-         *
-         *
-         * If your layer is displayed as `raw` or `aggregation`, you can configure a layer so that a click on an item triggers a refine on another context, using `refineOnClickContext`.
-         * One or more contexts can be defined:
-         * <pre>
-         *     <ods-map>
-         *         <ods-map-layer context="mycontext" refine-on-click-context="mycontext2"></ods-map-layer>
-         *         <ods-map-layer context="mycontext3" refine-on-click-context="[mycontext4, mycontext5]"></ods-map-layer>
-         *     </ods-map>
-         * </pre>
-         *
-         * By default, the filter occurs on geometry; for example, clicking on a shape filters the other context on the area.
-         * You can also trigger a refine on specific fields; using `refineOnClickMapField` to configure the name of the field to get the value from, and `refineOnClickContextField`
-         * to configure the name of the field of the other context to refine on. If you have two or more contexts, you can configure the fields by indicating the context in the
-         * name of the property, as `refineOnClick[context]MapField` and `refineOnClick[context]ContextField`.
-         *
-         * <pre>
-         *     <ods-map>
-         *         <ods-map-layer context="mycontext" refine-on-click-context="[mycontext, mycontext2]"
-         *                                            refine-on-click-mycontext-map-field="field1"
-         *                                            refine-on-click-mycontext-context-field="field2"
-         *                                            refine-on-click-mycontext2-map-field="field3"
-         *                                            refine-on-click-mycontext2-context-field="field4"></ods-map-layer>
-         *     </ods-map>
-         * </pre>
-         *
-         * When you first load the map (if there is no `location` parameter), and when your context parameters change, the
-         * map is refreshed and moves to fit the content of the new data to display. If you want to exclude a layer's data
-         * from the new position's calculation, you can use `excludeFromRefit`:
-         *
-         * <pre>
-         *     <ods-map>
-         *         <ods-map-layer context="mycontext"></ods-map-layer>
-         *         <ods-map-layer context="mycontext3" exclude-from-refit="true"></ods-map-layer>
-         *     </ods-map>
-         * </pre>
          */
         return {
             restrict: 'EA',
@@ -28828,6 +28690,110 @@ mod.directive('infiniteScroll', [
 
     mod.directive('odsMapLayerGroup', ['MapHelper', function(MapHelper) {
         // TODO: Plug for real
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsMapLayerGroup
+         * @scope
+         * @restrict E
+         * @param {string} title <i>(mandatory)</i> Title of the group of layers
+         * @param {string} [description=none] Description of the group of layers
+         * @param {string} [pictoColor=#000000] Color of the group of layers' pictogram, in the following format: `#000000`.
+         * @param {string} [pictoIcon=none] Name of the group of layers' pictogram.
+         * @param {boolean} [displayed=true] If `true`, displays the group of layers by default.
+         *
+         * @description
+         *
+         * The odsMapLayerGroup widget allows to declare a group of layers, which are declared through the {@link ods-widgets.directive:odsMapLayer odsMapLayer} widget. odsMapLayerGroup is indeed one of the map-related  widgets, that can only be used based on {@link ods-widgets.directive:odsMap odsMap}, the primary map-related widgets (see {@link ods-widgets.directive:odsMap odsMap} widget reference page for more information on map visualizations).
+         *
+         *
+         * @example
+         *
+         *  <example module="ods-widgets">
+         *      <file name="odsMap_with_odsMapLayer_odsMapLayerGroup.html">
+         *  <ods-dataset-context context="culturalheritage,naturalheritage,mixedheritage"
+         *                       culturalheritage-dataset="world-heritage-unesco-list"
+         *                       culturalheritage-parameters="{'refine.category':'Cultural'}"
+         *                       culturalheritage-domain="https://widgets-examples.opendatasoft.com/"
+         *                       naturalheritage-dataset="world-heritage-unesco-list"
+         *                       naturalheritage-parameters="{'refine.category':'Natural'}"
+         *                       naturalheritage-domain="https://widgets-examples.opendatasoft.com/"
+         *                       mixedheritage-dataset="world-heritage-unesco-list"
+         *                       mixedheritage-parameters="{'refine.category':'Mixed'}"
+         *                       mixedheritage-domain="https://widgets-examples.opendatasoft.com/">
+         *      <ods-map no-refit="true"
+         *               scroll-wheel-zoom="false"
+         *               display-control="true"
+         *               search-box="false"
+         *               toolbar-fullscreen="true"
+         *               toolbar-geolocation="true"
+         *               location="2,22.59373,2.8125">
+         *          <ods-map-layer-group>
+         *              <ods-map-layer context="culturalheritage"
+         *                             color="#FA8C44"
+         *                             picto="ods-circle"
+         *                             show-marker="true"
+         *                             display="auto"
+         *                             shape-opacity="0.5"
+         *                             point-opacity="1"
+         *                             border-color="#FFFFFF"
+         *                             border-opacity="1"
+         *                             border-size="1"
+         *                             border-pattern="solid"
+         *                             caption="true"
+         *                             caption-picto-icon="ods-monument"
+         *                             caption-picto-color="#FA8C44"
+         *                             title="Cultural Heritage"
+         *                             size="4"
+         *                             size-min="3"
+         *                             size-max="5"
+         *                             size-function="linear"></ods-map-layer>
+         *          </ods-map-layer-group>
+         *          <ods-map-layer-group>
+         *              <ods-map-layer context="naturalheritage"
+         *                             color="#93117E"
+         *                             picto="ods-circle"
+         *                             show-marker="true"
+         *                             display="auto"
+         *                             shape-opacity="0.5"
+         *                             point-opacity="1"
+         *                             border-color="#FFFFFF"
+         *                             border-opacity="1"
+         *                             border-size="1"
+         *                             border-pattern="solid"
+         *                             caption="true"
+         *                             caption-picto-icon="ods-deciduous"
+         *                             caption-picto-color="#93117E"
+         *                             title="Natural Heritage"
+         *                             size="4"
+         *                             size-min="3"
+         *                             size-max="5"
+         *                             size-function="linear"></ods-map-layer>
+         *          </ods-map-layer-group>
+         *          <ods-map-layer-group>
+         *              <ods-map-layer context="mixedheritage"
+         *                             color="#CDBCD9"
+         *                             show-marker="true"
+         *                             display="auto"
+         *                             shape-opacity="0.5"
+         *                             point-opacity="1"
+         *                             border-color="#FFFFFF"
+         *                             border-opacity="1"
+         *                             border-size="1"
+         *                             border-pattern="solid"
+         *                             caption="true"
+         *                             caption-picto-color="#CDBCD9"
+         *                             title="Mixed Heritage"
+         *                             size="4"
+         *                             size-min="3"
+         *                             size-max="5"
+         *                             size-function="linear"></ods-map-layer>
+         *          </ods-map-layer-group>
+         *      </ods-map>
+         *  </ods-dataset-context>
+         *      </file>
+         *  </example>
+         *
+         */
         return {
             restrict: 'EA',
             scope: {
@@ -28864,6 +28830,259 @@ mod.directive('infiniteScroll', [
     }]);
 
     mod.directive('odsMapLayer', ['MapHelper', function(MapHelper) {
+      /**
+       * @ngdoc directive
+       * @name ods-widgets.directive:odsMapLayer
+       * @scope
+       * @restrict E
+       * @param {DatasetContext} context <i>(mandatory)</i> {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use.
+       * @param {expression} [showIf=none] AngularJS expression to evaluate: if it evaluates to true, the layer is visible.
+       * @param {number} [showZoomMin=none] Makes the layer visible only if the zoom level is superior or equal to the value.
+       * @param {number} [showZoomMax=none] Makes the layer visible only if the zoom level is inferior or equal to the value.
+       *
+       * @param {string} [display=auto] Map mode:
+       *
+       *  - `auto`: automatically chooses the best map mode to easily display the data, based on the number of points and type of geometry
+       *  - `heatmap`: displays the data as a heatmap, i.e. a density of points represented by a color intensity variation. It can also be based on the result of an aggregation function.
+       *  - `categories`: based on a text field value, categorizes and colors the data
+       *  - `choropleth`: based on a number field or aggregation, colors the data using a color scale
+       *  - `clusters`: spatially groups the data in clusters ; each cluster displays the number of points it contains. When at maximum zoom, all points are shown.
+       *  - `clustersforced`: spatially aggregates the data in clusters ; the number displayed on the cluster is the result of an aggregation function.
+       *  - `raw`: displays the data directly without clustering or organizing them. This mode should not be used for large datasets (i.e. more than 5,000 points to display), as it may freeze the user's browser.
+       *  - `aggregation`: data is aggregated based on a geo shape (e.g. 2 records with the exact same shape associated). By default, the color represents the number of aggregated records, but it can be the result of an aggregation function. This mode supports aggregating the context using a join with another context that contains geometrical shapes: use a `joinContext` property, and `localKey` and `remoteKey` to configure the field names of the local and joined datasets. It is also possible to configure one of the fields from the "remote" dataset, for them to be displayed when the mouse hovers the shapes: use `hoverField` and the name of a field to do so.
+       * @param {string} [function=none] For heatmap, choropleth and clusters mode only - Function used to aggregate the data:
+       *
+       * - AVG: average
+       * - COUNT
+       * - MIN: minimum
+       * - MAX: maximum
+       * - STDDEV: standard deviation
+       * - SUM
+       * @param {expression} [expression=none] Expression used to aggregate the data. This parameter is not required when the function is COUNT.
+       *
+       * @param {string} [color=none] Color of the displayed shapes and markers.
+       * @param {string} [borderColor=white] Color of the shapes' borders.
+       * @param {number} [borderSize=1] In pixels, width of the shapes' borders.
+       * @param {string} [borderPattern=solid] Pattern of the shapes' borders:
+       *
+       *  - `solid`
+       *  - `long-dashes`
+       *  - `medium-dashes`
+       *  - `short-dashes`
+       *  - `dots`
+       *  - `short-dot`
+       *  - `short-dot-dot`
+       *  - `medium-short`
+       *
+       * @param {number} [borderOpacity=1] Opacity of the shapes' borders. The value must be between `0` (transparent) and `1` (opaque).
+       * @param {number} [shapeOpacity=0.5] Opacity of the shapes. The value must be between `0` (transparent) and `1` (opaque).
+       * @param {number} [pointOpacity=1] Opacity of the markers. The value must be between `0` (transparent) and `1` (opaque).
+       * @param {number} [lineWidth=5] In pixels, width of the lines. Only applicable for "line" type shapes.
+       *
+       * @param {objet} [colorCategories=none] For categories mode only - Object that links textual values and colors (e.g. `{'Paris': '#FF0000', 'Nantes: '#00FF00'}`).
+       * @param {string} [colorCategoriesOther=none] For categories mode only - Default color for values that were not originally taken into account by the `color-categories` object.
+       * @param {string} [colorUndefined=none] For choropleth mode only - Default color for the `undefined` values.
+       * @param {string} [colorOutOfBounds=none] For choropleth mode only - Default color for values out of the expected `color-numeric-ranges` scale.
+       * @param {string} [colorNumericRanges=none] For choropleth mode only - Color scale used (e.g. `{'0': '#FF0000', '1': '#FFFF00'}`). The key is the upper bound used for this color (e.g. still using the previous example, it would be #FF0000 until 0, then #FFFF00 until 1, etc.)
+       * @param {number} [colorNumericRangeMin=none] For choropleth mode only - Minimum bound used. Any value below that bound will be considered out of the scale, and will use the color of the `color-out-of-bounds` parameter.
+       * @param {string} [colorGradient=none] For heatmap mode only - Object that links upper numeric bounds and colors (e.g. `{0.2: '#FF0000', 1: '#00FF00'}`).
+       * @param {string} [colorByField=none] For categories and choropleth modes only - Field used to choose the color.
+       *
+       * @param {number} [radius=4] For heatmap mode only - Width of the perimeter.
+       * @param {number} [size=4] for markers, 7 for pictograms] Size of the markers.
+       * @param {number} [sizeMin=3] For clusters mode only - Minimum size of the clusters.
+       * @param {number} [sizeMax=5] For clusters mode only - Maximum size of the clusters.
+       * @param {string} [sizeFunction=none] For clusters mode only - Calculation function of the clusters size:
+       *
+       *  - `linear`
+       *  - `log` (logarithmic)
+       *
+       * @param {string} [picto=none] Pictogram used for the markers.
+       * @param {boolean} [showMarker=none] If `true`, displays a marker around the pictogram.
+       *
+       * @param {string} tooltipSort Identifier of the field used to sort tooltips that represent several records for the same point or shape.
+       *
+       * Note that `-` before the name of the sorting method indicates that the sorting will be descending instead of ascending.
+       *
+       * By default, numeric fields are sorted in decreasing order, date and datetime are sorted chronologically, and text fields are sorted alphanumerically.
+       * @param {boolean} [tooltipDisabled=none] If `true`, clicking on a point or shape does not display the associated tooltip.
+       * @param {boolean} [caption=none] If `true`, displays a caption for the map layer in the bottom right corner of the map.
+       * @param {string} [captionTitle=none] Title of the map layer caption.
+       * @param {string} [captionPictoColor=none] Color used for the caption's pictogram.
+       * @param {string} [captionPictoIcon=none] Pictogram used in the caption.
+       * @param {string} [title=none] Title used in the map layer's control selection.
+       * @param {string} [description=none] Description used in the map layer's control selection.
+       * @param {boolean} [excludeFromRefit=none] If `true`, the calculation that rezooms the map when filters or data change does not take the map layer into account.
+       *
+       * @param {string} [refineOnClickContext=none] Name, or list of names separated by commas (`[ctx1, ctx2]`) of contexts that should be refined when clicking on a point or shape of the map layer.
+       * @param {string} [refineOnClickMapField=none] (or `refine-on-click-CONTEXTNAME-map-field` if more than one context) - Field of the map layer that is used to retrieve the value used for the refine.
+       * @param {string} [refineOnClickContextField=none] (or `refine-on-click-CONTEXTNAME-context-field` if more than one context) - Field used in the context of the refine (`refine.FIELDNAME=VALUE`).
+       * @param {boolean} [refineOnClickReplaceRefine=none] (or `refine-on-click-CONTEXTNAME-replace-refine` if more than one context) - If `true`, each click replaces the previous refine instead of adding to it.
+       *
+       * @description
+       *
+       * The odsMapLayer widget allows to declare the data layers that can be displayed on a map visualization. odsMapLayer is indeed one of the map-related  widgets, that can only be used based on {@link ods-widgets.directive:odsMap odsMap}, the primary map-related widgets (see {@link ods-widgets.directive:odsMap odsMap} widget reference page for more information on map visualizations).
+       *
+       * A map visualization can be comprised of several data layers, which are dynamic (i.e. if the context changes, the layer is refreshed and displays the new relevant data).
+       *
+       * Each of these data layers is based on a context, and can have its own display mode and configurations.
+       *
+       * <pre>
+       *     <ods-map>
+       *         <ods-map-layer context="mycontext" color="#FF0000" display="clusters"></ods-map-layer>
+       *         <ods-map-layer context="mycontext2" display="heatmap"></ods-map-layer>
+       *         <ods-map-layer context="mycontext3" display="raw" color="#0000FF"></ods-map-layer>
+       *     </ods-map>
+       * </pre>
+       *
+       * <b>Layers display modes</b>
+       *
+       * Map visualizations can either display:
+       *
+       * - the layer data itself (i.e. each point is a record from the dataset),
+       * - or, an aggregation of data (i.e. each point is the result of an aggregation function).
+       *
+       * Several display modes are available (see **display** parameter in the table below). However, only some of them support aggregation functions: `aggregation`, `heatmap` and `clustersforced`.
+       *
+       * Aggregation functions are specified in the odsMapLayer widget through 2 parameters: **function** and **expression** (see same-named parameters in the table below), which defines the value used for the function (usually, the name of a field).
+       *
+       * <pre>
+       *     <ods-map>
+       *         <!-- Display a heatmap of the average value -->
+       *         <ods-map-layer context="mycontext" display="heatmap" expression="value" function="AVG"></ods-map-layer>
+       *     </ods-map>
+       * </pre>
+       *
+       * <b>Layers display color configurations</b>
+       *
+       * Apart from `heatmap`, all display modes support color configuration. 3 types of configuration are available, depending on the display mode.
+       *
+       * - `color`: a color, as an hex code (#FF0F05) or a CSS color name (e.g. "red"). Available for any mode.
+       * - `colorScale`: the name of a {@link http://colorbrewer2.org/ ColorBrewer} scheme (e.g. "YlGnBu"). Available only for `aggregation`.
+       * - `colorRanges`: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example "red;20;orange;40;#00CE00" to color anything between 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. It can be combined with a decimal or integer field name in `colorByField` to configure which field will be used to decide on the color (for `raw`), or with `function` and `expression` to determine the calculation used for the color (for `aggregation`). Available for `raw` and `aggregation`.
+       *
+       * An additional `colorFunction` property can contain the `log` value to use logarithmic scales (instead of the default linear scale) for generating the color scale. Available for `aggregation` and with `color` and `colorScale` display modes (or when none is specified).
+       *
+       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://help.opendatasoft.com/platform/en/other_resources/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a>
+       *
+       * When displaying shapes, `borderColor` and `opacity` can be used to configure the color of the shape border and the opacity of the shape's fill.
+       *
+       * <b>Layers zoom and hide & show configurations</b>
+       *
+       * Layers can be hidden or shown depending on the configuration of the `showIf` parameter, which functions similarly to Angular's `ngIf`.
+       *
+       * <pre>
+       *     <ods-map>
+       *         <ods-map-layer context="mycontext" color="#FF0000" display="clusters"></ods-map-layer>
+       *         <ods-map-layer context="mycontext2" display="heatmap" show-if="showHeatmap"></ods-map-layer>
+       *     </ods-map>
+       * </pre>
+       *
+       * Layers can also be configured to only be visible between certain zoom levels, using the `showZoomMin` and/or
+       * `showZoomMax` parameters.
+       *
+       * <pre>
+       *     <ods-map>
+       *         <!-- This layer is only visible up to zoom 8 -->
+       *         <ods-map-layer context="mycontext1" show-zoom-max="8"></ods-map-layer>
+       *         <!-- This layer appears between zoom 9 and 14 -->
+       *         <ods-map-layer context="mycontext2" show-zoom-min="9" show-zoom-max="14"></ods-map-layer>
+       *         <!-- This layer is visible starting at zoom 15 -->
+       *         <ods-map-layer context="mycontext3" show-zoom-min="15"></ods-map-layer>
+       *     </ods-map>
+       * </pre>
+       *
+       * <b>Tooltips</b>
+       *
+       * By default, tooltips show the values associated with a point or shape in a simple template. Custom HTML tooltip templates can be added inside the `<ods-map-layer></ods-map-layer>` tag. The custom template is AngularJS-enabled and will be provided with a `record` object; this object contains a `fields` object with all the values associated with the clicked point or shape.
+       *
+       * <pre>
+       *    <ods-map location="12,48.86167,2.34146">
+       *        <ods-map-layer context="mycontext">
+       *            <div>my value is: {{record.fields.myvalue}}</div>
+       *        </ods-map-layer>
+       *    </ods-map>
+       * </pre>
+       *
+       * In case the tooltip is not relevant for the map visualization, it can be disabled them using the **tooltipDisabled** parameter set on `true`.
+       *
+       * <pre>
+       *    <ods-map>
+       *        <ods-map-layer context="mycontext" tooltip-disabled="true"></ods-map-layer>
+       *    </ods-map>
+       * </pre>
+       *
+       * If the map visualization displays multiple points or shapes that are stacked, it is possible to configure the order in which the items will be displayed in the tooltip, using `tooltipSort` and the name of a field, prefixed by `-` to have a reversed sort.
+       * Note: by default, numeric fields are sorted in decreasing order, date and datetime are sorted chronologically, and text fields are sorted alphanumerically.
+       *
+       * <pre>
+       *     <ods-map>
+       *         <!-- Reverse sort on 'field' -->
+       *         <ods-map-layer context="mycontext" tooltip-sort="-field"></ods-map-layer>
+       *     </ods-map>
+       * </pre>
+       *
+       * <b>Refine-on-click map configuration</b>
+       *
+       * If a layer is displayed as `raw` or `aggregation`, it can be configured so that a click on an item triggers a refine on another context, using **refineOnClickContext**.
+       *
+       * One or more contexts can be defined:
+       *
+       * <pre>
+       *     <ods-map>
+       *         <ods-map-layer context="mycontext" refine-on-click-context="mycontext2"></ods-map-layer>
+       *         <ods-map-layer context="mycontext3" refine-on-click-context="[mycontext4, mycontext5]"></ods-map-layer>
+       *     </ods-map>
+       * </pre>
+       *
+       * By default, the filter occurs on geometry. For example, clicking on a shape filters the other context on the area.
+       *
+       * It is also possible to trigger a refine on specific fields, using **refineOnClickMapField** to configure the name of the field to get the value from, and **refineOnClickContextField** to configure the name of the field of the other context to refine on. If there are 2 or more contexts, it is possible to configure the fields by indicating the context in the name of the property, as `refineOnClick[context]MapField` and `refineOnClick[context]ContextField`.
+       *
+       * <pre>
+       *     <ods-map>
+       *         <ods-map-layer context="mycontext"
+       *                        refine-on-click-context="[mycontext, mycontext2]"
+       *                        refine-on-click-mycontext-map-field="field1"
+       *                        refine-on-click-mycontext-context-field="field2"
+       *                        refine-on-click-mycontext2-map-field="field3"
+       *                        refine-on-click-mycontext2-context-field="field4"></ods-map-layer>
+       *     </ods-map>
+       * </pre>
+       *
+       *
+       * @example
+       *  <example module="ods-widgets">
+       *      <file name="odsMap_with_odsMapLayer.html">
+       *  <ods-dataset-context context="genderequalityineurope"
+       *                       genderequalityineurope-dataset="gender-equality-in-europe"
+       *                       genderequalityineurope-domain="https://widgets-examples.opendatasoft.com/">
+       *      <ods-map no-refit="true"
+       *               scroll-wheel-zoom="false"
+       *               display-control="false"
+       *               search-box="false"
+       *               toolbar-fullscreen="true"
+       *               toolbar-geolocation="true"
+       *               location="2,36.19117,-6.26602">
+       *          <ods-map-layer context="genderequalityineurope"
+       *                         color-numeric-ranges="{'43.1':'#AAC3DD','50.9':'#89A0CA','58.7':'#687DB7','66.5':'#475AA4','74.3':'#263892','39.2':'#BBD5E7','47.0':'#99B2D4','54.8':'#788FC1','62.6':'#576CAE','70.4':'#36499B'}"
+       *                         color-undefined="#F8B334"
+       *                         color-out-of-bounds="#1BA566"
+       *                         color-by-field="general_index"
+       *                         color-numeric-range-min="35.3"
+       *                         display="choropleth"
+       *                         shape-opacity="0.5"
+       *                         point-opacity="1"
+       *                         border-color="#FFFFFF"
+       *                         border-opacity="1"
+       *                         border-size="1"
+       *                         border-pattern="solid"></ods-map-layer>
+       *      </ods-map>
+       *  </ods-dataset-context>
+       *      </file>
+       *  </example>
+       *
+       */
         return {
             restrict: 'EA',
             scope: {
@@ -33233,25 +33452,20 @@ mod.directive('infiniteScroll', [
          * @name ods-widgets.directive:odsTextSearch
          * @scope
          * @restrict E
-         * @param {string} placeholder the text to display as a placeholder when the searchbox is empty
-         * @param {string} button the text to display in the "search" button
-         * @param {string} [field=none] The name of a field you want to restrict the search on (i.e. only search on the
-         * textual content of a specific field). If you want to specify different fields for each context, use the
-         * syntax "mycontext-field". If you don't specify explicitely a field name for a context, it will default to the
-         * value of the "field" parameter.
-         * The search will be a simple text search and won't support any query language or operators.
-         * @param {string} [suffix=none] Changes the query parameter ("q" by default) so that it works on "q.suffixValue". This prevents widgets from overriding each other (useful when you want multiple text-search widgets on the same page.
-         * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use, or array of context to use.
-         * @param {string} [autofocus] Add the autofocus attribute (no need for a value) to set the focus in the text
-         * @param {string} [id] Add an id attribute to the inner input
-         * search's input.
+         * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context <i>(mandatory)</i> {@link ods-widgets.directive:odsCatalogContext Catalog Context}, {@link ods-widgets.directive:odsDatasetContext Dataset Context}, or array of context to use.
+         * @param {string} [placeholder=none] Text to display as a placeholder when the searchbox is empty.
+         * @param {string} [field=none] Name of a field the search will be restricted on (i.e. the widget will only allow search on the textual content of the chosen field).
+         * If more than one contexts are declared, it is possible to specify different fields depending on these contexts, using the following syntax: `mycontext-field`. If a specific field is not set for a context, the value of the **field** parameter will be used by default. The search will be a simple text search that won't support query languages and operators.
+         * @param {string} [suffix=none] Changes the default `q` query parameter into `q.suffixValue`. This parameter prevents widgets from overriding one another, for instance when multiple odsTextSearch widgets are used on the same page.
+         * @param {string} autofocus Makes the search box automatically selected at loading of the page, to allow to start typing the search without having to select manually the search box beforehand. No value is required for this parameter to function.
+         * @param {string} id Adds an `id` attribute to the search's textbox, e.g. to integrate the widget to a clickable label.
          *
          * @description
          * This widget displays a search box that can be used to do a full-text search on a context.
          *
          *  @example
          *  <example module="ods-widgets">
-         *      <file name="index.html">
+         *      <file name="simple_text_search.html">
          *          <ods-dataset-context context="events"
          *                               events-domain="https://widgets-examples.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
@@ -33261,27 +33475,8 @@ mod.directive('infiniteScroll', [
          *     </file>
          * </example>
          *
-         * Example with multiple text search widgets with suffix and field
-         * @example
          *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *          <ods-dataset-context context="events"
-         *                               events-domain="https://widgets-examples.opendatasoft.com/"
-         *                               events-dataset="evenements-publics-openagenda-extract">
-         *              <ods-text-search context="events" suffix="primary"></ods-text-search>
-         *              <ods-text-search context="events" suffix="secondary"></ods-text-search>
-         *              <ods-text-search context="events" field="titre"></ods-text-search>
-         *              <ods-table context="events"></ods-table>
-         *          </ods-dataset-context>
-         *     </file>
-         * </example>
-         *
-         *
-         * Example with multiple contexts.
-         *
-         *  @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
+         *      <file name="text_search_with_multiple_contexts.html">
          *          <ods-dataset-context context="events,trees"
          *                               events-domain="https://widgets-examples.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract"
@@ -33403,7 +33598,7 @@ mod.directive('infiniteScroll', [
                             // If a suffix has been defined in scope, the queryKey will work on that value.
                             if ($scope.suffix) {
                                 queryParameter += '.' + $scope.suffix;
-                            } 
+                            }
                             config[context.name] = {
                                 field: fieldValue,
                                 parameter: queryParameter

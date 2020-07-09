@@ -4,203 +4,93 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>This widget allows you to build a map visualization and show data using various modes of display using layers.
-Each layer is based on a <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>, a mode of display (clusters...), and various properties to define the
-display itself, such as colors.</p>
-<p>Layers can be combined, so that you map shows various data sources in various ways.</p>
-<p>Layers are dynamic, which means that if a context changes (e.g. a new refine is added), the layer will be refreshed and display the new relevant data.</p>
-<p>This widget can also be used to control other widgets: you can configure a layer to act as a refine control on another context, so that for example
-if you click on a road you get a <a href="#/api/ods-widgets.directive:odsTable">table view</a> of the traffic on that road. You can also draw zones on the map,
-which will accordingly refine the context.</p>
-<p>You can use the widget alone to propose a simple map using default settings, such as this:
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>The odsMap widget allows to build a map visualization and display data through various modes that can be composed of several dynamic layers, each being based on a <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>.</p>
+<p>odsMap is a base widget. Used on its own, it can only display a simple map with default configurations.</p>
 <pre class="prettyprint linenums">
-    &lt;!-- Displays a map of Paris using the data from mycontext and an automatic visualization mode (clusters or shapes depending on the zoom level) --&gt;
+    &lt;!-- Displays a map of Paris using the data from mycontext and an automatic visualization mode --&gt;
     &lt;ods-map context="mycontext" location="12,48.85218,2.36996"&gt;&lt;/ods-map&gt;
 </pre>
-<p>However, the ability to build a more advanced and configurable map comes with a second <code>odsMapLayer</code> tag, used to define a layer:</p>
-<pre class="prettyprint linenums">
-    &lt;!-- A map containing a single layer to display data from mycontext, in a specific color, and as clusters. --&gt;
-    &lt;ods-map&gt;
-        &lt;ods-map-layer context="mycontext" color="#FF0000" display="clusters"&gt;&lt;/ods-map-layer&gt;
-    &lt;/ods-map&gt;
-</pre>
-<p>You can have several layers, each with their own configuration and context:</p>
-<pre class="prettyprint linenums">
-    &lt;ods-map&gt;
-        &lt;ods-map-layer context="mycontext" color="#FF0000" display="clusters"&gt;&lt;/ods-map-layer&gt;
-        &lt;ods-map-layer context="mycontext2" display="heatmap"&gt;&lt;/ods-map-layer&gt;
-        &lt;ods-map-layer context="mycontext3" display="raw" color="#0000FF"&gt;&lt;/ods-map-layer&gt;
-    &lt;/ods-map&gt;
-</pre>
-<p>You can show or hide layers using the <code>showIf</code> property, similar to Angular&#39;s <code>ngIf</code>.</p>
-<pre class="prettyprint linenums">
-    &lt;ods-map&gt;
-        &lt;ods-map-layer context="mycontext" color="#FF0000" display="clusters"&gt;&lt;/ods-map-layer&gt;
-        &lt;ods-map-layer context="mycontext2" display="heatmap" show-if="showHeatmap"&gt;&lt;/ods-map-layer&gt;
-    &lt;/ods-map&gt;
-</pre>
-<p>You can also configure layers to only be visible between certain zoom levels, using <code>showZoomMin</code>,
-<code>showZoomMax</code>, or both.</p>
-<pre class="prettyprint linenums">
-    &lt;!-- In this example I want to show only one layer at a time, but change it as the user zooms in the map. --&gt;
-    &lt;ods-map&gt;
-        &lt;!-- This layer is only visible up to zoom 8 --&gt;
-        &lt;ods-map-layer context="mycontext1" show-zoom-max="8"&gt;&lt;/ods-map-layer&gt;
-        &lt;!-- This layer appears between zoom 9 and 14 --&gt;
-        &lt;ods-map-layer context="mycontext2" show-zoom-min="9" show-zoom-max="14"&gt;&lt;/ods-map-layer&gt;
-        &lt;!-- This layer is visible starting at zoom 15 --&gt;
-        &lt;ods-map-layer context="mycontext3" show-zoom-min="15"&gt;&lt;/ods-map-layer&gt;
-    &lt;/ods-map&gt;
-</pre>
-<p>Several display modes are available, under two categories: visualization of the data itself (each point is a record),
-and visualization of an aggregation of data (each point is the result of an aggregation function).</p>
+<p>odsMap can be combined with 2 related map widgets to create more complex maps and fully configure their modes and behaviors.</p>
 <ul>
-<li><code>auto</code>: depending on the number of points and the type of geometry, the best display mode is automatically chosen. This is the default display
-mode, and makes sense mot of the time of you want to simply represent geo data.</li>
-<li><code>raw</code>: data is downloaded and displayed directly as is, with no clustering or simplification of any kind. Do not
-use on large (1000+) datasets, as it may freeze the user&#39;s browser.</li>
-<li><code>clusters</code>: data is aggregated spatially into clusters; each cluster represents two or more &quot;close&quot; points. When at maximum
-zoom, all points are shown.</li>
-<li><code>clustersforced</code>: data is aggregated spatially into clusters, but the number on the cluster is the result of an aggregation function.</li>
-<li><code>heatmap</code>: data is displayed as a heatmap; by default it represents the density of points, but it can be the result of an aggregation function.</li>
-<li><code>aggregation</code>: data is aggregated based on their geo shape (e.g. two records with the exact same associated shape); by default the color represents
-the number of aggregated records, but it can be the result of an aggregation function. This mode supports aggregating the context
-using a join with another context that contains geometrical shapes: use a <code>joinContext</code> property, and <code>localKey</code> and <code>remoteKey</code> to configure
-the field names of the local and joined datasets; you can also configure one of the fields from the &quot;remote&quot; dataset to be displayed when the mouse
-hovers the shapes, using <code>hoverField</code> and the name of a field.</li>
+<li><a href="#/api/ods-widgets.directive:odsMapLayer">odsMapLayer</a>, allows to declare a layer of data to display on the map</li>
+<li><a href="#/api/ods-widgets.directive:odsMapLayerGroup">odsMapLayerGroup</a>, allows to declare a group of layers</li>
 </ul>
-<p>You can specify aggregation functions on display modes that support it (<code>aggregation</code>, <code>heatmap</code>, <code>clustersforced</code>).
-This is done using two parameters: <code>function</code> (AVG for average, MIN for minimum, MAX for maximum, STDDEV for standard deviation,
-COUNT to count the number of records, SUM for the sum of values), and <code>expression</code> to define the value used for the
-function, usually the name of a field (<code>expression</code> is not required when the function is COUNT).</p>
+<p>In its fullest form, a map visualization would then be composed of several layers organised in groups (see <a href="#/api/ods-widgets.directive:odsMapLayer">odsMapLayer</a> and <a href="#/api/ods-widgets.directive:odsMapLayerGroup">odsMapLayerGroup</a> widgets reference pages for more information on how to use and configure them).</p>
 <pre class="prettyprint linenums">
-    &lt;ods-map&gt;
-        &lt;!-- Display a heatmap of the average value --&gt;
-        &lt;ods-map-layer context="mycontext" display="heatmap" expression="value" function="AVG"&gt;&lt;/ods-map-layer&gt;
-    &lt;/ods-map&gt;
-</pre>
-<p>Apart from <code>heatmap</code>, all display modes support color configuration. Three types of configurations are available, depending on the display mode.</p>
-<ul>
-<li><code>color</code>: a simple color, as an hex code (#FF0F05) or a simple CSS color name like &quot;red&quot;. Available for any mode except <code>heatmap</code>.</li>
-<li><code>colorScale</code>: the name of a ColorBrewer [<a href="http://colorbrewer2.org/]">http://colorbrewer2.org/]</a> scheme, like &quot;YlGnBu&quot;. Available for <code>aggregation</code>.</li>
-<li><code>colorRanges</code>: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example &quot;red;20;orange;40;#00CE00&quot; to color anything between
-20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. Combine with a decimal or integer field name in <code>colorByField</code> to configure which field will be
-used to decide on the color (for <code>raw</code>) or with <code>function</code> and <code>expression</code> to determine the calculation used for the color (for <code>aggregation</code>). Available for <code>raw</code> and <code>aggregation</code>.</li>
-</ul>
-<p>An additional <code>colorFunction</code> property can contain the <code>log</code> value to use logarithmic scales (instead of the default linear scale) for generating the color scale. Available for <code>aggregation</code> and with <code>color</code> and <code>colorScale</code> display modes (or when none is specified).</p>
-<p>On top of color configuration, the icon used as a marker on the map can be configured through the <code>picto</code>
-property. The property supports the keywords listed in the <a href="https://help.opendatasoft.com/platform/en/other_resources/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a></p>
-<p>When displaying shapes, you can also use <code>borderColor</code> and <code>opacity</code> to configure the color of the shape border and the opacity of the shape&#39;s fill.</p>
-<p>If you are displaying data where multiple points or shapes are stacked, you can configure the order in which the items will be
-displayed in the tooltip, using <code>tooltipSort</code> and the name of a field, prefixed by <code>-</code> to have a reversed sort.
-Note: by default, numeric fields are sorted in decreasing order, date and datetime are sorted chronologically, and text fields are sorted
-alphanumerically.</p>
-<pre class="prettyprint linenums">
-    &lt;ods-map&gt;
-        &lt;!-- Reverse sort on 'field' --&gt;
-        &lt;ods-map-layer context="mycontext" tooltip-sort="-field"&gt;&lt;/ods-map-layer&gt;
-    &lt;/ods-map&gt;
-</pre>
-<p>By default, tooltips show the values associated with a point or shape in a simple template. You can configure your own template by adding
-HTML inside the <code>&lt;ods-map-layer&gt;&lt;/ods-map-layer&gt;</code> tag. Your template is AngularJS-enabled and will be provided with a <code>record</code> object; this object contains
-a <code>fields</code> object with all the values associated with the clicked point or shape.</p>
-<pre class="prettyprint linenums">
-   &lt;ods-map location="12,48.86167,2.34146"&gt;
-       &lt;ods-map-layer context="mycontext"&gt;
-           &lt;div&gt;my value is: {{record.fields.myvalue}}&lt;/div&gt;
-       &lt;/ods-map-layer&gt;
+   &lt;ods-map ...&gt;
+      &lt;ods-map-layer-group ...&gt;
+         &lt;ods-map-layer ...&gt;&lt;/ods-map-layer&gt;
+         &lt;ods-map-layer ...&gt;&lt;/ods-map-layer&gt;
+      &lt;/ods-map-layer-group&gt;
+      &lt;ods-map-layer-group ...&gt;
+         &lt;ods-map-layer ...&gt;&lt;/ods-map-layer&gt;
+      &lt;/ods-map-layer-group&gt;
    &lt;/ods-map&gt;
 </pre>
-<p>If tooltips are not relevant for your data, you can disable them by using the <code>tooltip-disabled=&quot;true&quot;</code> option.</p>
-<pre class="prettyprint linenums">
-   &lt;ods-map&gt;
-       &lt;ods-map-layer context="mycontext" tooltip-disabled="true"&gt;&lt;/ods-map-layer&gt;
-   &lt;/ods-map&gt;
-</pre>
-<p>If your layer is displayed as <code>raw</code> or <code>aggregation</code>, you can configure a layer so that a click on an item triggers a refine on another context, using <code>refineOnClickContext</code>.
-One or more contexts can be defined:
-<pre class="prettyprint linenums">
-    &lt;ods-map&gt;
-        &lt;ods-map-layer context="mycontext" refine-on-click-context="mycontext2"&gt;&lt;/ods-map-layer&gt;
-        &lt;ods-map-layer context="mycontext3" refine-on-click-context="[mycontext4, mycontext5]"&gt;&lt;/ods-map-layer&gt;
-    &lt;/ods-map&gt;
-</pre>
-<p>By default, the filter occurs on geometry; for example, clicking on a shape filters the other context on the area.
-You can also trigger a refine on specific fields; using <code>refineOnClickMapField</code> to configure the name of the field to get the value from, and <code>refineOnClickContextField</code>
-to configure the name of the field of the other context to refine on. If you have two or more contexts, you can configure the fields by indicating the context in the
-name of the property, as <code>refineOnClick[context]MapField</code> and <code>refineOnClick[context]ContextField</code>.</p>
-<pre class="prettyprint linenums">
-    &lt;ods-map&gt;
-        &lt;ods-map-layer context="mycontext" refine-on-click-context="[mycontext, mycontext2]"
-                                           refine-on-click-mycontext-map-field="field1"
-                                           refine-on-click-mycontext-context-field="field2"
-                                           refine-on-click-mycontext2-map-field="field3"
-                                           refine-on-click-mycontext2-context-field="field4"&gt;&lt;/ods-map-layer&gt;
-    &lt;/ods-map&gt;
-</pre>
-<p>When you first load the map (if there is no <code>location</code> parameter), and when your context parameters change, the
-map is refreshed and moves to fit the content of the new data to display. If you want to exclude a layer&#39;s data
-from the new position&#39;s calculation, you can use <code>excludeFromRefit</code>:</p>
-<pre class="prettyprint linenums">
-    &lt;ods-map&gt;
-        &lt;ods-map-layer context="mycontext"&gt;&lt;/ods-map-layer&gt;
-        &lt;ods-map-layer context="mycontext3" exclude-from-refit="true"&gt;&lt;/ods-map-layer&gt;
-    &lt;/ods-map&gt;
-</pre>
+<p>odsMap, when used for a complex map visualization, is mostly used set the basic configurations of the map (e.g. basemap, location). odsMap also helps settings all map-controlling options, such as zoom configurations, buttons and search bar display, as well as groups and layers behavior control.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-map
        context="{DatasetContext}"
-       [sync-to-url]="{boolean}"
-       [sync-to-object]="{Object}"
-       [location]="{string}"
-       [basemap]="{string}"
-       [tooltip-sort]="{string}"
-       [static-map]="{boolean}"
-       [no-refit]="{boolean}"
-       toolbar-geolocation="{boolean}"
-       toolbar-drawing="{boolean}"
-       toolbar-fullscreen="{boolean}"
-       scroll-wheel-zoom="{boolean}"
+       location="{string}"
+       basemap="{string}"
        min-zoom="{integer}"
        max-zoom="{integer}"
-       [ods-auto-resize]="{boolean}"
+       scroll-wheel-zoom="{boolean}"
+       static-map="{boolean}"
+       no-refit="{boolean}"
+       toolbar-geolocation="{boolean}"
        auto-geolocation="{boolean}"
+       toolbar-drawing="{boolean}"
+       toolbar-fullscreen="{boolean}"
        display-control="{boolean}"
        display-control-single-layer="{boolean}"
-       search-box="{boolean}"&gt;
+       ods-auto-resize="{boolean}"
+       search-box="{boolean}"
+       display-legend="{boolean}"
+       sync-to-url="{boolean}"
+       sync-to-object="{Object}"&gt;
 &lt;/ods-map&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
-</div></td></tr><tr><td>[syncToUrl]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, persists the <code>location</code> and <code>basemap</code> in the page&#39;s URL.</p>
-</div></td></tr><tr><td>[syncToObject]</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>An object where the <code>location</code> and <code>basemap</code> selection is kept. You can use it from
-another widget to read the location or basemap.</p>
-</div></td></tr><tr><td>[location]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>The default location of the map upon initialization, under the following format: &quot;zoom,latitude,longitude&quot;.
-For example, to have a map centered on Paris, France, you can use &quot;12,48.85218,2.36996&quot;. By default, if a location is not specified,
-the map will try to fit all the displayed data when initializing.</p>
-</div></td></tr><tr><td>[basemap]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>The identifier of the basemap to use by default, as defined in <a href="#/api/ods-widgets.ODSWidgetsConfigProvider">ODSWidgetsConfig.basemaps</a>. By default,
-the first available basemap will be used.</p>
-</div></td></tr><tr><td>[tooltipSort]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>The identifier of the field used to define the tooltips rendering order at a same spot. Use &quot;field&quot; for default sort, use &quot;-field&quot; for reversed sort.
-By default, numeric fields are sorted in decreasing order, date and datetime are sorted chronologically, and text fields are sorted alphanumerically.</p>
-</div></td></tr><tr><td>[staticMap]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;true&quot;, then users won&#39;t be able to move or zoom on the map. They will still be able to click on markers.</p>
-</div></td></tr><tr><td>[noRefit]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>By default, the map refits its view whenever the displayed data changes.
-If &quot;true&quot;, then the map will stay at the same location instead.</p>
-</div></td></tr><tr><td>toolbarGeolocation</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;false&quot;, then the &quot;geolocate&quot; button won&#39;t be displayed in the map&#39;s toolbar.</p>
-</div> <p><em>(default: true)</em></p></td></tr><tr><td>toolbarDrawing</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;false&quot;, then the drawing tools (to draw filter areas) won&#39;t be displayed in the map&#39;s toolbar.</p>
-</div> <p><em>(default: true)</em></p></td></tr><tr><td>toolbarFullscreen</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;false&quot;, then the &quot;go fullscreen&quot; button won&#39;t be displayed in the map&#39;s toolbar.</p>
-</div> <p><em>(default: true)</em></p></td></tr><tr><td>scrollWheelZoom</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;false&quot;, then scrolling your mouse wheel over the map won&#39;t zoom/unzoom it.</p>
-</div> <p><em>(default: true)</em></p></td></tr><tr><td>minZoom</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Limits the map to a minimum zoom value. By default this is defined by the minimum zoom of the basemap.</p>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p><i>(mandatory)</i> <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use. If the <strong>context</strong> parameter is managed with <a href="#/api/ods-widgets.directive:odsMapLayer">odsMapLayer</a>, it should not be configured for odsMap.</p>
+</div></td></tr><tr><td>location</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Default location of the map upon initialization, under the following format: <code>zoom,latitude,longitude</code>. E.g. to have a map centered on Paris, France, <code>12,48.85218,2.36996</code> should be used. By default, if a location is not specified, the map will try to fit all the displayed data when initializing.</p>
+</div></td></tr><tr><td>basemap</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Identifier of the basemap to use by default, as defined in <a href="#/api/ods-widgets.ODSWidgetsConfigProvider">ODSWidgetsConfig.basemaps</a>. By default, the first available basemap will be used.</p>
+</div></td></tr><tr><td>minZoom</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Limits the map to a minimum zoom value. By default this is defined by the minimum zoom of the basemap.</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>maxZoom</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>Limits the map to a maximum zoom value. By default this is defined by the maximum zoom of the basemap.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>[odsAutoResize]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>see <a href="#/api/ods-widgets.directive:odsAutoResize">Auto Resize</a> for more informations</p>
-</div></td></tr><tr><td>autoGeolocation</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If &quot;true&quot;, then the geolocation (center and zoom the map on the location of the user) is automatically done upon initialization.
-Only available when there is no <code>location</code> parameter on the widget.
-Warning: location sharing must be allowed priorly for Firefox users when multiple odsMap widget are set with autoGeolocation=true on the same page</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>displayControl</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, displays a control to toggle display of groups (or single datasets outside groups). Note:
-it shouldn&#39;t be combined with the usage of <code>showIf</code> on <code>odsMapLayer</code>, as it will lead to inconsistencies in the user interface.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>displayControlSingleLayer</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, only one layer will be displayed at a time using the control to toggle the display of groups.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>searchBox</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If true, a search box will appear in the map, allowing you to jump to locations, or search data on the map.</p>
-</div> <p><em>(default: false)</em></p></td></tr></tbody></table></div>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>scrollWheelZoom</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If <code>true</code>, scrolling the mouse wheel over the map can be used to zoom in or zoom out.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>staticMap</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If <code>true</code>, the map can&#39;t be zoomed in/out or moved. Markers are still clickable.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>noRefit</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>By default, the map refits its view whenever the displayed data changes. If <code>true</code>, the map stays at the same location.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>toolbarGeolocation</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If <code>true</code>, the &quot;geolocate&quot; button is displayed in the map&#39;s toolbar.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>autoGeolocation</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If <code>true</code>, the geolocation which centers and zooms the map on the location of the user, is automatically done upon initialization. autoGeolocation is only available when there is no <strong>location</strong> parameter set for the widget. Caution: location sharing must be allowed priorly for Firefox users when multiple odsMap widget are set with <code>autoGeolocation=true</code> on the same page.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>toolbarDrawing</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If <code>false</code>, the drawing tools, to draw filter areas, are not displayed in the map&#39;s toolbar.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>toolbarFullscreen</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If <code>false</code>, the &quot;fullscreen&quot; button is not displayed in the map&#39;s toolbar.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>displayControl</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If <code>true</code>, displays a control to choose whether or not groups or single datasets outside groups should be displayed, using toggle buttons. Note: it shouldn&#39;t be combined with the usage of <strong>showIf</strong> on <a href="#/api/ods-widgets.directive:odsMapLayer">odsMapLayer</a>, as it will lead to inconsistencies in the user interface.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>displayControlSingleLayer</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If <code>true</code>, only one layer is displayed at a time using the control of groups and single datasets display.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>odsAutoResize</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>see <a href="#/api/ods-widgets.directive:odsAutoResize">Auto Resize</a> for more informations</p>
+</div></td></tr><tr><td>searchBox</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If <code>true</code>, a search box is displayed on the map, to jump to another locations through a search, or search specific data on the map.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>displayLegend</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If <code>true</code>, displays a caption in the bottom right corner of the map.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>syncToUrl</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>If <code>true</code>, the settings of the <strong>location</strong> and <strong>basemap</strong> parameters are used in the page&#39;s URL.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>syncToObject</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><p>An object that is updated by the map&#39;s settings for the <strong>location</strong> and <strong>basemap</strong> parameters corresponding to new changes of location and basemap.</p>
+</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsmap-page"><h4 id="example_source">Source</h4>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="odsMap_used_alone.html" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div class="tabbable"><div class="tab-pane" title="odsMap_used_alone.html">
+<pre class="prettyprint linenums" ng-set-text="odsMap_used_alone.html"></pre>
+<script type="text/ng-template" id="odsMap_used_alone.html">
+<ods-dataset-context context="countries"
+                 countries-dataset="natural-earth-countries-150m"
+                 countries-domain="https://widgets-examples.opendatasoft.com/">
+<ods-map context="countries"
+         location="2,41.88759,0.90273"
+         basemap="jawg.light"></ods-map>
+</ods-dataset-context>
+</script>
+</div>
+</div><h4 id="example_demo">Demo</h4>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="odsMap_used_alone.html" ng-eval-javascript=""></div>
+</div></div>
 </div>

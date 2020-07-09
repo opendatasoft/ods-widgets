@@ -9,23 +9,32 @@
          * @name ods-widgets.directive:odsAggregation
          * @scope
          * @restrict A
-         * @param {string} [odsAggregation=aggregation] Variable name to use. For multiple aggregations, separate variable names with commas.
-         * @param {DatasetContext} odsAggregationContext {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {DatasetContext} odsAggregationXxxContext Specific context for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.
-         * @param {string} [odsAggregationFunction=COUNT] Aggregation function to apply (AVG, COUNT, MIN, MAX, STDDEV, SUM)
-         * @param {string} [odsAggregationXxxFunction=COUNT] Specific function for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.
-         * @param {string} [odsAggregationExpression=none] Expression to apply the function on, typically the name of a field. Optional only when the function is "COUNT".
-         * @param {string} [odsAggregationXxxExpression=none] Specific expression for the aggregation <code>Xxx</code>.<br>Replace <code>Xxx</code> with one of the declared variable names.
+         * @param {string} [odsAggregation=aggregation] <i>(mandatory)</i> Name of the variable that holds the result of the aggregation. For multiple aggregations, variable names must be separated with commas.
+         * @param {DatasetContext} odsAggregationContext <i>(mandatory)</i> {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use.
+         * @param {DatasetContext} odsAggregation[MY_VARIABLE]Context Context specific to the <code>[MY_VARIABLE]</code> aggregation. `[MY_VARIABLE]` must be replaced with the name of the variable, declared through the **odsAggregation** parameter.
+         * @param {string} [odsAggregationFunction=COUNT] <i>(mandatory)</i> Aggregation function to apply:
+         *
+         * - AVG: average
+         * - COUNT
+         * - MIN: minimum
+         * - MAX: maximum
+         * - STDDEV: standard deviation
+         * - SUM
+         *
+         * @param {string} [odsAggregation[MY_VARIABLE]Function=COUNT] Function specific to the <code>[MY_VARIABLE]</code> aggregation. `[MY_VARIABLE]` must be replaced with the name of the variable, declared through the **odsAggregation** parameter.
+         * @param {string} [odsAggregationExpression=none] <i>(optional only if function is COUNT)</i> Expression to apply the function on, e.g. the name of a field.
+         * @param {string} [odsAggregation[MY_VARIABLE]Expression=none] Expression specific to the <code>[MY_VARIABLE]</code> aggregation. `[MY_VARIABLE]` must be replaced with the name of the variable, declared through the **odsAggregation** parameter.
          *
          * @description
-         * This widget exposes the results of an aggregation function over a context. Can be used for example to expose the average temperature of a weather dataset.
-         * The result is exposed into a new variable that you can use in other widgets or directly in your HTML.
-         * If aggregation returns no result, the result value will be null.
-         * This widget supports multiple declaration of aggregations.
+         * The odsAggregation widget creates a variable that contains the result of an aggregation function based on a context.
          *
-         * Single aggregation example:
+         * Aggregations are functions that enable to group records and compute statistical values for numeric fields. For instance, aggregations can determine, based on several records, what is the smallest or biggest value among them, compute the average value or count the number of values for a chosen field.
          *
-         * <pre>
+         * odsAggregation supports multiple declarations of aggregations.
+         *
+         * @example
+         *  <example module="ods-widgets">
+         *      <file name="simple_aggregation.html">
          *  <ods-dataset-context context="tree"
          *                       tree-dataset="les-arbres-remarquables-de-paris"
          *                       tree-domain="https://widgets-examples.opendatasoft.com/">
@@ -36,32 +45,31 @@
          *          Average height is {{ height | number }} meters.
          *      </div>
          *  </ods-dataset-context>
-         * </pre>
+         *      </file>
+         *  </example>
          *
-         * Multiple aggregations example:
-         *
-         * <pre>
+         *  <example module="ods-widgets">
+         *      <file name="multiple_aggregations.html">
          *  <ods-dataset-context context="commute,demographics"
          *                       commute-dataset="commute-time-us-counties"
          *                       commute-domain="https://widgets-examples.opendatasoft.com/"
          *                       demographics-dataset="us-cities-demographics"
-         *                       demographics-domain="https://widgets-examples.opendatasoft.com/"
-         *  >
-         *      <div ods-aggregation="population, time"
-         *           ods-aggregation-population-context="demographics"
-         *           ods-aggregation-population-function="SUM"
+         *                       demographics-domain="https://widgets-examples.opendatasoft.com/">
+         *      <div ods-aggregation="people, time"
+         *           ods-aggregation-people-context="demographics"
+         *           ods-aggregation-people-function="SUM"
+         *           ods-aggregation-people-expression="count"
          *           ods-aggregation-time-context="commute"
          *           ods-aggregation-time-function="AVG"
-         *           ods-aggregation-time-expression="mean_commuting_time"
-         *      >
-         *          The average commute time in the US in 2015 was {{ time|number:2 }} minutes for a population of {{ population }} people.
+         *           ods-aggregation-time-expression="mean_commuting_time">
+         *          For {{ people }} people in the US, the average commute time in 2015 was {{ time|number:0 }} minutes.
          *      </div>
          *  </ods-dataset-context>
-         * </pre>
+         *      </file>
+         *  </example>
          *
-         * Multiple aggregations using the same context example:
-         *
-         * <pre>
+         *  <example module="ods-widgets">
+         *      <file name="multiple_aggregations_same_context.html">
          *  <ods-dataset-context context="tree"
          *                       tree-dataset="les-arbres-remarquables-de-paris"
          *                       tree-domain="https://widgets-examples.opendatasoft.com/">
@@ -72,10 +80,12 @@
          *           ods-aggregation-maxgirth-function="MAX"
          *           ods-aggregation-mingirth-expression="circonference"
          *           ods-aggregation-mingirth-function="MIN">
-         *          There are {{ total }} remarkable trees in paris, with girth ranging from {{ mingirth }} to {{ maxgirth }} cm.
-         *      </ div>
+         *          There are {{ total }} remarkable trees in Paris, with girth ranging from {{ mingirth }} to {{ maxgirth }} cm.
+         *      </div>
          *  </ods-dataset-context>
-         * </pre>
+         *      </file>
+         *  </example>
+         *
          */
         return {
             restrict: 'A',
