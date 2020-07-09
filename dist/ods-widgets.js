@@ -19074,11 +19074,11 @@ mod.directive('infiniteScroll', [
          *          <ods-dataset-context context="trees,events"
          *                               trees-dataset="les-arbres-remarquables-de-paris"
          *                               trees-domain="https://widgets-examples.opendatasoft.com/"
-         *                               clocks-dataset="evenements-publics-openagenda-extract"
-         *                               clocks-domain="widgets-examples">
+         *                               events-dataset="evenements-publics-openagenda-extract"
+         *                               events-domain="https://widgets-examples.opendatasoft.com/">
          *               <!-- Shows a list of the trees -->
          *               <ods-table context="trees"></ods-table>
-         *               <!-- Shows a map of clocks -->
+         *               <!-- Shows a map of events -->
          *               <ods-map context="events"></ods-map>
          *          </ods-dataset-context>
          *      </file>
