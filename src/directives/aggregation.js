@@ -11,7 +11,7 @@
          * @restrict A
          * @param {string} [odsAggregation=aggregation] <i>(mandatory)</i> Name of the variable that holds the result of the aggregation. For multiple aggregations, variable names must be separated with commas.
          * @param {DatasetContext} odsAggregationContext <i>(mandatory)</i> {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use.
-         * @param {DatasetContext} odsAggregation[MY_VARIABLE]Context Context specific to the <code>[MY_VARIABLE]</code> aggregation. `[MY_VARIABLE]` must be replaced with the name of the variable, declared through the **odsAggregation** parameter.
+         * @param {DatasetContext} odsAggregation[Variablename]Context Context specific to the <code>[Variablename]</code> aggregation. `[Variablename]` must be replaced with the name of the variable, declared through the **odsAggregation** parameter.
          * @param {string} [odsAggregationFunction=COUNT] <i>(mandatory)</i> Aggregation function to apply:
          *
          * - AVG: average
@@ -21,9 +21,9 @@
          * - STDDEV: standard deviation
          * - SUM
          *
-         * @param {string} [odsAggregation[MY_VARIABLE]Function=COUNT] Function specific to the <code>[MY_VARIABLE]</code> aggregation. `[MY_VARIABLE]` must be replaced with the name of the variable, declared through the **odsAggregation** parameter.
+         * @param {string} [odsAggregation[Variablename]Function=COUNT] Function specific to the <code>[Variablename]</code> aggregation. `[Variablename]` must be replaced with the name of the variable, declared through the **odsAggregation** parameter.
          * @param {string} [odsAggregationExpression=none] <i>(optional only if function is COUNT)</i> Expression to apply the function on, e.g. the name of a field.
-         * @param {string} [odsAggregation[MY_VARIABLE]Expression=none] Expression specific to the <code>[MY_VARIABLE]</code> aggregation. `[MY_VARIABLE]` must be replaced with the name of the variable, declared through the **odsAggregation** parameter.
+         * @param {string} [odsAggregation[Variablename]Expression=none] Expression specific to the <code>[Variablename]</code> aggregation. `[Variablename]` must be replaced with the name of the variable, declared through the **odsAggregation** parameter.
          *
          * @description
          * The odsAggregation widget creates a variable that contains the result of an aggregation function based on a context.

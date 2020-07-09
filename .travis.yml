@@ -28,7 +28,6 @@ deploy:
     skip_cleanup: true
     on:
       branch: master
-      tags: true
   - provider: releases
     api_key:
       secure: Qv05pjUmwptNgHI/aFbJ8JEnBiR+qJTUXObUC7T1Rj6S5Agj4uYdMn9PJiErKjbgV9JD3Y7J+AN8qvpM1IFr8NQXd3a89rZ5LiOLIIL6kgoO857tL4pJP0QCs+2YZbg66xDTZ3KjiZp3PKo4UtwT9t7faSgj5e5JISpa0gptdT0=

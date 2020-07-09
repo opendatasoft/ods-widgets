@@ -11,11 +11,11 @@
 <h2 id="usage">Usage</h2>
 <div class="usage">as attribute<pre class="prettyprint linenums">&lt;ANY ods-aggregation="{string}"
      ods-aggregation-context="{DatasetContext}"
-     ods-aggregation[-m-y_-v-a-r-i-a-b-l-e]-context="{DatasetContext}"
+     ods-aggregation[-variablename]-context="{DatasetContext}"
      ods-aggregation-function="{string}"
-     ods-aggregation[-m-y_-v-a-r-i-a-b-l-e]-function="{string}"
+     ods-aggregation[-variablename]-function="{string}"
      ods-aggregation-expression="{string}"
-     ods-aggregation[-m-y_-v-a-r-i-a-b-l-e]-expression="{string}"&gt;
+     ods-aggregation[-variablename]-expression="{string}"&gt;
    ...
 &lt;/ANY&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
@@ -24,7 +24,7 @@
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>odsAggregation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p><i>(mandatory)</i> Name of the variable that holds the result of the aggregation. For multiple aggregations, variable names must be separated with commas.</p>
 </div> <p><em>(default: aggregation)</em></p></td></tr><tr><td>odsAggregationContext</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p><i>(mandatory)</i> <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use.</p>
-</div></td></tr><tr><td>odsAggregation[MY_VARIABLE]Context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Context specific to the <code>[MY_VARIABLE]</code> aggregation. <code>[MY_VARIABLE]</code> must be replaced with the name of the variable, declared through the <strong>odsAggregation</strong> parameter.</p>
+</div></td></tr><tr><td>odsAggregation[Variablename]Context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Context specific to the <code>[Variablename]</code> aggregation. <code>[Variablename]</code> must be replaced with the name of the variable, declared through the <strong>odsAggregation</strong> parameter.</p>
 </div></td></tr><tr><td>odsAggregationFunction</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p><i>(mandatory)</i> Aggregation function to apply:</p>
 <ul>
 <li>AVG: average</li>
@@ -34,9 +34,9 @@
 <li>STDDEV: standard deviation</li>
 <li>SUM</li>
 </ul>
-</div> <p><em>(default: COUNT)</em></p></td></tr><tr><td>odsAggregation[MY_VARIABLE]Function</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Function specific to the <code>[MY_VARIABLE]</code> aggregation. <code>[MY_VARIABLE]</code> must be replaced with the name of the variable, declared through the <strong>odsAggregation</strong> parameter.</p>
+</div> <p><em>(default: COUNT)</em></p></td></tr><tr><td>odsAggregation[Variablename]Function</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Function specific to the <code>[Variablename]</code> aggregation. <code>[Variablename]</code> must be replaced with the name of the variable, declared through the <strong>odsAggregation</strong> parameter.</p>
 </div> <p><em>(default: COUNT)</em></p></td></tr><tr><td>odsAggregationExpression</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p><i>(optional only if function is COUNT)</i> Expression to apply the function on, e.g. the name of a field.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>odsAggregation[MY_VARIABLE]Expression</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Expression specific to the <code>[MY_VARIABLE]</code> aggregation. <code>[MY_VARIABLE]</code> must be replaced with the name of the variable, declared through the <strong>odsAggregation</strong> parameter.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>odsAggregation[Variablename]Expression</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><p>Expression specific to the <code>[Variablename]</code> aggregation. <code>[Variablename]</code> must be replaced with the name of the variable, declared through the <strong>odsAggregation</strong> parameter.</p>
 </div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsaggregation-page"><h4 id="example_source">Source</h4>
