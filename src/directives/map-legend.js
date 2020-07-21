@@ -15,7 +15,8 @@
             '   <div class="odswidget-map-legend__header">' +
             '       <div ng-if="selectedLayer.config.captionPictoIcon" class="odswidget-map-legend__picto">' +
             '           <ods-map-picto name="{{ selectedLayer.config.captionPictoIcon }}"'+
-            '                          color="{{ selectedLayer.config.captionPictoColor }}">' +
+            '                          color="{{ selectedLayer.config.captionPictoColor }}"' +
+            '                          context="selectedLayer.config.context">' +
             '           </ods-map-picto>' +
             '       </div> ' +
             '       <div class="odswidget-map-legend__title"' +

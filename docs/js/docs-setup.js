@@ -546,16 +546,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "ods-widgets.directive:odsPlumeAirQuality",
-      "shortName": "odsPlumeAirQuality",
-      "type": "directive",
-      "moduleName": "ods-widgets",
-      "shortDescription": "Integrates a Plume Air Embed using a city name.",
-      "keywords": "air api city directive embed en_us english fr_fr french html http integrate integrates lang module new-york ods-widgets plume plumelabs version",
-      "isDeprecated": false
-    },
-    {
-      "section": "api",
       "id": "ods-widgets.directive:odsPopIn",
       "shortName": "odsPopIn",
       "type": "directive",
@@ -810,7 +800,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget builds a vega-lite chart according to the given specs.",
-      "keywords": "$schema analysis api applying array attribute attributes avg bar builds called case chart circonference commute commute-dataset commute-domain commute-time-us-counties configuration container context control controlled counties county css data declared demographics demographics-dataset demographics-domain dimensions directive documentation encoding espece false field fields fill find fixed github hauteur height html https installed io json les-arbres-remarquables-de-paris mark mean_commuting_time methods module mydatasource nominal object ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-circonference ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-sort ods-analysis-x ods-results ods-results-context ods-widgets odswidget-vega-lite-chart opendatasoft plugin points quantitative receive representation res rules sources spec specification specs string tree tree-dataset tree-domain trees type us-cities-demographics values values-counties values-mydatasource values-trees vega vega-lite widget width",
+      "keywords": "$schema analysis api applying array attribute attributes avg bar builds called case chart circonference commute commute-dataset commute-domain commute-time-us-counties configuration container context control controlled counties county css currently data declared demographics demographics-dataset demographics-domain dimensions directive documentation encoding espece false field fields fill find fixed github hauteur height html https installed io json les-arbres-remarquables-de-paris mark mean_commuting_time methods module mydatasource nominal note object ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-circonference ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-sort ods-analysis-x ods-results ods-results-context ods-widgets odswidget-vega-lite-chart opendatasoft plugin points quantitative receive representation res rules sources spec specification specs string tree tree-dataset tree-domain trees type us-cities-demographics values values-counties values-mydatasource values-trees vega vega-lite widget width",
       "isDeprecated": false
     },
     {

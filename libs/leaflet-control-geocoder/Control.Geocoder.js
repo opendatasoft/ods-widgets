@@ -4,7 +4,7 @@
 	if (typeof define === 'function' && define.amd) {
 		// AMD
 		define(['leaflet'], factory);
-	} else if (typeof module !== 'undefined') {
+	} else if (typeof module !== 'undefined' && typeof require !== 'undefined') {
 		// Node/CommonJS
 		L = require('leaflet');
 		module.exports = factory(L);

@@ -146,7 +146,7 @@
             var lazyload = function(type, url) {
                 if (angular.isUndefined(loading[url])) {
                     var deferred = $q.defer();
-                    loading[url] = deferred;
+
                     // If it is a relative URL, make it relative to ODSWidgetsConfig.basePath
                     var realURL =  url.substring(0, 1) === '/' ||
                     url.substring(0, 7) === 'http://' ||
@@ -197,7 +197,7 @@
                         if (loaded.indexOf(url) === -1) {
                             promises.push(lazyload(type, url).promise);
                         } else {
-                            promises.push(loading[url].promise);
+                            promises.push($q.resolve());
                         }
                     }
                     $q.all(promises).then(function() {

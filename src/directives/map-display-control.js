@@ -35,7 +35,8 @@
             '           <ods-map-picto class="odswidget-map-display-control__picto"'+
             '                          ng-if="!group._hasUnknownDataset && (group.pictoIcon || (group.layers.length === 1 && group.layers[0].captionPictoIcon))"'+
             '                          name="{{ group.pictoIcon || group.layers[0].captionPictoIcon }}"'+
-            '                          color="{{ group.pictoColor || group.layers[0].captionPictoColor }}">' +
+            '                          color="{{ group.pictoColor || group.layers[0].captionPictoColor }}"' +
+            '                          context="group.layers[0].context">' +
             '           </ods-map-picto>' +
             '           <i class="fa fa-exclamation-triangle odswidget-map-display-control__picto--error" ' +
             '              ng-if="group._hasUnknownDataset"></i>' +

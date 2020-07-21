@@ -1835,20 +1835,15 @@
                     });
                 }
 
-                var unwatch = scope.$watch('context', function(nv) {
-                    if (nv) {
-                        layer.context = nv;
-                        nv.wait().then(function() {
-                            if (scope.showMarker) {
-                                layer.marker = (scope.showMarker.toLowerCase() === 'true');
-                            }
-                            if (!angular.isDefined(scope.tooltipDisabled)) {
-                                layer.tooltipDisabled = Boolean(scope.context.dataset.extra_metas.visualization.map_tooltip_disabled);
-                            }
-                            MapHelper.MapConfiguration.setLayerDisplaySettingsFromDefault(layer);
-                        });
-                        unwatch();
+                layer.context = scope.context;
+                layer.context.wait().then(function() {
+                    if (scope.showMarker) {
+                        layer.marker = (scope.showMarker.toLowerCase() === 'true');
                     }
+                    if (!angular.isDefined(scope.tooltipDisabled)) {
+                        layer.tooltipDisabled = Boolean(scope.context.dataset.extra_metas.visualization.map_tooltip_disabled);
+                    }
+                    MapHelper.MapConfiguration.setLayerDisplaySettingsFromDefault(layer);
                 });
 
                 var unwatchJoinContext = scope.$watch('joinContext', function(nv) {

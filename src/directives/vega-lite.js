@@ -71,6 +71,8 @@
          *
          * The [tooltip](https://vega.github.io/vega-lite/docs/tooltip.html) plugin for vega is installed.
          *
+         * Note: The widget currently uses Vega-Lite 3.0.0.
+         *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">

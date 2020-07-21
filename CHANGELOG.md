@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.4.10 - 2020-07-21
+### Fixed
+- `odsMap`: Fixed an issue where pictos wouldn't load in the legend and the display control, when used outside an
+Opendatasoft platform.
+- `odsMap`: Fixed an issue where a map wouldn't properly initialize due to a race condition in very rare situations.
+- `odsMap`, `odsVegaLite`: Fixed an issue in third-party dependency loading, which would prevent the widgets from 
+running properly more than once in complex dashboards.
+
+### Removed
+- `odsPlumeAirQuality`: Removed because the service has been discontinued by its author
+
 ## 1.4.9 - 2020-07-09
 This release includes a large rewrite of the documentation for many widgets.
 

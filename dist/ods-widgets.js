@@ -8753,7 +8753,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by Opendatasoft
     //  License: MIT
-    var version = '1.4.9';
+    var version = '1.4.10';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -13214,7 +13214,7 @@ mod.directive('infiniteScroll', [
             var lazyload = function(type, url) {
                 if (angular.isUndefined(loading[url])) {
                     var deferred = $q.defer();
-                    loading[url] = deferred;
+
                     // If it is a relative URL, make it relative to ODSWidgetsConfig.basePath
                     var realURL =  url.substring(0, 1) === '/' ||
                     url.substring(0, 7) === 'http://' ||
@@ -13265,7 +13265,7 @@ mod.directive('infiniteScroll', [
                         if (loaded.indexOf(url) === -1) {
                             promises.push(lazyload(type, url).promise);
                         } else {
-                            promises.push(loading[url].promise);
+                            promises.push($q.resolve());
                         }
                     }
                     $q.all(promises).then(function() {
@@ -25349,7 +25349,8 @@ mod.directive('infiniteScroll', [
             '           <ods-map-picto class="odswidget-map-display-control__picto"'+
             '                          ng-if="!group._hasUnknownDataset && (group.pictoIcon || (group.layers.length === 1 && group.layers[0].captionPictoIcon))"'+
             '                          name="{{ group.pictoIcon || group.layers[0].captionPictoIcon }}"'+
-            '                          color="{{ group.pictoColor || group.layers[0].captionPictoColor }}">' +
+            '                          color="{{ group.pictoColor || group.layers[0].captionPictoColor }}"' +
+            '                          context="group.layers[0].context">' +
             '           </ods-map-picto>' +
             '           <i class="fa fa-exclamation-triangle odswidget-map-display-control__picto--error" ' +
             '              ng-if="group._hasUnknownDataset"></i>' +
@@ -26429,7 +26430,8 @@ mod.directive('infiniteScroll', [
             '   <div class="odswidget-map-legend__header">' +
             '       <div ng-if="selectedLayer.config.captionPictoIcon" class="odswidget-map-legend__picto">' +
             '           <ods-map-picto name="{{ selectedLayer.config.captionPictoIcon }}"'+
-            '                          color="{{ selectedLayer.config.captionPictoColor }}">' +
+            '                          color="{{ selectedLayer.config.captionPictoColor }}"' +
+            '                          context="selectedLayer.config.context">' +
             '           </ods-map-picto>' +
             '       </div> ' +
             '       <div class="odswidget-map-legend__title"' +
@@ -29274,20 +29276,15 @@ mod.directive('infiniteScroll', [
                     });
                 }
 
-                var unwatch = scope.$watch('context', function(nv) {
-                    if (nv) {
-                        layer.context = nv;
-                        nv.wait().then(function() {
-                            if (scope.showMarker) {
-                                layer.marker = (scope.showMarker.toLowerCase() === 'true');
-                            }
-                            if (!angular.isDefined(scope.tooltipDisabled)) {
-                                layer.tooltipDisabled = Boolean(scope.context.dataset.extra_metas.visualization.map_tooltip_disabled);
-                            }
-                            MapHelper.MapConfiguration.setLayerDisplaySettingsFromDefault(layer);
-                        });
-                        unwatch();
+                layer.context = scope.context;
+                layer.context.wait().then(function() {
+                    if (scope.showMarker) {
+                        layer.marker = (scope.showMarker.toLowerCase() === 'true');
                     }
+                    if (!angular.isDefined(scope.tooltipDisabled)) {
+                        layer.tooltipDisabled = Boolean(scope.context.dataset.extra_metas.visualization.map_tooltip_disabled);
+                    }
+                    MapHelper.MapConfiguration.setLayerDisplaySettingsFromDefault(layer);
                 });
 
                 var unwatchJoinContext = scope.$watch('joinContext', function(nv) {
@@ -30329,7 +30326,8 @@ mod.directive('infiniteScroll', [
             replace: true,
             scope: {
                 name: '@',
-                color: '@'
+                color: '@',
+                context: '='
             },
             template: '',
             link: function(scope, element) {
@@ -30337,7 +30335,7 @@ mod.directive('infiniteScroll', [
                 var template = '<ods-picto url="pictoUrl" color="color" classes="originalClasses + \' odswidget-map-picto\'"></ods-picto>';
 
                 scope.$watch('[name, color]', function() {
-                    scope.pictoUrl = PictoHelper.mapPictoToURL(scope.name);
+                    scope.pictoUrl = PictoHelper.mapPictoToURL(scope.name, scope.context);
                     if (scope.pictoUrl) {
                         element.replaceWith(angular.element($compile(template)(scope)));
                     }
@@ -30346,46 +30344,7 @@ mod.directive('infiniteScroll', [
         };
     }]);
 }());
-;(function() {
-    'use strict';
-
-    var mod = angular.module('ods-widgets');
-
-    mod.directive('odsPlumeAirQuality', function() {
-        /**
-         * @ngdoc directive
-         * @name ods-widgets.directive:odsPlumeAirQuality
-         * @restrict E
-         * @scope
-         * @param {string} city The name of the city you want to integrate. See http://www.plumelabs.com/embed/ for more information.
-         * @param {string} lang fr_fr for the french version, en_us for the english one.
-         * @description
-         * Integrates a Plume Air Embed using a city name.
-         *
-         * @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *          <ods-plume-air-quality city="new-york"></ods-plume-air-quality>
-         *      </file>
-         *  </example>
-         */
-        return {
-            restrict: 'E',
-            replace: true,
-            template: '<div class="odswidget"></div>',
-            scope: {
-                'city': '@',
-                'lang': '@'
-            },
-            link: function(scope, element, attrs) {
-                var html = '' +
-                    '<a id="plumelabs-wjs-cfg" data-w="320" data-h="200" data-city="'+attrs.city+'" data-lng="'+(attrs.lang || 'en_us')+'" data-type="l">Air Quality</a>' +
-                    '<script>window.plmlbs=function(e,t,s){var l,m=e.getElementsByTagName(t)[0],n=window.plmlbs||{},a=/^http:/.test(e.location)?"http":"https";return e.getElementById(s)?n:(l=e.createElement(t),l.id=s,l.src=a+"://static.plumelabs.com/embed/embed.js",m.parentNode.insertBefore(l,m),n)}(document,"script","plumelabs-wjs");</script>';
-                element.append(html);
-            }
-        };
-    });
-}());;(function () {
+;(function () {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -34805,6 +34764,8 @@ mod.directive('infiniteScroll', [
          *   You can control the container dimensions by applying css rules to `.odswidget-vega-lite-chart`
          *
          * The [tooltip](https://vega.github.io/vega-lite/docs/tooltip.html) plugin for vega is installed.
+         *
+         * Note: The widget currently uses Vega-Lite 3.0.0.
          *
          * @example
          *  <example module="ods-widgets">

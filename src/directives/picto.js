@@ -110,7 +110,8 @@
             replace: true,
             scope: {
                 name: '@',
-                color: '@'
+                color: '@',
+                context: '='
             },
             template: '',
             link: function(scope, element) {
@@ -118,7 +119,7 @@
                 var template = '<ods-picto url="pictoUrl" color="color" classes="originalClasses + \' odswidget-map-picto\'"></ods-picto>';
 
                 scope.$watch('[name, color]', function() {
-                    scope.pictoUrl = PictoHelper.mapPictoToURL(scope.name);
+                    scope.pictoUrl = PictoHelper.mapPictoToURL(scope.name, scope.context);
                     if (scope.pictoUrl) {
                         element.replaceWith(angular.element($compile(template)(scope)));
                     }
