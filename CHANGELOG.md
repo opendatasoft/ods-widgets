@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.4.11 - 2020-08-07
+### Fixed
+- `odsColorGradient`: Replaced `odsColorGradientLogarithmicScaleFactor` parameter with a new `odsColorGradientPowExponent`
+parameter, to provide the ability to generate a logarithmic scale (value below 1), or an exponential scale (value above 1).
+
 ## 1.4.10 - 2020-07-21
 ### Fixed
 - `odsMap`: Fixed an issue where pictos wouldn't load in the legend and the display control, when used outside an

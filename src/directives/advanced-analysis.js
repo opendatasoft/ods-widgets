@@ -3,19 +3,21 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsAdvAnalysis', ['ODSAPIv2', function (ODSAPIv2) {
+    mod.directive('odsAdvAnalysis', ['ODSAPIv2', 'APIParamsV1ToV2', function (ODSAPIv2, APIParamsV1ToV2) {
         return {
             restrict: 'A',
             scope: true,
             controller: ['$scope', '$attrs', function($scope, $attrs) {
                 var runQuery = function(variableName, context, select, where, groupBy, orderBy) {
+                    var params = APIParamsV1ToV2(context.parameters);
+                    params = angular.extend(params, {
+                        select: select,
+                        where: where,
+                        group_by: groupBy,
+                        order_by: orderBy
+                    });
                     ODSAPIv2
-                        .uniqueCall(ODSAPIv2.datasets.aggregates)(context, {
-                            select: select,
-                            where: where,
-                            group_by: groupBy,
-                            order_by: orderBy
-                        })
+                        .uniqueCall(ODSAPIv2.datasets.aggregates)(context, params)
                         .success(function(result) {
                             $scope[variableName] = result.aggregations;
                         })

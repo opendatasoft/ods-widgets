@@ -31,7 +31,6 @@
                 recordid: '=',
                 map: '=',
                 template: '@',
-                gridData: '=',
                 geoDigest: '@',
                 tooltipSort: '@' // field or -field
             },
@@ -123,15 +122,6 @@
                         options.q = "recordid:'"+$scope.recordid+"'";
                     } else if ($scope.geoDigest) {
                         options.geo_digest = $scope.geoDigest;
-                    } else if ($scope.gridData) {
-                        // From an UTFGrid tile
-                        if ($scope.gridData['ods:geo_grid'] !== null) {
-                            // Request geo_grid
-                            options.geo_grid = $scope.gridData['ods:geo_grid'];
-                        } else {
-                            // Request geo_hash
-                            options.geo_digest = $scope.gridData['ods:geo_digest'];
-                        }
                     } else if ($scope.shape) {
                         ODS.GeoFilter.addGeoFilterFromSpatialObject(options, $scope.shape);
                     }
@@ -151,34 +141,6 @@
                             $scope.selectedIndex = 0;
                             $scope.records = data;
                             $scope.unCloak();
-                            var shapeFields = $scope.context.dataset.getFieldsForType('geo_shape');
-                            var shapeField;
-                            if (shapeFields.length) {
-                                shapeField = shapeFields[0].name;
-                            }
-                            if (shapeField && $scope.gridData &&
-                                ($scope.gridData['ods:geo_type'] === 'Polygon' ||
-                                 $scope.gridData['ods:geo_type'] === 'LineString' ||
-                                 $scope.gridData['ods:geo_type'] === 'MultiPolygon' ||
-                                 $scope.gridData['ods:geo_type'] === 'MultiLineString'
-                                )) {
-                                // Highlight the selected polygon
-                                var record = data[0];
-                                if (record.fields[shapeField]) {
-                                    var geojson = record.fields[shapeField];
-                                    if (geojson.type !== 'Point') {
-                                        $scope.selectedShapeLayer = L.geoJson(geojson, {
-                                            fill: false,
-                                            color: '#CC0000',
-                                            opacity: 1,
-                                            dashArray: [5],
-                                            weight: 2
-
-                                        });
-                                        $scope.map.addLayer($scope.selectedShapeLayer);
-                                    }
-                                }
-                            }
                         } else {
                             $scope.map.closePopup();
                         }

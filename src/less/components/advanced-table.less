@@ -6,14 +6,11 @@ div.odswidget-adv-table-container {
     background-color: #ffffff;
     box-shadow: 0px 1px 3px rgba(0,0,0,0.15);
 
-    div.odswidget-adv-table-wrapper {
-        overflow: auto;
-    }
-
     table {
         table-layout: auto;
         width: 100%;
         border-collapse: collapse;
+        z-index: 2;
 
         &.odswidget-adv-table-sticky {
             position: relative;
@@ -72,6 +69,43 @@ div.odswidget-adv-table-container {
                 }
             }
 
+        }
+    }
+
+}
+
+.odswidget-adv-table-totals {
+    td {
+        border-top: 1px solid #dee5ef;
+        font-weight: 600;
+    }
+}
+
+span.odswidget-adv-table-total-legend {
+    color: #142e7b;
+    font-size: 0.8rem;
+    vertical-align: text-bottom;
+    text-transform: uppercase;
+}
+
+.odswidget-adv-table-wrapper {
+    overflow: auto;
+}
+
+.odswidget-adv-table-clear-styles {
+    table {
+        position: static !important;
+        table-layout: auto !important;
+        width: 100% !important;
+
+        tr {
+            position: static !important;
+            display: table-row !important;
+
+            td, th {
+                position: static !important;
+                display: table-cell !important;
+            }
         }
     }
 }

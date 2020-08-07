@@ -5,7 +5,7 @@
 
     mod.directive('odsTwitterTimeline', function () {
         /**
-         * @ngdoc directive
+         * @deprecated
          * @name ods-widgets.directive:odsTwitterTimeline
          * @restrict E
          * @scope

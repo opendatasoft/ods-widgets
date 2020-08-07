@@ -155,10 +155,7 @@
                             return;
                         }
                         $rootScope.$broadcast('odsMapInteractiveClick');
-                        if (!clusterShape && !recordid && !geoDigest && !e.data) {
-                            // An UTFGrid event with no grid data
-                            return;
-                        }
+
                         var latLng, yOffset;
 
                         if (angular.isDefined(e.target.getLatLng)) {
@@ -168,9 +165,7 @@
                             latLng = e.latlng;
                             yOffset = 0; // Displayed where the user clicked
                         }
-                        // FIXME: We assume that if the event contains a data, it is a gridData
-
-                        service.showPopup(map, layerConfig, latLng, clusterShape, recordid, geoDigest, yOffset, e.data || null);
+                        service.showPopup(map, layerConfig, latLng, clusterShape, recordid, geoDigest, yOffset);
                     });
                 }
             },
@@ -248,9 +243,8 @@
              * @param recordid
              * @param geoDigest
              * @param yOffset
-             * @param gridData
              */
-            showPopup: function(map, layerConfig, latLng, shape, recordid, geoDigest, yOffset, gridData) {
+            showPopup: function(map, layerConfig, latLng, shape, recordid, geoDigest, yOffset) {
                 var service = this;
                 // TODO: How to pass custom template?
                 var newScope = $rootScope.$new(true);
@@ -259,9 +253,6 @@
                 }
                 if (shape) {
                     newScope.shape = shape;
-                }
-                if (gridData) {
-                    newScope.gridData = gridData;
                 }
 
                 var dataset = layerConfig.context.dataset;
@@ -275,7 +266,7 @@
                     minWidth: 250
                 };
                 var popupHeight = 330;
-                var tooltipTemplate = '<ods-map-tooltip tooltip-sort="'+(layerConfig.tooltipSort||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" grid-data="gridData" geo-digest="'+(geoDigest||'')+'"></ods-map-tooltip>';
+                var tooltipTemplate = '<ods-map-tooltip tooltip-sort="'+(layerConfig.tooltipSort||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" geo-digest="'+(geoDigest||'')+'"></ods-map-tooltip>';
                 var compiledTemplate = $compile(tooltipTemplate)(newScope)[0];
 
                 service._handleTopOverflow(map, popupOptions, latLng, popupHeight);
@@ -363,9 +354,7 @@
                 return ['heatmap', 'polygonforced', 'shape', 'aggregation', 'clusters', 'choropleth'].indexOf(layerConfig.display) >= 0;
             },
             doesLayerRefreshOnLocationChange: function(layerConfig) {
-                if (layerConfig.display === 'tiles') {
-                    return false;
-                } else if ((layerConfig.display === 'shape' || layerConfig.display === 'aggregation') && layerConfig.joinContext) {
+                if ((layerConfig.display === 'shape' || layerConfig.display === 'aggregation') && layerConfig.joinContext) {
                     // We got all the data at once
                     return false;
                 } else {

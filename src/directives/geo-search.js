@@ -4,13 +4,13 @@
 
     mod.directive('odsGeoSearch', ['ModuleLazyLoader', 'ODSWidgetsConfig', 'MapHelper', function (ModuleLazyLoader, ODSWidgetsConfig, MapHelper) {
         /**
-         * @ngdoc directive
+         * @deprecated
          * @name ods-widgets.directive:odsGeoSearch
          * @scope
          * @restrict E
-         * @param {CatalogContext|CatalogContext[]} context 
+         * @param {CatalogContext|CatalogContext[]} context
          * {@link ods-widgets.directive:odsCatalogContext Catalog context} or array of contexts to use.
-         * 
+         *
          * @description
          * This widget displays a mini map with a draw-rectangle tool that can be used to search through a catalog.
          */

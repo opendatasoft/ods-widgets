@@ -731,20 +731,6 @@
                     if (ODSWidgetsConfig.basemaps.length > 1) {
                         scope.map.on('baselayerchange', function (e) {
                             scope.$evalAsync('mapContext.basemap = "'+e.layer.basemapId+'"');
-
-
-                            // The bundle layer zooms have to be the same as the basemap, else it will drive the map
-                            // to be zoomable beyond the basemap levels
-                            angular.forEach(scope.mapConfig.groups, function(groupConfig) {
-                                if (groupConfig.displayed) {
-                                    angular.forEach(groupConfig.layers, function (layerConfig) {
-                                        if (layerConfig.display === 'tiles' && layerConfig._rendered) {
-                                            layerConfig._rendered.setMinZoom(e.layer.options.minZoom);
-                                            layerConfig._rendered.setMaxZoom(e.layer.options.maxZoom);
-                                        }
-                                    });
-                                }
-                            });
                         });
                     }
 
@@ -763,8 +749,8 @@
                            If "fitView" is true, then the map moves to the new bounding box containing all the data, before
                            beginning to render the result.
 
-                           dataUnchanged means only the location changed, and some layers don't need a refresh at all (tiles, or
-                           layers that load all at once)
+                           dataUnchanged means only the location changed, and some layers don't need a refresh at all
+                           (layers that load all at once)
                          */
                         fitView = !noRefit && fitView;
                         var renderData = function(locationChangedOnly) {
@@ -803,7 +789,6 @@
 
                                     // Depending on the layer config, we can opt for various representations
 
-                                    // Tiles: call a method on the existing layer
                                     // Client-side: build a new layer and remove the old one
                                     if (!locationChangedOnly || MapLayerRenderer.doesLayerRefreshOnLocationChange(layer)) {
                                         var deferred = $q.defer();

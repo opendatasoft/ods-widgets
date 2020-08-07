@@ -96,7 +96,7 @@
                 '       <div class="odswidget-legend__index-circle"' +
                 '            style="background-color: {{ i .color }}">' +
                 '       </div>' +
-                '       <div class="odswidget-legend__index-label" ng-if="i.start && i.end">' +
+                '       <div class="odswidget-legend__index-label" ng-if="(i.start | isDefined) && (i.end | isDefined)">' +
                 '           {{ i.start | number : decimalPrecision }} - {{ i.end | number : decimalPrecision }}' +
                 '       </div>' +
                 '       <div class="odswidget-legend__index-label" ng-if="i.text">' +

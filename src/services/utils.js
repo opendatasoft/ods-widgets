@@ -43,12 +43,7 @@
                         "L.Control.Geocoder@libs/leaflet-control-geocoder/Control.Geocoder.js",
                         "L.VectorMarker@libs/ods-vectormarker/vectormarker.js",
                         "L.ClusterMarker@libs/ods-clustermarker/clustermarker.js",
-                        //"L.UtfGrid@libs/leaflet-utfgrid/leaflet.utfgrid.js",
                         "L.Draw@libs/leaflet-draw/leaflet.draw.js",
-                        //"L.BundleTileLayer@libs/ods-bundletilelayer/bundletilelayer.js",
-                        //"QuadTree@libs/leaflet-heatmap/QuadTree.js",
-                        //"h337@libs/leaflet-heatmap/heatmap-backend.js",
-                        //"L.TileLayer.HeatMap@libs/leaflet-heatmap/heatmap-leaflet.js"
                         "L.HeatLayer@libs/leaflet-heat/leaflet-heat.js"
                     ]
                 ]
@@ -117,6 +112,12 @@
                 'js': ['https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.0/js/ion.rangeSlider.min.js'],
                 'css': ['https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.0/css/ion.rangeSlider.min.css']
             },
+            'd3.scale': {
+                'js': ['https://d3js.org/d3-array.v2.min.js',
+                    'https://d3js.org/d3-color.v1.min.js',
+                    'https://d3js.org/d3-interpolate.v1.min.js',
+                    'https://d3js.org/d3-scale.v3.min.js']
+            }
         };
 
         this.getConfig = function() {

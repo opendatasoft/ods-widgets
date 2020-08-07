@@ -1679,7 +1679,6 @@
     mod.directive('odsHighcharts', ['colorScale', function(colorScale) {
         /**
          * @deprecated
-         * @ngdoc directive
          * @name ods-widgets.directive:odsHighcharts
          * @restrict E
          * @scope
@@ -1834,7 +1833,6 @@
     mod.directive('odsMultiHighcharts', ["ODSAPI", 'ChartHelper', '$q', function(ODSAPI, ChartHelper, $q) {
         /**
          * @deprecated
-         * @ngdoc directive
          * @name ods-widgets.directive:odsMultiHighcharts
          * @restrict E
          * @scope

@@ -16,8 +16,7 @@
                 var service = this;
                 var leafletLayerGroup = new L.LayerGroup();
 
-                // Depending on the rendering mode, we either replace the previous layer with a new one, or we update
-                // the existing one (tiles).
+                // We replace the previous layer with a new one
 
                 // Available modes:
                 // none: downloading all points
@@ -41,60 +40,6 @@
 
                 if (layerConfig.context.error) {
                     console.log('ERROR: Unknown dataset "' + layerConfig.title + '"');
-                } else if (layerConfig.display === 'tiles') {
-                    // TODO
-                    // If the bundlelayer already exists in layerConfig.layer, then setUrl to it.
-                    if (!layerConfig._rendered) {
-                        layerConfig._rendered = new L.BundleTileLayer('', {
-                            tileSize: 512,
-                            minZoom: map.getMinZoom(),
-                            maxZoom: map.getMaxZoom(),
-                            gridLayer: {
-                                options: {
-                                    resolution: 4
-                                }
-                            }
-                        });
-                        map.addLayer(layerConfig._rendered);
-
-                        $timeout(function () {
-                            // We have to bootstrap them outside of the angular cycle, otherwise it will directly trigger
-                            // the first time and make a "digest already in progress"
-                            layerConfig._rendered.on('loading', function () {
-                                layerConfig._loading = true;
-                                $rootScope.$apply();
-                            });
-                            layerConfig._rendered.on('load', function () {
-                                layerConfig._loading = false;
-                                $rootScope.$apply();
-                            });
-                        }, 0);
-
-                        MapLayerHelper.bindTooltip(map, layerConfig._rendered, layerConfig);
-                    }
-                    var tilesOptions = {
-                        color: layerConfig.color,
-                        icon: layerConfig.picto,
-                        showmarker: layerConfig.marker
-                    };
-                    angular.extend(tilesOptions, layerConfig.context.parameters);
-                    // Change tile URL
-                    var url = '/api/datasets/1.0/' + layerConfig.context.dataset.datasetid + '/tiles/simple/{z}/{x}/{y}.bundle';
-                    //var url = '/api/tiles/icons/{z}/{x}/{y}.bundle';
-                    var params = '';
-                    angular.forEach(tilesOptions, function (value, key) {
-                        if (value !== null) {
-                            params += params ? '&' : '?';
-                            params += key + '=' + encodeURIComponent(value);
-                        }
-                    });
-                    url += params;
-                    if (layerConfig._rendered._url !== url) {
-                        layerConfig._rendered.setUrl(url);
-                    }
-
-                    // FIXME: Bind to load/unload to not resolve until all is loaded
-                    deferred.resolve();
                 } else if (layerConfig.display === 'none' || map.getZoom() === map.getMaxZoom() && layerConfig.display === 'polygon') {
                     layerConfig._loading = true;
                     MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);

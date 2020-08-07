@@ -51,46 +51,6 @@
                     }
                 }
                 return options;
-            },
-            calibrateValue: function (min, max, logScaleFactor, value) {
-                var val = 1;
-                if (min === max) {
-                    val = 1;
-                } else {
-                    if (angular.isUndefined(logScaleFactor)) { // linear scale
-                        val = ((value - min) / (max - min));
-                    } else {
-                        if (value === min) {
-                            val = 0;
-                        } else {
-                            val = Math.pow(Math.log(value - min), logScaleFactor) / Math.pow(Math.log(max - min), logScaleFactor);
-                        }
-                    }
-                }
-                return val;
-            },
-            calibrateValueInClasses: function (nbClasses, value) {
-                var step, position, valStartClass, valEndClass, val;
-                step = 1 / nbClasses;
-                if (value === 1) {
-                    position = nbClasses - 1;
-                } else {
-                    position = Math.trunc(value / step);
-                }
-                valStartClass = position * step;
-                valEndClass = (position + 1) * step;
-                val = (valStartClass + valEndClass) / 2;
-
-                return [valStartClass, val, valEndClass];
-            },
-            computeRGBColor: function (rgbHigh, rgbLow, value) {
-                return "rgb(" +
-                    Math.floor(value * rgbHigh[0] + (1 - value) * rgbLow[0]) +
-                    "," +
-                    Math.floor(value * rgbHigh[1] + (1 - value) * rgbLow[1]) +
-                    "," +
-                    Math.floor(value * rgbHigh[2] + (1 - value) * rgbLow[2]) +
-                    ")";
             }
         }
     });
@@ -251,7 +211,7 @@
         };
     }]);
 
-    mod.directive('odsColorGradient', ['ODSAPI', 'AnalysisHelper', function (ODSAPI, AnalysisHelper) {
+    mod.directive('odsColorGradient', ['ModuleLazyLoader', 'ODSAPI', 'AnalysisHelper', function (ModuleLazyLoader, ODSAPI, AnalysisHelper) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsColorGradient
@@ -264,7 +224,7 @@
          * @param {string} [odsColorGradientHigh='rgb(0, 55, 237)'] RGB or HEX color code for highest value of the analysis serie. ex: "rgb(255, 0, 0)", "#abc"
          * @param {string} [odsColorGradientLow='rgb(180, 197, 241)'] RGB or HEX color code for the lowest value of the analysis serie. ex: "rgb(125, 125, 125)", "#ff009a"
          * @param {integer} [odsColorGradientNbClasses=undefined] Number of classes, ie number of color to compute. Mandatory to get a consistent legend with the corresponding number of grades/classes.
-         * @param {integer} [odsColorGradientLogarithmicScaleFactor=undefined] Set to 1 to activate the logarithmic scale. Set a value greater from 1 to 10 to flatten the log effect and tend to a more linear scale. (1 is log, 10 is very linear, 3/4/5 are most of the time good choices)
+         * @param {integer} [odsColorGradientPowExponent=undefined] Set to 1 for a linear scale (default value), to 0.3 to approximate a logarithmic scale. Power scale tend to look like a log scale when the exponent is less than 1, tend to an exponential scale when bigger than 1.
          *
          * @description
          * This widget exposes the results of an analysis transposed to a set of colors for each X values.
@@ -338,31 +298,47 @@
                 $scope[$attrs.odsColorGradient] = {};
                 $scope[$attrs.odsColorGradient]['colors'] = {};
                 $scope[$attrs.odsColorGradient]['values'] = {};
-                $scope[$attrs.odsColorGradient]['range'] = {'min': undefined, 'max': undefined};
-
-                var rgbhigh = getColorParam($attrs.odsColorGradientHigh, [0, 55, 237]);
-                var rgblow = getColorParam($attrs.odsColorGradientLow, [180, 197, 241]);
-                $scope[$attrs.odsColorGradient]['range']['high-color'] = 'rgb(' + rgbhigh[0] + ',' + rgbhigh[1] + ',' + rgbhigh[2] + ')';
-                $scope[$attrs.odsColorGradient]['range']['low-color'] = 'rgb(' + rgblow[0] + ',' + rgblow[1] + ',' + rgblow[2] + ')';
-
-                var logScaleFactor = parseInt($attrs.odsColorGradientLogarithmicScaleFactor) || undefined;
-                $scope[$attrs.odsColorGradient]['range']['logscalefactor'] = logScaleFactor;
-
-                $attrs.odsColorGradientNbClasses = parseInt($attrs.odsColorGradientNbClasses) || undefined;
-
-                var serie = {};
-                var x = [];
-
-                angular.forEach($attrs, function (value, attr) {
-                    var serie_name, cumulative;
-                    if (attr === "odsColorGradientSerie") {
-                        serie = AnalysisHelper.parseCustomExpression({'expr': value});
-                    } else if (attr === "odsColorGradientX") {
-                        x = value;
-                    }
-                });
+                $scope[$attrs.odsColorGradient]['range'] = {'min': undefined, 'max': undefined, 'classes': []};
 
                 $scope[$attrs.odsColorGradientContext].wait().then(function () {
+                    var rgbhigh = getColorParam($attrs.odsColorGradientHigh, [0, 55, 237]);
+                    var rgblow = getColorParam($attrs.odsColorGradientLow, [180, 197, 241]);
+                    $scope[$attrs.odsColorGradient]['range']['high-color'] = 'rgb(' + rgbhigh[0] + ',' + rgbhigh[1] + ',' + rgbhigh[2] + ')';
+                    $scope[$attrs.odsColorGradient]['range']['low-color'] = 'rgb(' + rgblow[0] + ',' + rgblow[1] + ',' + rgblow[2] + ')';
+
+                    var powExponent = angular.isDefined($attrs.odsColorGradientPowExponent) ? parseFloat($attrs.odsColorGradientPowExponent) : undefined;
+                    var logScaleFactor = parseInt($attrs.odsColorGradientLogarithmicScaleFactor) || undefined;
+
+                    if (angular.isUndefined(powExponent)) {
+                        /* Legacy :
+                        handle logScaleFactor to simulate a very close result :
+                        logScaleFactor = 1 -> log effect -> pow(0.3)
+                        logScaleFactor = 10 -> linear -> pow(0.9666) ~ pow(1)
+                         */
+                        if (angular.isDefined(logScaleFactor) && logScaleFactor > 0) {
+                            if (logScaleFactor > 10) logScaleFactor = 10;
+                            $scope[$attrs.odsColorGradient]['range']['logscalefactor'] = logScaleFactor;
+                            powExponent = 0.245 + logScaleFactor / 15
+                        } else {
+                            powExponent = 1;
+                        }
+                    }
+
+                    $scope[$attrs.odsColorGradient]['range']['powExponent'] = powExponent;
+
+                    $attrs.odsColorGradientNbClasses = parseInt($attrs.odsColorGradientNbClasses) || undefined;
+
+                    var serie = {};
+                    var x = [];
+
+                    angular.forEach($attrs, function (value, attr) {
+                        if (attr === "odsColorGradientSerie") {
+                            serie = AnalysisHelper.parseCustomExpression({'expr': value});
+                        } else if (attr === "odsColorGradientX") {
+                            x = value;
+                        }
+                    });
+
                     var analyze = ODSAPI.uniqueCall(ODSAPI.records.analyze);
 
                     $scope.$watch($attrs.odsColorGradientContext, function (nv) {
@@ -382,8 +358,8 @@
                             var min = undefined;
                             var max = undefined;
                             angular.forEach(data, function (result) {
-                                max = (result['serie'] >= (max || result['serie']) ? result['serie'] : max);
-                                min = (result['serie'] <= (min || result['serie']) ? result['serie'] : min);
+                                if (angular.isUndefined(max) || result.serie > max) max = result.serie;
+                                if (angular.isUndefined(min) || result.serie < min) min = result.serie;
                             });
                             $scope[$attrs.odsColorGradient]['range']['min'] = min;
                             $scope[$attrs.odsColorGradient]['range']['max'] = max;
@@ -391,7 +367,7 @@
                             //var nbClasses = ($attrs.odsColorGradientNbClasses > data.length ? data.length : $attrs.odsColorGradientNbClasses);
                             var nbClasses = $attrs.odsColorGradientNbClasses;
                             if (nbClasses)
-                                $scope[$attrs.odsColorGradient]['range']['classes'] = {};
+                                $scope[$attrs.odsColorGradient]['range']['classes'] = [];
 
                             /* Reset all objects BUT BUT BUT Keep the parent objects !! only del the values !
                              * if not : the ods-map watchers won't refresh as the watched object won't be the same any more */
@@ -400,37 +376,68 @@
                             for (var key in $scope[$attrs.odsColorGradient]['values'])
                                 delete $scope[$attrs.odsColorGradient]['values'][key];
 
-                            /* Compute color objects */
-                            var classesObj = {};
-                            angular.forEach(data, function (result) {
-                                $scope[$attrs.odsColorGradient]['values'][result.x] = result['serie'];
-                                var startClass, val, endClass, color = undefined;
-                                val = AnalysisHelper.calibrateValue(min, max, logScaleFactor, result['serie']);
+
+                            ModuleLazyLoader('d3.scale').then(function () {
+                                // linear scale used for values
+                                var calibratewithin0and1 = d3.scaleLinear().domain([min, max]).range([0, 1]);
+
+                                // the final scale to use, pow scale or threshold scale depending the nb classes param
+                                var scale, valueScale = undefined;
+
+                                // If classes are set, use threshold scale, else use normal scale
                                 if (nbClasses) {
-                                    var res = AnalysisHelper.calibrateValueInClasses(nbClasses, val);
-                                    startClass = res[0];
-                                    val = res[1];
-                                    endClass = res[2];
-                                }
-                                color = AnalysisHelper.computeRGBColor(rgbhigh, rgblow, val);
+                                    // pow scale (used for values)
+                                    valueScale = d3.scalePow().exponent(powExponent).range([0, 1]);
 
-                                $scope[$attrs.odsColorGradient]['colors'][result.x] = color;
-                                if (angular.isDefined(startClass) && angular.isDefined(endClass)) {
-                                    var startValue, endValue;
-                                    var range = max - min;
-                                    startValue = min + range * startClass;
-                                    endValue = min + range * endClass;
-                                    classesObj[color] = {
-                                        'start': startValue,
-                                        'end': endValue,
-                                        'color': color
-                                    };
-                                }
-                            });
+                                    // threshold and boundaries
+                                    var steps = new Array(nbClasses + 1).fill(undefined).map(function(x, i) { return i * 1 / nbClasses; }); // nbClasses = 5, steps = [0, 0.2, 0.4, 0.6, 0.8]
 
-                            $scope[$attrs.odsColorGradient]['range']['classes'] = Object.keys( classesObj ).map(function( sortedKey ) {
-                                return classesObj[ sortedKey ];
-                            });
+                                    // linear scale (used for colors)
+                                    // the domain starts at 0 and ends at the highest starting boundary, so that the colors
+                                    // range from min color to max color once matched to ranges
+                                    var colorScale = d3.scaleLinear().domain([0, steps.slice(nbClasses-1, nbClasses)]).range([
+                                        d3.rgb(rgblow[0], rgblow[1], rgblow[2]),
+                                        d3.rgb(rgbhigh[0], rgbhigh[1], rgbhigh[2])
+                                    ]);
+
+                                    // Threshold scale transform continuous input into discret output, nota the slice to have 1 less value for thresholds than for color ranges
+                                    scale = d3.scaleThreshold().domain(steps.slice(1, nbClasses).map(valueScale.invert)).range(steps.slice(0, nbClasses).map(colorScale));
+                                } else {
+                                    scale = d3.scalePow().exponent(powExponent).domain([0, 1]).range([
+                                        d3.rgb(rgblow[0], rgblow[1], rgblow[2]),
+                                        d3.rgb(rgbhigh[0], rgbhigh[1], rgbhigh[2])
+                                    ]);
+                                }
+
+                                /* Compute color objects */
+                                var usedColors = []; // used for the legend, just to store which color has been used
+                                angular.forEach(data, function (result) {
+                                    $scope[$attrs.odsColorGradient]['values'][result.x] = result['serie'];
+                                    var color = scale(calibratewithin0and1(result['serie']));
+                                    $scope[$attrs.odsColorGradient]['colors'][result.x] = color;
+                                    usedColors.push(color);
+                                });
+
+                                if (nbClasses) {
+                                    var classesObj = {};
+                                    for (var i = 0; i < steps.length - 1; i++) {
+                                        var startValue = min + (max - min) * valueScale.invert(steps[i]);
+                                        var endValue = min + (max - min) * valueScale.invert(steps[i + 1]);
+                                        var color = scale(valueScale.invert(steps[i]));
+                                        if (usedColors.indexOf(color) >= 0) {
+                                            classesObj[color] = {
+                                                'start': startValue,
+                                                'end': endValue,
+                                                'color': color
+                                            };
+                                        }
+                                    }
+
+                                    $scope[$attrs.odsColorGradient]['range']['classes'] = Object.keys(classesObj).map(function (sortedKey) {
+                                        return classesObj[sortedKey];
+                                    });
+                                }
+                            }); // end lazy load d3
                         });
                     }, true);
                 });
@@ -441,7 +448,6 @@
     mod.directive('odsAnalysisSerie', [function () {
         /**
          * @deprecated
-         * @ngdoc directive
          * @name ods-widgets.directive:odsAnalysisSerie
          * @scope
          * @restrict A
