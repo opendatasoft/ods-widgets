@@ -146,7 +146,8 @@
                         queryParams = jQuery.extend({}, $scope.context.parameters, queryParams);
                         query = dataset_search($scope.context, queryParams);
                     }
-                    query.success(function (data) {
+                    query.then(function (response) {
+                        var data = response.data;
                         if (data.facet_groups) {
                             $scope.tags = data.facet_groups[0].facets;
                             if ($scope.max) {

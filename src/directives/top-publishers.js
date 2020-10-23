@@ -42,8 +42,9 @@
             controller: ['$scope', function($scope) {
                 var catalog_search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
                 var refresh = function() {
-                    catalog_search($scope.context, {facet: 'publisher'}).
-                        success(function(data) {
+                    catalog_search($scope.context, {facet: 'publisher'})
+                        .then(function(response) {
+                            var data = response.data;
                             $scope.publishers = data.facet_groups[0].facets.slice(0, 5);
                         });
                 };

@@ -2,52 +2,168 @@
     'use strict';
     var mod = angular.module('ods-widgets');
 
+    var theadContentTemplate = '' +
+        ' <tr>' +
+        '     <th ng-repeat="column in headerColumns track by $index" ng-click="onSortChange(column)">' +
+        '         {{column.label}}' +
+        '         <span>' +
+        '             <i aria-hidden="true" class="fa"' +
+        '                 ng-class="{' +
+        '                     \'fa-sort\': column.orderBy === null,' +
+        '                     \'fa-sort-desc\': column.orderBy === \'DESC\',' +
+        '                     \'fa-sort-asc\': column.orderBy === \'ASC\',' +
+        '                 }"></i>' +
+        '         </span>' +
+        '     </th>' +
+        ' </tr>';
+
     /* -------------------------------------------------------------------------- */
     /* Directive                                                                  */
     /* -------------------------------------------------------------------------- */
 
-    mod.directive('odsAdvTable', ['$timeout', '$debounce', '$window', function($timeout, $debounce, $window) {
+    mod.directive('odsAdvTable', ['$timeout', '$debounce', '$filter', function($timeout, $debounce, $filter) {
+        /**
+         * @ngdoc directive
+         * @name ods-widgets.directive:odsAdvTable
+         * @scope
+         * @restrict E
+         * @param {array} data The input array of value which feeds the table.
+         * @param {array} [columnsOrder] An array of strings representing the columns' order.
+         * @param {object} [columnsOptions] An object representing the formatting to apply on the columns. Two options are available: `label` is used to rename the column's header and `decimals` to set the number of decimals on each cell of the column (e.g. `{ label: 'New name', decimals: 2 }`).
+         * @param {string} [sort] Name of the column to sort on, following by the suffix `ASC` or `DESC` (e.g. `columnName ASC`).
+         * @param {array} [totals] An array of strings containing the names of the columns whose totals must be calculated.
+         * @param {boolean} [stickyHeader=false] if true, the header will be fixed at the top of the table.
+         * @param {boolean} [stickyFirstColumn=false] if true, the first column will be fixed on the left side of the table.
+         *
+         * @description
+         * This widget is used to analyze data from a table perspective.
+         *
+         * It is especially interesting to use this widget in conjunction with an odsAdvAnalysis widget, but you can of course feed it with static data.
+         * This widget gives you the ability to:
+         * - compute totals
+         * - sort, reorder and rename columns
+         * - format numbers as text and define the number of decimal places to round the number to
+         * - set the header and/or the first column in fixed position
+         *
+         *
+         * @example
+         * <example module="ods-widgets">
+         *    <file name="a_simple_example_with_static_data.html">
+         *        <div ng-init="pets = [{ species: 'dog', name: 'Rex'}, { species: 'cat', name: 'Felix'}, { species: 'Mouse', name: 'Pikachu'}, { species: 'Owl', name: 'Hedwig'}]">
+         *            <ods-adv-table
+         *                data="pets"
+         *                columns-order="['species', 'name']">
+         *            </ods-adv-table>
+         *        </div>
+         *    </file>
+         * </example>
+         * <example module="ods-widgets">
+         *    <file name="an_example_using_odsAdvAnalysis.html">
+         *        <ods-dataset-context
+         *            context="ctx"
+         *            ctx-domain="https://widgets-examples.opendatasoft.com/"
+         *            ctx-dataset="les-arbres-remarquables-de-paris">
+         *            <div ods-adv-analysis="data"
+         *                ods-adv-analysis-context="ctx"
+         *                ods-adv-analysis-select="count(objectid) as count"
+         *                ods-adv-analysis-where="arrondissement like 'PARIS'"
+         *                ods-adv-analysis-group-by="espece, genre, arrondissement, hauteur">
+         *                <ods-adv-table
+         *                    data="data"
+         *                    sort="espece ASC"
+         *                    totals="['count']"
+         *                    columns-order="['espece', 'count', 'genre', 'arrondissement', 'hauteur']"
+         *                    columns-options="{
+         *                        espece: {
+         *                            label: 'The species',
+         *                        },
+         *                        count: {
+         *                            decimals: 0,
+         *                            label: '#',
+         *                        },
+         *                        genre: {
+         *                            label: 'The genus',
+         *                        },
+         *                        arrondissement: {
+         *                            label: 'The district',
+         *                        },
+         *                        hauteur: {
+         *                            decimals: 2,
+         *                            label: 'The height (in meters)',
+         *                        },
+         *                    }"
+         *                    sticky-header="true"
+         *                    sticky-first-column="true">
+         *                </ods-adv-table>
+         *            </div>
+         *        </ods-dataset-context>
+         *    </file>
+         * </example>
+         */
         return {
             restrict: 'E',
             replace: true,
-            require: ['^?odsAdvAnalysis'],
             scope: {
                 data: '=',
                 columnsOrder: '=?',
+                columnsOptions: '=?',
                 stickyHeader: '=?',
                 stickyFirstColumn: '=?',
                 totals: '=?',
+                sort: '@?',
             },
             template: '' +
-                '<div class="odswidget-adv-table-container" ng-show="!!data.length">' +
-                '    <div class="odswidget-adv-table-wrapper">' +
-                '        <table>' +
-                '            <thead>' +
+                '<div class="odswidget-adv-table__container" ng-show="!!displayedData.length">' +
+                '    <div class="odswidget-adv-table__wrapper">' +
+                '        <table class="odswidget-adv-table__table__sticky-first-column" aria-hidden="true">' +
+                '            <tbody ng-if="stickyFirstColumnVisible">' +
+                '                <tr ng-repeat="row in displayedData track by $index">' +
+                '                    <td>' +
+                '                        {{row[headerColumns[0].field]}}&nbsp;' +
+                '                    </td>' +
+                '                </tr>' +
+                '                <tr class="odswidget-adv-table__totals" ng-if="computedTotals.length">' +
+                '                    <td>' +
+                '                        <span class="odswidget-adv-table__total__legend" translate>' +
+                '                            Total' +
+                '                        </span>' +
+                '                        &nbsp;{{computedTotals[0]}}&nbsp;' +
+                '                    </td>' +
+                '                </tr>' +
+                '            </tbody>' +
+                '        </table>' +
+                '        <table class="odswidget-adv-table__table__sticky-header" aria-hidden="true">' +
+                '            <thead ng-if="stickyHeaderVisible">' + theadContentTemplate + '</thead>' +
+                '        </table>' +
+                '        <table class="odswidget-adv-table__table__sticky-first-header-column" aria-hidden="true">' +
+                '            <thead ng-if="stickyFirstHeaderColumnVisible">' +
                 '                <tr>' +
-                '                    <th ng-repeat="column in headerColumns track by $index">' +
-                '                        <span ng-click="orderBy(column)">' +
-                '                        {{column.field}}' +
-                '                        <i aria-hidden="true" class="fa"' +
-                '                            ng-if="!!advancedAnalysisCallback"' +
-                '                            ng-class="{' +
-                '                                \'fa-sort\': column.orderBy === null,' +
-                '                                \'fa-sort-desc\': column.orderBy === \'DESC\',' +
-                '                                \'fa-sort-asc\': column.orderBy === \'ASC\',' +
-                '                            }"></i>' +
+                '                    <th ng-click="onSortChange(headerColumns[0])">' +
+                '                        {{headerColumns[0].label}}' +
+                '                        <span>' +
+                '                            <i aria-hidden="true" class="fa"' +
+                '                                ng-class="{' +
+                '                                    \'fa-sort\': headerColumns[0].orderBy === null,' +
+                '                                    \'fa-sort-desc\': headerColumns[0].orderBy === \'DESC\',' +
+                '                                    \'fa-sort-asc\': headerColumns[0].orderBy === \'ASC\',' +
+                '                                }"></i>' +
                 '                        </span>' +
                 '                    </th>' +
                 '                </tr>' +
                 '            </thead>' +
+                '        </table>' +
+                '        <table class="odswidget-adv-table__table">' +
+                '            <thead>' + theadContentTemplate + '</thead>' +
                 '            <tbody>' +
-                '                <tr ng-repeat="row in data track by $index">' +
+                '                <tr ng-repeat="row in displayedData track by $index">' +
                 '                    <td ng-repeat="column in headerColumns track by $index">' +
-                '                        {{row[column.field]}}&nbsp;' +
+                '                        {{formatNumber(row[column.field], column.field)}}&nbsp;' +
                 '                    </td>' +
                 '                </tr>' +
-                '                <tr class="odswidget-adv-table-totals" ng-if="computedTotals.length">' +
+                '                <tr class="odswidget-adv-table__totals" ng-if="computedTotals.length">' +
                 '                    <td ng-repeat="total in computedTotals track by $index">' +
                 '                        <span ng-if="$index === 0"' +
-                '                            class="odswidget-adv-table-total-legend"' +
+                '                            class="odswidget-adv-table__total__legend"' +
                 '                            translate>' +
                 '                            Total' +
                 '                        </span>' +
@@ -61,7 +177,10 @@
                 '</div>' +
             '',
             controller: ['$scope', function($scope) {
+                $scope.displayedData = [];
                 $scope.headerColumns = [];
+                $scope.headerColumnsKeys = [];
+                $scope.columnsWithDecimalsOption = [];
                 $scope.computedTotals = [];
 
                 function checkAttributes() {
@@ -121,12 +240,6 @@
                     }
                 }
 
-                function initializeHeaderColumns() {
-                    var headerColumns = setHeaderColumns();
-                    headerColumns = rememberSortingState(headerColumns);
-                    $scope.headerColumns = headerColumns;
-                }
-
                 function setHeaderColumns() {
                     // This function loop through each key of the data objects and build the
                     // ... headers from it.
@@ -155,90 +268,212 @@
                         });
                     }
 
-                    return headerColumns;
-                }
+                    if ($scope.sort) {
+                        // If there's an initial sort defined. We apply it every time the data
+                        // ... source is updated.
+                        var initialSortingState = {};
+                        var sortAttributeRegex = /(\S*)[\s\t]*(ASC|DESC)?/;
+                        var found = $scope.sort.match(sortAttributeRegex);
 
-                function rememberSortingState(headerColumns) {
+                        if (found) {
+                            initialSortingState.field = found[1];
+                            initialSortingState.orderBy =  found[2] || 'ASC';
+                        }
+                    }
+
                     return headerColumns.map(function(column) {
+                        var options = $scope.columnsOptions;
                         var orderBy = null;
 
-                        $scope.headerColumns.forEach(function(oldColumn) {
-                            if (oldColumn.field === column) {
-                                orderBy = oldColumn.orderBy;
-                            }
-                        });
+                        if (!!initialSortingState && initialSortingState.field === column) {
+                            orderBy = initialSortingState.orderBy;
+                        } else {
+                            $scope.headerColumns.forEach(function(oldColumn) {
+                                if (oldColumn.field === column) {
+                                    orderBy = oldColumn.orderBy;
+                                }
+                            });
+                        }
 
-                        return { field: column, orderBy: orderBy };
+                        // Use the explicit label if configured, else use the column name
+                        var label = options && options[column] && options[column].label || column;
+
+                        return { field: column, orderBy: orderBy, label: label };
                     });
                 }
 
                 function computeTotals() {
-                    $scope.computedTotals = [];
-
-                    if (Array.isArray($scope.totals) && $scope.totals.length) {
-                        // Remove duplicates
-                        var cleanedTotalFields = $scope.totals.filter(function(item, pos, self) {
-                            return self.indexOf(item) === pos;
-                        });
-
-                        $scope.headerColumns.forEach(function(column) {
-                            var totalHasBeenComputed = false;
-
-                            if (cleanedTotalFields.indexOf(column.field) >= 0) {
-                                var total = null;
-
-                                $scope.data.forEach(function(row) {
-                                    var cellValue = row[column.field];
-
-                                    if (angular.isNumber(cellValue)) {
-                                        total += cellValue;
-                                    }
-                                });
-
-                                $scope.computedTotals.push(total);
-                                totalHasBeenComputed = true;
-                            }
-
-                            if (!totalHasBeenComputed) {
-                                $scope.computedTotals.push(null);
-                            }
-                        });
+                    if (!$scope.totals || !Array.isArray($scope.totals) || !$scope.totals.length) {
+                        return [];
                     }
+                    var computedTotals = [];
+
+                    // Remove duplicates
+                    var cleanedTotalFields = $scope.totals.filter(function(item, pos, self) {
+                        return self.indexOf(item) === pos;
+                    });
+
+                    $scope.headerColumns.forEach(function(column) {
+                        var totalHasBeenComputed = false;
+
+                        if (cleanedTotalFields.indexOf(column.field) >= 0) {
+                            var total = null;
+
+                            $scope.data.forEach(function(row) {
+                                var cellValue = row[column.field];
+
+                                if (angular.isNumber(cellValue)) {
+                                    total += cellValue;
+                                }
+                            });
+
+                            // Apply formatting options to the total as well.
+                            if ($scope.columnsWithDecimalsOption.includes(column.field)) {
+                                var decimals = $scope.columnsOptions[column.field].decimals;
+                                total = $filter('number')(total, decimals);
+                            } else {
+                                total = $filter('number')(total);
+                            }
+
+                            computedTotals.push(total);
+                            totalHasBeenComputed = true;
+                        }
+
+                        if (!totalHasBeenComputed) {
+                            computedTotals.push(null);
+                        }
+                    });
+
+                    return computedTotals;
+                }
+
+                /* -------------------------------------------------------------------------- */
+                /* Data transformation                                                        */
+                /* -------------------------------------------------------------------------- */
+
+                function _compareValues(val1, val2) {
+                    if (angular.isObject(val1) || angular.isObject(val2)) {
+                        // We can't compare objects, and it can potentially be extremely heavy (geojson...)
+                        return 0;
+                    }
+
+                    // If strictly equal, just keep unchanged
+                    if (angular.equals(val1, val2)) {
+                        return 0;
+                    }
+
+                    // Null or missing values at the end
+                    if (angular.isUndefined(val1) || val1 === null) {
+                        return -1;
+                    }
+                    if (angular.isUndefined(val2) || val2 === null) {
+                        return -1;
+                    }
+
+                    if (!(angular.isNumber(val1) && angular.isNumber(val2))) {
+                        // Either both are numbers, or both are strings, in order to have consistent sorting
+                        val1 = ODS.StringUtils.normalize(String(val1).toLowerCase());
+                        val2 = ODS.StringUtils.normalize(String(val2).toLowerCase());
+                    }
+                    if (val1 < val2) {
+                        return -1;
+                    } else if (val1 > val2) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+
+                function updateSortingState(clickedColumn) {
+                    $scope.headerColumns = $scope.headerColumns.map(function(c) {
+                        if (c.field === clickedColumn.field) {
+                            // Toggle sorting state of the column.
+                            if (!c.orderBy) {
+                                c.orderBy = 'ASC';
+                            } else if (c.orderBy === 'ASC') {
+                                c.orderBy = 'DESC';
+                            } else if (c.orderBy === 'DESC') {
+                                c.orderBy = null;
+                            }
+                        } else {
+                            c.orderBy = null;
+                        }
+                        return c;
+                    });
+                }
+
+                function getSortedColumn() {
+                    // A simple getter of the current sorting state.
+                    var sortedColumn = null;
+
+                    $scope.headerColumns.forEach(function(column) {
+                        if (column.orderBy) {
+                            sortedColumn = column;
+                        }
+                    });
+
+                    return sortedColumn;
+                }
+
+                function applySort(data) {
+                    // We work on a copy of the data because sorting will transform it; a shallow copy
+                    // is enough because we just change the order of the rows
+                    var clonedData = data.slice(0);
+                    var sortedColumn = getSortedColumn();
+
+                    if (sortedColumn === null) {
+                        // If there's no active sort, we have to return the original array.
+                        return $scope.data;
+                    }
+
+                    clonedData.sort(function(a, b) {
+                        var compared = _compareValues(a[sortedColumn.field], b[sortedColumn.field]);
+
+                        if (sortedColumn.orderBy === 'DESC') {
+                            compared = compared * -1;
+                        }
+
+                        return compared;
+                    });
+
+                    return clonedData;
+                }
+
+                $scope.formatNumber = function(value, columnKey) {
+                    if (!angular.isNumber(value)) {
+                        return value;
+                    }
+
+
+                    if ($scope.columnsWithDecimalsOption.indexOf(columnKey) >= 0) {
+                        var decimals = $scope.columnsOptions[columnKey].decimals;
+                        return $filter('number')(value, decimals);
+                    }
+
+                    return $filter('number')(value);
+                }
+
+                function getColumnsWithDecimalsOption() {
+                    var columns = [];
+
+                    angular.forEach($scope.columnsOptions, function(optionValue, optionKey) {
+                        if ($scope.headerColumnsKeys.indexOf(optionKey) >= 0 &&
+                            angular.isDefined(optionValue.decimals) &&
+                            angular.isNumber(optionValue.decimals)) {
+                            columns.push(optionKey);
+                        }
+                    });
+
+                    return columns;
                 }
 
                 /* -------------------------------------------------------------------------- */
                 /* User's actions                                                             */
                 /* -------------------------------------------------------------------------- */
 
-                $scope.orderBy = function(column) {
-                    if (!$scope.advancedAnalysisCallback) {
-                        return;
-                    }
-
-                    var request = null;
-
-                    // Toggle sorting state of the column.
-                    if (!column.orderBy) {
-                        column.orderBy = 'ASC';
-                    } else if (column.orderBy === 'ASC') {
-                        column.orderBy = 'DESC';
-                    } else if (column.orderBy === 'DESC') {
-                        column.orderBy = null;
-                    }
-
-                    // Clear the sorting state of the other columns.
-                    $scope.headerColumns = $scope.headerColumns.map(function(c) {
-                        if (c.field !== column.field) {
-                            c.orderBy = null;
-                        }
-                        return c;
-                    });
-
-                    if (column.orderBy) {
-                        request = '`' + column.field + '`' + ' ' + column.orderBy;
-                    }
-
-                    $scope.advancedAnalysisCallback({ orderBy: request });
+                $scope.onSortChange = function(clickedColumn) {
+                    updateSortingState(clickedColumn);
+                    $scope.displayedData = applySort($scope.data, clickedColumn);
                 };
 
                 /* -------------------------------------------------------------------------- */
@@ -248,126 +483,147 @@
                 $scope.$watch('data', function(newVal) {
                     if (angular.isDefined(newVal)) {
                         checkAttributes();
-                        initializeHeaderColumns();
-
-                        if ($scope.totals) {
-                            computeTotals();
-                        }
+                        $scope.headerColumns = setHeaderColumns();
+                        $scope.headerColumnsKeys = $scope.headerColumns.map(function(c) { return c.field; });
+                        $scope.columnsWithDecimalsOption = getColumnsWithDecimalsOption();
+                        $scope.computedTotals = computeTotals();
+                        $scope.displayedData = applySort(newVal);
+                    } else {
+                        $scope.headerColumns = [];
+                        $scope.displayedData = [];
                     }
-                }, true);
+                });
             }],
-            link: function(scope, element, attrs, controllers) {
-                if (controllers.length && controllers[0]) {
-                    scope.advancedAnalysisCallback = controllers[0].queryCallback;
-                } else {
-                    scope.advancedAnalysisCallback = null;
+            link: function(scope, element) {
+                scope.elementRefs = {
+                    wrapper: element.find('div.odswidget-adv-table__wrapper'),
+                    table: element.find('table.odswidget-adv-table__table'),
+                    stickyHeader: element.find('table.odswidget-adv-table__table__sticky-header'),
+                    stickyColumn: element.find('table.odswidget-adv-table__table__sticky-first-column'),
+                    stickyFirstHeaderColumn: element.find('table.odswidget-adv-table__table__sticky-first-header-column'),
                 }
 
-                scope.wrapperElement = element.find('div.odswidget-adv-table-wrapper');
-                scope.UIState = {};
                 scope.resizeObserverEntries = [];
 
                 /* -------------------------------------------------------------------------- */
                 /* DOM manipulations                                                          */
                 /* -------------------------------------------------------------------------- */
 
-                function setDefaultTableStyling() {
-                    // We need to reset the table's CSS to save the initials default dimension in
-                    // ... order to set each cells to `position: absolute`.
-                    element.find('tr').css('position', 'static');
-                    element.find('th, td').css({ position: 'static', width: 'auto' });
-                    element.find('th:nth-child(2)').css('marginLeft', 0);
-                    scope.wrapperElement.addClass('odswidget-adv-table-clear-styles');
-                }
-
-                function saveDefaultTableDimensions() {
-                    scope.UIState = {
-                        headerHeight: 0,
-                        firstColumnWidth: 0,
-                        hasVerticalScroll: false,
-                        hasHorizontalScroll: false,
-                    };
-
-                    scope.UIState.headerHeight = element.find('table thead tr th').outerHeight();
-                    scope.UIState.firstColumnWidth = element.find('table tbody tr td:first-child').outerWidth();
-                    scope.UIState.hasVerticalScroll = scope.wrapperElement[0].scrollHeight > scope.wrapperElement[0].clientHeight;
-                    scope.UIState.hasHorizontalScroll = scope.wrapperElement[0].scrollWidth > scope.wrapperElement[0].clientWidth;
-                }
-
                 function setSticky() {
-                    var tableElement = element.find('table');
+                    var hasVerticalScroll = scope.elementRefs.wrapper[0].scrollHeight > scope.elementRefs.wrapper[0].clientHeight;
+                    var hasHorizontalScroll = scope.elementRefs.wrapper[0].scrollWidth > scope.elementRefs.wrapper[0].clientWidth;
 
-                    // Since the columns width are relative to each other, we need to
-                    // ... hard set their width before manipulating their display.
-                    tableElement.find('thead tr th, tbody tr td').each(function() { $(this).width($(this).width()) });
+                    setStickyHeader(hasVerticalScroll);
+                    setStickyColumn(hasHorizontalScroll);
+                    setStickyFirstHeaderColumn(hasVerticalScroll, hasHorizontalScroll);
+                }
 
-                    scope.wrapperElement.removeClass('odswidget-adv-table-clear-styles');
-                    tableElement.addClass('odswidget-adv-table-sticky');
-                    tableElement.find('thead tr').css('position', 'absolute');
-                    tableElement.find('tbody tr td:first-child').css('position', 'absolute');
-
-                    // We just positioned the header and the first column as absolute, therefore we
-                    // need to push them using CSS.
-                    tableElement.find('tbody tr').eq(0).css('paddingTop', scope.UIState.headerHeight);
-                    tableElement.find('tbody tr td:nth-child(2)').css('marginLeft', scope.UIState.firstColumnWidth);
+                function setStickyHeader(hasVerticalScroll) {
+                    scope.stickyHeaderVisible = false;
 
                     // We only build the fixed header if the wrapper has vertical scroll.
-                    if (!!scope.stickyHeader && scope.UIState.hasVerticalScroll) {
+                    if (scope.stickyHeader && hasVerticalScroll) {
                         // We listen to scroll events on the table wrapper to apply the correct
                         // ... position to the detached sticky header.
-
-                        var fixedHeader = tableElement.find('thead tr');
+                        scope.elementRefs.table.find('thead tr th').each(function(index) {
+                            var width = $(this).width();
+                            scope.elementRefs.stickyHeader.find('thead tr th').eq(index).width(width);
+                        });
 
                         // In order to avoid multiple binding on the scroll event, we first need to
                         // ... differentiate the horizontal and vertical scroll events. To do so, we
                         // ... use two different namespaces (`scroll.horizontal` and
                         // ... `scroll.vertical`). Then, we simply unbind those namespaces prior to
                         // ... binding.
-                        $(scope.wrapperElement).unbind('scroll.vertical').bind('scroll.vertical', function(event) {
-                            fixedHeader.css({
+                        $(scope.elementRefs.wrapper)
+                            .unbind('scroll.vertical')
+                            .bind('scroll.vertical', function(event) {
+                            scope.elementRefs.stickyHeader.css({
                                 marginTop: event.currentTarget.scrollTop,
                                 marginRight: event.currentTarget.scrollLeft,
                             });
                         });
+
+                        scope.stickyHeaderVisible = true;
                     }
+                }
+
+                function setStickyColumn(hasHorizontalScroll) {
+                    scope.stickyFirstColumnVisible = false;
 
                     // We only build the fixed first column if the wrapper has horizontal scroll.
-                    if (!!scope.stickyFirstColumn && scope.UIState.hasHorizontalScroll) {
+                    if (scope.stickyFirstColumn && hasHorizontalScroll) {
                         // We listen to scroll events on the table wrapper to apply the correct
                         // ... position to the detached sticky first column.
-
-                        tableElement.find('thead tr th:first-child').css('position', 'absolute');
-                        tableElement.find('thead tr th:nth-child(2)').css('marginLeft', scope.UIState.firstColumnWidth);
-
+                        var firstColumnWidth = scope.elementRefs.table.find('tbody tr:first-child td:first-child').outerWidth();
+                        var headerHeight = scope.elementRefs.table.find('thead tr th').outerHeight();
                         var prevScrollState = false;
-                        var fixedColumn = tableElement.find('tbody tr td:first-child, thead tr th:first-child');
+
+                        scope.elementRefs.stickyColumn.css('marginTop', headerHeight + 1);
+
+                        scope.elementRefs.stickyColumn.each(function() {
+                            this.style.width = firstColumnWidth + 'px';
+                        });
 
                         // In order to avoid multiple binding on the scroll event, we first need to
                         // ... differentiate the horizontal and vertical scroll events. To do so, we
                         // ... use two different namespaces (`scroll.horizontal` and
                         // ... `scroll.vertical`). Then, we simply unbind those namespaces prior to
                         // ... binding.
-                        $(scope.wrapperElement).unbind('scroll.horizontal').bind('scroll.horizontal', function(event) {
+                        $(scope.elementRefs.wrapper)
+                            .unbind('scroll.horizontal')
+                            .bind('scroll.horizontal', function(event) {
                             var currentScrollState = !!event.currentTarget.scrollLeft;
 
                             if (prevScrollState !== currentScrollState) {
-                                setShadows(tableElement, currentScrollState);
+                                setShadows(currentScrollState);
                             }
 
                             prevScrollState = !!event.currentTarget.scrollLeft;
 
-                            fixedColumn.css({
+                            scope.elementRefs.stickyColumn.css({
+                                marginLeft: event.currentTarget.scrollLeft,
+                            });
+                        });
+
+                        scope.stickyFirstColumnVisible = true;
+                    }
+                }
+
+                function setStickyFirstHeaderColumn(hasVerticalScroll, hasHorizontalScroll) {
+                    scope.stickyFirstHeaderColumnVisible = false;
+                    scope.elementRefs.stickyFirstHeaderColumn.style = null;
+                    var hasToFollowVerticalScroll = scope.stickyHeader && hasVerticalScroll && scope.stickyFirstColumn && hasHorizontalScroll;
+
+                    // We only build the fixed first column header if the wrapper has horizontal AND
+                    // ... vertical scroll.
+                    if (scope.stickyFirstColumn && hasHorizontalScroll) {
+                        // We listen to scroll events on the table wrapper to apply the correct
+                        // ... position to the detached sticky first column header.
+                        var firstHeaderColumnWidth = scope.elementRefs.table.find('thead tr th:first-child').outerWidth();
+
+                        scope.elementRefs.stickyFirstHeaderColumn.width(firstHeaderColumnWidth);
+
+                        $(scope.elementRefs.wrapper)
+                            .unbind('scroll.all')
+                            .bind('scroll.all', function(event) {
+                            scope.elementRefs.stickyFirstHeaderColumn.css({
+                                marginTop: hasToFollowVerticalScroll ? event.currentTarget.scrollTop : 0,
                                 marginLeft: event.currentTarget.scrollLeft,
                             });
                         });
                     }
+
+                    scope.stickyFirstHeaderColumnVisible = true;
                 }
 
-                function setShadows(tableElement, addShadow) {
+                function setShadows(addShadow) {
                     if (addShadow) {
-                        tableElement.addClass('horizontally-scrolled');
+                        scope.elementRefs.stickyColumn.addClass('horizontally-scrolled');
+                        scope.elementRefs.stickyFirstHeaderColumn.addClass('horizontally-scrolled');
                     } else {
-                        tableElement.removeClass('horizontally-scrolled');
+                        scope.elementRefs.stickyColumn.removeClass('horizontally-scrolled');
+                        scope.elementRefs.stickyFirstHeaderColumn.removeClass('horizontally-scrolled');
                     }
                 }
 
@@ -376,15 +632,16 @@
                 /* -------------------------------------------------------------------------- */
 
                 function tableIsVisible() {
-                    // The trick to know when the widget related DOM has been updated, is to
-                    // ... observe the height and width of the table's wrapper div element.
-                    return !!(scope.wrapperElement[0].scrollWidth + scope.wrapperElement[0].scrollHeight);
+                    // Little hack to know when the widget related DOM has been updated: we
+                    // ... observe the height and width of the table's wrapper div element then
+                    // ... return a truthly value.
+                    return !!(scope.elementRefs.wrapper[0].scrollWidth + scope.elementRefs.wrapper[0].scrollHeight);
                 }
 
                 function resizeObserverCallback() {
                     scope.resizeObserverEntries.forEach(function(entry) {
-                        if (!!entry.contentRect.width) {
-                            runTableStylingFunctions();
+                        if ((scope.stickyHeader || scope.stickyFirstColumn) && !!entry.contentRect.width) {
+                            setSticky();
                         }
                     });
                 }
@@ -393,63 +650,45 @@
                 /* Watchers                                                                   */
                 /* -------------------------------------------------------------------------- */
 
-                function runTableStylingFunctions() {
-                    setDefaultTableStyling();
-                    saveDefaultTableDimensions();
-                    if (!!scope.stickyHeader || !!scope.stickyFirstColumn) {
-                        setSticky();
-                    }
-                }
-
                 function initResizeWatcher() {
-                    if (!!window.ResizeObserver) {
-                        // The ResizeObserver interface reports changes to the dimensions of an Element
-                        // Documentation: https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver
-                        var resizeObserver = new ResizeObserver(function(entries) {
-                            scope.resizeObserverEntries = entries;
-                            $debounce(resizeObserverCallback, 200);
-                        });
+                    // The ResizeObserver interface reports changes to the dimensions of an element
+                    // Documentation: https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver
+                    var resizeObserver = new ResizeObserver(function(entries) {
+                        scope.resizeObserverEntries = entries;
+                        $debounce(resizeObserverCallback, 200);
+                    });
 
-                        // Here we observe any size changes on the table's wrapper element in order to
-                        // ... rebuild the table with the right new dimensions.
-                        resizeObserver.observe(scope.wrapperElement[0]);
+                    // Here we observe any size changes on the table's wrapper element in order to
+                    // ... rebuild the table with the right new dimensions.
+                    resizeObserver.observe(scope.elementRefs.wrapper[0]);
 
-                        scope.$on('$destroy', function() {
-                            if (resizeObserver) {
-                                resizeObserver.unobserve(scope.wrapperElement[0]);
-                            }
-                        });
-                    } else {
-                        scope.$watch(tableIsVisible, function(isVisible, wasVisible) {
-                            // Since the widget can be under an "ng-if" and therefore his DOM elements could
-                            // ... be invisible, we need to re-trigger the functions which manipulate the
-                            // ... DOM if there any change.
-                            $timeout(function() {
-                                if (!!isVisible && isVisible !== wasVisible) {
-                                    runTableStylingFunctions();
-                                }
-                            });
-                        });
-
-                        angular.element($window).bind('resize', function() {
-                            $debounce(runTableStylingFunctions, 200);
-                            // Manual $digest required as resize event is outside of angular
-                            scope.$apply();
-                        });
-                    }
+                    scope.$on('$destroy', function() {
+                        if (resizeObserver) {
+                            resizeObserver.unobserve(scope.elementRefs.wrapper[0]);
+                        }
+                    });
                 }
 
-                // We need to watch any data changes in order to rebuild the table
-                scope.$watch('data', function(newVal) {
+                // We need to watch any data changes in order to rebuild the table.
+                scope.$watch('displayedData', function(newVal) {
                     $timeout(function() {
                         var isVisible = tableIsVisible();
-                        if (isVisible && angular.isDefined(newVal) && newVal.length) {
-                            runTableStylingFunctions();
+
+                        if ((scope.stickyHeader || scope.stickyFirstColumn) &&
+                            isVisible &&
+                            !!window.ResizeObserver &&
+                            angular.isDefined(newVal) &&
+                            newVal.length) {
+                            setSticky();
                         }
                     });
                 }, true);
 
-                initResizeWatcher();
+                // If the `ResizeObserver` API is not available on the browser, we don't fire the
+                // ... sticky layouts related functions.
+                if (!!window.ResizeObserver) {
+                    initResizeWatcher();
+                }
             },
         };
     }]);

@@ -64,7 +64,8 @@
                         'publisher': 0,
                         'theme': 0
                     };
-                    ODSAPI.datasets.search(nv, {'facet': ['keyword', 'publisher', 'theme'], 'rows': 0}).success(function (data) {
+                    ODSAPI.datasets.search(nv, {'facet': ['keyword', 'publisher', 'theme'], 'rows': 0}).then(function (response) {
+                        var data = response.data;
                         nv.stats.dataset = data.nhits;
                         if (data.facet_groups) {
                             for (var i = 0; i < data.facet_groups.length; i++) {

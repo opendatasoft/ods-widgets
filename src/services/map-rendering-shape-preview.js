@@ -12,7 +12,14 @@
                     'clusterprecision': map.getZoom(),
                     'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
                 });
-                ODSAPI.records.geopreview(layerConfig.context, parameters, timeout.promise).success(function (data) {
+                ODSAPI.records.geopreview(layerConfig.context, parameters, timeout.promise).then(function (response) {
+                    if (!response || !response.data) {
+                        // Cancelled requests
+                        deferred.reject();
+                        return;
+                    }
+
+                    var data = response.data;
                     var shape;
                     if(data.length >= parameters.rows) {
                         layerConfig._incomplete = true;

@@ -24,8 +24,6 @@
         return {
             restrict: 'A',
             require: ["?odsAutoResize", "?autoResize"],
-            controller: function($scope, $element) {
-            },
             link: function(scope, element, attrs, ctrls) {
                 var timeout;
                 var ctrl = ctrls[0] || ctrls[1];

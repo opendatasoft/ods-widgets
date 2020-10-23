@@ -69,7 +69,8 @@
                     } else {
                         return;
                     }
-                    query.success(function(data){
+                    query.then(function(response){
+                        var data = response.data;
                         if (data.facet_groups) {
                             var facetGroup = data.facet_groups.filter(function(g) {return g.name === facetName; });
                             if (facetGroup.length === 0) {

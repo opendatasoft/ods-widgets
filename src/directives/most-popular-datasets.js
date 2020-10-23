@@ -36,7 +36,7 @@
                 '       <div class="odswidget-most-popular-datasets__dataset-details">' +
                 '           <div class="odswidget-most-popular-datasets__dataset-details-title"><a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_self">{{ dataset.metas.title }}</a></div>' +
                 '           <div ng-if="displayMode === \'download_count\' " class="odswidget-most-popular-datasets__dataset-details-count">' +
-                '               <i class="fa fa-download" aria-hidden="true"></i> <span translate translate-n="dataset.extra_metas.explore.download_count|number:0" translate-plural="{{$count}} downloads">{{$count}} download</span>' +
+                '               <i class="fa fa-download" aria-hidden="true"></i> <span translate translate-n="dataset.extra_metas.explore.download_count" translate-plural="{{$count|number:0}} downloads">{{$count|number:0}} download</span>' +
                 '           </div>' +
                 '           <div ng-if="displayMode === \'popularity_score\' " class="odswidget-most-popular-datasets__dataset-details-count">' +
                 '               <i class="fa fa-trophy" aria-hidden="true"></i> <span ods-tooltip="The popularity score is the result of a calculation that uses the number of downloads, reuses and API calls of a dataset. The higher the score is, the more the dataset is being used!" translate="ods-tooltip">{{ dataset.extra_metas.explore.popularity_score  | number:0}}</span>' +
@@ -65,7 +65,8 @@
                 var search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
                 var refresh = function() {
                     search($scope.context, {'rows': $scope.max, 'sort': 'explore.' + $scope.displayMode, 'extrametas': true}).
-                        success(function(data) {
+                        then(function(response) {
+                            var data = response.data;
                             $scope.datasets = data.datasets;
                         });
                 };

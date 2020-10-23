@@ -38,9 +38,9 @@
 
                 '        <div ng-if="isFilterEnabled" class="odswidget-geo-navigation__current-filter">' +
                 '            <div class="odswidget-geo-navigation__current-filter-title" title="{{ currentFilterLabel }}">' +
-                '                <i class="fa fa-map-marker odswidget-geo-navigation__marker-icon"></i> {{ currentFilterLabel }}' +
+                '                <i class="fa fa-map-marker odswidget-geo-navigation__marker-icon" aria-hidden="true"></i> {{ currentFilterLabel }}' +
                 '            </div>' +
-                '           <button class="odswidget-geo-navigation__cancel" ng-click="closeFilter()"><i class="fa fa-times-circle"></i></button>' +
+                '           <button class="odswidget-geo-navigation__cancel" ng-click="closeFilter()" aria-label="Cancel" translate="aria-label"><i class="fa fa-times-circle" aria-hidden="true"></i></button>' +
                 '        </div>' +
                 '        <div ng-if="isFilterEnabled">' +
                 '            <div ng-click="selectParent()" ng-show="parentFilterLabel" class="odswidget-geo-navigation__navigation-control">' +
@@ -53,8 +53,8 @@
                 '                <i class="fa fa-chevron-left" aria-hidden="true"></i> <span translate>Back to {{backToOriginalLevelLabel}} level</span>' +
                 '            </div>' +
                 '            <label ng-show="showAscendingToggle" class="odswidget-geo-navigation__ascending-filter-container">' +
-                '               <button ng-click="onAscendingFilterToggle()" ng-class="{\'odswidget-geo-navigation__ascending-filter-button\': true, \'odswidget-geo-navigation__ascending-filter-button--enabled\': ascendingFilter, \'odswidget-geo-navigation__ascending-filter-button--disabled\': !ascendingFilter}">' +
-                '                   <i ng-class="{\'fa\': true, \'fa-toggle-off\': !ascendingFilter, \'fa-toggle-on\': ascendingFilter}"></i>' +
+                '               <button aria-label="{{ ascendingFilter ? (\'Toggle off\'|translate) : (\'Toggle on\'|translate) }}" ng-click="onAscendingFilterToggle()" ng-class="{\'odswidget-geo-navigation__ascending-filter-button\': true, \'odswidget-geo-navigation__ascending-filter-button--enabled\': ascendingFilter, \'odswidget-geo-navigation__ascending-filter-button--disabled\': !ascendingFilter}">' +
+                '                   <i aria-hidden="true" ng-class="{\'fa\': true, \'fa-toggle-off\': !ascendingFilter, \'fa-toggle-on\': ascendingFilter}"></i>' +
                 '               </button>' +
                 '               <div translate>Display all datasets that include {{ currentFilterLabel }}</div>' +
                 '            </label>' +
@@ -243,7 +243,8 @@
                                     params['facet'] = 'explore.geographic_reference_path_labels';
                                 }
                                 params['facetsort.explore.geographic_reference_path_labels'] = 'alphanum';
-                                ODSAPI.datasets.search($scope.context, params).success(function(data) {
+                                ODSAPI.datasets.search($scope.context, params).then(function(response) {
+                                    var data = response.data;
                                     if (!data.facet_groups || !data.facet_groups.length) {
                                         // There is no facet group, which can happen if there are exactly 0 results
                                         $scope.choices = [];

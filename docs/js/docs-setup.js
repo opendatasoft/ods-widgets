@@ -67,6 +67,26 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ods-widgets.directive:odsAdvAnalysis",
+      "shortName": "odsAdvAnalysis",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget exposes the results of an aggregation function over a context. It uses the",
+      "keywords": "$schema accept accepted accessible adva aggregation allows alternative angularjs api apiv2 arrondissement arrondissements asc attribute attributes average avg bar benefits blank calculation called case cases change changes chart charts circonference_moyenne clause code columns-order combination compare complete compute computing conclusion configuration contained context count create created creating criteria crucial ctx ctx-dataset ctx-domain data desc descending designed differently directive display displayed displaying districts documentation documented dynamic easiest enables encoding espece example exposes expressions field file filter flexibility full function github greater group group-by group-by-clause hauteur height helps html https implies insert io items json keywords la labellimit language les-arbres-remarquables-de-paris limit mark match matches month moyenne multiple mydata myfield named names nom_dept nominal number observation-meteorologique-historiques-france-synop ods ods-adv-analysis ods-adv-analysis-context ods-adv-analysis-group-by ods-adv-analysis-select ods-adv-analysis-where ods-widgets odsadvanalysis odsadvanalysiscontext odsadvancedanalysis odsadvtable odsql odsvegalite odsvegalitechart offer offers op opendatasoft optional order order-by-clause outcome output parameter parameters paris population provide provided purposes quantitative quantite_arbres query recognize refresh regroup request requests requirements return returns rows search second select series set simple size solution sort spec species specific sticky-first-column sticky-header sum support table takes temperature three time title totals tree_species trees true type usage v1 values values-adva variable variables view ways weighted where-clause widget widgets won work working x-axis x_axis y-axis y_axis year",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
+      "id": "ods-widgets.directive:odsAdvTable",
+      "shortName": "odsAdvTable",
+      "type": "directive",
+      "moduleName": "ods-widgets",
+      "shortDescription": "This widget is used to analyze data from a table perspective.",
+      "keywords": "a_simple_example_with_static_data ability an_example_using_odsadvanalysis analyze api apply array arrondissement asc calculated cat cell column columnname columns columns-options columns-order compute conjunction context count course ctx ctx-dataset ctx-domain data decimal decimals define desc directive district dog espece feed feeds felix fixed format formatting genre genus hauteur header hedwig height html https input interesting label left les-arbres-remarquables-de-paris meters module mouse names ng-init number numbers object ods-adv-analysis ods-adv-analysis-context ods-adv-analysis-group-by ods-adv-analysis-select ods-adv-analysis-where ods-widgets odsadvanalysis opendatasoft options order owl paris perspective pets pikachu places position rename reorder representing rex round set side sort species static sticky-first-column sticky-header strings suffix table text top totals true widget",
+      "isDeprecated": false
+    },
+    {
+      "section": "api",
       "id": "ods-widgets.directive:odsAggregation",
       "shortName": "odsAggregation",
       "type": "directive",
@@ -572,7 +592,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "This widget allows the selection of one or more items from a list of options. This list can be made up of strings or objects.",
-      "keywords": "a_simple_example_with_a_dataset advanced_use_of_labelmodifier_and_valuemodifier_parameters allows api applied apply array automatically calculated context describes directive disabled domanialite dynamic element elements espece evaluate expected expression false feeds field fields finally handle hint html https individual input items key keytouse label label-modifier labels length les-arbres-remarquables-de-paris libellefrancais list menu module multiple ng-init object objects ods-results ods-results-context ods-results-max ods-widgets opendatasoft option options parameter parameters placeholder provided representing represents result select selected selected-values selectedtrees selectedvalues selection selections short simple species specifies store stored string strings support trees trees-dataset trees-domain true value-modifier values variable widget",
+      "keywords": "access accomplish allows api applied apply array arrdt arrondissement automatically bellow calculated cerris ch configuration context count ctx ctx-dataset ctx-domain ctx-parameters describes directive directly disabled disjunctive display displayed displayed-fields districts element elements espece evaluate example examples expected exposed expression facets facetsarrondissement facetslibellefrancais false feeds fetch field fields finally first_example form genre handle hint hippocastanum html https individual initially injected injecting input items label label-modifier labels length les-arbres-remarquables-de-paris libellefrancais list loaded loader marronnier menu modify module multiple nigra note noyer object objects ods-facet-results ods-facet-results-context ods-facet-results-facet-name ods-result ods-results ods-results-context ods-results-max ods-select ods-widgets opendatasoft option options parameter parameters paris pass passing path placeholder platane provided refine representing represents request result returned second_example select selected selected-value selected-values selectedtrees selectedvalues selection selections set shape short simple species specifies store stored string strings support time trees true update updated value-modifier values variable widget",
       "isDeprecated": false
     },
     {

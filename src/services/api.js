@@ -56,14 +56,17 @@
                 options.headers['ODS-Widgets-Version'] = ODSWidgetsConfig.ODSWidgetsVersion;
             }
             if (!context || !context.domainUrl || Modernizr.cors) {
-                return $http.
-                    get(url, options).
-                    error(function(data, status) {
+                return $http
+                    .get(url, options)
+                    .catch(function(response) {
+                        var data = response.data;
+                        var status = response.status;
                         if (data) {
                             odsNotificationService.sendNotification(data);
                         } else if (status >= 400) {
                             odsNotificationService.sendNotification(odsHttpErrorMessages.getForStatus(status));
                         }
+                        return $q.reject(response);
                     });
             } else {
                 // Fallback for non-CORS browsers (IE8, IE9)
@@ -153,10 +156,12 @@
                 'analyze': function(context, parameters, timeout) {
                     // return request(context, '/api/datasets/1.0/'+context.dataset.datasetid+'/records/analyze/', parameters);
                     return request(context, '/api/records/1.0/analyze/', angular.extend({}, parameters, {dataset: context.dataset.datasetid}), timeout)
-                        .success(function(data, status, headers, config) {
+                        .then(function(response) {
+                            var headers = response.headers;
                             if (headers()['ods-analyze-truncated']) {
                                 odsNotificationService.sendNotification(translate("An analysis request hit the maximum number of results limit. Returned data is incomplete and not trustworthy."));
                             }
+                            return response;
                         });
                 },
                 'search': function(context, parameters, timeout) {

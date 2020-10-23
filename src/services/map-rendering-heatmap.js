@@ -23,7 +23,14 @@
                     parameters['y.serie1.func'] = layerConfig.func;
                 }
 
-                ODSAPI.records.geo(layerConfig.context, parameters, timeout.promise).success(function (data) {
+                ODSAPI.records.geo(layerConfig.context, parameters, timeout.promise).then(function (response) {
+                    if (!response || !response.data) {
+                        // Cancelled requests
+                        deferred.reject();
+                        return;
+                    }
+
+                    var data = response.data;
                     // Display the clusters
                     var records = data.clusters;
 

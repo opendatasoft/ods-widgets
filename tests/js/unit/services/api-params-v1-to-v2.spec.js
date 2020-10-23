@@ -8,6 +8,8 @@ describe('services', function () {
                 'q.named': 'field:"value"',
                 'refine.myfield': ['myvalue', 'myValue2'],
                 'exclude.myfield': 'myvalue3',
+                'refine.mysecondfield': undefined,
+                'refine.mythirdfield': null,
 
             };
             expect(APIParamsV1ToV2(params)).toEqual({

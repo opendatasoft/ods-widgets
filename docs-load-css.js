@@ -20,7 +20,11 @@ jQuery(document).ready(function() {
             var file = url.split('/')[url.split('/').length-1];
             if (file === 'ods-widgets.js' || file === 'ods-widgets.min.js') {
                 var root = url.substring(0, url.length - file.length);
-                jQuery('head').append('<link rel="stylesheet" href="' + root + 'ods-widgets.css"></link>');
+                if (root.endsWith('/grunt-scripts/')) {
+                    // In the doc builds, the styles are not in the same folder
+                    root = root.replace(/\/grunt-scripts\/$/, '/css/');
+                }
+                jQuery('head').append('<link rel="stylesheet" href="' + root + 'ods-widgets.min.css"></link>');
             }
         });
     }

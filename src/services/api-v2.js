@@ -35,14 +35,17 @@
                 options.headers['ODS-Widgets-Version'] = ODSWidgetsConfig.ODSWidgetsVersion;
             }
 
-            return $http.
-                get(url, options).
-                error(function(data, status) {
+            return $http
+                .get(url, options)
+                .catch(function(response) {
+                    var data = response.data;
+                    var status = response.status;
                     if (data) {
                         odsNotificationService.sendNotification(data);
                     } else if (status >= 400) {
                         odsNotificationService.sendNotification(odsHttpErrorMessages.getForStatus(status));
                     }
+                    return $q.reject(response);
                 });
         };
 

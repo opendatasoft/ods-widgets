@@ -49,7 +49,7 @@
                 name: '@',
                 title: '@?',
             },
-            controller: function($scope, $element, $attrs, $transclude) {
+            controller: ['$scope', '$element', '$attrs', '$transclude', function($scope, $element, $attrs, $transclude) {
                 var transcludedContent, transclusionScope, storage;
 
                 if (typeof $scope.name === "undefined") {
@@ -126,7 +126,7 @@
                         $scope.hidePopIn();
                     });
                 }
-            }
+            }]
         };
     }]);
 })();

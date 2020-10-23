@@ -55,7 +55,7 @@
                         'y.serie1.func': layerConfig.func
                     });
 
-                    ODSAPI.records.analyze(layerConfig.context, parameters, timeout.promise).success(handleResult);
+                    ODSAPI.records.analyze(layerConfig.context, parameters, timeout.promise).then(handleResult);
 
                 } else {
                     // Local
@@ -76,10 +76,17 @@
                         parameters['y.serie1.func'] = layerConfig.func;
                     }
 
-                    ODSAPI.records.geopolygon(layerConfig.context, parameters, timeout.promise).success(handleResult);
+                    ODSAPI.records.geopolygon(layerConfig.context, parameters, timeout.promise).then(handleResult);
                 }
 
-                function handleResult(rawResult) {
+                function handleResult(response) {
+                    if (!response || !response.data) {
+                        // Cancelled requests
+                        deferred.reject();
+                        return;
+                    }
+
+                    var rawResult = response.data;
                     var records = getItems(rawResult);
                     if (records.length === 0) {
                         deferred.resolve(shapeLayerGroup);

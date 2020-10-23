@@ -106,8 +106,7 @@
          *                          <h3>
          *                              <i class="icon-tags"></i> Tags
          *                          </h3>
-         *                          <ods-facet name="mots_cles">
-         *                              <div ng-non-bindable>
+         *                          <ods-facet name="mots_cles"><div ng-non-bindable>
          *                                  {{category.name}}
          *                              </div>
          *                          </ods-facet>
@@ -298,7 +297,8 @@
                         req = catalog_search($scope.context, params);
                     }
 
-                    req.success(function(data) {
+                    req.then(function(response) {
+                        var data = response.data;
                         $scope.context.nhits = data.nhits;
                         var categories, facetItem, addedCategories;
                         angular.forEach($scope.facets, function(facet) {

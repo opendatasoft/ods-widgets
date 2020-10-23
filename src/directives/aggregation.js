@@ -120,7 +120,8 @@
                                 'y.serie1.expr': getExpr(aggregationName),
                                 'y.serie1.func': getFunc(aggregationName)
                             });
-                            analyze(context, options).success(function(data) {
+                            analyze(context, options).then(function(response) {
+                                var data = response.data;
                                 if (data.length) {
                                     $scope[aggregationName] = data[0].serie1;
                                 } else {

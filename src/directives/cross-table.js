@@ -477,7 +477,7 @@
                 rows: '@',
                 repeatRowHeaders: '=',
                 displayIntermediaryResults: '=',
-                numberPrecision: '='
+                numberPrecision: '=?'
             },
             template: '' +
             '<div class="ods-cross-table">' +

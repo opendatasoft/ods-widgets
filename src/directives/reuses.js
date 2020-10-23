@@ -47,7 +47,7 @@
                       '          <div class="odswidget-reuses__reuse-infos">' +
                       '              <div class="odswidget-reuses__reuse-thumbnail" ng-class="{\'odswidget-reuses__reuse-thumbnail--no-thumbnail\': !reuse.thumbnail}">' +
                       '                  <a ng-show="reuse.thumbnail" href="{{ reuse.url }}" ods-main-click title="{{ reuse.title }}" target="_blank"><img class="odswidget-reuses__reuse-thumbnail-image" ng-src="{{ reuse.thumbnail }}" /></a>' +
-                      '                  <i ng-hide="reuse.thumbnail" class="fa fa-ban odswidget-reuses__reuse-thumbnail-image--no-thumbnail"></i>' +
+                      '                  <i ng-hide="reuse.thumbnail" aria-hidden="true" class="fa fa-ban odswidget-reuses__reuse-thumbnail-image--no-thumbnail"></i>' +
                       '              </div>' +
                       '              <div class="odswidget-reuses__reuse-description" ng-bind-html="reuse.description|prettyText|safenewlines"></div>' +
                       '          </div>' +
@@ -78,13 +78,13 @@
                         fetching = true;
                         var start = page * resultsPerPage;
                         reuses($scope.context, {'rows': resultsPerPage, 'start': start}).
-                            success(function(data) {
+                            then(function(response) {
+                                var data = response.data;
                                 $scope.reuses = $scope.reuses.concat(data.reuses);
                                 done = (page + 1) * resultsPerPage >= numberReuses;
                                 page++;
                                 fetching = false;
-                            }).
-                            error(function() {
+                            }, function() {
                                 fetching = false;
                             });
                     }
@@ -93,13 +93,13 @@
                 var refresh = function() {
                     fetching = true;
                     reuses($scope.context, {'rows': resultsPerPage}).
-                        success(function(data) {
+                        then(function(response) {
+                            var data = response.data;
                             $scope.reuses = data.reuses;
                             done = resultsPerPage >= data.nhits;
                             numberReuses = data.nhits;
                             fetching = false;
-                        }).
-                        error(function(data) {
+                        }, function() {
                             fetching = false;
                         });
                 };

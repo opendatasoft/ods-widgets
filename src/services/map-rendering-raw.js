@@ -33,7 +33,14 @@
 
                 parameters.fields = includedFields.join(',');
 
-                ODSAPI.records.download(layerConfig.context, parameters, timeout.promise).success(function (data) {
+                ODSAPI.records.download(layerConfig.context, parameters, timeout.promise).then(function (response) {
+                    if (!response || !response.data) {
+                        // Cancelled requests
+                        deferred.reject();
+                        return;
+                    }
+
+                    var data = response.data;
                     // _incomplete parameter allows to show warning of partial data.
                     if(data.length >= parameters.rows) {
                         // If it hits the limit then we assume that the returned data is partial

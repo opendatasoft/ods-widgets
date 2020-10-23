@@ -68,7 +68,8 @@
                 var refresh = function() {
                     if ($scope.context.type === 'catalog') {
                         reuses($scope.context, {'rows': $scope.max}).
-                            success(function(data) {
+                            then(function(response) {
+                                var data = response.data;
                                 angular.forEach(data.reuses, function(reuse) {
                                     if (!$scope.externalLinks) {
                                         reuse.url = $scope.context.domainUrl + '/explore/dataset/' + reuse.dataset.id + '/information/';

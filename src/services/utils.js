@@ -384,7 +384,7 @@
                     if (getPromise) { deferred.resolve(element); }
                 } else if (url.indexOf('.svg') === -1) {
                     // Normal image
-                    element.append(angular.element('<img src="' + encodeURI(url) + '"/>'));
+                    element.append(angular.element('<img src="' + encodeURI(decodeURI(url)) + '"/>'));
                     if (getPromise) { deferred.resolve(element); }
                 } else {
                     // SVG
@@ -393,10 +393,11 @@
                             loadImageInline(element, inlineImages[url].code, color, colorByAttributeMapping);
                             if (getPromise) { deferred.resolve(element); }
                         } else {
-                            inlineImages[url].promise.success(function (data) {
+                            inlineImages[url].promise.then(function (response) {
+                                var data = response.data;
                                 loadImageInline(element, data, color, colorByAttributeMapping);
                                 if (getPromise) { deferred.resolve(element); }
-                            }).error(function() {
+                            }, function() {
                                 loadImageInline(element, FALLBACK, color, colorByAttributeMapping);
                                 if (getPromise) { deferred.resolve(element); }
                             });
@@ -405,11 +406,13 @@
                     } else {
                         var promise = $http.get(url);
                         inlineImages[url] = {promise: promise};
-                        promise.success(function (data) {
+                        promise.then(function (response) {
+                            var data = response.data;
                             inlineImages[url].code = data;
                             loadImageInline(element, data, color, colorByAttributeMapping);
                             if (getPromise) { deferred.resolve(element); }
-                        }).error(function(data, status) {
+                        }, function(response) {
+                            var status = response.status;
                             // Ignore it silently
                             console.log('WARNING: Unable to fetch SVG image', url, 'HTTP status:', status);
                             inlineImages[url].code = FALLBACK;

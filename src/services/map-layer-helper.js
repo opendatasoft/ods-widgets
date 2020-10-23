@@ -206,7 +206,8 @@
                                 ODS.GeoFilter.addGeoFilterFromSpatialObject(options, shape);
                             }
                             angular.extend(options, layerConfig.context.parameters, {rows: 1});
-                            ODSAPI.records.download(layerConfig.context, options).success(function(data) {
+                            ODSAPI.records.download(layerConfig.context, options).then(function(response) {
+                                var data = response.data;
                                 if (angular.isDefined(data[0].fields[mapField])) {
                                     context.toggleRefine(contextField, data[0].fields[mapField], replaceRefine);
                                 }

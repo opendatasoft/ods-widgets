@@ -13,8 +13,13 @@
 
             var qClauses = [];
             angular.forEach(paramsV1, function (paramValue, paramName) {
+                if (paramValue === null || typeof(paramValue) === "undefined") {
+                    // Not a real value to translate
+                    return;
+                }
+
                 // We can have `q`, and `q.<text>` parameters.
-                if (paramName === 'q' || paramName.startsWith('q.')) {
+                if ((paramName === 'q' || paramName.startsWith('q.')) && paramValue) {
                     qClauses.push(paramValue);
                 }
 

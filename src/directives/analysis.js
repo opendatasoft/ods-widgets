@@ -195,7 +195,8 @@
                             }
                         });
 
-                        analyze(nv, options).success(function (data) {
+                        analyze(nv, options).then(function (response) {
+                            var data = response.data;
                             $scope[variable] = {};
                             if (angular.isArray(data)) {
                                 $scope[variable] = {
@@ -353,7 +354,8 @@
                             options["y.serie.subsets"] = serie.subsets || "50";
                         }
 
-                        analyze(nv, options).success(function (data) {
+                        analyze(nv, options).then(function (response) {
+                            var data = response.data;
                             /* Compute min and max of each series */
                             var min = undefined;
                             var max = undefined;

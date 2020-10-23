@@ -100,7 +100,7 @@
             '        </div>' +
             '        <div class="ods-slideshow__cannot-display" ' +
             '             ng-hide="imageThumbnail">' +
-            '            <i class="fa fa-eye-slash ods-slideshow__cannot-display-icon"></i>' +
+            '            <i class="fa fa-eye-slash ods-slideshow__cannot-display-icon" aria-hidden="true"></i>' +
             '            <div class="ods-slideshow__cannot-display-message" translate>Sorry, this file cannot be displayed</div>' +
             '        </div>' +
             '        <button class="ods-slideshow__next-button"' +
@@ -173,7 +173,8 @@
                     });
                     scope.loading = true;
                     search(scope.context, searchParameters)
-                        .success(function (response) {
+                        .then(function (reqResponse) {
+                            var response = reqResponse.data;
                             // update index
                             if (!scope.lastIndex) {
                                 scope.currentIndex = response.nhits;
@@ -216,8 +217,7 @@
                                 scope.record = record;
                             }
                             scope.loading = false;
-                        })
-                        .error(function () {
+                        }, function () {
                             scope.loading = false;
                         });
                 };

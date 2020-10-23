@@ -28,13 +28,24 @@ L.ODSTileLayer = L.TileLayer.extend({
             this.options.prependAttribution,
             this.options.appendAttribution);
     },
-    _mapboxUrl: function(mapId, accessToken) {
-        var url = '//{s}.tiles.mapbox.com/v4/' + mapId + '/{z}/{x}/{y}';
+    _mapboxTilesetUrl: function(mapId, accessToken) {
+        // Tiles served by the Raster Tiles API, from Tilesets
+        var url = '//api.mapbox.com/v4/' + mapId + '/{z}/{x}/{y}';
         if (L.Browser.retina) {
             url += '@2x';
         }
         url += '.png';
         url += '?access_token=' + accessToken;
+        return url;
+    },
+    _mapboxStylesUrl: function(mapId, accessToken) {
+        // Tiles served by the Static Tiles API, from Mapbox styles
+        var url = '//api.mapbox.com/styles/v1/' + mapId + '/tiles/{z}/{x}/{y}';
+        if (L.Browser.retina) {
+            url += '@2x';
+        }
+        url += '?access_token=' + accessToken;
+
         return url;
     },
     _initLayer: function(basemap, disableAttribution, prependAttribution, appendAttribution) {
@@ -68,16 +79,39 @@ L.ODSTileLayer = L.TileLayer.extend({
                     attribution: !disableAttribution ? attrib : '',
                     subdomains: "abc"
                 });
-        } else if (basemap.provider.indexOf('mapbox.') === 0) {
+        } else if (basemap.provider === 'mapbox_style' || basemap.provider.indexOf('mapbox.') === 0) {
+            var mapId;
+            if (basemap.provider.indexOf('mapbox.') === 0) {
+                // Standard mapbox styles, with the former dot-based notation
+
+                // Mapping short style names to the full ones (https://docs.mapbox.com/api/maps/#mapbox-styles)
+                var fullStyles = {
+                    'streets': 'streets-v11',
+                    'outdoors': 'outdoors-v11',
+                    'light': 'light-v10',
+                    'dark': 'dark-v10',
+                    'satellite': 'satellite-v9',
+                    'streets-satellite': 'satellite-streets-v11'
+                };
+
+                var mapStyle = basemap.provider.substring(7);
+                mapId = 'mapbox/' + fullStyles[mapStyle];
+            } else {
+                // Custom style
+                mapId = basemap.mapid
+            }
+
             attrib = this._addAttributionPart(attrib, 'Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
             layerOptions = {
                 minZoom: 2,
                 maxZoom: 21,
                 attribution: !disableAttribution ? attrib : '',
-                subdomains: "abcd"
+                subdomains: "abcd",
+                tileSize: 512,
+                zoomOffset: -1
             };
-            L.TileLayer.prototype.initialize.call(this, this._mapboxUrl(basemap.provider, basemap.mapbox_access_token), layerOptions);
+            L.TileLayer.prototype.initialize.call(this, this._mapboxStylesUrl(mapId, basemap.mapbox_access_token), layerOptions);
         } else if (basemap.provider === 'mapbox') {
             attrib = this._addAttributionPart(attrib, 'Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
@@ -93,7 +127,7 @@ L.ODSTileLayer = L.TileLayer.extend({
             if (basemap.maxZoom) {
                 layerOptions.maxZoom = basemap.maxZoom;
             }
-            L.TileLayer.prototype.initialize.call(this, this._mapboxUrl(basemap.mapid, basemap.mapbox_access_token), layerOptions);
+            L.TileLayer.prototype.initialize.call(this, this._mapboxTilesetUrl(basemap.mapid, basemap.mapbox_access_token), layerOptions);
         } else if (basemap.provider.indexOf('stamen.') === 0) {
             var stamenMap = basemap.provider.substring(7);
             var stamenUrl = '//stamen-tiles-{s}.a.ssl.fastly.net/' + stamenMap + '/{z}/{x}/{y}.png';
@@ -120,7 +154,7 @@ L.ODSTileLayer = L.TileLayer.extend({
                 'sunny': 'd4246bc4-e98a-4976-b621-681f3f3f4230',
                 'matrix': '26e378b1-bfeb-48b2-8b32-69f484522bb8',
                 'transports': 'jawg-transports'
-            }
+            };
             var jawgUrl = 'https://tiles.jawg.io/';
             var jawgMap;
 
@@ -133,9 +167,9 @@ L.ODSTileLayer = L.TileLayer.extend({
             jawgUrl += jawgMap + '/';
 
             jawgUrl += '{z}/{x}/{y}';
-            //if (L.Browser.retina) {
-            //    jawgUrl += '@2x';
-            //}
+            if (L.Browser.retina) {
+               jawgUrl += '@2x';
+            }
             jawgUrl += '.png';
             if (basemap.jawg_apikey) {
                jawgUrl += '?api-key=' + basemap.jawg_apikey;
@@ -145,9 +179,9 @@ L.ODSTileLayer = L.TileLayer.extend({
             }
 
             if (basemap.shortAttribution) {
-                attrib = this._addAttributionPart(attrib, '<a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/images/favicon.png" width="16" height="16"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a>');
+                attrib = this._addAttributionPart(attrib, '<a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/images/favicon.png" width="16" height="16" alt="Jawg"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a>');
             } else {
-                attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/images/favicon.png" width="16" height="16"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
+                attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/images/favicon.png" width="16" height="16" alt="Jawg"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
             }
             attrib = this._addAttributionPart(attrib, appendAttribution);
 

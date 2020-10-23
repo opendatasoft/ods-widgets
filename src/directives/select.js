@@ -2,23 +2,60 @@
     'use strict';
     var mod = angular.module('ods-widgets');
 
+    function filterSelectedItemsFromArray(items, selectedItems) {
+        var i = 0, selectedDisplayedItems = [];
+        for (i = 0; i < items.length; i++) {
+            var itemKey = JSON.stringify(items[i].value);
+            if (selectedItems[itemKey]) {
+                selectedDisplayedItems.push(items[i]);
+            }
+        }
+        return selectedDisplayedItems;
+    };
+
     /* -------------------------------------------------------------------------- */
     /* Filter                                                                     */
     /* -------------------------------------------------------------------------- */
 
     mod.filter('odsSelectFilter', function() {
-        return function(items, inputTextFilter, displaySelectedItemsOnly) {
+        return function(items, inputTextFilter, displaySelectedItemsOnly, selectedItems) {
             if (!inputTextFilter && !displaySelectedItemsOnly) {
-                return items;
-            }
-            var lowerCasedInput = ODS.StringUtils.normalize(inputTextFilter.toLowerCase());
-            return items.filter(function(item) {
-                if (displaySelectedItemsOnly) {
-                    return item.selected;
-                } else {
-                    return ODS.StringUtils.normalize(item.label).toLowerCase().indexOf(lowerCasedInput) !== -1;
+                var key = null, itemsArray = [];
+
+                for (key in items) {
+                    itemsArray.push(items[key]);
                 }
-            });
+
+                return itemsArray;
+            }
+
+            var lowerCasedInput = ODS.StringUtils.normalize(inputTextFilter.toLowerCase());
+            var key = null, filteredItems = [];
+
+            for (key in items) {
+                var item = items[key];
+                var isSelected = !!selectedItems[JSON.stringify(item.value)];
+                var foundMatchingLabel = ODS.StringUtils.normalize(item.label).toLowerCase().indexOf(lowerCasedInput) !== -1;
+                var toDisplay = displaySelectedItemsOnly ? isSelected && foundMatchingLabel : foundMatchingLabel;
+
+                if (toDisplay) {
+                    filteredItems.push(item);
+                }
+            }
+
+            return filteredItems;
+        };
+    });
+
+    mod.filter('odsSelectItemIsSelected', function() {
+        return function(item, selectedItems, returnIcon) {
+            var itemKey = JSON.stringify(item.value);
+
+            if (returnIcon) {
+                return !!selectedItems[itemKey] ? 'fa fa-check-square' : 'fa fa-square-o';
+            }
+
+            return !!selectedItems[itemKey] ? true : false;
         };
     });
 
@@ -32,12 +69,13 @@
          * @name ods-widgets.directive:odsSelect
          * @scope
          * @restrict E
-         * @param {array} selectedValues The variable name to use to store the selected options' values.
-         * @param {boolean} [multiple=false] If true, the menu will support multiple selections.
          * @param {array} options The input array of value which feeds the select menu.
-         * @param {expression} [labelModifier] An expression to apply on the options' label.
-         * @param {expression} [valueModifier] An expression to apply on the options' value.
-         * @param {expression} [onChange] An expression to evaluate whenever an option has been (de)selected.
+         * @param {array} selectedValues The variable name to use to store the selected options' values.
+         * @param {expression} [labelModifier=none] An expression to apply on the options' label.
+         * @param {expression} [valueModifier=none] An expression to apply on the options' value. This parameter is used to modify the form of the values exposed by `selected-value`.
+         * @param {expression} [onChange=none] An expression to evaluate whenever an option has been (de)selected.
+         * @param {boolean} [multiple=false] If true, the menu will support multiple selections.
+         * @param {boolean} [isLoading=false] Specifies if the widget should initially display a loader. This parameter will be automatically set to `false` as soon as options are loaded.
          * @param {boolean} [disabled=false] Specifies if the widget should be disabled.
          * @param {string} [placeholder="Select one or more elements" or "Select one element"] Specifies a short hint that describes the expected value of the select field.
          *
@@ -50,11 +88,78 @@
          * The "label-modifier" and "value-modifier" parameters each take an expression that will be applied to the each individual object representing an option.
          * And finally, the result of the selection will be stored in the variable specified in the "selected-values" parameter.
          *
+         * <h1>Explanation of the examples</h1>
+         *
+         * <h2>First example</h2>
+         *
+         * In the <b>first example</b> bellow, the widget `ods-result` will store the result of the request in the variable `items`.
+         * The value of the variable `items` will have this form:
+         *
+         * ```
+         * [
+         *     { fields: { libellefrancais: "Noyer", espece: "nigra",  ... }, ... },
+         *     { fields: { libellefrancais: "Marronnier", espece: "hippocastanum",  ... }, ... },
+         *     { fields: { libellefrancais: "Chêne", espece: "cerris",  ... }, ... },
+         *     ...
+         * ]
+         * ```
+         * <b>The parameter `label-modifier`</b>
+         *
+         * In this example we want to use the value of the field `libellefrancais` as label.
+         *
+         * To do so, we will need to use the parameter `label-modifier` to access the value of the field, by passing it the following configuration: `"fields.libellefrancais"`.
+         *
+         * <b>The parameter `value-modifier`</b>
+         *
+         * As for the `value-modifier` parameter, we want the shape of the values returned by `selected-values` to look like this:
+         *
+         * ```
+         * [
+         *     { name: "Noyer", species: "nigra" },
+         *     { name: "Marronnier", species: "hippocastanum" },
+         *     ...
+         * ]
+         * ```
+         *
+         * To do so, we will pass it the following configuration: `"{ 'name': fields.libellefrancais, 'species': fields.espece }"`.
+         *
+         * <h2>Second example</h2>
+         *
+         * What we want to accomplish in the <b>second example</b> bellow, is to update the context's parameters by directly injecting the selected values returned by `ods-select`.
+         *
+         * First, we will use the widget `ods-facet-results` to fetch the values of the facets "arrondissement" and "libellefrancais".
+         * Please note that the values of `facetsArrondissement` and `facetsLibelleFrancais` will have this form:
+         *
+         * ```
+         * [
+         *     { count: 1, path: "PARIS 1ER ARRDT", state: "displayed", name: "PARIS 1ER ARRDT" },
+         *     { count: 8, path: "PARIS 17E ARRDT", state: "displayed", name: "PARIS 17E ARRDT" },
+         *     { count: 11, path: "PARIS 7E ARRDT", state: "displayed", name: "PARIS 7E ARRDT" },
+         *     ...
+         * ]
+         * ```
+         *
+         * ```
+         * [
+         *     { count: 32, path: "Platane", state: "displayed", name: "Platane" },
+         *     { count: 12, path: "Hêtre", state: "displayed", name: "Hêtre" },
+         *     { count: 11, path: "Chêne", state: "displayed", name: "Chêne" },
+         *     ...
+         * ]
+         * ```
+         *
+         * Now that we have those values injected into the `ods-select` widget, we will pass the following configuration to the `selected-values` parameters: `"ctx.parameters['refine.arrondissement']"` and `"ctx.parameters['refine.libellefrancais']"`.
+         *
+         * This will cause the context to be updated each time an option is selected.
+         *
          * @example
          * <example module="ods-widgets">
-         *    <file name="a_simple_example_with_a_dataset.html">
-         *         <ods-dataset-context context="trees" trees-dataset="les-arbres-remarquables-de-paris" trees-domain="https://widgets-examples.opendatasoft.com/">
-         *             <div ods-results="items" ods-results-context="trees" ods-results-max="10">
+         *     <file name="first_example.html">
+         *         <ods-dataset-context
+         *             context="ctx"
+         *             ctx-domain="https://widgets-examples.opendatasoft.com/"
+         *             ctx-dataset="les-arbres-remarquables-de-paris">
+         *             <div ods-results="items" ods-results-context="ctx" ods-results-max="10">
          *                 <ods-select
          *                     disabled="items.length < 0"
          *                     selected-values="selectedTrees"
@@ -65,42 +170,60 @@
          *                 </ods-select>
          *             </div>
          *         </ods-dataset-context>
-         *    </file>
+         *     </file>
          * </example>
          * <example module="ods-widgets">
-         *    <file name="advanced_use_of_labelModifier_and_valueModifier_parameters.html">
-         *         <ods-dataset-context context="trees" trees-dataset="les-arbres-remarquables-de-paris" trees-domain="https://widgets-examples.opendatasoft.com/">
-         *             <div ods-results="items" ods-results-context="trees" ods-results-max="10"
-         *                 ng-init="keys = ['libellefrancais', 'domanialite']">
+         *     <file name="second_example.html">
+         *         <ods-dataset-context
+         *             context="ctx"
+         *             ctx-domain="https://widgets-examples.opendatasoft.com/"
+         *             ctx-dataset="les-arbres-remarquables-de-paris"
+         *             ctx-parameters="{ 'disjunctive.arrondissement': true, 'disjunctive.libellefrancais': true }">
+         *             <div ods-facet-results="facetsArrondissement"
+         *                 ods-facet-results-context="ctx"
+         *                 ods-facet-results-facet-name="arrondissement">
          *                 <ods-select
-         *                     multiple="false"
-         *                     placeholder="Select a dynamic key to use as name"
-         *                     selected-values="keyToUse"
-         *                     options="keys">
+         *                     options="facetsArrondissement"
+         *                     selected-values="ctx.parameters['refine.arrondissement']"
+         *                     label-modifier="name + ' (' + count + ')'"
+         *                     value-modifier="name"
+         *                     placeholder="Select one or more districts"
+         *                     multiple="true">
          *                 </ods-select>
-         *                 <ods-select
-         *                     multiple="true"
-         *                     disabled="!keyToUse.length || items.length < 0"
-         *                     selected-values="selectedTrees"
-         *                     options="items"
-         *                     label-modifier="fields.{{keyToUse[0]}}"
-         *                     value-modifier="{ 'name': fields.{{keyToUse[0]}}, 'species': fields.espece }">
-         *                 </ods-select>
+         *                 <br/>
          *             </div>
+         *             <div ods-facet-results="facetsLibelleFrancais"
+         *                 ods-facet-results-context="ctx"
+         *                 ods-facet-results-facet-name="libellefrancais">
+         *                 <ods-select
+         *                     options="facetsLibelleFrancais"
+         *                     selected-values="ctx.parameters['refine.libellefrancais']"
+         *                     label-modifier="name"
+         *                     value-modifier="name"
+         *                     placeholder="Select one or more trees"
+         *                     multiple="true">
+         *                 </ods-select>
+         *                 <br/>
+         *             </div>
+         *             <ods-table
+         *                 context="ctx"
+         *                 displayed-fields="libellefrancais, genre, arrondissement">
+         *             </ods-table>
          *         </ods-dataset-context>
-         *    </file>
+         *     </file>
          * </example>
          */
         return {
             restrict: 'E',
             replace: true,
             scope: {
-                selectedValues: '=',
-                multiple: '=?',
                 options: '=',
+                selectedValues: '=',
                 labelModifier: '@?',
                 valueModifier: '@?',
                 onChange: '@?',
+                multiple: '=?',
+                isLoading: '=?',
                 disabled: '=?',
                 placeholder: '@?',
             },
@@ -119,6 +242,7 @@
                 '            <input class="odswidget-select-input"' +
                 '                type="text"' +
                 '                ng-model="_inputTextFilter"' +
+                '                ng-model-options="{ debounce: 300 }"' +
                 '                ng-disabled="disabled"' +
                 '                placeholder="{{ \'Filter\' | translate }}"/>' +
                 '            <i class="fa fa-angle-up pull-right"' +
@@ -126,7 +250,8 @@
                 '            </i>' +
                 '        </div>' +
                 '        <div class="odswidget-select-dropdown-menu">' +
-                '            <ul class="odswidget-select-dropdown-menu-list">' +
+                '            <ul class="odswidget-select-dropdown-menu-list"' +
+                '               ng-hide="isLoading">' +
                 '                <li class="odswidget-select-dropdown-actions-select-all"' +
                 '                    ng-show="UIState.dropdown.header.selectAll"' +
                 '                    ng-click="toggleSelectAll()">' +
@@ -143,13 +268,12 @@
                 '                    </span>' +
                 '                </li>' +
                 '                <hr ng-show="UIState.dropdown.header.divider" />' +
-                '                <li ng-class="{ \'odswidget-select-dropdown-menu-selected\': item.selected }"' +
-                '                    ng-repeat="item in _items | odsSelectFilter:_inputTextFilter:_displaySelectedItemsOnly track by item.uuid"' +
+                '                <li ng-class="{ \'odswidget-select-dropdown-menu-selected\': (item | odsSelectItemIsSelected:_selectedItems:false) }"' +
+                '                    ng-repeat="item in _items | odsSelectFilter:_inputTextFilter:_displaySelectedItemsOnly:_selectedItems"' +
                 '                    ng-click="toggleSelectOne(item)">' +
-                '                    <i class="fa"' +
-                '                        aria-hidden="true"' +
+                '                    <i aria-hidden="true"' +
                 '                        ng-show="UIState.dropdown.list.checkboxes"' +
-                '                        ng-class="{ \'fa-check-square\': item.selected, \'fa-square-o\': !item.selected }">' +
+                '                        class="{{ item | odsSelectItemIsSelected:_selectedItems:true }}">' +
                 '                    </i>' +
                 '                    <span class="odswidget-select-dropdown-label"' +
                 '                        ng-class="{ \'checkbox\': multiple }"' +
@@ -158,13 +282,20 @@
                 '                    </span>' +
                 '                    <i class="fa fa-times-circle"' +
                 '                        aria-hidden="true"' +
-                '                        ng-show="!multiple && !!item.selected">' +
+                '                        ng-show="!multiple && (item | odsSelectItemIsSelected:_selectedItems:false)">' +
                 '                    </i>' +
                 '                </li>' +
                 '                <li class="odswidget-select-dropdown-no-options"' +
                 '                    ng-show="UIState.dropdown.list.noOptions"' +
                 '                    translate>' +
                 '                    No options' +
+                '                </li>' +
+                '            </ul>' +
+                '            <ul class="odswidget-select-dropdown-menu-list"' +
+                '                ng-show="isLoading">' +
+                '                <li class="odswidget-select-dropdown-no-options">' +
+                '                    <i class="fa fa-spinner fa-pulse fa-fw"></i>&nbsp;' +
+                '                    <span translate>Options are loading...</span>' +
                 '                </li>' +
                 '            </ul>' +
                 '            <div class="odswidget-select-dropdown-menu-footer"' +
@@ -184,7 +315,8 @@
                 '                            ng-click="toggleSelectedItemsOnlyFilter()"' +
                 '                            translate>' +
                 '                            Show all' +
-                '                        </a>-' +
+                '                        </a>' +
+                '                        -' +
                 '                    </span>' +
                 '                    <a href="#"' +
                 '                        class="odswidget-select-dropdown-menu-footer-actions-clear"' +
@@ -201,9 +333,9 @@
             '',
             controller: ['$scope', '$attrs', '$filter', '$parse', function($scope, $attrs, $filter, $parse) {
                 // Internal objects
-                $scope._items = [];
+                $scope._items = {};
                 $scope._displayedItems = [];
-                $scope._selectedLabels = [];
+                $scope._selectedItems = {};
                 $scope._inputTextFilter = '';
                 $scope._displaySelectedItemsOnly = false;
 
@@ -225,30 +357,23 @@
                 /* -------------------------------------------------------------------------- */
 
                 function initializeItems() {
-                    // Initialize filters.
-                    $scope._inputTextFilter = '';
-
-                    var items = [];
-
-                    // Parse and filter the given options.
-                    items = parseOptions($scope.options);
-
-                    // Remove the duplicated or the not fully defined items.
-                    items = cleanItems(items);
-
-                    setSelectedItems(items);
-
-                    $scope._items = items;
+                    $scope._selectedItems = {};
+                    $scope._items = parseOptions($scope.options);
+                    $scope.selectedValues = extractSelectedItemsValues($scope._selectedItems);
+                    updateDisplayedItems();
+                    $scope.isLoading = !Object.keys($scope._items).length;
                 };
 
                 function parseOptions(options) {
-                    // Parse and filter the given options.
-                    var items;
-
-                    items = options.map(function(option) {
+                    return options.reduce(function(accumulator, option) {
                         var label = $scope.labelModifier ? $parse($scope.labelModifier)(option) : option;
                         var value = $scope.valueModifier ? $parse($scope.valueModifier)(option) : option;
-                        var selected = false;
+                        var isFullyDefined = !!label && !!value;
+                        var key = JSON.stringify(value); // Note that we use the stringified value as the key.
+
+                        if (!isFullyDefined) {
+                            return accumulator;
+                        }
 
                         if ($scope.selectedValues && $scope.selectedValues.length) {
                             // Compute the default selected items using the initial "selectedValues"
@@ -256,49 +381,21 @@
                             // ... been mutated from the outside.
                             $scope.selectedValues.forEach(function(sValue) {
                                 if (angular.equals(sValue, value)) {
-                                    selected = true;
+                                    $scope._selectedItems[key] = {
+                                        label: label,
+                                        value: value,
+                                    };
                                 }
                             });
                         }
 
-                        return {
-                            uuid: ODS.StringUtils.getRandomUUID(),
+                        accumulator[key] = {
                             label: label,
                             value: value,
-                            selected: selected,
                         };
-                    });
 
-                    return items;
-                };
-
-                function cleanItems(items) {
-                    // Remove the duplicated or undefined items.
-                    items = items.filter(function(item, index, arr) {
-                        var isUnique = arr.map(function(mapItem) { return mapItem.value; }).indexOf(item.value) === index;
-                        var isFullyDefined = !!item.label && !!item.value;
-
-                        if (isFullyDefined && isUnique) {
-                            return true;
-                        }
-                        return false;
-                    });
-
-                    return items;
-                };
-
-                function setSelectedItems(items) {
-                    ['label', 'value'].forEach(function(type) {
-                            var selectedItems = items
-                                .filter(function(item) { return item.selected; })
-                                .map(function(item) { return item[type]; });
-
-                            if (type === 'label') {
-                                $scope._selectedLabels = selectedItems;
-                            } else if (type === 'value') {
-                                $scope.selectedValues = selectedItems;
-                            }
-                        });
+                        return accumulator;
+                    }, {});
                 };
 
                 function computeOnChangeExpression() {
@@ -311,62 +408,74 @@
                     });
                 };
 
+                function extractSelectedItemsValues(items) {
+                    var  key = null, selectedValues = [];
+                    for (key in items) {
+                        selectedValues.push(items[key].value);
+                    }
+                    return selectedValues;
+                };
+
+                function updateDisplayedItems() {
+                    $scope._displayedItems = $filter('odsSelectFilter')($scope._items, $scope._inputTextFilter, $scope._displaySelectedItemsOnly, $scope._selectedItems);
+                    if ($scope._displayedItems.length === 0) {
+                        // If after filtering the items, there's none to display, it make sense to
+                        // ... reset the following filter.
+                        $scope._displaySelectedItemsOnly = false;
+                    }
+                };
+
                 /* -------------------------------------------------------------------------- */
                 /* User actions                                                               */
                 /* -------------------------------------------------------------------------- */
 
                 $scope.toggleSelectOne = function(item) {
-                    var items = $scope._items.map(function(i) {
-                            if (item.uuid === i.uuid) {
-                                // Toggle the clicked item.
-                                i.selected = !i.selected;
-                            } else if (!$scope.multiple) {
-                                // If non-multiple select, deselect all the other items.
-                                i.selected = false;
-                            }
-                            return i;
-                        });
+                    var itemKey = JSON.stringify(item.value);
+
+                    if ($scope.multiple === false) {
+                        $scope._selectedItems = {};
+                    }
+
+                    if ($scope._selectedItems[itemKey]) {
+                        delete $scope._selectedItems[itemKey];
+                    } else {
+                        $scope._selectedItems[itemKey] = item;
+                    }
 
                     computeOnChangeExpression();
-                    setSelectedItems(items);
-                    $scope._items = items;
+
+                    $scope.selectedValues = extractSelectedItemsValues($scope._selectedItems);
                 };
 
-                $scope.toggleSelectAll = function(reset) {
-                    var items;
-                    if (reset || !$scope._inputTextFilter) {
-                        items = $scope._items.map(function(item) {
-                                // If at least one item is selected, we can assume that the toggle
-                                // ... needs to deselect all the options (and vice versa).
-                                item.selected = !$scope.selectedValues.length;
-                                return item;
-                            });
+                $scope.toggleSelectAll = function(clearSelection) {
+                    if (clearSelection || !$scope._inputTextFilter) {
+                        $scope._selectedItems = angular.equals($scope._selectedItems, {}) ? angular.copy($scope._items) : {};
                     } else if (!!$scope._inputTextFilter) {
                         // When the user is filtering the list of options and click on the
                         // ... "All" checkbox, we want to apply the toggle only on the displayed
                         // ... items. It's more intuitive "UX-ly speaking" IMO.
-                        var selectedDisplayedItems = $scope._displayedItems.filter(function (item) { return item.selected; });
-                        items = $scope._items.map(function(item) {
-                                $scope._displayedItems.forEach(function (di) {
-                                        // If the UUIDs match, we can toggle them.
-                                        if (item.uuid === di.uuid) {
-                                            // If at least one displayed item is selected, we can assume
-                                            // ... that the toggle needs to deselect all the displayed
-                                            // ... options (and vice versa).
-                                            item.selected = !selectedDisplayedItems.length;
-                                        }
-                                    });
-                                return item;
-                            });
+                        var selectedDisplayedItems = filterSelectedItemsFromArray($scope._displayedItems, $scope._selectedItems);
+
+                        if (selectedDisplayedItems.length) {
+                            selectedDisplayedItems.forEach(function(selectedItem) {
+                                var itemKey = JSON.stringify(selectedItem.value);
+                                delete $scope._selectedItems[itemKey];
+                            })
+                        } else {
+                            $scope._displayedItems.forEach(function(selectedItem) {
+                                var itemKey = JSON.stringify(selectedItem.value);
+                                $scope._selectedItems[itemKey] = selectedItem;
+                            })
+                        }
                     }
 
-                    if (reset) {
+                    if (clearSelection) {
                         $scope._inputTextFilter = '';
                     }
 
                     computeOnChangeExpression();
-                    setSelectedItems(items);
-                    $scope._items = items;
+
+                    $scope.selectedValues = extractSelectedItemsValues($scope._selectedItems);
                 };
 
                 $scope.toggleSelectedItemsOnlyFilter = function() {
@@ -385,52 +494,47 @@
                 /* -------------------------------------------------------------------------- */
 
                 $scope.$watch('options', function(newVal, oldVal) {
-                    if (angular.isDefined(newVal) && !angular.equals(newVal, oldVal) && !$scope.disabled) {
-                        initializeItems();
+                    if (angular.isDefined(newVal) && !angular.equals(newVal, oldVal)) {
+                        $scope.isLoading = newVal.length > 500;
+                        $timeout(function() {
+                            // Since we may need to display the loader first, this function is
+                            // ... queued using $timeout, therefore it will run after the DOM has
+                            // ... been manipulated and after the browser renders.
+                            initializeItems();
+                        });
                     }
                 }, true);
+
+                $attrs.$observe('[valueModifier, labelModifier]', function() {
+                    if (angular.isDefined($scope.options) && !$scope.disabled) {
+                        $scope.$evalAsync(function() {
+                            // We use $evalAsync here to be sure that the $digest cycle has
+                            // ... evaluated potentials expressions inside the attribute before
+                            // ... initializing the options parsing function.
+                            initializeItems();
+                        });
+                    }
+                });
 
                 $scope.$watch('selectedValues', function(newVal, oldVal) {
                     if (angular.isDefined($scope.options) && !angular.equals(newVal, oldVal) && !$scope.disabled) {
-                        initializeItems();
-                    }
-                }, true);
-
-                $scope.$watch('disabled', function() {
-                    if (angular.isDefined($scope.options) && !$scope.disabled) {
-                        initializeItems(true);
-                    }
-                }, true);
-
-                $attrs.$observe('labelModifier', function() {
-                    if (angular.isDefined($scope.options) && !$scope.disabled) {
                         $scope.$evalAsync(function() {
                             // We use $evalAsync here to be sure that the $digest cycle has
                             // ... evaluated potentials expressions inside the attribute before
                             // ... initializing the options parsing function.
-                            initializeItems(true);
+                            if (newVal) {
+                                $scope._selectedItems = {};
+                                newVal.forEach(function(value) {
+                                    var key = JSON.stringify(value);
+                                    $scope._selectedItems[key] = $scope._items[key]
+                                });
+                            }
                         });
                     }
-                });
+                }, true);
 
-                $attrs.$observe('valueModifier', function() {
-                    if (angular.isDefined($scope.options) && !$scope.disabled) {
-                        $scope.$evalAsync(function() {
-                            // We use $evalAsync here to be sure that the $digest cycle has
-                            // ... evaluated potentials expressions inside the attribute before
-                            // ... initializing the options parsing function.
-                            initializeItems(true);
-                        });
-                    }
-                });
-
-                $scope.$watch('[_items, _inputTextFilter, _displaySelectedItemsOnly]', function() {
-                    $scope._displayedItems = $filter('odsSelectFilter')($scope._items, $scope._inputTextFilter, $scope._displaySelectedItemsOnly);
-                    if ($scope._displayedItems.length === 0) {
-                        // If after filtering the items, there's none to display, it make sense to
-                        // ... reset the following filter.
-                        $scope._displaySelectedItemsOnly = false;
-                    }
+                $scope.$watch('[_inputTextFilter, _displaySelectedItemsOnly, _selectedItems]', function() {
+                    updateDisplayedItems();
                 }, true);
             }],
             link: function(scope, element) {
@@ -442,9 +546,17 @@
 
                 function focusInput() {
                     $timeout(function() {
-                        jQuery(element).find('.odswidget-select-input-container input').focus();
+                        jQuery(element).find('.odswidget-select-input-container input').trigger('focus');
                     });
-                }
+                };
+
+                function extractLabels(obj) {
+                    var key = null, labels = [];
+                    for (key in obj) {
+                        labels.push(obj[key].label);
+                    }
+                    return labels;
+                };
 
                 function updateIconSelectAllCheckbox() {
                     if (scope.multiple) {
@@ -454,12 +566,11 @@
                         if (!scope._inputTextFilter) {
                             // If there's no active text filter, we'll simply compare with the
                             // ... total selected items count.
-                            selectedItemsCount = scope.selectedValues.length;
+                            selectedItemsCount = Object.keys(scope._selectedItems).length;
                         } else {
                             // But if there's an active text filter we have to loop through the
                             // ... displayed items and filter the selected ones.
-                            var selectedDisplayedItems = scope._displayedItems.filter(function (item) { return item.selected; });
-                            selectedItemsCount = selectedDisplayedItems.length;
+                            selectedItemsCount = filterSelectedItemsFromArray(scope._displayedItems, scope._selectedItems).length;
                         }
 
                         if (selectedItemsCount === 0) {
@@ -477,13 +588,14 @@
 
                 function updateHeaderText() {
                     var elem = element.find('.odswidget-select-header-label');
+                    var selectedItemsLabels = extractLabels(scope._selectedItems);
 
-                    if (scope.selectedValues.length) {
+                    if (selectedItemsLabels.length) {
                         var text;
-                        if (scope.selectedValues.length > 2) {
-                            text = scope._selectedLabels.slice(0, 2).join(', ') + ', +' + (scope.selectedValues.length - 2);
+                        if (selectedItemsLabels.length > 2) {
+                            text = selectedItemsLabels.slice(0, 2).join(', ') + ', +' + (selectedItemsLabels.length - 2);
                         } else {
-                            text = scope._selectedLabels.join(', ');
+                            text = selectedItemsLabels.join(', ');
                         }
                         elem.text(text);
                     } else {
@@ -492,11 +604,13 @@
                 };
 
                 function updateFooterText() {
+                    var selectedItemsLabels = extractLabels(scope._selectedItems);
+
                     if (scope.multiple) {
                         var text;
                         var elem = element.find('.odswidget-select-dropdown-menu-footer-label');
-                        if (!!scope.selectedValues.length) {
-                            text = translatePlural(scope.selectedValues.length, '{{ $count }} option selected', '{{ $count }} options selected', {});
+                        if (!!selectedItemsLabels.length) {
+                            text = translatePlural(selectedItemsLabels.length, '{{ $count }} option selected', '{{ $count }} options selected', {});
                         } else {
                             text = translate('No option selected');
                         }
@@ -522,10 +636,10 @@
                             footer: {
                                 container: scope.multiple,
                                 actions: {
-                                    container: scope.multiple && scope.selectedValues.length && scope.selectedValues.length !== scope._items.length,
-                                    reset: scope.multiple && scope.selectedValues.length,
+                                    container: scope.multiple && Object.keys(scope._selectedItems).length && Object.keys(scope._selectedItems).length !== scope._items.length,
+                                    reset: scope.multiple && Object.keys(scope._selectedItems).length,
                                     filter: {
-                                        container: scope.multiple && scope.selectedValues.length !== scope._items.length,
+                                        container: scope.multiple && Object.keys(scope._selectedItems).length !== scope._items.length,
                                         on: !scope._displaySelectedItemsOnly,
                                         off: scope._displaySelectedItemsOnly,
                                     },
@@ -577,19 +691,25 @@
                 /* Watchers                                                                   */
                 /* -------------------------------------------------------------------------- */
 
-                scope.$watch('[_items, _displayedItems, _inputTextFilter]', function() {
-                    updateIconSelectAllCheckbox();
+                scope.$watch('_items', function() {
+                    updateUIState();
+                });
+
+                scope.$watch('_selectedItems', function() {
+                    updateUIState();
                     updateHeaderText();
                     updateFooterText();
+                    updateIconSelectAllCheckbox();
                 }, true);
 
-                scope.$watch('_selectedLabels', function() {
-                    updateHeaderText();
-                }, true);
-
-                scope.$watch('[_items, _displayedItems, _displaySelectedItemsOnly, selectedValues]', function() {
+                scope.$watch('_displayedItems', function() {
                     updateUIState();
-                }, true);
+                    updateIconSelectAllCheckbox();
+                });
+
+                scope.$watch('_displaySelectedItemsOnly', function() {
+                    updateUIState();
+                });
             },
         };
     }]);

@@ -94,7 +94,8 @@
                     }
                     if (scope.context.dataset.data_visible) {
                         ODSAPI.records.search(scope.context, options)
-                            .success(function (data) {
+                            .then(function (response) {
+                                var data = response.data;
                                 scope.sample = data.records[0];
                             });
                     }

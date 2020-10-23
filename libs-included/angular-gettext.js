@@ -416,7 +416,7 @@ angular.module('gettext').directive('translate', ["gettextCatalog", "$parse", "$
         }
     }
 
-    var msie = parseInt((/msie (\d+)/.exec(angular.lowercase($window.navigator.userAgent)) || [])[1], 10);
+    var msie = parseInt((/msie (\d+)/.exec($window.navigator.userAgent.toLowerCase()) || [])[1], 10);
 
     return {
         restrict: 'AE',

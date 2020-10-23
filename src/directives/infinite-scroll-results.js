@@ -110,13 +110,15 @@
                         // FIXME: the extrametas parameter has been added here because the only place we use this directive
                         // requires it, and we can't pre-set the context parameters since it is urlsync'd,
                         // but we may be able to find something less "hardcoded".
-                        catalog_search($scope.context, {rows: 10, start: start, extrametas: true, interopmetas: true}).success(function(data) {
+                        catalog_search($scope.context, {rows: 10, start: start, extrametas: true, interopmetas: true}).then(function(response) {
+                            var data = response.data;
                             noMoreResults = data.datasets.length === 0;
                             renderResults(data.datasets, init);
                         });
                     } else {
                         var params = angular.extend({}, $scope.context.parameters, {rows: 10, start: start});
-                        dataset_search($scope.context, params).success(function(data) {
+                        dataset_search($scope.context, params).then(function(response) {
+                            var data = response.data;
                             noMoreResults = data.records.length === 0;
                             renderResults(data.records, init);
                             initialRequest.resolve();
@@ -139,7 +141,7 @@
 
                     // trigger window resize event
                     try {
-                        window.dispatchEvent(new Event('resize'));
+                        $window.dispatchEvent(new Event('resize'));
                     } catch (error) {
                         jQuery(window).trigger('resize');
                     }

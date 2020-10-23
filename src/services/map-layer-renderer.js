@@ -38,30 +38,33 @@
                     deferred.resolve();
                 };
 
+                // Nothing to do in that situation
+                var cancelledRequest = function() {};
+
                 if (layerConfig.context.error) {
                     console.log('ERROR: Unknown dataset "' + layerConfig.title + '"');
                 } else if (layerConfig.display === 'none' || map.getZoom() === map.getMaxZoom() && layerConfig.display === 'polygon') {
                     layerConfig._loading = true;
-                    MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
+                    MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer, cancelledRequest);
                 } else if (['polygon', 'polygonforced', 'clusters'].indexOf(layerConfig.display) >= 0) {
                     layerConfig._loading = true;
-                    MapRenderingClustered.render(layerConfig, map, leafletLayerGroup, timeout, true).then(applyLayer);
+                    MapRenderingClustered.render(layerConfig, map, leafletLayerGroup, timeout, true).then(applyLayer, cancelledRequest);
                 } else if (layerConfig.display === 'heatmap') {
                     layerConfig._loading = true;
-                    MapRenderingHeatmap.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
+                    MapRenderingHeatmap.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer, cancelledRequest);
                 } else if (layerConfig.display === 'shape' || layerConfig.display === 'aggregation') { // 'shape' is legacy
                     layerConfig._loading = true;
-                    MapRenderingAggregation.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
+                    MapRenderingAggregation.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer, cancelledRequest);
                 } else if (layerConfig.display === 'categories') {
                     layerConfig._loading = true;
-                    MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
+                    MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer, cancelledRequest);
                 } else if (layerConfig.display === 'choropleth') {
                     // TODO: Handle depending if aggregation or not
                     layerConfig._loading = true;
                     if (layerConfig.func) {
-                        MapRenderingChoroplethAggregation.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
+                        MapRenderingChoroplethAggregation.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer, cancelledRequest);
                     } else {
-                        MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
+                        MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer, cancelledRequest);
                     }
                 } else if (layerConfig.display === 'auto') {
                     layerConfig._loading = true;
@@ -69,7 +72,8 @@
                     var parameters = angular.extend({}, layerConfig.context.parameters, {
                         'geofilter.bbox': ODS.GeoFilter.getBoundsAsBboxParameter(map.getBounds())
                     });
-                    ODSAPI.records.boundingbox(layerConfig.context, parameters).success(function (data) {
+                    ODSAPI.records.boundingbox(layerConfig.context, parameters).then(function (response) {
+                        var data = response.data;
                         /*
                          0 < x < DOWNLOAD_CAP : Download all points
                          DOWWNLOAD_CAP < x < [SHAPEPREVIEW/POLYGONCLUSTERS]_HIGHCAP: call geopreview/geopolygon
@@ -84,19 +88,19 @@
 
                         if (data.geometries && data.geometries.Point && data.geometries.Point > data.count / 2 && (data.count < DOWNLOAD_CAP || map.getZoom() === map.getMaxZoom())) {
                             // Low enough and mostly points: always download
-                            MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
+                            MapRenderingRaw.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer, cancelledRequest);
                         } else if (data.count < SHAPEPREVIEW_HIGHCAP) {
                             // We take our decision depending on the content of the envelope
                             if (data.geometries && data.geometries.Point && data.geometries.Point > data.count / 2) {
                                 // Geo polygons
-                                MapRenderingClustered.render(layerConfig, map, leafletLayerGroup, timeout, returnPolygons).then(applyLayer);
+                                MapRenderingClustered.render(layerConfig, map, leafletLayerGroup, timeout, returnPolygons).then(applyLayer, cancelledRequest);
                             } else {
                                 // Geo preview
-                                MapRenderingShapePreview.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer);
+                                MapRenderingShapePreview.render(layerConfig, map, leafletLayerGroup, timeout).then(applyLayer, cancelledRequest);
                             }
                         } else {
                             // Clusters
-                            MapRenderingClustered.render(layerConfig, map, leafletLayerGroup, timeout, returnPolygons).then(applyLayer);
+                            MapRenderingClustered.render(layerConfig, map, leafletLayerGroup, timeout, returnPolygons).then(applyLayer, cancelledRequest);
                         }
                     });
                 } else {

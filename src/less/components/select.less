@@ -42,9 +42,11 @@
             border-radius: 4px;
 
             .odswidget-select-input {
+                box-sizing: border-box;
                 padding: 5px 9px;
                 margin: 0;
                 width: 100%; // Standard
+                height: 100%;
                 border: 1px solid @color-select-input-border-hover;
                 border-radius: 4px;
                 background-color: @color-white;
@@ -66,7 +68,7 @@
 
         .odswidget-select-dropdown-menu {
             position: absolute;
-            z-index: 1;
+            z-index: @zindex-dropdown;
             border: 1px solid @color-select-dropdown-border;
             border-radius: 4px;
             background-color: @color-white;
@@ -124,7 +126,10 @@
                         border-bottom: 1px solid @color-select-dropdown-border;
                     }
 
-                    i {
+                    i.fa-square-o,
+                    i.fa-check-square,
+                    i.fa-minus-square,
+                    i.fa-times-circle {
                         width: 16px;
                         height: 16px;
                         text-align: center;

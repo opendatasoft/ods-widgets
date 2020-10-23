@@ -141,7 +141,8 @@
                         extrametas: true,
                         q: '#startswith(explore.geographic_reference_path_labels, "' + labelPath + '")'
                     };
-                    ODSAPI.datasets.search(catalogContext, params).success(function(data) {
+                    ODSAPI.datasets.search(catalogContext, params).then(function(response) {
+                        var data = response.data;
                         var dataset = data.datasets[0];
                         var pathIndex;
                         angular.forEach(dataset.extra_metas.explore.geographic_reference_path_labels, function(value, index) {
@@ -169,7 +170,8 @@
                     var deferred = $q.defer();
                     entityFetchRequests[uid] = deferred.promise;
 
-                    ODSAPI.georeference.uid(uid, {geom: 'schematic'}).success(function(entity) {
+                    ODSAPI.georeference.uid(uid, {geom: 'schematic'}).then(function(response) {
+                        var entity = response.data;
                         addMappingsFromEntity(entity);
                         deferred.resolve(entity);
                     });

@@ -1872,7 +1872,8 @@
                         }
                     }
                     var requests = [];
-                    var success = function(data) {
+                    var success = function(response) {
+                        var data = response.data;
                         var dataset = new ODS.Dataset(data);
                         // dataset.metas.domain = $scope.context.domain;
                         $scope.context.dataset = dataset;
@@ -1880,7 +1881,7 @@
                     };
                     for (i = 0; i < datasets.length; i++) {
                         requests.push(ODSAPI.datasets.get($scope.context, datasets[i], {extrametas: true}).
-                            success(success));
+                            then(success));
                     }
                     $q.all(requests).then(function(arg) {
                         $scope.chart = chartConfig;

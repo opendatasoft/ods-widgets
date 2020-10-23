@@ -196,7 +196,13 @@
                     options.q.push(restriction_query.join(" OR "));
 
                     ODSAPI.records.search($scope.context, options, timeout.promise).
-                        success(function (data, status, headers, config) {
+                        then(function (response) {
+                            if (!response) {
+                                // Cancelled requests
+                                return;
+                            }
+
+                            var data = response.data;
                             $scope.records = $scope.records.concat(data.records);
 
                             var i, j, url, image, placeholder;
@@ -241,8 +247,8 @@
                             $scope.init = false;
 
                             currentRequestsTimeouts.splice(currentRequestsTimeouts.indexOf(timeout), 1);
-                        }).
-                        error(function (data, status, headers, config) {
+                        }, function (response) {
+                            var data = response.data;
                             if (data) {
                                 // Errors without data are cancelled requests
                                 $scope.error = data.error;
@@ -395,7 +401,8 @@
                         });
 
                         image.fetching = true;
-                        loadPromise = ODSAPI.records.search(scope.context, options, $q.defer()).success(function (data, status, headers, config) {
+                        loadPromise = ODSAPI.records.search(scope.context, options, $q.defer()).then(function (response) {
+                            var data = response.data;
                             image.record = data.records[0];
                             image.allFieldsInitialized = true;
                             image.fetching = false;

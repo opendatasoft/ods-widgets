@@ -78,19 +78,21 @@
                             extrametas: 'true',
                             interopmetas: 'true'
                         });
-                        catalog_search(context, options).success(function(data) {
+                        catalog_search(context, options).then(function(response) {
+                            var data = response.data;
                             $scope[variable] = data.datasets;
                             context.nhits = data.nhits;
                             $scope.loading = false;
-                        }).error(function() {
+                        }, function() {
                             $scope.loading = false;
                         });
                     } else if (context.type === 'dataset' && context.dataset) {
-                        dataset_search(context, options).success(function(data) {
+                        dataset_search(context, options).then(function(response) {
+                            var data = response.data;
                             $scope[variable] = data.records;
                             context.nhits = data.nhits;
                             $scope.loading = false;
-                        }).error(function() {
+                        }, function() {
                             $scope.loading = false;
                         });
                     }

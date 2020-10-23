@@ -11,18 +11,18 @@
             'visualization': function(value) {
                 switch (value) {
                     case 'analyze':
-                        return '<i class="odswidget-facet__value-icon fa fa-bar-chart"></i> ' + translate('Analyze');
+                        return '<i class="odswidget-facet__value-icon fa fa-bar-chart" aria-hidden="true"></i> ' + translate('Analyze');
                     case 'calendar':
-                        return '<i class="odswidget-facet__value-icon fa fa-calendar"></i> ' + translate('Calendar');
+                        return '<i class="odswidget-facet__value-icon fa fa-calendar" aria-hidden="true"></i> ' + translate('Calendar');
                     case 'geo':
-                        return '<i class="odswidget-facet__value-icon fa fa-globe"></i> ' + translate('Map');
+                        return '<i class="odswidget-facet__value-icon fa fa-globe" aria-hidden="true"></i> ' + translate('Map');
                     case 'image':
-                        return '<i class="odswidget-facet__value-icon fa fa-picture-o"></i> ' + translate('Image');
+                        return '<i class="odswidget-facet__value-icon fa fa-picture-o" aria-hidden="true"></i> ' + translate('Image');
                     case 'api':
-                        return '<i class="odswidget-facet__value-icon fa fa-cogs"></i> ' + translate('API');
+                        return '<i class="odswidget-facet__value-icon fa fa-cogs" aria-hidden="true"></i> ' + translate('API');
                     case 'custom_view':
                         return '<i class="odswidget-facet__value-icon fa fa-' + ODSWidgetsConfig.defaultCustomViewConfig.icon
-                            + '"></i> ' + ODS.StringUtils.escapeHTML(ODSWidgetsConfig.defaultCustomViewConfig.title);
+                            + '" aria-hidden="true"></i> ' + ODS.StringUtils.escapeHTML(ODSWidgetsConfig.defaultCustomViewConfig.title);
                     default:
                         return ODS.StringUtils.escapeHTML(value);
                 }

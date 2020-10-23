@@ -3,23 +3,27 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsAdvResults', ['ODSAPIv2', function (ODSAPIv2) {
+    mod.directive('odsAdvResults', ['ODSAPIv2', 'APIParamsV1ToV2', function (ODSAPIv2, APIParamsV1ToV2) {
         return {
             restrict: 'A',
             scope: true,
             controller: ['$scope', '$attrs', function($scope, $attrs) {
                 var runQuery = function(variableName, context, select, where, orderBy, rows) {
+                    var params = APIParamsV1ToV2(context.parameters);
+                    params = angular.extend(params, {
+                        select: select,
+                        where: where,
+                        order_by: orderBy,
+                        rows: rows || undefined
+                    });
+
                     ODSAPIv2
-                        .uniqueCall(ODSAPIv2.datasets.records)(context, {
-                            select: select,
-                            where: where,
-                            order_by: orderBy,
-                            rows: rows || undefined
-                        })
-                        .success(function(result) {
+                        .uniqueCall(ODSAPIv2.datasets.records)(context, params)
+                        .then(function(response) {
+                            var result = response.data;
                             $scope[variableName] = result.records.map(function(entry) { return entry.record.fields; });
-                        })
-                        .error(function(error) {
+                        }, function(response) {
+                            var error = response.data;
                             console.error('odsAdvResults: API error\n\n', error.message);
                         })
                 };

@@ -26,8 +26,9 @@
             template: '' +
             '<div class="odswidget odswidget-searchbox">' +
                 '<form method="GET" action="{{ actionUrl }}" ng-show="actionUrl" ng-attr-id="{{formId}}">' +
-                    '<input class="odswidget-searchbox__box" name="q" type="text" placeholder="{{placeholder|translate}}">' +
+                    '<input class="odswidget-searchbox__box" name="q" type="text" placeholder="{{placeholder|translate}}" aria-label="Search" translate="aria-label">' +
                     '<input ng-if="sort" name="sort" value="{{ sort }}" type="hidden">' +
+                    '<button type="submit" class="ods-aria-instructions" translate>Submit</button>' +
                 '</form>' +
             '</div>',
             scope: {

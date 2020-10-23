@@ -51,6 +51,14 @@ L.ODSMap = L.Map.extend({
             }
             layer.basemapLabel = basemap.label;
             layer.basemapId = basemap.id;
+
+            // Re-implement the accessibility changes present in modern Leaflet versions
+            // https://github.com/Leaflet/Leaflet/blob/v1.7.0/src/layer/tile/TileLayer.js#L146-L156
+            layer.on('tileload', function(e) {
+                e.tile.alt = "";
+                e.tile.setAttribute('role', 'presentation');
+            });
+
             layers.push(layer);
         }
 

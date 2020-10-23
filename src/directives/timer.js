@@ -53,7 +53,7 @@
         return {
             restrict: 'E',
             scope: {
-                autoStart: '=',
+                autoStart: '=?',
                 stopCondition: '&',
                 delay: '=',
                 exec: '&'

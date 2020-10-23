@@ -24,7 +24,7 @@
 
         return {
             restrict: 'A',
-            controller: function ($scope, $element, $attrs) {
+            controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
                 var output = $attrs.odsGetElementLayout;
                 var timeout;
                 if (angular.isDefined(output)) {
@@ -37,7 +37,7 @@
                         }, 100);
                     });
                 }
-            }
+            }]
         };
     }]);
 
@@ -62,7 +62,7 @@
 
         return {
             restrict: 'A',
-            controller: function ($scope, $attrs) {
+            controller: ['$scope', '$attrs', function ($scope, $attrs) {
                 var output = $attrs.odsGetWindowLayout;
                 var timeout;
                 if (angular.isDefined(output)) {
@@ -75,7 +75,7 @@
                         }, 100);
                     });
                 }
-            }
+            }]
         };
     }]);
 })();

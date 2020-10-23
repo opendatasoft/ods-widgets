@@ -212,16 +212,21 @@
 
                     }
 
-                    ODSAPI.records.search($scope.context, options, timeout.promise).
-                        success(function(data) {
+                    ODSAPI.records.search($scope.context, options, timeout.promise)
+                        .then(function(response) {
+                            if (!response || !response.data) {
+                                // Cancelled requests
+                                return;
+                            }
+                            var data = response.data;
                             var responsePage = data.parameters.start / data.parameters.rows;
                             if (lastLoadedPage === null && responsePage === 0 || angular.isNumber(lastLoadedPage) && responsePage === lastLoadedPage + 1) {
                                 handleResponse(data, responsePage);
                             } else {
                                 pagesWaitingHandling[responsePage] = {'callback': handleResponse, 'data': data};
                             }
-                        }).
-                        error(function(data) {
+                        }, function(response) {
+                            var data = response.data;
                             if (data) {
                                 // Errors without data are cancelled requests
                                 $scope.error = data.error;

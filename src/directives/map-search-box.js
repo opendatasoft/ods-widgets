@@ -20,24 +20,26 @@
             '              ng-change="runQuery(userQuery)" ' +
             '              ng-keydown="handleKeyDown($event)"' +
             '              ng-focus="expandSearchBox()" >' +
-            '       <button type="button" class="odswidget-map-search-box__box-cancel" ng-click="resetSearch()" ng-show="userQuery || dataSearchActive">' +
-            '           <i class="fa fa-times odswidget-map-search-box__close-search-icon"></i>' +
+            '       <button type="button" class="odswidget-map-search-box__box-cancel" aria-label="Reset" translate="aria-label" ng-click="resetSearch()" ng-show="userQuery || dataSearchActive">' +
+            '           <i class="fa fa-times odswidget-map-search-box__close-search-icon" aria-hidden="true"></i>' +
             '       </button>' +
             '       <button class="odswidget-map-search-box__toggle"' +
             '               ng-hide="expanded"' +
             '               ods-tooltip="Expand the search bar"' +
             '               ods-tooltip-direction="right"' +
             '               translate="ods-tooltip"' +
+            '               aria-label="{{ \'Expand the search bar\'|translate }}"' +
             '               ng-click="expandSearchBox()">' +
-            '           <i class="fa fa-caret-right"></i>' +
+            '           <i class="fa fa-caret-right" aria-hidden="true"></i>' +
             '       </button>' +
             '       <button class="odswidget-map-search-box__toggle"' +
             '               ng-show="expanded"' +
             '               ods-tooltip="Collapse the search bar"' +
             '               translate="ods-tooltip"' +
+            '               aria-label="{{ \'Collapse the search bar\'|translate }}"' +
             '               ods-tooltip-direction="left"' +
             '               ng-click="collapseSearchBox()">' +
-            '           <i class="fa fa-caret-left"></i>' +
+            '           <i class="fa fa-caret-left" aria-hidden="true"></i>' +
             '       </button>' +
             '   </div>' +
             '   <ul class="odswidget-map-search-box__suggestions" ' +
@@ -46,12 +48,12 @@
             '       <li ng-show="userQuery"' +
             '           ng-click="runDataSearch(userQuery)"' +
             '           ng-class="[\'odswidget-map-search-box__search-suggestion\', {\'odswidget-map-search-box__search-suggestion--selected\': selectedIndex === 0}]">' +
-            '           <i class="fa fa-search"></i> <span translate>Search {{userQuery}} in displayed data</span>' +
+            '           <i class="fa fa-search" aria-hidden="true"></i> <span translate>Search {{userQuery}} in displayed data</span>' +
             '       </li>' +
             '       <li ng-repeat="suggestion in suggestions" ' +
             '           ng-click="moveToSuggestion(suggestion, $index + 1)"' +
             '           ng-class="[\'odswidget-map-search-box__suggestion\', {\'odswidget-map-search-box__suggestion--selected\': selectedIndex === $index + 1}]">' +
-            '           <i ng-class="[\'odswidget-map-search-box__suggestion-icon\', getSuggestionIcon(suggestion)]"></i>' +
+            '           <i ng-class="[\'odswidget-map-search-box__suggestion-icon\', getSuggestionIcon(suggestion)]" aria-hidden="true"></i>' +
             '           <span class="odswidget-map-search-box__suggestion-name" ng-bind-html="suggestion.highlightedName"></span>' +
             '           <span class="odswidget-map-search-box__suggestion-localization" ng-bind-html="suggestion.parents"></span>' +
             '       </li>' +
@@ -75,7 +77,7 @@
             '               ods-tooltip' +
             '               ods-tooltip-template="getResultPreviewTemplate(selectedResult.context.dataset, record)"' +
             '               ng-click="moveToDataRecord(selectedResult.context.dataset, record)">' +
-            '               <i class="fa fa-map-marker odswidget-map-search-box__data-search__result-icon"></i>' +
+            '               <i class="fa fa-map-marker odswidget-map-search-box__data-search__result-icon" aria-hidden="true"></i>' +
             '               <span class="odswidget-map-search-box__data-search__result-empty" ng-if="getResultTitle(selectedResult.context.dataset, record) === null" translate>Empty</span>' +
             '               <span ng-if="getResultTitle(selectedResult.context.dataset, record) !== null">{{getResultTitle(selectedResult.context.dataset, record)}}</span>' +
             '           </li>' +
@@ -94,14 +96,18 @@
             '               <button type="button" ' +
             '                       ng-click="previousResultPage()" ' +
             '                       ng-disabled="currentResultsStartIndex === 0"' +
+            '                       aria-label="Previous page"' +
+            '                       translate="aria-label"' +
             '                       class="odswidget-map-search-box__data-search__pagination-button">' +
-            '                   <i class="fa fa-chevron-left"></i>' +
+            '                   <i class="fa fa-chevron-left" aria-hidden="true"></i>' +
             '               </button>' +
             '               <button type="button" ' +
             '                       ng-click="nextResultPage()" ' +
             '                       ng-disabled="currentResultsStartIndex+10 >= selectedResult.nhits"' +
+            '                       aria-label="Next page"' +
+            '                       translate="aria-label"' +
             '                       class="odswidget-map-search-box__data-search__pagination-button">' +
-            '                   <i class="fa fa-chevron-right"></i>' +
+            '                   <i class="fa fa-chevron-right" aria-hidden="true"></i>' +
             '               </button>' +
             '           </div>' +
             '       </div>' +
@@ -304,6 +310,10 @@
                         var timeout = $q.defer();
                         var params = angular.extend({}, ctx.parameters, {rows: 0});
                         var promise = ODSAPI.records.search(ctx, params, timeout.promise).then(function(result) {
+                            if (!result) {
+                                // Cancelled requests
+                                return;
+                            }
                             var data = result.data;
                             var datasetId = data.parameters.dataset;
                             resultObject.nhits = data.nhits;
@@ -340,6 +350,10 @@
                     selectionQueryTimeout = $q.defer();
                     var params = angular.extend({}, result.context.parameters, {rows: 10, start: $scope.currentResultsStartIndex});
                     ODSAPI.records.search(result.context, params, selectionQueryTimeout.promise).then(function(response) {
+                        if (!response) {
+                            // Cancelled requests
+                            return;
+                        }
                         selectionQueryTimeout = null;
                         $scope.currentResults = response.data.records;
                     });

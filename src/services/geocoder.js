@@ -90,7 +90,8 @@
                 queryOptions.params.aroundLatLng = aroundLatLng.join(',');
             }
 
-            $http.get('https://places-dsn.algolia.net/1/places/query', queryOptions).success(function(result) {
+            $http.get('https://places-dsn.algolia.net/1/places/query', queryOptions).then(function(response) {
+                var result = response.data;
                 var suggestions = [];
                 angular.forEach(result.hits, function(suggestion) {
                     suggestions.push({
@@ -102,7 +103,7 @@
                     })
                 });
                 deferred.resolve(suggestions);
-            }).error(function() {
+            }, function() {
                 deferred.reject();
             });
 
@@ -227,7 +228,8 @@
                 'timeout': currentRequest.promise
             };
 
-            $http.get('https://api.jawg.io/places/v1/autocomplete', queryOptions).success(function(result) {
+            $http.get('https://api.jawg.io/places/v1/autocomplete', queryOptions).then(function(response) {
+                var result = response.data;
                 var suggestions = [];
                 angular.forEach(result.features, function(suggestion) {
                     var normalizedSuggestion = {
@@ -250,7 +252,7 @@
                     suggestions.push(normalizedSuggestion);
                 });
                 deferred.resolve(suggestions);
-            }).error(function() {
+            }, function() {
                 deferred.reject();
             });
             return deferred.promise;

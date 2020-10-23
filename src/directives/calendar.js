@@ -65,11 +65,11 @@
             '        <ods-spinner class="odswidget-calendar__loading-wheel"></ods-spinner>'+
             '    </div>'+
             '</div>',
-            controller: function ($scope) {
+            controller: ['$scope', function ($scope) {
                 if ($scope.syncToUrl !== 'false') {
                     URLSynchronizer.addSynchronizedValue($scope, 'calendarView', 'calendarview');
                 }
-            },
+            }],
             link: function (scope, element, attrs, refineOnClickCtrl) {
                 var updateCalendarView = function () {
                     var currentView = scope.fullcalendar.fullCalendar('getView');
@@ -221,7 +221,8 @@
                 var calendarDataSource = function (start, end, timezone, callback) {
                     updateCalendarView();
                     search(scope.context, getSearchOptions(start, end)).
-                        success(function (data) {
+                        then(function (response) {
+                            var data = response.data;
                             callback(data.records);
                         });
                 };

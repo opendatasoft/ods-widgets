@@ -319,7 +319,8 @@
                             $scope.staticSearchOptions,
                             $scope.context.parameters,
                             {'rows': 1});
-                        ODSAPI.records.download($scope.context, options).success(function(data) {
+                        ODSAPI.records.download($scope.context, options).then(function(response) {
+                            var data = response.data;
                             propagateItemClickToContext(context, mapField, contextField, data[0]);
                         });
                     }
@@ -423,7 +424,8 @@
                                                     jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters, {
                                                         'geofilter.polygon': polygonParameter
                                                     });
-                                                    ODSAPI.records.boundingbox($scope.context, options).success(function (data) {
+                                                    ODSAPI.records.boundingbox($scope.context, options).then(function (response) {
+                                                        var data = response.data;
                                                         $scope.map.fitBounds([
                                                             [data.bbox[1], data.bbox[0]],
                                                             [data.bbox[3], data.bbox[2]]
@@ -461,7 +463,8 @@
                         $scope.currentClusterRequestCanceler.resolve();
                     }
                     $scope.currentClusterRequestCanceler = $q.defer();
-                    ODSAPI.records.geo($scope.context, options, $scope.currentClusterRequestCanceler.promise).success(function(data) {
+                    ODSAPI.records.geo($scope.context, options, $scope.currentClusterRequestCanceler.promise).then(function(response) {
+                        var data = response.data;
                         var clusters = data.clusters;
                         $scope.records = clusters ? clusters.length : 0;
                         var layerGroup = new L.LayerGroup();
@@ -497,7 +500,8 @@
                         $scope.currentClusterRequestCanceler.resolve();
                     }
                     $scope.currentClusterRequestCanceler = $q.defer();
-                    ODSAPI.records.geopreview($scope.context, options, $scope.currentClusterRequestCanceler.promise).success(function(data) {
+                    ODSAPI.records.geopreview($scope.context, options, $scope.currentClusterRequestCanceler.promise).then(function(response) {
+                        var data = response.data;
 
                         var layerGroup = new L.LayerGroup();
                         for (var i = 0; i < data.length; i++) {
@@ -563,7 +567,8 @@
 
                     // We're stubbing a dataset context
                     ODSAPI.records.analyze(colorAggregation.context, options).
-                        success(function(data) {
+                        then(function(response) {
+                            var data = response.data;
                             angular.forEach(data, function(result) {
                                 var records = result.x;
                                 var value = result.agg;
@@ -588,7 +593,8 @@
                     options['geofilter.polygon'] = ODS.GeoFilter.getBoundsAsPolygonParameter($scope.map.getBounds());
                     jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters);
                     ODSAPI.records.download($scope.context, options).
-                        success(function(data, status, headers, config) {
+                        then(function(response) {
+                            var data = response.data;
                             $scope.records = data;
                             $scope.error = '';
                             $scope.nhits = data.length;
@@ -761,7 +767,8 @@
                         options['geofilter.polygon'] = ODS.GeoFilter.getBoundsAsPolygonParameter($scope.map.getBounds());
                     }
                     jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters);
-                    ODSAPI.records.boundingbox($scope.context, options).success(function(data) {
+                    ODSAPI.records.boundingbox($scope.context, options).then(function(response) {
+                        var data = response.data;
                         if (globalSearch) {
                             // We manually move the map and trigger the refreshes on the new viewport
                             if (data.bbox.length > 0) {
@@ -898,7 +905,8 @@
                                     // Get the boundingbox from the API
                                     var options = {};
                                     jQuery.extend(options, $scope.staticSearchOptions, $scope.context.parameters);
-                                    ODSAPI.records.boundingbox($scope.context, options).success(function(data) {
+                                    ODSAPI.records.boundingbox($scope.context, options).then(function(response) {
+                                        var data = response.data;
                                         if (data.count > 0) {
                                             deferred.resolve([[data.bbox[1], data.bbox[0]], [data.bbox[3], data.bbox[2]]]);
                                         } else {

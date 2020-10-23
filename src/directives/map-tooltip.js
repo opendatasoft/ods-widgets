@@ -16,12 +16,12 @@
                 '       <div ng-if="template" ng-include src="\'custom-tooltip-\'+context.dataset.datasetid"></div>' +
                 '   </div>' +
                 '   <nav role="navigation" ng-show="records.length > 1" class="odswidget-map-tooltip__scroll-control ng-leaflet-tooltip-cloak">' +
-                '       <button class="odswidget-map-tooltip__scroll-left" ng-click="moveIndex(-1)">' +
-                '           <i class=" fa fa-chevron-left"  aria-hidden="true"></i>' +
+                '       <button class="odswidget-map-tooltip__scroll-left" ng-click="moveIndex(-1)" aria-label="Previous" translate="aria-label">' +
+                '           <i class=" fa fa-chevron-left" aria-hidden="true"></i>' +
                 '       </button>' +
                 '       <div class="odswidget-map-tooltip__scroll-amount" ng-bind="(selectedIndex+1)+\' / \'+records.length"></div>' +
-                '       <button class="odswidget-map-tooltip__scroll-right" ng-click="moveIndex(1)">' +
-                '          <i class="fa fa-chevron-right"></i>' +
+                '       <button class="odswidget-map-tooltip__scroll-right" ng-click="moveIndex(1)" aria-label="Next" translate="aria-label">' +
+                '          <i class="fa fa-chevron-right" aria-hidden="true"></i>' +
                 '       </button>' +
                 '   </nav>' +
                 '</div>',
@@ -131,9 +131,15 @@
 
                     if (tooltipSort) {
                         queryOptions.sort = tooltipSort;
-                        ODSAPI.records.search($scope.context, queryOptions).success(function(data) { handleResults(data.records); });
+                        ODSAPI.records.search($scope.context, queryOptions).then(function(response) {
+                            var data = response.data;
+                            handleResults(data.records);
+                        });
                     } else {
-                        ODSAPI.records.download($scope.context, queryOptions).success(handleResults);
+                        ODSAPI.records.download($scope.context, queryOptions).then(function(response) {
+                            var data = response.data;
+                            handleResults(data);
+                        });
                     }
 
                     function handleResults(data) {

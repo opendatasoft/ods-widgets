@@ -52,7 +52,7 @@
                 if (attrs.id && !scope.gistId) {
                     scope.gistId = attrs.id;
                 }
-                var successTooltipMessage = '<i class="fa fa-check"></i> ' + translate('Copied');
+                var successTooltipMessage = '<i class="fa fa-check" aria-hidden="true"></i> ' + translate('Copied');
                 scope.resetTooltipMessage = function () {
                     scope.tooltipMessage = '<span style="text-align:center">' + translate('Copy to clipboard') + '</span>';
                 };

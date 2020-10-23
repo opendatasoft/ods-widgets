@@ -14,17 +14,19 @@
             '           ng-if="expanded"' +
             '           ods-tooltip="Collapse panel"' +
             '           translate="ods-tooltip"' +
+            '           aria-label="{{ \'Collapse panel\'|translate }}"' +
             '           ods-tooltip-direction="left"' +
             '           ng-click="toggleDisplayControl()">' +
-            '       <i class="fa fa-caret-right"></i>' +
+            '       <i class="fa fa-caret-right" aria-hidden="true"></i>' +
             '   </button>' +
             '   <button class="odswidget-map-display-control__toggle"' +
             '           ng-if="!expanded"' +
             '           ods-tooltip="Expand panel"' +
             '           translate="ods-tooltip"' +
+            '           aria-label="{{ \'Expand panel\'|translate }}"' +
             '           ods-tooltip-direction="left"' +
             '           ng-click="toggleDisplayControl()">' +
-            '       <i class="fa fa-caret-left"></i>' +
+            '       <i class="fa fa-caret-left" aria-hidden="true"></i>' +
             '   </button>' +
             '   <ul class="odswidget-map-display-control__groups"' +
             '       ng-show="mapConfig.groups.length">' +
@@ -39,6 +41,7 @@
             '                          context="group.layers[0].context">' +
             '           </ods-map-picto>' +
             '           <i class="fa fa-exclamation-triangle odswidget-map-display-control__picto--error" ' +
+            '              aria-label="Warning" translate="aria-label" ' +
             '              ng-if="group._hasUnknownDataset"></i>' +
             '           <span class="odswidget-map-display-control__group-title" ' +
             '                ng-class="{\'odswidget-map-display-control__group-title--error\' : group._hasUnknownDataset}"' +

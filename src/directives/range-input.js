@@ -76,7 +76,7 @@
             link: function (scope, element, attrs, ngModelCtrl) {
 
                 var template =  '<div class="ods-range-input">' +
-                                '    <i class="ods-range-input__icon ods-range-input__icon--min" ng-if="iconMin" title="{{ iconMinTitle }}" ng-class="iconMin"></i>' +
+                                '    <i class="ods-range-input__icon ods-range-input__icon--min" ng-if="iconMin" title="{{ iconMinTitle }}" ng-class="iconMin" aria-hidden="true"></i>' +
                                 '    <input type="range"' +
                                 '           min="{{ actualMin }}"' +
                                 '           max="{{ max }}"' +
@@ -87,7 +87,7 @@
                                 '           ng-model="values.internalRange"' +
                                 '           aria-label="{{rangeLabel}}"' +
                                 '           title="{{ values.internalRange }}">' +
-                                '    <i class="ods-range-input__icon ods-range-input__icon--max" ng-if="iconMax" title="{{ iconMaxTitle }}" ng-class="iconMax"></i>' +
+                                '    <i class="ods-range-input__icon ods-range-input__icon--max" ng-if="iconMax" title="{{ iconMaxTitle }}" ng-class="iconMax" aria-hidden="true"></i>' +
                                 '    <input class="ods-range-input__value-input" ' +
                                 '          ng-change="onValueChange()" ' +
                                 '          ng-if="editableValue" ' +

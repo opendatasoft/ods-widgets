@@ -2,6 +2,28 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 1.4.12 - 2020-10-23
+### Added
+- `odsAdvAnalysis`: A new widget that can be used to query an 
+[API v2 `aggregates` endpoint](https://help.opendatasoft.com/apis/ods-search-v2/#aggregating-records) and expose the
+results in a variable, which can then be used by other widgets.
+- `odsAdvTable`: A new widget to display as a table the content of a variable (typically taken from the `odsAdvAnalysis`
+variable).
+- `odsSelect`: New `isLoading` parameter to trigger in advance the loading spinner. For example, it can be used to start
+the spinner at the very beginning of an `odsResults` query that will populate the `odsSelect` options, so that users
+get an explicit loading message the entire time.
+
+### Changed
+- `odsMap`: The Mapbox basemap support has been updated to remove deprecated "Studio Classic styles", and add support
+for Mapbox Styles and Tilesets.
+- `odsMap`: The Jawg basemaps are now displayed in Retina on displays that support it (e.g. smartphones, tablets, 
+high-density screens). 
+
+### Fixed
+- Fixed on issue on our minified build (`ods-widgets.min.js`) where several widgets were unusable.
+- `odsMap`, `odsSearchbox`: Fixed a number of accessibility issues
+- `odsSelect`: Various performance improvements when dealing with a large set of options.
+
 ## 1.4.11 - 2020-08-07
 ### Fixed
 - `odsColorGradient`: Replaced `odsColorGradientLogarithmicScaleFactor` parameter with a new `odsColorGradientPowExponent`

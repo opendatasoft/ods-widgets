@@ -54,7 +54,7 @@
          */
         return {
             restrict: 'A',
-            controller: function ($scope, $element, $attrs) {
+            controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
                 var refineConfigurations = [];
 
                 // the exposed methods
@@ -103,7 +103,7 @@
                         });
                     }
                 );
-            }
+            }]
         };
     };
 
