@@ -441,7 +441,6 @@ html[dir=rtl] .odswidget-calendar__tooltip.odswidget-calendar__tooltip--increase
   top: 5px;
   right: 25px;
   -webkit-user-select: none;
-     -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
 }
@@ -775,7 +774,6 @@ html[dir=rtl] .odswidget-filter-summary__active-filter-value {
 }
 .ods-gist .gist-clipboard > div {
   width: -webkit-fit-content;
-  width: -moz-fit-content;
   width: fit-content;
   padding: 10px;
 }
@@ -2968,10 +2966,6 @@ html[dir=rtl] .odswidget-text-search__reset {
   width: 100% !important;
   height: 100% !important;
 }
-.ods-slideshow:-moz-full-screen {
-  width: 100% !important;
-  height: 100% !important;
-}
 .ods-slideshow:-ms-fullscreen {
   width: 100% !important;
   height: 100% !important;
@@ -3487,7 +3481,6 @@ html[dir=rtl] .odswidget-geo-navigation__choice {
   background-color: rgba(255, 255, 255, 0.5);
   border: 1px solid white;
   width: -webkit-fit-content;
-  width: -moz-fit-content;
   width: fit-content;
   z-index: 10;
 }
