@@ -539,6 +539,8 @@ module('docsApp', ['bootstrap', 'bootstrapPrettify'], ['ngAnimate']).
   config(function($locationProvider) {
     if (NG_DOCS.html5Mode) {
       $locationProvider.html5Mode(true).hashPrefix('!');
+    } else {
+      $locationProvider.hashPrefix('');
     }
   }).
   factory(docsApp.serviceFactory).

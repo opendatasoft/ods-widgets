@@ -91,7 +91,7 @@
                 tElement.contents().wrapAll('<div>');
                 if (tElement.contents().length > 0 && tElement.contents().html().trim().length > 0) {
                     tElement.contents().wrapAll('<div>');
-                    tElement.data('tooltip-template', tElement.children().html());
+                    tElement.data('tooltipTemplate', tElement.children().html());
                 }
                 return '<div class="odswidget odswidget-map">' +
                         '<div class="odswidget-map__map"></div>' +
@@ -362,7 +362,7 @@
                             autoPanPaddingTopLeft: [50, 305],
                             autoPan: !$scope.mapViewFilter && !$scope.staticMap
                         };
-                        var html = $element.data('tooltip-template');
+                        var html = $element.data('tooltipTemplate');
                         if (angular.isUndefined(html) || !angular.isString(html) || html.trim() === '') {
                             // If no template explicitely passed in the odsMap tag, we look into the map map_tooltip_html.
                             if ($scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.map_tooltip_html) {
@@ -615,9 +615,8 @@
                             $scope.layerGroup = layerGroup;
 
                             $scope.initialLoading = false;
-                        }).
-                        error(function(data, status, headers, config) {
-                            $scope.error = data.error;
+                        }, function(response) {
+                            $scope.error = response.data.error;
                             $scope.initialLoading = false;
                         });
                 };

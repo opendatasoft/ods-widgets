@@ -251,7 +251,7 @@
          *                   ods-color-gradient-high="rgb(20, 33, 96)"
          *                   ods-color-gradient-low="rgb(180, 197, 241)">
          *
-         *                  <ods-map>
+         *                  <ods-map location="5,46.50595,3.40576">
          *                      <ods-map-layer context="regions"
          *                                     color-categories="colorgradient['colors']"
          *                                     color-by-field="region"
@@ -440,7 +440,7 @@
                                     });
                                 }
                             }); // end lazy load d3
-                        });
+                        }, function() {});
                     }, true);
                 });
             }]

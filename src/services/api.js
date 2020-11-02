@@ -55,26 +55,19 @@
                 }
                 options.headers['ODS-Widgets-Version'] = ODSWidgetsConfig.ODSWidgetsVersion;
             }
-            if (!context || !context.domainUrl || Modernizr.cors) {
-                return $http
-                    .get(url, options)
-                    .catch(function(response) {
-                        var data = response.data;
-                        var status = response.status;
-                        if (data) {
-                            odsNotificationService.sendNotification(data);
-                        } else if (status >= 400) {
-                            odsNotificationService.sendNotification(odsHttpErrorMessages.getForStatus(status));
-                        }
-                        return $q.reject(response);
-                    });
-            } else {
-                // Fallback for non-CORS browsers (IE8, IE9)
-                // In that case we won't have proper errors from the API
-                url += url.indexOf('?') > -1 ? '&' : '?';
-                url += 'callback=JSON_CALLBACK';
-                return $http.jsonp(url, options);
-            }
+
+            return $http
+                .get(url, options)
+                .catch(function(response) {
+                    var data = response.data;
+                    var status = response.status;
+                    if (data) {
+                        odsNotificationService.sendNotification(data);
+                    } else if (status >= 400) {
+                        odsNotificationService.sendNotification(odsHttpErrorMessages.getForStatus(status));
+                    }
+                    return $q.reject(response);
+                });
         };
 
         var sourcedDatasetId = function(context, datasetId) {

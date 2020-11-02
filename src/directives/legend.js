@@ -44,7 +44,7 @@
          *                   ods-color-gradient-low="rgb(180, 197, 241)"
          *                   ods-color-gradient-nb-classes="4">
          *
-         *                  <ods-map>
+         *                  <ods-map location="5,46.50595,3.40576">
          *                      <ods-map-layer context="regions"
          *                                     color-categories="colorgradient['colors']"
          *                                     color-by-field="region"
@@ -139,7 +139,7 @@
                 scope.decimalPrecision = scope.decimalPrecision || 0;
 
                 scope.$watch('colorGradient', function (nv, ov) {
-                    if (!nv.range.min) {
+                    if (angular.isUndefined(nv.range.min) || nv.range.min === null) {
                         return;
                     }
 

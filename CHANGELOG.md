@@ -2,9 +2,22 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 2.0.0 - 2020-11-02
+This version is the first one based on AngularJS 1.8.0, which is the last major version that will be released, and is
+currently in Long Term Support ([more information](https://docs.angularjs.org/misc/version-support-status)).
+
+Starting from this version, ODS-Widgets will only officially support AngularJS 1.8, and we encourage you to upgrade your own
+application to this version. However, our tests show that most widgets still work with AngularJS 1.4.x to this day,
+with two known exceptions: `ods-range-input` and `ods-gist`.
+
+### Fixed
+- `odsSelect`: Fix a crash when `options` was based on a static value instead of a variable.
+- `odsSelect`: In non-multiple mode, you can now unselect your previous selection again by clicking it.
+- `odsLegend`: Fix blank legend in some situations when the minimum value was 0.
+
 ## 1.4.12 - 2020-10-23
 ### Added
-- `odsAdvAnalysis`: A new widget that can be used to query an 
+- `odsAdvAnalysis`: A new widget that can be used to query an
 [API v2 `aggregates` endpoint](https://help.opendatasoft.com/apis/ods-search-v2/#aggregating-records) and expose the
 results in a variable, which can then be used by other widgets.
 - `odsAdvTable`: A new widget to display as a table the content of a variable (typically taken from the `odsAdvAnalysis`
@@ -16,8 +29,8 @@ get an explicit loading message the entire time.
 ### Changed
 - `odsMap`: The Mapbox basemap support has been updated to remove deprecated "Studio Classic styles", and add support
 for Mapbox Styles and Tilesets.
-- `odsMap`: The Jawg basemaps are now displayed in Retina on displays that support it (e.g. smartphones, tablets, 
-high-density screens). 
+- `odsMap`: The Jawg basemaps are now displayed in Retina on displays that support it (e.g. smartphones, tablets,
+high-density screens).
 
 ### Fixed
 - Fixed on issue on our minified build (`ods-widgets.min.js`) where several widgets were unusable.
@@ -34,7 +47,7 @@ parameter, to provide the ability to generate a logarithmic scale (value below 1
 - `odsMap`: Fixed an issue where pictos wouldn't load in the legend and the display control, when used outside an
 Opendatasoft platform.
 - `odsMap`: Fixed an issue where a map wouldn't properly initialize due to a race condition in very rare situations.
-- `odsMap`, `odsVegaLite`: Fixed an issue in third-party dependency loading, which would prevent the widgets from 
+- `odsMap`, `odsVegaLite`: Fixed an issue in third-party dependency loading, which would prevent the widgets from
 running properly more than once in complex dashboards.
 
 ### Removed
@@ -64,7 +77,7 @@ of values.
 
 ## 1.4.6 - 2020-06-05
 ### Added
-- `uriEncode` and `uriComponentEncode`: two new filters to help building links directly in the template. 
+- `uriEncode` and `uriComponentEncode`: two new filters to help building links directly in the template.
   They respectively apply the javascript functions `encodeURI` and `encodeURIComponent` to the filtered string.
 - `odsFacets` and `odsTable`: the two widgets now support selection of fields for a specific language.
 - `odsGeoNavigation`: it nows displays more familiar country shapes instead of exhaustive one.
@@ -111,7 +124,7 @@ of values.
 - `odsColorGradient`: new widget that can be used to build a set of colors from the results of an aggregation
 - `odsLegend`: together with `odsColorGradient`, can be used to build a dynamic map legend
 - `odsGeoNavigation`: a new filter, specifically for geographic-based metadata such as "Geographic coverage"
-- `odsMostPopularDatasets`: new `orderBy` parameter, can be used to display the most popular datasets based on their 
+- `odsMostPopularDatasets`: new `orderBy` parameter, can be used to display the most popular datasets based on their
   popularity score (`popularity`) instead of the default based on the number of downloads (`downloads`)
 - `math` filter: new `pow` function to compute power
 

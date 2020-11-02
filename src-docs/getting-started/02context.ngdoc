@@ -9,7 +9,7 @@
 <p>The context is the link between data and widgets. It indicates what data should be used for the widget, and with which filters. Not only that, but the context also allows widgets to interact with one another, for an even more dynamic result!</p>
 
 <div class="ods-link">
-<i class="fa fa-external-link"></i> If you want to see a live example of how widgets and data are linked together, with a different or a shared context, <a href="https://discovery.opendatasoft.com/pages/concept-context/" target="_blank">it's this way</a>, on ODS Discovery!
+<i class="fa fa-external-link"></i> If you want to see live examples of how widgets and data are linked together, with a different or a shared context, <a href="https://codelibrary.opendatasoft.com/" target="_blank">it's this way</a>, on ODS Code Library!
 </div>
 
 <p>In practice, the context is an Opendatasoft widget: <a href="https://help.opendatasoft.com/widgets/#/api/ods-widgets.directive:odsDatasetContext" target="_blank">odsDatasetContext</a>, that represents a specific dataset, and allows interaction with its content, meaning its data.</p>

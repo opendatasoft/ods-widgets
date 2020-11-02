@@ -23,7 +23,7 @@
                     parameters['y.serie1.func'] = layerConfig.func;
                 }
 
-                ODSAPI.records.geopolygon(layerConfig.context, parameters, timeout.promise).then(handleResult);
+                ODSAPI.records.geopolygon(layerConfig.context, parameters, timeout.promise).then(handleResult, function() {});
 
                 function handleResult(response) {
                     if (!response || !response.data) {

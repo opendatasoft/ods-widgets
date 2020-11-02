@@ -57,7 +57,7 @@
                         }
                     }
                     deferred.resolve(layerGroup);
-                });
+                }, function () {});
                 return deferred.promise;
             }
         };

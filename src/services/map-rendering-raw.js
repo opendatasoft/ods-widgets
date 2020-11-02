@@ -77,7 +77,7 @@
 
                     }
                     deferred.resolve(markerLayerGroup);
-                });
+                }, function() {});
                 return deferred.promise;
             }
         };

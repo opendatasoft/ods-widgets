@@ -482,13 +482,21 @@
                 $scope.visible = function() {
                     return !(angular.isString($scope.hideIfSingleCategory) && $scope.hideIfSingleCategory.toLowerCase() === 'true' && $scope.categories.length === 1 && $scope.categories[0].state !== 'refined');
                 };
-                // $$boundTransclude is clearly angular black magic but hopefully it will get us what we want in
-                // any situation: the uncompiled content of the template
-                var customTemplate = $transclude.$$boundTransclude().html();
-                // Is there a custom template into the directive's tag?
-                if (customTemplate) {
-                    $scope.customTemplate = customTemplate.trim();
-                }
+
+                $transclude(function(clone) {
+                    // Only run that code if there is something to transclude, because it can be dangerous in some
+                    // situations when we don't destroy all the hierarchy properly (e.g. modals).
+                    if (clone.length) {
+                        // $$boundTransclude is clearly angular black magic but hopefully it will get us what we want in
+                        // any situation: the uncompiled content of the template
+                        // We're passing an empty clone function to avoid a multilink error
+                        var customTemplate = $transclude.$$boundTransclude($scope, function(){}).html();
+                        // Is there a custom template into the directive's tag?
+                        if (customTemplate) {
+                            $scope.customTemplate = customTemplate.trim();
+                        }
+                    }
+                });
             }]
         };
     });
@@ -506,7 +514,7 @@
                 valueFormatter: '@',
                 context: '='
             },
-            require: '^odsFacet',
+            require: '^?odsFacet',
             template: '' +
             '<ul class="odswidget-facet__category-list">' +
             '   <li class="odswidget-facet__value-search" ng-show="valueSearchEnabled">' +
@@ -595,7 +603,7 @@
         return {
             restrict: 'E',
             replace: true,
-            require: ['^odsFacet', '^?odsFacetCategoryList'],
+            require: ['^?odsFacet', '^?odsFacetCategoryList'],
             scope: {
                 category: '=',
                 facetName: '@',

@@ -2249,7 +2249,7 @@
                             odsChartController.pushContext(context);
                         };
 
-                        var context = attrs.context;
+                        var context = attrs.context.trim();
                         scope[context].wait().then(function(dataset) {
                             ChartHelper.init(scope[context]);
                             query.config.dataset = dataset.datasetid;

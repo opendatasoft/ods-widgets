@@ -63,7 +63,7 @@
                         layerGroup.addLayer(heatmapLayer);
                     }
                     deferred.resolve(heatmapLayer);
-                });
+                }, function() {});
                 return deferred.promise;
             }
         };

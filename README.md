@@ -51,11 +51,11 @@ details of the library.
 
 ### Compatibility
 Known to work on: (may not be exhaustive)
-- Internet Explorer 10+
-- Safari 6+
-- Chrome 12+
-- Firefox 4+
-- Android Browser from Android 3.0+
+- Internet Explorer 11
+- Edge (last versions)
+- Safari (last versions)
+- Chrome (last versions)
+- Firefox (last versions)
 
 ### Download
 You can [download the latest ODS Widgets release here](https://github.com/opendatasoft/ods-widgets/releases/latest). This is a ZIP file of a folder that you can then
@@ -63,8 +63,9 @@ copy into your project.
 
 ### Setup
 The following libraries are required as dependencies in your pages for ODS-Widgets to work:
-- **jQuery** (2.1+ should work)
-- **AngularJS** 1.4.* and the **angular-sanitize** module
+- **jQuery** 2.1+ (versions 3+ has known incompatibilities)
+- **AngularJS** 1.8.0 and the **angular-sanitize** module (note: AngularJS 1.4 and above should be working as well,
+with known incompatibility on `ods-range-input` and `ods-gist`)
 - Some widgets are using icons from **[FontAwesome 4.4.0](http://fontawesome.io/icons/)**
 
 To load ODS-Widgets, you can then simply load `ods-widgets.js` and `ods-widgets.css`, or their minified version also included
@@ -106,8 +107,8 @@ The bare minimum for an HTML page is this template:
         </div>
 
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular-sanitize.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.0/angular.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.0/angular-sanitize.min.js"></script>
         <script type="text/javascript" src="//static.opendatasoft.com/ods-widgets/latest/ods-widgets.min.js"></script>
     </body>
 </html>

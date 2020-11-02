@@ -123,7 +123,7 @@
                 };
 
                 scope.onRangeChange = function() {
-                    var num = parseFloat(scope.values.internalRange, 10);
+                    var num = scope.values.internalRange;
                     scope.values.internalValue = num;
                     ngModelCtrl.$setViewValue(num);
                 };
@@ -133,7 +133,7 @@
                         return;
                     }
 
-                    scope.values.internalRange = scope.values.internalValue.toString();
+                    scope.values.internalRange = scope.values.internalValue;
                     ngModelCtrl.$setViewValue(scope.values.internalValue);
                 };
 
@@ -145,7 +145,7 @@
 
                 ngModelCtrl.$render = function() {
                     scope.values.internalValue = ngModelCtrl.$modelValue;
-                    scope.values.internalRange = ngModelCtrl.$modelValue.toString();
+                    scope.values.internalRange = ngModelCtrl.$modelValue;
                 };
 
                 scope.$watch('selectableMin', function (newValue, oldValue) {

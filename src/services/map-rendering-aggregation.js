@@ -55,7 +55,7 @@
                         'y.serie1.func': layerConfig.func
                     });
 
-                    ODSAPI.records.analyze(layerConfig.context, parameters, timeout.promise).then(handleResult);
+                    ODSAPI.records.analyze(layerConfig.context, parameters, timeout.promise).then(handleResult, function() {});
 
                 } else {
                     // Local
@@ -76,7 +76,7 @@
                         parameters['y.serie1.func'] = layerConfig.func;
                     }
 
-                    ODSAPI.records.geopolygon(layerConfig.context, parameters, timeout.promise).then(handleResult);
+                    ODSAPI.records.geopolygon(layerConfig.context, parameters, timeout.promise).then(handleResult, function () {});
                 }
 
                 function handleResult(response) {

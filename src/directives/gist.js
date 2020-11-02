@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsGist', ['translate', '$http', function (translate, $http) {
+    mod.directive('odsGist', ['translate', '$http', '$sce', function (translate, $http, $sce) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsGist
@@ -60,8 +60,11 @@
                 scope.resetTooltipMessage();
 
                 $http.jsonp(
-                    'https://gist.github.com/' + scope.username + '/' + scope.gistId + '.json?callback=JSON_CALLBACK',
-                    {timeout: 5000}
+                    $sce.trustAsResourceUrl('https://gist.github.com/' + scope.username + '/' + scope.gistId + '.json'),
+                    {
+                        timeout: 5000,
+                        jsonpCallbackParam: 'callback'
+                    }
                 ).then(function (result) {
                         var data = result.data;
                         jQuery(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
@@ -80,6 +83,7 @@
                         };
                     },
                     function (error) {
+                    console.log('error', error)
                         scope.htmlError =
                             "<div class=\"gist blob-code-inner ods-gist-error\">" +
                                 "<p translate>Impossible to load code resource</p>" +

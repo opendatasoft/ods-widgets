@@ -8753,7 +8753,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by Opendatasoft
     //  License: MIT
-    var version = '1.4.12';
+    var version = '2.0.0';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -8908,6 +8908,10 @@ mod.directive('infiniteScroll', [
                 }
             }
         }
+    }]);
+
+    mod.config(['$qProvider', function ($qProvider) {
+        $qProvider.errorOnUnhandledRejections(false);
     }]);
 }());
 ;(function() {
@@ -9120,26 +9124,19 @@ mod.directive('infiniteScroll', [
                 }
                 options.headers['ODS-Widgets-Version'] = ODSWidgetsConfig.ODSWidgetsVersion;
             }
-            if (!context || !context.domainUrl || Modernizr.cors) {
-                return $http
-                    .get(url, options)
-                    .catch(function(response) {
-                        var data = response.data;
-                        var status = response.status;
-                        if (data) {
-                            odsNotificationService.sendNotification(data);
-                        } else if (status >= 400) {
-                            odsNotificationService.sendNotification(odsHttpErrorMessages.getForStatus(status));
-                        }
-                        return $q.reject(response);
-                    });
-            } else {
-                // Fallback for non-CORS browsers (IE8, IE9)
-                // In that case we won't have proper errors from the API
-                url += url.indexOf('?') > -1 ? '&' : '?';
-                url += 'callback=JSON_CALLBACK';
-                return $http.jsonp(url, options);
-            }
+
+            return $http
+                .get(url, options)
+                .catch(function(response) {
+                    var data = response.data;
+                    var status = response.status;
+                    if (data) {
+                        odsNotificationService.sendNotification(data);
+                    } else if (status >= 400) {
+                        odsNotificationService.sendNotification(odsHttpErrorMessages.getForStatus(status));
+                    }
+                    return $q.reject(response);
+                });
         };
 
         var sourcedDatasetId = function(context, datasetId) {
@@ -12143,7 +12140,7 @@ mod.directive('infiniteScroll', [
                         'y.serie1.func': layerConfig.func
                     });
 
-                    ODSAPI.records.analyze(layerConfig.context, parameters, timeout.promise).then(handleResult);
+                    ODSAPI.records.analyze(layerConfig.context, parameters, timeout.promise).then(handleResult, function() {});
 
                 } else {
                     // Local
@@ -12164,7 +12161,7 @@ mod.directive('infiniteScroll', [
                         parameters['y.serie1.func'] = layerConfig.func;
                     }
 
-                    ODSAPI.records.geopolygon(layerConfig.context, parameters, timeout.promise).then(handleResult);
+                    ODSAPI.records.geopolygon(layerConfig.context, parameters, timeout.promise).then(handleResult, function () {});
                 }
 
                 function handleResult(response) {
@@ -12382,7 +12379,7 @@ mod.directive('infiniteScroll', [
                     parameters['y.serie1.func'] = layerConfig.func;
                 }
 
-                ODSAPI.records.geopolygon(layerConfig.context, parameters, timeout.promise).then(handleResult);
+                ODSAPI.records.geopolygon(layerConfig.context, parameters, timeout.promise).then(handleResult, function() {});
 
                 function handleResult(response) {
                     if (!response || !response.data) {
@@ -12475,7 +12472,7 @@ mod.directive('infiniteScroll', [
                         }
                     }
                     deferred.resolve(layerGroup);
-                });
+                }, function () {});
                 return deferred.promise;
             }
         };
@@ -12546,7 +12543,7 @@ mod.directive('infiniteScroll', [
                         layerGroup.addLayer(heatmapLayer);
                     }
                     deferred.resolve(heatmapLayer);
-                });
+                }, function() {});
                 return deferred.promise;
             }
         };
@@ -12631,7 +12628,7 @@ mod.directive('infiniteScroll', [
 
                     }
                     deferred.resolve(markerLayerGroup);
-                });
+                }, function() {});
                 return deferred.promise;
             }
         };
@@ -17503,7 +17500,7 @@ mod.directive('infiniteScroll', [
          *                   ods-color-gradient-high="rgb(20, 33, 96)"
          *                   ods-color-gradient-low="rgb(180, 197, 241)">
          *
-         *                  <ods-map>
+         *                  <ods-map location="5,46.50595,3.40576">
          *                      <ods-map-layer context="regions"
          *                                     color-categories="colorgradient['colors']"
          *                                     color-by-field="region"
@@ -17692,7 +17689,7 @@ mod.directive('infiniteScroll', [
                                     });
                                 }
                             }); // end lazy load d3
-                        });
+                        }, function() {});
                     }, true);
                 });
             }]
@@ -21456,13 +21453,21 @@ mod.directive('infiniteScroll', [
                 $scope.visible = function() {
                     return !(angular.isString($scope.hideIfSingleCategory) && $scope.hideIfSingleCategory.toLowerCase() === 'true' && $scope.categories.length === 1 && $scope.categories[0].state !== 'refined');
                 };
-                // $$boundTransclude is clearly angular black magic but hopefully it will get us what we want in
-                // any situation: the uncompiled content of the template
-                var customTemplate = $transclude.$$boundTransclude().html();
-                // Is there a custom template into the directive's tag?
-                if (customTemplate) {
-                    $scope.customTemplate = customTemplate.trim();
-                }
+
+                $transclude(function(clone) {
+                    // Only run that code if there is something to transclude, because it can be dangerous in some
+                    // situations when we don't destroy all the hierarchy properly (e.g. modals).
+                    if (clone.length) {
+                        // $$boundTransclude is clearly angular black magic but hopefully it will get us what we want in
+                        // any situation: the uncompiled content of the template
+                        // We're passing an empty clone function to avoid a multilink error
+                        var customTemplate = $transclude.$$boundTransclude($scope, function(){}).html();
+                        // Is there a custom template into the directive's tag?
+                        if (customTemplate) {
+                            $scope.customTemplate = customTemplate.trim();
+                        }
+                    }
+                });
             }]
         };
     });
@@ -21480,7 +21485,7 @@ mod.directive('infiniteScroll', [
                 valueFormatter: '@',
                 context: '='
             },
-            require: '^odsFacet',
+            require: '^?odsFacet',
             template: '' +
             '<ul class="odswidget-facet__category-list">' +
             '   <li class="odswidget-facet__value-search" ng-show="valueSearchEnabled">' +
@@ -21569,7 +21574,7 @@ mod.directive('infiniteScroll', [
         return {
             restrict: 'E',
             replace: true,
-            require: ['^odsFacet', '^?odsFacetCategoryList'],
+            require: ['^?odsFacet', '^?odsFacetCategoryList'],
             scope: {
                 category: '=',
                 facetName: '@',
@@ -22818,7 +22823,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsGist', ['translate', '$http', function (translate, $http) {
+    mod.directive('odsGist', ['translate', '$http', '$sce', function (translate, $http, $sce) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsGist
@@ -22875,8 +22880,11 @@ mod.directive('infiniteScroll', [
                 scope.resetTooltipMessage();
 
                 $http.jsonp(
-                    'https://gist.github.com/' + scope.username + '/' + scope.gistId + '.json?callback=JSON_CALLBACK',
-                    {timeout: 5000}
+                    $sce.trustAsResourceUrl('https://gist.github.com/' + scope.username + '/' + scope.gistId + '.json'),
+                    {
+                        timeout: 5000,
+                        jsonpCallbackParam: 'callback'
+                    }
                 ).then(function (result) {
                         var data = result.data;
                         jQuery(document.head).append('<link href="' + data.stylesheet + '" rel="stylesheet">');
@@ -22895,6 +22903,7 @@ mod.directive('infiniteScroll', [
                         };
                     },
                     function (error) {
+                    console.log('error', error)
                         scope.htmlError =
                             "<div class=\"gist blob-code-inner ods-gist-error\">" +
                                 "<p translate>Impossible to load code resource</p>" +
@@ -25156,7 +25165,7 @@ mod.directive('infiniteScroll', [
                             odsChartController.pushContext(context);
                         };
 
-                        var context = attrs.context;
+                        var context = attrs.context.trim();
                         scope[context].wait().then(function(dataset) {
                             ChartHelper.init(scope[context]);
                             query.config.dataset = dataset.datasetid;
@@ -25831,7 +25840,7 @@ mod.directive('infiniteScroll', [
          *                   ods-color-gradient-low="rgb(180, 197, 241)"
          *                   ods-color-gradient-nb-classes="4">
          *
-         *                  <ods-map>
+         *                  <ods-map location="5,46.50595,3.40576">
          *                      <ods-map-layer context="regions"
          *                                     color-categories="colorgradient['colors']"
          *                                     color-by-field="region"
@@ -25926,7 +25935,7 @@ mod.directive('infiniteScroll', [
                 scope.decimalPrecision = scope.decimalPrecision || 0;
 
                 scope.$watch('colorGradient', function (nv, ov) {
-                    if (!nv.range.min) {
+                    if (angular.isUndefined(nv.range.min) || nv.range.min === null) {
                         return;
                     }
 
@@ -26184,7 +26193,7 @@ mod.directive('infiniteScroll', [
                 tElement.contents().wrapAll('<div>');
                 if (tElement.contents().length > 0 && tElement.contents().html().trim().length > 0) {
                     tElement.contents().wrapAll('<div>');
-                    tElement.data('tooltip-template', tElement.children().html());
+                    tElement.data('tooltipTemplate', tElement.children().html());
                 }
                 return '<div class="odswidget odswidget-map">' +
                         '<div class="odswidget-map__map"></div>' +
@@ -26455,7 +26464,7 @@ mod.directive('infiniteScroll', [
                             autoPanPaddingTopLeft: [50, 305],
                             autoPan: !$scope.mapViewFilter && !$scope.staticMap
                         };
-                        var html = $element.data('tooltip-template');
+                        var html = $element.data('tooltipTemplate');
                         if (angular.isUndefined(html) || !angular.isString(html) || html.trim() === '') {
                             // If no template explicitely passed in the odsMap tag, we look into the map map_tooltip_html.
                             if ($scope.context.dataset.extra_metas && $scope.context.dataset.extra_metas.visualization && $scope.context.dataset.extra_metas.visualization.map_tooltip_html) {
@@ -26708,9 +26717,8 @@ mod.directive('infiniteScroll', [
                             $scope.layerGroup = layerGroup;
 
                             $scope.initialLoading = false;
-                        }).
-                        error(function(data, status, headers, config) {
-                            $scope.error = data.error;
+                        }, function(response) {
+                            $scope.error = response.data.error;
                             $scope.initialLoading = false;
                         });
                 };
@@ -31240,7 +31248,7 @@ mod.directive('infiniteScroll', [
                 };
 
                 scope.onRangeChange = function() {
-                    var num = parseFloat(scope.values.internalRange, 10);
+                    var num = scope.values.internalRange;
                     scope.values.internalValue = num;
                     ngModelCtrl.$setViewValue(num);
                 };
@@ -31250,7 +31258,7 @@ mod.directive('infiniteScroll', [
                         return;
                     }
 
-                    scope.values.internalRange = scope.values.internalValue.toString();
+                    scope.values.internalRange = scope.values.internalValue;
                     ngModelCtrl.$setViewValue(scope.values.internalValue);
                 };
 
@@ -31262,7 +31270,7 @@ mod.directive('infiniteScroll', [
 
                 ngModelCtrl.$render = function() {
                     scope.values.internalValue = ngModelCtrl.$modelValue;
-                    scope.values.internalRange = ngModelCtrl.$modelValue.toString();
+                    scope.values.internalRange = ngModelCtrl.$modelValue;
                 };
 
                 scope.$watch('selectableMin', function (newValue, oldValue) {
@@ -32288,12 +32296,13 @@ mod.directive('infiniteScroll', [
 
                 $scope.toggleSelectOne = function(item) {
                     var itemKey = JSON.stringify(item.value);
+                    var isSelected = !!$scope._selectedItems[itemKey];
 
                     if ($scope.multiple === false) {
                         $scope._selectedItems = {};
                     }
 
-                    if ($scope._selectedItems[itemKey]) {
+                    if (isSelected) {
                         delete $scope._selectedItems[itemKey];
                     } else {
                         $scope._selectedItems[itemKey] = item;
@@ -32350,8 +32359,8 @@ mod.directive('infiniteScroll', [
                 /* Watchers & Observers                                                       */
                 /* -------------------------------------------------------------------------- */
 
-                $scope.$watch('options', function(newVal, oldVal) {
-                    if (angular.isDefined(newVal) && !angular.equals(newVal, oldVal)) {
+                $scope.$watch('options', function(newVal) {
+                    if (angular.isDefined(newVal)) {
                         $scope.isLoading = newVal.length > 500;
                         $timeout(function() {
                             // Since we may need to display the loader first, this function is

@@ -431,12 +431,13 @@
 
                 $scope.toggleSelectOne = function(item) {
                     var itemKey = JSON.stringify(item.value);
+                    var isSelected = !!$scope._selectedItems[itemKey];
 
                     if ($scope.multiple === false) {
                         $scope._selectedItems = {};
                     }
 
-                    if ($scope._selectedItems[itemKey]) {
+                    if (isSelected) {
                         delete $scope._selectedItems[itemKey];
                     } else {
                         $scope._selectedItems[itemKey] = item;
@@ -493,8 +494,8 @@
                 /* Watchers & Observers                                                       */
                 /* -------------------------------------------------------------------------- */
 
-                $scope.$watch('options', function(newVal, oldVal) {
-                    if (angular.isDefined(newVal) && !angular.equals(newVal, oldVal)) {
+                $scope.$watch('options', function(newVal) {
+                    if (angular.isDefined(newVal)) {
                         $scope.isLoading = newVal.length > 500;
                         $timeout(function() {
                             // Since we may need to display the loader first, this function is
