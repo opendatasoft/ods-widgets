@@ -107,8 +107,8 @@ The bare minimum for an HTML page is this template:
         </div>
 
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.0/angular.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.0/angular-sanitize.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.2/angular.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/angular-sanitize/1.8.2/angular-sanitize.min.js"></script>
         <script type="text/javascript" src="//static.opendatasoft.com/ods-widgets/latest-v2/ods-widgets.min.js"></script>
     </body>
 </html>
