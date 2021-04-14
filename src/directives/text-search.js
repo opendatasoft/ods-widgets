@@ -8,22 +8,22 @@
          * @name ods-widgets.directive:odsTextSearch
          * @scope
          * @restrict E
-         * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context <i>(mandatory)</i> {@link ods-widgets.directive:odsCatalogContext Catalog Context}, {@link ods-widgets.directive:odsDatasetContext Dataset Context}, or array of context to use.
-         * @param {string} [placeholder=none] Text to display as a placeholder when the searchbox is empty.
-         * @param {string} [field=none] Name of a field the search will be restricted on (i.e. the widget will only allow search on the textual content of the chosen field).
-         * If more than one contexts are declared, it is possible to specify different fields depending on these contexts, using the following syntax: `mycontext-field`. If a specific field is not set for a context, the value of the **field** parameter will be used by default. The search will be a simple text search that won't support query languages and operators.
+         * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context <i>(mandatory)</i> {@link ods-widgets.directive:odsCatalogContext Catalog Context}, {@link ods-widgets.directive:odsDatasetContext Dataset Context}, or array of context to use
+         * @param {string} [placeholder=none] Text to display as a placeholder when the search box is empty
+         * @param {string} [field=none] Name of a field the search will be restricted on (i.e., the widget will only allow to search on the textual content of the chosen field).
+         * If more than one context is declared, it is possible to specify different fields depending on these contexts, using the following syntax: mycontext-field. If a specific field is not set for a context, the value of the field parameter will be used by default. The search will be a simple text search that won't support query languages and operators.
          * @param {string} [suffix=none] Changes the default `q` query parameter into `q.suffixValue`. This parameter prevents widgets from overriding one another, for instance when multiple odsTextSearch widgets are used on the same page.
-         * @param {string} autofocus Makes the search box automatically selected at loading of the page, to allow to start typing the search without having to select manually the search box beforehand. No value is required for this parameter to function.
-         * @param {string} id Adds an `id` attribute to the search's textbox, e.g. to integrate the widget to a clickable label.
+         * @param {string} autofocus Makes the search box automatically selected at loading of the page to start typing the search without selecting the search box manually beforehand. No value is required for this parameter to function.
+         * @param {string} id Adds an `id` attribute to the search's text box, for example, to integrate the widget to a clickable label.
          *
          * @description
-         * This widget displays a search box that can be used to do a full-text search on a context.
+         * The odsTextSearch widget displays a search box to perform a full-text search in a context.
          *
          *  @example
          *  <example module="ods-widgets">
          *      <file name="simple_text_search.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <ods-text-search context="events" field="titre"></ods-text-search>
          *              <ods-table context="events"></ods-table>
@@ -34,9 +34,9 @@
          *  <example module="ods-widgets">
          *      <file name="text_search_with_multiple_contexts.html">
          *          <ods-dataset-context context="events,trees"
-         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract"
-         *                               trees-domain="https://widgets-examples.opendatasoft.com/"
+         *                               trees-domain="https://documentation-resources.opendatasoft.com/"
          *                               trees-dataset="les-arbres-remarquables-de-paris">
          *              <ods-text-search context="[events,trees]"
          *                               events-field="titre"
@@ -59,7 +59,7 @@
             '   <form ng-submit="applySearch()" class="odswidget-text-search__form">' +
             '       <input class="odswidget-text-search__search-box" name="q" type="text" id="{{id}}"' +
             '               ng-model="searchExpression" ' +
-            '               aria-label="{{ translatedPlaceholder }}" ' +
+            '               aria-label="{{ translatedPlaceholder || \'Search\'|translate }}" ' +
             '               placeholder="{{ translatedPlaceholder }}"> ' +
             '       <button type="reset" class="odswidget-text-search__reset" ng-show="searchExpression" ng-click="resetSearch()" aria-label="Reset search" translate="aria-label">' +
             '           <span class="ods-aria-instructions" translate>Reset</span>' +

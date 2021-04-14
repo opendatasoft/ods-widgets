@@ -10,13 +10,13 @@
          * @restrict A
          * @scope
          * @param {Object} odsToggleModel Object to apply the toggle on
-         * @param {string} odsToggleKey The key that holds the toggled value
+         * @param {string} odsToggleKey The key holding the toggled value
          * @param {string} odsToggleValue The toggled value
-         * @param {string} [odsStoreAs=array] The type of the resulting variable. Either 'array' or 'csv'.
+         * @param {string} [odsStoreAs=array] The type of the resulting variable. The authorized values are 'array' and 'csv'.
          * @description
-         * This widget, when used on a checkbox, allows the checkbox to be used to "toggle" a value in an object, in other words to add it or remove when the checkbox
-         * is respectively checked and unchecked. Multiple checkboxes can be used on the same model and key, in which case if two or more are toggled, an array
-         * will be created to hold the values.
+         * The odsToggleModel widget, when used on a checkbox, allows the checkbox to be used to "toggle" a value in an object. In other words, the value is added when the checkbox is selected and removed when the checkbox is cleared.
+         * 
+         * Multiple checkboxes can be used on the same model and key, in which case if two or more are toggled, an array will be created to hold the values.
          *
          * @example
          *  <example module="ods-widgets">

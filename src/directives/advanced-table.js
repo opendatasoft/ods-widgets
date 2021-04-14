@@ -29,21 +29,21 @@
          * @restrict E
          * @param {array} data The input array of value which feeds the table.
          * @param {array} [columnsOrder] An array of strings representing the columns' order.
-         * @param {object} [columnsOptions] An object representing the formatting to apply on the columns. Two options are available: `label` is used to rename the column's header and `decimals` to set the number of decimals on each cell of the column (e.g. `{ label: 'New name', decimals: 2 }`).
-         * @param {string} [sort] Name of the column to sort on, following by the suffix `ASC` or `DESC` (e.g. `columnName ASC`).
+         * @param {object} [columnsOptions] An object representing the formatting to apply on the columns. Two options are available: `label` is used to rename the column's header and `decimals` to set the number of decimals on each cell of the column (e.g., `{ label: 'New name', decimals: 2 }`).
+         * @param {string} [sort] Name of the column to sort on, following by the suffix `ASC` or `DESC` (e.g., `columnName ASC`).
          * @param {array} [totals] An array of strings containing the names of the columns whose totals must be calculated.
-         * @param {boolean} [stickyHeader=false] if true, the header will be fixed at the top of the table.
-         * @param {boolean} [stickyFirstColumn=false] if true, the first column will be fixed on the left side of the table.
+         * @param {boolean} [stickyHeader=false] When set to `true`, the header will be fixed at the top of the table.
+         * @param {boolean} [stickyFirstColumn=false] When set to `true`, the first column will be fixed on the left side of the table.
          *
          * @description
-         * This widget is used to analyze data from a table perspective.
+         * The odsAdvTable widget is used to analyze data from a table perspective.
          *
-         * It is especially interesting to use this widget in conjunction with an odsAdvAnalysis widget, but you can of course feed it with static data.
-         * This widget gives you the ability to:
-         * - compute totals
-         * - sort, reorder and rename columns
-         * - format numbers as text and define the number of decimal places to round the number to
-         * - set the header and/or the first column in fixed position
+         * It is especially interesting to use this widget in conjunction with an odsAdvAnalysis widget, but you can feed it with static data.
+         * The odsAdvTable widget gives you the ability to:
+         * - compute totals,
+         * - sort, reorder and rename columns,
+         * - format numbers as text and define the number of decimal places to round the number to, and
+         * - set the header and/or the first column in a fixed position.
          *
          *
          * @example
@@ -61,18 +61,18 @@
          *    <file name="an_example_using_odsAdvAnalysis.html">
          *        <ods-dataset-context
          *            context="ctx"
-         *            ctx-domain="https://widgets-examples.opendatasoft.com/"
+         *            ctx-domain="https://documentation-resources.opendatasoft.com/"
          *            ctx-dataset="les-arbres-remarquables-de-paris">
          *            <div ods-adv-analysis="data"
          *                ods-adv-analysis-context="ctx"
          *                ods-adv-analysis-select="count(objectid) as count"
          *                ods-adv-analysis-where="arrondissement like 'PARIS'"
-         *                ods-adv-analysis-group-by="espece, genre, arrondissement, hauteur">
+         *                ods-adv-analysis-group-by="espece, genre, arrondissement, hauteur_en_m">
          *                <ods-adv-table
          *                    data="data"
          *                    sort="espece ASC"
          *                    totals="['count']"
-         *                    columns-order="['espece', 'count', 'genre', 'arrondissement', 'hauteur']"
+         *                    columns-order="['espece', 'count', 'genre', 'arrondissement', 'hauteur_en_m']"
          *                    columns-options="{
          *                        espece: {
          *                            label: 'The species',
@@ -87,7 +87,7 @@
          *                        arrondissement: {
          *                            label: 'The district',
          *                        },
-         *                        hauteur: {
+         *                        hauteur_en_m: {
          *                            decimals: 2,
          *                            label: 'The height (in meters)',
          *                        },

@@ -10,8 +10,9 @@
          *  @restrict A
          *  @scope
          *  @description
-         *  Get the ISO local datetime and store it into a variable (into the scope).
-         *  Equivalent to moment().format() javascript call.
+         *  The odsDatetime widget gets the ISO local datetime and stores it into a variable (into the scope).
+         * 
+         *  It is an equivalent to moment().format() javascript call.
          *  The current scope gains a refreshDatetime method that will refresh the variable with the current datetime.
          *
          *  @example

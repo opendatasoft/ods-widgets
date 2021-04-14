@@ -3,6 +3,8 @@
 
     var mod = angular.module('ods-widgets');
 
+    var MAX_RECORDS = 10000; // Maximum reachable record via the search endpoint
+
     mod.directive('odsPaginationBlock', ['$location', function($location) {
         /**
          * @ngdoc directive
@@ -10,18 +12,25 @@
          * @scope
          * @restrict E
          * @param {CatalogContext|DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {number} [perPage=10] How many results should be contained per page.
-         * @param {boolean} [nofollow=false] If true, all links within the widget (used to change page) will contain a `rel="nofollow"` attribute.
+         * @param {number} [perPage=10] Controls the number of results per page.
+         * @param {boolean} [nofollow=false] When set to `true`, all links within the widget (used to change page) will contain a `rel="nofollow"` attribute.
          * It should be used if you don't want search engines to crawl all the pages of your widget.
          * @param {string} [containerIdentifier] By default, changing the page will trigger a scroll to the top of the window.
-         * Using this parameter, you can specify the ID of the element you want to scroll to the top of (e.g. "my-results").
+         * You can use this parameter to specify the ID of the element that will contain the results (e.g., "my-results")
+         * so that the behavior is more precise:
+         * - If your results are inside a container that is used to vertically scroll the results, the container's scroll
+         * will be set at the start.
+         * - If your results are inside a container that doesn't have a scrollbar, the page itself will scroll to the start of the container.
+         * Note: In the second situation, some CSS properties may prevent the widget from understanding that it doesn't have a scrollbar. As a result, the widget won't be able to scroll scrolling to the top of the container.
+         * This issue may be caused by the odsPaginationBlock widget slightly overflowing its container, typically because of large fonts or higher line-height settings.
+         * In this situation, forcing a height on the widget may fix the issue.
          * @description
-         * This widget displays a pagination control that you can use to make the context "scroll" through a list of results. It doesn't display
-         * results by itself, and therefore should be paired with another widget. Note that by itself it also doesn't control the number of results fetched by the context,
-         * and the `perPage` parameter should be the same as the `rows` parameter on the context.
+         * The odsPaginationBlock widget displays a pagination control that you can use to make the context "scroll" through a list of results.
+         * 
+         * The widget doesn't display results. Therefore, it should be paired with another widget.
+         * The widget doesn't control the number of results fetched by the context. The `perPage` parameter should be the same as the `rows` parameter on the context.
          *
-         * If you just want to display results with a pagination system, you can have a look at {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}
-         * which already include this directive (if the relevant parameter is active on the widget).
+         * If you just want to display results with a pagination system, you can use {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}, which already includes this directive (if the relevant parameter is active on the widget).
          */
 
         /*
@@ -64,7 +73,8 @@
                         $scope.pages = [];
                         return;
                     }
-                    var pagesCount = Math.max(1, Math.floor(($scope.context.nhits-1) / $scope.perPage) + 1);
+                    var maxHits = Math.min(MAX_RECORDS, $scope.context.nhits);
+                    var pagesCount = Math.max(1, Math.floor((maxHits - 1) / $scope.perPage) + 1);
                     var pages = [];
                     var pageNum;
                     if (pagesCount <= 8) {
@@ -101,11 +111,6 @@
                     $scope.pages = pages;
                 };
 
-                var containerElement;
-                if ($scope.containerIdentifier) {
-                    containerElement = document.getElementById($scope.containerIdentifier);
-                }
-
                 var unwatch = $scope.$watch('context', function(nv, ov) {
                     if (nv) {
                         $scope.$watch('context.nhits', function(newValue, oldValue) {
@@ -113,6 +118,7 @@
                                 buildPages();
                         });
                         $scope.$watch('perPage', function(newValue, oldValue) {
+                            $scope.perPage = $scope.perPage || 10;
                             if ($scope.context.nhits && $scope.perPage)
                                 buildPages();
                         });
@@ -120,8 +126,20 @@
                             if ($scope.context.nhits && $scope.perPage)
                                 buildPages();
                             if (angular.isDefined(newValue) || angular.isDefined(oldValue)) {
+                                var containerElement;
+                                if ($scope.containerIdentifier) {
+                                    containerElement = document.getElementById($scope.containerIdentifier);
+                                }
+
                                 if (containerElement) {
-                                    containerElement.scrollTop = 0;
+                                    if (containerElement.scrollHeight === containerElement.clientHeight) {
+                                        // This is "flat" container with no scrollbar, we just want to move the page's
+                                        // entire scroll there.
+                                        $anchorScroll($scope.containerIdentifier);
+                                    } else {
+                                        // The container contains a scrollbar, we just want to get the top of that scroll
+                                        containerElement.scrollTop = 0;
+                                    }
                                 } else {
                                     $anchorScroll();
                                 }

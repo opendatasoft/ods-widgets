@@ -10,8 +10,8 @@
          * @restrict E
          * @scope
          * @description
-         * Display a table describing the schema of a dataset. For each field, it provides the label, name,
-         * description, type and an example
+         * The odsDatasetSchema widget displays a table describing the schema of a dataset. For each field, it provides the label, name,
+         * description, type, and an example.
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context}
          *
          * @example
@@ -19,7 +19,7 @@
          *     <file name="index.html">
          *         <ods-dataset-context context="tree"
          *                              tree-dataset="les-arbres-remarquables-de-paris"
-         *                              tree-domain="https://widgets-examples.opendatasoft.com/">
+         *                              tree-domain="https://documentation-resources.opendatasoft.com/">
          *             <ods-dataset-schema context="tree"></ods-dataset-schema>
          *         </ods-dataset-context>
          *    </file>

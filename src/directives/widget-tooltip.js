@@ -11,17 +11,17 @@
          * @transclude
          *
          * @description
-         * This directive is a helper for displaying custom tooltip.
-         * It allows to configure the usable fields in the tooltip and the template and does the html rendering giving
-         * back the compiled html to the calling widget.
-         * By default the template for the custom tooltip can access the record and a `displayedFields` array that lists
-         * the record fields that should appear in the tooltip.
+         * The odsWidgetTooltip directive is a helper for displaying custom tooltip.
+         * 
+         * It allows to configure the usable fields in the tooltip and the template and does the HTML rendering giving back the compiled HTML to the calling widget.
+         * 
+         * By default, the template for the custom tooltip can access the record and a displayedFields array that lists the record fields that should appear in the tooltip.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="affiches"
-         *                               affiches-domain="https://widgets-examples.opendatasoft.com/"
+         *                               affiches-domain="https://documentation-resources.opendatasoft.com/"
          *                               affiches-dataset="affiches-anciennes">
          *              <ods-media-gallery context="affiches" ods-auto-resize ods-widget-tooltip>
          *                  <h3>My custom tooltip</h3>

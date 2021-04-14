@@ -9,16 +9,16 @@
          * @name ods-widgets.directive:odsPicto
          * @scope
          * @restrict E
-         * @param {string} url The url of the svg or image to display
+         * @param {string} url The URL of the SVG or image to display
          * @param {string} color The color to use to fill the SVG
          * @param {Object} colorByAttribute An object containing a mapping between elements within the SVG, and colors.
-         * The elements within the SVG with a matching `data-fill-id` attribute will take the corresponding color.
-         * @param {string} classes The classes to directly apply to the svg element
+         * The elements within the SVG with a matching `data-fill-id` attribute take the corresponding color.
+         * @param {string} classes The classes to directly apply to the SVG element
          * @description
-         * This widget displays a "picto" specified by a url and force a fill color on it.
-         * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
+         * The odsPicto widget displays a pictogram specified by a URL and forces a fill color on it.
+         * This element can be styled (height, width, etc.), especially if the pictogram is vectorial (SVG).
          *
-         * All parameters expect javascript variables or litterals. If you want to provide hardcoded strings you'll have to wrap them in quotes, as shown in the example below.
+         * All parameters expect javascript variables or literals. If you want to provide hardcoded strings, you'll have to wrap them in quotes, as shown in the following example.
          * @todo implement defs and use in svg
          *
          * @example
@@ -67,10 +67,10 @@
          * @name ods-widgets.directive:odsThemePicto
          * @scope
          * @restrict E
-         * @param {string} theme The label of the theme to display the picto of.
+         * @param {string} theme The label of the theme to display the pictogram of
          * @description
-         * This widget displays the "picto" of a theme, based on the `themes` setting in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig}.
-         * This element can be styled (height, width...), especially if the picto is vectorial (SVG).
+         * The odsThemePicto widget displays the pictogram of a theme based on the `themes` setting in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig}.
+         * This element can be styled (height, width, etc.), especially if the pictogram is vectorial (SVG).
          *
          */
         return {

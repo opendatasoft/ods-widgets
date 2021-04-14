@@ -11,12 +11,12 @@
          * @restrict E
          * @param {CatalogContext|DatasetContext|CatalogContext[]|DatasetContext[]} context 
          * {@link ods-widgets.directive:odsCatalogContext Catalog Context} or 
-         * {@link ods-widgets.directive:odsDatasetContext Dataset Context} to display the filters of, or list of 
-         * contexts.
-         * @param {String[]} except an array of parameters to exclude from the clearing
+         * {@link ods-widgets.directive:odsDatasetContext Dataset Context} to display the filters of, or a list of 
+         * contexts
+         * @param {String[]} except An array of parameters to exclude from the clearing operation
          * 
          * @description
-         * This widget displays a button which will clear all active filters in the given context.
+         * The odsClearAllFilters widget displays a button that will clear all active filters in the given context.
          */
         return {
             restrict: 'E',

@@ -4,17 +4,17 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsresultenumerator-page"><p>This widget enumerates the results of a search (records for a <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>, datasets for a <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a>) and repeats the template (the content of the directive element) for each of them.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsresultenumerator-page"><p>The odsResultEnumerator widget enumerates the search results (records for a <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>, datasets for a <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a>). It repeats the template (the content of the directive element) for each of them.</p>
 <p>If used with a <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a>, for each result, the following AngularJS variables are available:</p>
 <ul>
-<li>item.datasetid: Dataset identifier of the dataset</li>
-<li>item.metas: An object holding the key/values of metadata for this dataset</li>
+<li><code>item.datasetid</code>: Dataset identifier of the dataset</li>
+<li><code>item.metas</code>: An object holding the key/values of metadata for this dataset</li>
 </ul>
 <p>If used with a <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>, for each result, the following AngularJS variables are available:</p>
 <ul>
-<li>item.datasetid: Dataset identifier of the dataset this record belongs to</li>
-<li>item.fields: an object hold all the key/values for the record</li>
-<li>item.geometry: if the record contains geometrical information, this object is present and holds its GeoJSON representation</li>
+<li><code>item.datasetid</code>: Dataset identifier of the dataset this record belongs to</li>
+<li><code>item.fields</code>: an object hold all the key/values for the record</li>
+<li><code>item.geometry</code>: if the record contains geometrical information, this object is present and holds its GeoJSON representation</li>
 </ul>
 </div></div>
 <h2 id="usage">Usage</h2>
@@ -29,16 +29,16 @@
 </ul>
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsresultenumerator-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
-</div></td></tr><tr><td>max</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsresultenumerator-page"><p>Maximum number of results to show (can be changed dynamically using a variable)</p>
-</div> <p><em>(default: 10)</em></p></td></tr><tr><td>showHitsCounter</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsresultenumerator-page"><p>Display the number of hits (search results). This is the number of results available on the API, not the number of results displayed in the widget.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>showPagination</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsresultenumerator-page"><p>Display a pagination block below the results, to be able to browse them all.</p>
+</div></td></tr><tr><td>max</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsresultenumerator-page"><p>Maximum number of results to show. The value can be changed dynamically using a variable.</p>
+</div> <p><em>(default: 10)</em></p></td></tr><tr><td>showHitsCounter</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsresultenumerator-page"><p>Displays the number of hits (search results). This is the number of results available on the API, not the number of results displayed in the widget.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>showPagination</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsresultenumerator-page"><p>Displays a pagination block below the results to be able to browse them all.</p>
 </div> <p><em>(default: false)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsresultenumerator-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-27" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-26" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-27" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-27">
+<pre class="prettyprint linenums" ng-set-text="index.html-26" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-26">
     <ods-catalog-context context="example"
                          example-domain="https://data.opendatasoft.com">
         <ul>
@@ -53,6 +53,6 @@
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-27" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-26" ng-eval-javascript=""></div>
 </div></div>
 </div>

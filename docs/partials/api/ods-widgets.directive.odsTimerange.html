@@ -4,8 +4,8 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>This widget displays two fields to select the two bounds of a date and time range.</p>
-<p>Be careful, the values for the <code>defaultTo</code> and <code>defaultFrom</code> parameters MUST be in <code>YYYY-MM-DD HH:mm</code>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>The odsTimerange widget displays two fields to select the two bounds of a date and time range.</p>
+<p>The values for the <code>defaultTo</code> and <code>defaultFrom</code> parameters MUST be in <code>YYYY-MM-DD HH:mm</code>
 (or <code>YYYY-MM-DD</code> for date only) whatever the displayFormat.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
@@ -33,25 +33,25 @@
 </div></td></tr><tr><td>timeField <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>The value is the name of the field (date or datetime) to filter on.<br><br><em>Use this form if you apply the timerange to only one context.</em></p>
 </div> <p><em>(default: first date/datetime field available)</em></p></td></tr><tr><td>{context}TimeField <div><em>(optional)</em></div></td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>The value is the name of the field (date or datetime) to filter on.<br><br><em>Use this form when you apply the timerange to multiple contexts. {context} must be replaced by the context name.</em></p>
 </div> <p><em>(default: first date/datetime field available)</em></p></td></tr><tr><td>defaultFrom</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Default datetime for the &quot;from&quot; field: either &quot;yesterday&quot;, &quot;now&quot; or a string representing a date. This value always uses the <code>YYYY-MM-DD HH:mm</code> or <code>YYYY-MM-DD</code> format.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>defaultTo</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Default datetime for the &quot;to&quot; field: either &quot;yesterday&quot;, &quot;now&quot; or a string representing a date. This value always uses the <code>YYYY-MM-DD HH:mm</code> or <code>YYYY-MM-DD</code> format.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>displayTime</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Define if the date selector displays the time selector as well</p>
-</div> <p><em>(default: true)</em></p></td></tr><tr><td>dateFormat</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Define the format for the date displayed in the inputs</p>
-</div> <p><em>(default: 'YYYY-MM-DD HH:mm')</em></p></td></tr><tr><td>suffix</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>(optional) Add a suffix to the q.timerange, q.from_date or q.to_date parameter. This prevents widgets from overriding each other.</p>
-</div> <p><em>(default: 'fieldname')</em></p></td></tr><tr><td>labelFrom</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Set the label before the first input</p>
-</div> <p><em>(default: 'From')</em></p></td></tr><tr><td>labelTo</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Set the label before the second input</p>
-</div> <p><em>(default: 'to')</em></p></td></tr><tr><td>placeholderFrom</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Set the label before the first input</p>
-</div> <p><em>(default: '')</em></p></td></tr><tr><td>placeholderTo</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Set the label before the second input</p>
-</div> <p><em>(default: '')</em></p></td></tr><tr><td>to</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Set a variable that will get the iso formatted value of the first input</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>from</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Set a variable that will get the iso formatted value of the second input</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>defaultTo</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Default datetime for the &quot;to&quot; field: either &quot;yesterday&quot;, &quot;now&quot;, or a string representing a date. This value always uses the <code>YYYY-MM-DD HH:mm</code> or <code>YYYY-MM-DD</code> format.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>displayTime</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Defines if the date selector displays the time selector as well</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>dateFormat</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Defines the format for the date displayed in the inputs</p>
+</div> <p><em>(default: 'YYYY-MM-DD HH:mm')</em></p></td></tr><tr><td>suffix</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>(optional) Adds a suffix to the q.timerange, q.from_date or q.to_date parameter. This prevents widgets from overriding each other.</p>
+</div> <p><em>(default: 'fieldname')</em></p></td></tr><tr><td>labelFrom</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Sets the label before the first input</p>
+</div> <p><em>(default: 'From')</em></p></td></tr><tr><td>labelTo</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Sets the label before the second input</p>
+</div> <p><em>(default: 'to')</em></p></td></tr><tr><td>placeholderFrom</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Sets the label before the first input</p>
+</div> <p><em>(default: '')</em></p></td></tr><tr><td>placeholderTo</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Sets the label before the second input</p>
+</div> <p><em>(default: '')</em></p></td></tr><tr><td>to</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Sets a variable that will get the iso formatted value of the first input</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>from</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><p>Sets a variable that will get the iso formatted value of the second input</p>
 </div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odstimerange-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-36" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-35" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-36" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-36">
+<pre class="prettyprint linenums" ng-set-text="index.html-35" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-35">
      <ods-dataset-context context="events"
-                          events-domain="https://widgets-examples.opendatasoft.com/"
+                          events-domain="https://documentation-resources.opendatasoft.com/"
                           events-dataset="evenements-publics-openagenda-extract">
          <ods-timerange context="events"
                         default-from="yesterday"
@@ -61,7 +61,7 @@
      </ods-dataset-context>
 
      <ods-dataset-context context="events"
-                          events-domain="https://widgets-examples.opendatasoft.com/"
+                          events-domain="https://documentation-resources.opendatasoft.com/"
                           events-dataset="evenements-publics-openagenda-extract">
          <ods-timerange context="events"
                         date-format="DD/MM/YYYY"
@@ -71,7 +71,7 @@
      </ods-dataset-context>
 
      <ods-dataset-context context="events"
-                          events-domain="https://widgets-examples.opendatasoft.com/"
+                          events-domain="https://documentation-resources.opendatasoft.com/"
                           events-dataset="evenements-publics-openagenda-extract">
          <div ods-datetime="datenow">
              <ods-timerange context="events"
@@ -84,6 +84,6 @@
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-36" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-35" ng-eval-javascript=""></div>
 </div></div>
 </div>

@@ -12,17 +12,17 @@
          * @param {CatalogContext|DatasetContext} context
          *     {@link ods-widgets.directive:odsCatalogContext Catalog Context} or
          *     {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {string} facetName Name of the facet to build the tag cloud from.
-         * @param {number} [max=all] Maximum number of tags to show in the cloud.
+         * @param {string} facetName Name of the facet to build the tag cloud from
+         * @param {number} [max=all] Maximum number of tags to show in the cloud
          * @param {string} [redirectTo=none] URL.
          * If specified, a click on any tag will redirect to the given URL and apply the filter there.
-         * @param {CatalogContext|DatasetContext} [contextToRefine=current context] Specify the context that will be
+         * @param {CatalogContext|DatasetContext} [contextToRefine=current context] Specifies the context that will be
          * refined. If not specified at all, the refined context will be the one defined through the `context` parameter.
          *
          * @description
-         * This widget displays a "tag cloud" of the values available in a facet (either the facet of a dataset, or a
-         * facet from the dataset catalog). The "weight" (size) of a tag depends on the number of occurences ("count")
-         * for this tag.
+         * The odsTagCloud widget displays a "tag cloud" of the values available in a facet.
+         * This facet can be the facet of a dataset or a facet from the dataset catalog.
+         * The "weight" (size) of a tag depends on the number of occurrences (count) for this tag.
          *
          * @example
          *  <example module="ods-widgets">

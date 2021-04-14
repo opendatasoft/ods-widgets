@@ -12,27 +12,27 @@
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @param {number} [max=5] Maximum number of reuses to show
          * @param {boolean} [externalLinks=false] Clicking on the reuses' titles or images will directly redirect to the reuse.
-         * Otherwise, by default it will redirect to the dataset.
+         * Otherwise, by default, it will redirect to the dataset.
          * @description
-         * This widget displays the last 5 reuses published on a domain.
+         * This widget displays the last five reuses published on a domain.
          *
-         * It is possible to customize the template used to display each reuse, by adding HTML inside the widget's tag.
+         * It is possible to customize the template used to display each reuse by adding HTML inside the widget's tag.
          * The following variables are available:
          *
-         * * reuse.url: URL to the reuse's dataset page
-         * * reuse.title: Title of the reuse
-         * * reuse.thumbnail: URL to the thumbnail of the reuse
-         * * reuse.description: Description of the reuse
-         * * reuse.created_at: ISO datetime of reuse's original submission (can be used as `reuse.created_at|moment:'LLL'` to format it)
-         * * reuse.dataset.title: Title of the reuse's dataset
-         * * reuse.user.last_name: Last name of the reuse's submitter
-         * * reuse.user.first_name: First name of the reuse's submitter
+         * * `reuse.url`: URL to the reuse's dataset page
+         * * `reuse.title`: Title of the reuse
+         * * `reuse.thumbnail`: URL to the thumbnail of the reuse
+         * * `reuse.description`: Description of the reuse
+         * * `reuse.created_at`: ISO datetime of reuse's original submission (can be used as `reuse.created_at|moment:'LLL'` to format it)
+         * * `reuse.dataset.title`: Title of the reuse's dataset
+         * * `reuse.user.last_name`: Last name of the reuse's submitter
+         * * `reuse.user.first_name`: First name of the reuse's submitter
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="paris" paris-domain="http://opendata.paris.fr">
-         *              <ods-last-reuses-feed context="paris"></ods-last-reuses-feed>
+         *          <ods-catalog-context context="public" public-domain="https://public.opendatasoft.com">
+         *              <ods-last-reuses-feed context="public"></ods-last-reuses-feed>
          *          </ods-catalog-context>
          *      </file>
          *  </example>

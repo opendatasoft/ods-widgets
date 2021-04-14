@@ -11,19 +11,18 @@
          * @restrict A
          * @param {string} [odsResults=results] Variable name to use
          * @param {CatalogContext|DatasetContext} odsResultsContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {number} [odsResultsMax=10] Maximum number of results to show (can be changed dynamically using a variable)
+         * @param {number} [odsResultsMax=10] Maximum number of results to show. The value can be changed dynamically using a variable.
          * @description
-         * This widget exposes the results of a search (as an array) in a variable available in the scope. It can be
-         * used with AngularJS's ngRepeat to simply build a list of results.
-         * It also adds to the context variable a "nhits" property containing the total number of records matching the
-         * query regardless of the odsResultsMax value.
+         * This widget exposes the results of a search as an array in a variable available in the scope.
+         * It can be used with the AngularJS ngRepeat directive to build a list of results simply.
+         * It also adds to the context variable a `nhits` property containing the total number of records matching the query regardless of the odsResultsMax value.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                               tree-domain="https://widgets-examples.opendatasoft.com/"
+         *                               tree-domain="https://documentation-resources.opendatasoft.com/"
          *                               tree-parameters="{'sort': '-objectid'}">
          *              <table class="table table-bordered table-condensed table-striped">
          *                  <thead>
@@ -51,7 +50,7 @@
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-     *                                   tree-domain="https://widgets-examples.opendatasoft.com/">
+         *                                   tree-domain="https://documentation-resources.opendatasoft.com/">
          *              <p ods-results="items" ods-results-context="tree" ods-results-max="10">
          *                  Total number of trees : {{ tree.nhits }}
          *              </p>

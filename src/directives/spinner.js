@@ -11,9 +11,9 @@
          * @restrict E
          *
          * @description
-         * This widget displays the custom Opendatasoft spinner.
-         * Its size and color match the current font's.
-         * If the browser doesn't support svg animation via css, an animated gif will be displayed instead.
+         * The odsSpinner widget displays the custom Opendatasoft spinner.
+         * Its size and color match the current font.
+         * If the browser doesn't support SVG animation via CSS, an animated GIF will be displayed instead.
          *
          * @example
          *  <example module="ods-widgets">

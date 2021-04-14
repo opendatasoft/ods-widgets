@@ -9,43 +9,43 @@
          *  @name ods-widgets.directive:odsFacets
          *  @scope
          *  @restrict E
-         *  @param {DatasetContext} context <i>(mandatory)</i> {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use.
-         *  @param {string} name <i>(mandatory)</i> Name of the field the filter is based on.
+         *  @param {DatasetContext} context <i>(mandatory)</i> {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
+         *  @param {string} name <i>(mandatory)</i> Name of the field the filter is based on
          *  @param {string} [title=none] Title to display above the filter
-         *  @param {string} [sort=-count] Sorting method used on the categories:
+         *  @param {string} [sort=-count] Sorting method used on categories:
          *
          *  - `count` or `-count` to sort by number of items in each category
          *  - `num` or `-num` to sort by the name of category, if it is a number
          *  - `alphanum` or `-alphanum` to sort by the name of the category
          *
-         *  Note that `-` before the name of the sorting method indicates that the sorting will be descending instead of ascending.
+         *  Note: the `-` character before the name of the sorting method indicates that values will be sorted in descending order instead of ascending order.
          *
          *  Configuring a specific order is also possible, by setting a list of value: `['value1', 'value2']`.
          *
          *  @param {number} [visibleItems=6] Number of categories to show. If there are more categories for the filter, they are collapsed by default, but can be expanded by clicking on a "more" link.
-         *  @param {boolean} [hideIfSingleCategory=false] If `true`, hides filters if only one category to refine on is available.
+         *  @param {boolean} [hideIfSingleCategory=false] When set to `true`, hides filters if only one category to refine on is available.
          *  @param {string} [hideCategoryIf=none] AngularJS expression to evaluate: if it evaluates to `true`, the category is displayed. In the expression, the following elements can be used:
          *
          *  - `category.name` (value of the category)
          *  - `category.path` (complete path to the category, including hierarchical levels)
          *  - `category.state` (refined, excluded, or displayed)
          *
-         *  @param {boolean} [disjunctive=false] If `true`, the filter is in disjunctive mode, which means that after a first value is selected, other available values can also be selected. All selected values are combined as "or". E.g. after clicking "red", "green" and "blue" can also be clicked, and the resulting values can be either green, red, or blue.
+         *  @param {boolean} [disjunctive=false] When set to `true`, the filter is in disjunctive mode, which means that other available values can also be selected after a first value is selected. All selected values are combined as "or". For example, after clicking "red", "green" and "blue" can also be clicked. The resulting values can be green, red, or blue.
          *
-         *  Note that this parameter is directly related to the schema of the dataset: for this parameter to function, the field must allow multiple selection in filters (see {@link https://help.opendatasoft.com/platform/en/publishing_data/05_processing_data/defining_a_dataset_schema.html#configuration-options-for-facets Defining a dataset schema}).
-         *  @param {boolean} [timerangeFilter=false] If `true`, an option to filter using a time range is displayed above the categories. This parameter only works for date and datetime fields, and must be used with a context (see **context** parameter).
+         *  Note: this parameter is directly related to the schema of the dataset. For this parameter to work properly, the field must allow multiple selections in filters. For more information, see {@link https://help.opendatasoft.com/platform/en/publishing_data/05_processing_data/defining_a_dataset_schema.html#configuration-options-for-facets Defining a dataset schema}).
+         *  @param {boolean} [timerangeFilter=false] When set to `true`, an option to filter using a time range is displayed above the categories. This parameter only works for date and datetime fields and must be used with a context (see **context** parameter).
          *  @param {string} [context=none] Name of the context to refine on. This parameter is mandatory for the **timerangeFilter** parameter.
-         *  @param {string} [valueSearch=none] If `true`, a search box is displayed above the categories, to search within the available categories. If `suggest`, the matching categories are not displayed until there is at least one character typed into the search box, effectively making it into a suggest-like search box.
-         *  @param {DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]} [refineAlso=none] Enables the widget to apply its refinements on other contexts, e.g. for contexts which share common date. The value of this parameter should be the name of another context, or a list of contexts.
-         *  @param {string} [[contextname]FacetName=Current facet's name] Name of the facet in one of the other contexts, defined through the **refineAlso** parameter, that the original facet should be mapped on. `[contextname]` must be replaced with the name of that other context.
+         *  @param {string} [valueSearch=none] When set to `true`, a search box is displayed above the categories to search within the available categories. If `suggest`, the matching categories are not displayed until there is at least one character typed into the search box, effectively making it into a suggest-like search box.
+         *  @param {DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]} [refineAlso=none] Enables the widget to apply its refinements on other contexts, e.g., for contexts which share a common data. The value of this parameter should be the name of another context or a list of contexts.
+         *  @param {string} [[contextName]FacetName=Current facet's name] Name of the facet in one of the other contexts, defined through the **refineAlso** parameter, that the original facet should be mapped on. `[contextName]` must be replaced with the name of that other context.
          *
          *  @description
          *
-         *  The odsFacets widget displays filters based on a dataset or a domain's catalog of datasets, allowing the users to dynamically refine on one or more categories for the defined context (i.e. each filter being composed of several categories, which are values of the field the filter is based on).
+         *  The odsFacets widget displays filters based on a dataset or a domain's catalog of datasets. This widget allows to dynamically refine on one or more categories for the defined context (i.e., each filter being composed of several categories, which are values of the field the filter is based on).
          *
-         *  For instance, odsFacet could be used to refine the data displayed in a table ({@link ods-widgets.directive:odsTable odsTable}), to see only the specific data one is interested in.
+         *  For example, odsFacet can be used to refine the data displayed in a table ({@link ods-widgets.directive:odsTable odsTable}) to see only the desired data.
          *
-         *  Used alone without any configuration, the widget will display by default filters from all the "facet" fields of a dataset if it is used with a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, or based on typical metadata from a dataset catalog if used with a {@link ods-widgets.directive:odsCatalogContext Catalog Context}.
+         *  Suppose the widget is used without any configuration. In that case, it will display by default filters from all the "facet" fields of a dataset when used with a {@link ods-widgets.directive:odsDatasetContext Dataset Context}. It will display by default filters from typical metadata from a dataset catalog when used with a {@link ods-widgets.directive:odsCatalogContext Catalog Context}.
          *
          * <pre>
          *     <ods-facets context="mycontext"></ods-facets>
@@ -61,9 +61,9 @@
          * - hideIfSingleCategory
          * - hideCategoryIf
          *
-         * Note: these parameters are the same as some used for odsFacets, refer to the odsFacets parameters table below for more information on how to configure them.
+         * Note: these parameters are the same as some used for odsFacets. For more information about configuration, see the odsFacets parameters table.
          *
-         * odsFacet allows to configure which facets are displayed, using the **name** parameter.
+         * odsFacet allows to configure which facets are displayed using the **name** parameter.
          *
          * <pre>
          *     <ods-facets context="mycontext">
@@ -97,7 +97,7 @@
          *  <example module="ods-widgets">
          *      <file name="odsFacets_with_odsFacet.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <div class="row-fluid">
          *                  <div class="span4">
@@ -122,13 +122,13 @@
          *
          *  <example module="ods-widgets">
          *      <file name="refineAlso_parameter.html">
-         *          <ods-dataset-context context="volcaniceruption, countries"
-         *                               volcaniceruption-domain="https://widgets-examples.opendatasoft.com/"
-         *                               volcaniceruption-dataset="significant-volcanic-eruption-database"
-         *                               countries-domain="https://widgets-examples.opendatasoft.com/"
-         *                               countries-dataset="natural-earth-countries-150m">
-         *              <ods-facets context="volcaniceruption">
-         *                    <ods-facet name="country"
+         *          <ods-dataset-context context="geonamescities, countries"
+         *                               geonamescities-domain="https://documentation-resources.opendatasoft.com/"
+         *                               geonamescities-dataset="doc-geonames-cities-5000"
+         *                               countries-domain="https://documentation-resources.opendatasoft.com/"
+         *                               countries-dataset="natural-earth-countries-110m">
+         *              <ods-facets context="geonamescities">
+         *                    <ods-facet name="country_code"
          *                               refine-also="[countries]"
          *                               countries-facet-name="sovereignt"></ods-facet>
          *              </ods-facets>

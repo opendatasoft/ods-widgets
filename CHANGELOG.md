@@ -2,7 +2,32 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
-## 2.0.0 - 2020-11-02
+
+## 2.0.1 - 2021-04-14
+This version includes a large update of the documentation, with many parameters having their default behavior more
+explicitly defined, and improved examples.
+
+### Added
+- `odsChart`: `min`, `max` and `labelX` are now dynamic and can be changed after the chart has been drawn.
+- `odsChartSerie`: `chartType`, `innersize`, `functionY`, `expressionY`, `labelY`, `min`, `max`, `step`, `multiplier`,
+  `color`, `colorThresholds` are now dynamic and can be changed after the chart has been drawn.
+- `odsPaginationBlock`: When using `containerIdentifier`, if the container doesn't have a scrollbar, the page itself
+  will be scrolled up to the container's top when clicking on a page.
+
+### Fixed
+- `odsAdvAnalysis`: Fixed an issue where the user's timezone was not used for time queries and displays
+- `odsAdvAnalysis`: Fixed an issue where disjunctive filters (multiple selection) didn't work
+- `odsChart`: Fixed a performance issue in some situations with large time-based datasets
+- `odsDateRangeSlider`: Fixed an accessibility issue where a hidden technical field appeared to screen readers
+- `odsGeotooltip`: Fixed the position of the tooltip on small screens, when too close to the left side of the screen
+- `odsPaginationBlock`: Fixed an issue where you could be select a page beyond the 10000 first records limit
+- `odsTimerange`: Fixed missing accessibility attributes on start and end date inputs
+- `odsTimerange`: Fixed timezone calculation issues when used on `date` fields
+
+### Removed
+- `odsDatasetJsonSchema` has been removed from ODS-Widgets (it doesn't work outside of the Opendatasoft platform)
+
+## 2.0.0 - 2020-10-30
 This version is the first one based on AngularJS 1.8.0, which is the last major version that will be released, and is
 currently in Long Term Support ([more information](https://docs.angularjs.org/misc/version-support-status)).
 

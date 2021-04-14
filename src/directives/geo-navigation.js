@@ -17,12 +17,11 @@
          * If not set, the user will be able to navigate to the lowest available level.
          * @param {string} defaultFilter Path of Geographic References leading to the filter's starting point
          * (e.g. `world/world_fr/fr_40_52`).
-         * @param {boolean} [ascendingFilter=false] If true, the "Display all datasets that include current selection"
+         * @param {boolean} [ascendingFilter=false] When set to `true`, the "Display all datasets that include current selection"
          * (ascending filter) option will be active by default.
          *
          * @description
-         * The geographic navigation filter can be used to navigate visually inside a catalog using a geographic
-         * metadata (currently, only the "Geographic coverage" metadata).
+         * The odsGeoNavigation widget allows to visually navigate a catalog using geographic metadata (currently, only the "Geographic coverage" metadata).
          * The navigation is similar to `odsFacets`, but with a visual indication (map) of the current location used as
          * a filter.
          */
@@ -87,7 +86,7 @@
                 maxLevel: '@',
                 country: '@',
                 defaultFilter: '@',
-                ascendingFilter: '='
+                ascendingFilter: '=?'
             },
             link: function (scope, element, attrs) {
                 var mapContainer = element.find('div.odswidget-geo-navigation__map');

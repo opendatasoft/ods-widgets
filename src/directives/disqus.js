@@ -9,10 +9,10 @@
          * @name ods-widgets.directive:odsDisqus
          * @restrict E
          * @scope
-         * @param {string} shortname Disqus shortname for your account. If not specified, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.disqusShortname} will be used.
-         * @param {string} [identifier=none] By default, the discussion is tied to the URL of the page. If you want to be independant from the URL, or share the discussion between two or more pages, you can define an identifier in this parameter; it is recommended by Disqus to always do it from the start.
+         * @param {string} shortname Disqus short name for your account. If not specified, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.disqusShortname} will be used.
+         * @param {string} [identifier=none] By default, the discussion is tied to the URL of the page. If you want to be independent from the URL or share the discussion between two or more pages, you can define an identifier in this parameter. Disqus recommends always doing this from the start.
          * @description
-         * This widget shows a Disqus panel where users can comment the page.
+         * The odsDisqus widget shows a Disqus panel where users can comment on the page.
          *
          */
         return {

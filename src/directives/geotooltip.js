@@ -9,15 +9,15 @@
              * @scope
              * @restrict E
              * @param {Array|string} [coords=none] Coordinates of a point to display in the tooltip; either an array of two numbers as [latitude, longitude], or a string under the form of "latitude,longitude".
-             * If you use a string, surround it with simple quotes to ensure Angular treats it as a string. If you are working with a record (for example using {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}), you can directly use the content of a `geo_point_2d` field.
-             * @param {Object} [geojson=none] GeoJSON object of a shape to display in the tooltip. If you are working with a record (for example using {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}), you can directly use the content of a `geo_shape` field.
-             * @param {Object} [record=none] A record object (for example from {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}) from which the geometry will be taken (this is the `geometry` property of the record).
-             * @param {number} [width=200] Width of the tooltip, in pixels.
-             * @param {number} [height=200] Height of the tooltip, in pixels.
-             * @param {number} [delay=500] Delay before the tooltip appears on hover, in milliseconds.
+             * If you use a string, surround it with simple quotes to ensure Angular treats it as a string. If you are working with a record (e.g., using {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}), you can directly use the content of a `geo_point_2d` field.
+             * @param {Object} [geojson=none] GeoJSON object of a shape to display in the tooltip. If you are working with a record (e.g., using {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}), you can directly use the content of a `geo_shape` field.
+             * @param {Object} [record=none] A record object (e.g., from {@link ods-widgets.directive:odsResultEnumerator odsResultEnumerator}) from which the geometry will be taken (this is the `geometry` property of the record)
+             * @param {number} [width=200] Width of the tooltip, in pixels
+             * @param {number} [height=200] Height of the tooltip, in pixels
+             * @param {number} [delay=500] Delay before the tooltip appears on hover, in milliseconds
              *
              * @description
-             * This directive, when used to surround a text, displays a tooltip showing a point and/or a shape in a map.
+             * When used to surround a text, the odsGeotooltip widget displays a tooltip showing a point and/or a shape in a map.
              *
              * @example
              *  <example module="ods-widgets">
@@ -31,7 +31,7 @@
              *          </p>
              *
              *          <ods-dataset-context context="events"
-             *                               events-domain="https://widgets-examples.opendatasoft.com/"
+             *                               events-domain="https://documentation-resources.opendatasoft.com/"
              *                               events-dataset="evenements-publics-openagenda-extract">
              *              <!-- Display values from records -->
              *              <ods-result-enumerator context="events" max="1">
@@ -70,10 +70,16 @@
                     container.css('top', tippedElement.offset().top-jQuery(document).scrollTop()-5-container.height()+'px');
                 }
                 var availableRightSpace = jQuery(window).width()-(tippedElement.offset().left-jQuery(document).scrollLeft());
+                var availableLeftSpace = jQuery(window).width() - availableRightSpace;
                 if (container.width() < availableRightSpace) {
                     container.css('left', tippedElement.offset().left-jQuery(document).scrollLeft()+'px');
-                } else {
+                } else if (container.width() < availableLeftSpace) {
                     container.css('left', tippedElement.offset().left-jQuery(document).scrollLeft()-container.width()+'px');
+                } else {
+                    // No space is enough on either side, let's just center it
+                    // In small space situations, we know the tooltip will always be at least 20px smaller than the
+                    // viewport, so keeping a 10px space seems a good compromise.
+                    container.css('left', 10);
                 }
                 tippedElement.after(container);
 
@@ -146,7 +152,11 @@
                 },
                 link: function(scope, element, attrs) {
                     ModuleLazyLoader('leaflet').then(function() {
-                        var tooltipWidth = (attrs.width || 200) + 'px';
+                        var tooltipWidth = attrs.width || 200;
+                        // Limit to the viewport width (with a 20px buffer)
+                        tooltipWidth = Math.min(tooltipWidth, window.innerWidth - 20);
+                        tooltipWidth += 'px';
+
                         var tooltipHeight = (attrs.height || 200) + 'px';
                         var tooltipPop = null;
                         var delay = attrs.delay || 500;

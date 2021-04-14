@@ -11,10 +11,10 @@
          * @scope
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {Object} record Record to take the image from
-         * @param {string} [field=none] Field to use. By default, the first `file` field will be used, but you can specify the field name if there are more than one.
-         * @param {string} [domainUrl=none] the base url of the domain where the dataset can be record. By default, it uses the current.
+         * @param {string} [field=none] Field to use. By default, the first `file` field is used, but you can specify the field name if there is more than one field.
+         * @param {string} [domainUrl=none] The base URL of the domain where the dataset can be found. By default, the current domain is used.
          * @description
-         * Displays an image from a record
+         * The odsRecordImage displays an image from a record.
          *
          */
         return {

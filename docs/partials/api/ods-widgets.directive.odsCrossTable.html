@@ -4,7 +4,7 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>This widget create a cross table from a context.
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>The odsCrossTable widget creates a cross table from a context.
 It supports multiple aggregations for a single column field and multiple row fields.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
@@ -23,20 +23,19 @@ It supports multiple aggregations for a single column field and multiple row fie
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Context <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> from which data is
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> from which data is
 extracted</p>
-</div></td></tr><tr><td>rows</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Comma-separated list of field names which will be used for row headers&#39; values. These fields must all be facets.</p>
+</div></td></tr><tr><td>rows</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>A comma-separated list of field names which will be used for row headers&#39; values. These fields must all be facets.</p>
 </div></td></tr><tr><td>column</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Name of the field which will be used for column header&#39;s values. This field must be a facet.</p>
-</div></td></tr><tr><td>serieXxxLabel</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Label of the serie, which will be displayed as column header (Xxx being the
-name of the serie).</p>
-</div></td></tr><tr><td>serieXxxFunc</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Function (SUM, AVG, COUNT etc...) used to aggregate the serie&#39;s analysis (Xxx
-being the name of the serie)</p>
-</div></td></tr><tr><td>serieXxxExpr</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Name of the field used for the serie&#39;s analysis (Xxx being the name of the
-serie)</p>
-</div></td></tr><tr><td>repeatRowHeaders</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Whether to repeat the row headers on each line or not.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>displayIntermediaryResults</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Whether to display intermediary subtotals, subaverages
-etc...</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>numberPrecision</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>The number of decimals to display for number values.</p>
+</div></td></tr><tr><td>serieXxxLabel</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Label of the series, which will be displayed as column header (Xxx being the
+name of the series).</p>
+</div></td></tr><tr><td>serieXxxFunc</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Function (SUM, AVG, COUNT, etc.) used to aggregate the series analysis (Xxx
+being the name of the series)</p>
+</div></td></tr><tr><td>serieXxxExpr</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Name of the field used for the series analysis (Xxx being the name of the
+series)</p>
+</div></td></tr><tr><td>repeatRowHeaders</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Controls whether to repeat the row headers on each line or not.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>displayIntermediaryResults</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>Controls whether to display intermediary subtotals, subaverages, etc.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>numberPrecision</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><p>The number of decimals to display for numeric values</p>
 </div> <p><em>(default: 3)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odscrosstable-page"><h4 id="example_source">Source</h4>
@@ -46,13 +45,13 @@ etc...</p>
 <script type="text/ng-template" id="index.html-3">
    <ods-dataset-context context="trees"
                         trees-dataset="les-arbres-remarquables-de-paris"
-                        trees-domain="https://widgets-examples.opendatasoft.com/">
+                        trees-domain="https://documentation-resources.opendatasoft.com/">
         <ods-cross-table context="trees"
                          rows="arrondissement"
                          column="espece"
                          serie-height-label="Average height"
                          serie-height-func="AVG"
-                         serie-height-expr="hauteur"></ods-cross-table>
+                         serie-height-expr="hauteur_en_m"></ods-cross-table>
     </ods-dataset-context>
 </script>
 </div>

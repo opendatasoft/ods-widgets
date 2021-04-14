@@ -10,18 +10,17 @@
          * @restrict E
          * @scope
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {string} [displayedFields=all] A comma-separated list of fields to display. By default all the available fields are displayed.
+         * @param {string} [displayedFields=all] A comma-separated list of fields to display. By default, all the available fields are displayed.
          *
          * @description
-         * This widget displays a table view of a dataset, with infinite scroll and an ability to sort columns (depending on the
-         * types of the column).
+         * The odsTable widget displays a table view of a dataset, with infinite scroll and an ability to sort columns depending on the column types.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="commute"
-         *                               commute-domain="https://widgets-examples.opendatasoft.com/"
-         *                               commute-dataset="commute-time-us-counties">
+         *                               commute-domain="https://documentation-resources.opendatasoft.com/"
+         *                               commute-dataset="average-commute-time-by-county">
          *              <ods-table context="commute"></ods-table>
          *          </ods-dataset-context>
          *      </file>
@@ -89,9 +88,9 @@
                        '         </tbody>' +
                        '     </table>' +
                        ' </div>' +
-                       '<div ng-if="forcedTimezone" class="table-timezone-caption">' +
+                       '<div ng-if="tz" class="table-timezone-caption">' +
                        '    <i class="fa fa-info" aria-hidden="true"></i>' +
-                       '    All dates and times are in {{ forcedTimezone }} time.' +
+                       '    <span translate>All dates and times are in {{tz}} time.</span>' +
                        '</div>' +
                        ' <div ng-if="displayDatasetFeedback" class="table-feedback-new"><a ods-dataset-feedback ods-dataset-feedback-dataset="context.dataset"><i class="fa fa-comment" aria-hidden="true"></i> <span translate>Suggest a new record</span></a></div>' +
                        ' <div class="odswidget-overlay" ng-hide="fetching || records"><span class="odswidget-overlay__message" translate>No results</span></div>' +
@@ -102,7 +101,7 @@
                 $scope.displayLanguage = ODSWidgetsConfig.language;
 
                 $scope.displayDatasetFeedback = false;
-                $scope.forcedTimezone = null;
+                $scope.tz = null;
                 // Infinite scroll parameters
                 $scope.page = 0;
                 $scope.resultsPerPage = 40;
@@ -572,7 +571,7 @@
                     }
 
                     $scope.displayDatasetFeedback = $scope.datasetFeedback === 'true' && $scope.context.dataset.getExtraMeta('explore', 'feedback_enabled');
-                    $scope.forcedTimezone = $scope.context.dataset.metas.timezone || null;
+                    $scope.tz = $scope.context.dataset.metas.timezone || null;
 
                     $scope.staticSearchOptions = {
                         rows: $scope.resultsPerPage

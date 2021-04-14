@@ -48,14 +48,14 @@
          * @name ods-widgets.directive:odsVegaLiteChart
          * @restrict E
          * @scope
-         * @param {string} [spec] A JSON string representation of a vega-lite chart specification object.
+         * @param {string} [spec] A JSON string representation of a Vega-Lite chart specification object
          * @param {array} [values{DataSourceName}] An array of data points
          *
          * @description
-         * This widget builds a vega-lite chart according to the given specs.
-         * You can find the documentation for vega-lite configuration [here](https://vega.github.io/vega-lite/docs/)
+         * The odsVegaLiteChart widget builds a vega-lite chart according to the given specifications.
+         * For more information about vega-lite configuration, see the  [Vega-Lite documentation](https://vega.github.io/vega-lite/docs/).
          *
-         * The data sources must be declared in the vega-lite specification like this:
+         * The data sources must be declared in the Vega-Lite specification like this:
          * ```
          * "data": {"name": "mydatasource"},
          * ```
@@ -63,11 +63,8 @@
          * of values to be used in the chart.
          *
          * The dimensions of the chart can be controlled using two different methods:
-         * - use the width and height attributes in the vega specification.
-         *   In this case the chart dimensions will be fixed to these values.
-         * - do not specify the width and height in the vega specification.
-         *   In this case the chart will fill it's container.
-         *   You can control the container dimensions by applying css rules to `.odswidget-vega-lite-chart`
+         * - Use the width and height attributes in the vega specification. In this case, the chart dimensions will be fixed to these values.
+         * - Do not specify the width and height in the vega specification. In this case, the chart will fill its container. You can control the container dimensions by applying CSS rules to `odswidget-vega-lite-chart`.
          *
          * The [tooltip](https://vega.github.io/vega-lite/docs/tooltip.html) plugin for vega is installed.
          *
@@ -77,12 +74,13 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="commute,tree,demographics"
-         *                               commute-dataset="commute-time-us-counties"
-         *                               commute-domain="https://widgets-examples.opendatasoft.com/"
+         *                               commute-dataset="average-commute-time-by-county"
+         *                               commute-parameters="{'fields': 'county,commuting_time'}"
+         *                               commute-domain="https://documentation-resources.opendatasoft.com/"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                               tree-domain="https://widgets-examples.opendatasoft.com/"
+         *                               tree-domain="https://documentation-resources.opendatasoft.com/"
          *                               demographics-dataset="us-cities-demographics"
-         *                               demographics-domain="https://widgets-examples.opendatasoft.com/">
+         *                               demographics-domain="https://documentation-resources.opendatasoft.com/">
          *
          *              <!-- data from ods-results -->
          *
@@ -94,7 +92,7 @@
          *                                          "mark": "bar",
          *                                          "encoding": {
          *                                              "x": {"field": "fields.county", "type": "nominal"},
-         *                                              "y": {"field": "fields.mean_commuting_time", "type": "quantitative"}
+         *                                              "y": {"field": "fields.commuting_time", "type": "quantitative"}
          *                                          }
          *                                        }'
          *                                        values-counties="res"></ods-vega-lite-chart>
@@ -106,10 +104,10 @@
          *                    ods-analysis-context="tree"
          *                    ods-analysis-max="10"
          *                    ods-analysis-x="espece"
-         *                    ods-analysis-sort="circonference"
-         *                    ods-analysis-serie-hauteur="AVG(hauteur)"
+         *                    ods-analysis-sort="circonference_en_cm"
+         *                    ods-analysis-serie-hauteur="AVG(hauteur_en_m)"
          *                    ods-analysis-serie-hauteur-cumulative="false"
-         *                    ods-analysis-serie-circonference="AVG(circonference)">
+         *                    ods-analysis-serie-circonference="AVG(circonference_en_cm)">
          *                  <ods-vega-lite-chart spec='{
          *                                          "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
          *                                          "data": {"name": "trees"},

@@ -4,11 +4,10 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odspaginationblock-page"><p>This widget displays a pagination control that you can use to make the context &quot;scroll&quot; through a list of results. It doesn&#39;t display
-results by itself, and therefore should be paired with another widget. Note that by itself it also doesn&#39;t control the number of results fetched by the context,
-and the <code>perPage</code> parameter should be the same as the <code>rows</code> parameter on the context.</p>
-<p>If you just want to display results with a pagination system, you can have a look at <a href="#/api/ods-widgets.directive:odsResultEnumerator">odsResultEnumerator</a>
-which already include this directive (if the relevant parameter is active on the widget).</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odspaginationblock-page"><p>The odsPaginationBlock widget displays a pagination control that you can use to make the context &quot;scroll&quot; through a list of results.</p>
+<p>The widget doesn&#39;t display results. Therefore, it should be paired with another widget.
+The widget doesn&#39;t control the number of results fetched by the context. The <code>perPage</code> parameter should be the same as the <code>rows</code> parameter on the context.</p>
+<p>If you just want to display results with a pagination system, you can use <a href="#/api/ods-widgets.directive:odsResultEnumerator">odsResultEnumerator</a>, which already includes this directive (if the relevant parameter is active on the widget).</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-pagination-block
@@ -22,10 +21,19 @@ which already include this directive (if the relevant parameter is active on the
 </ul>
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspaginationblock-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
-</div></td></tr><tr><td>perPage</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspaginationblock-page"><p>How many results should be contained per page.</p>
-</div> <p><em>(default: 10)</em></p></td></tr><tr><td>nofollow</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspaginationblock-page"><p>If true, all links within the widget (used to change page) will contain a <code>rel=&quot;nofollow&quot;</code> attribute.
+</div></td></tr><tr><td>perPage</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspaginationblock-page"><p>Controls the number of results per page.</p>
+</div> <p><em>(default: 10)</em></p></td></tr><tr><td>nofollow</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspaginationblock-page"><p>When set to <code>true</code>, all links within the widget (used to change page) will contain a <code>rel=&quot;nofollow&quot;</code> attribute.
 It should be used if you don&#39;t want search engines to crawl all the pages of your widget.</p>
 </div> <p><em>(default: false)</em></p></td></tr><tr><td>[containerIdentifier]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspaginationblock-page"><p>By default, changing the page will trigger a scroll to the top of the window.
-Using this parameter, you can specify the ID of the element you want to scroll to the top of (e.g. &quot;my-results&quot;).</p>
+You can use this parameter to specify the ID of the element that will contain the results (e.g., &quot;my-results&quot;)
+so that the behavior is more precise:</p>
+<ul>
+<li>If your results are inside a container that is used to vertically scroll the results, the container&#39;s scroll
+will be set at the start.</li>
+<li>If your results are inside a container that doesn&#39;t have a scrollbar, the page itself will scroll to the start of the container.
+Note: In the second situation, some CSS properties may prevent the widget from understanding that it doesn&#39;t have a scrollbar. As a result, the widget won&#39;t be able to scroll scrolling to the top of the container.
+This issue may be caused by the odsPaginationBlock widget slightly overflowing its container, typically because of large fonts or higher line-height settings.
+In this situation, forcing a height on the widget may fix the issue.</li>
+</ul>
 </div></td></tr></tbody></table></div>
 </div>

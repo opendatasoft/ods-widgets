@@ -4,9 +4,8 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odstogglemodel-page"><p>This widget, when used on a checkbox, allows the checkbox to be used to &quot;toggle&quot; a value in an object, in other words to add it or remove when the checkbox
-is respectively checked and unchecked. Multiple checkboxes can be used on the same model and key, in which case if two or more are toggled, an array
-will be created to hold the values.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odstogglemodel-page"><p>The odsToggleModel widget, when used on a checkbox, allows the checkbox to be used to &quot;toggle&quot; a value in an object. In other words, the value is added when the checkbox is selected and removed when the checkbox is cleared.</p>
+<p>Multiple checkboxes can be used on the same model and key, in which case if two or more are toggled, an array will be created to hold the values.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as attribute<pre class="prettyprint linenums">&lt;ANY ods-toggle-model="{Object}"
@@ -20,16 +19,16 @@ will be created to hold the values.</p>
 </ul>
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>odsToggleModel</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstogglemodel-page"><p>Object to apply the toggle on</p>
-</div></td></tr><tr><td>odsToggleKey</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstogglemodel-page"><p>The key that holds the toggled value</p>
+</div></td></tr><tr><td>odsToggleKey</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstogglemodel-page"><p>The key holding the toggled value</p>
 </div></td></tr><tr><td>odsToggleValue</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstogglemodel-page"><p>The toggled value</p>
-</div></td></tr><tr><td>odsStoreAs</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstogglemodel-page"><p>The type of the resulting variable. Either &#39;array&#39; or &#39;csv&#39;.</p>
+</div></td></tr><tr><td>odsStoreAs</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odstogglemodel-page"><p>The type of the resulting variable. The authorized values are &#39;array&#39; and &#39;csv&#39;.</p>
 </div> <p><em>(default: array)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odstogglemodel-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-38" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-37" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-38" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-38">
+<pre class="prettyprint linenums" ng-set-text="index.html-37" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-37">
     <ods-catalog-context context="catalog"
                          catalog-domain="https://data.opendatasoft.com"
                          catalog-parameters="{'disjunctive.publisher':true}">
@@ -52,6 +51,6 @@ will be created to hold the values.</p>
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-38" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-37" ng-eval-javascript=""></div>
 </div></div>
 </div>

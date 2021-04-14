@@ -8,14 +8,15 @@
      * @scope
      * @restrict E
      * @param {string} name The name of the pop-in, used internally to uniquely reference it (required)
-     * @param {string} [title=''] The title displayed inside the popup
-     * @param {number} [displayAfter=10] the delay in second before displaying the popup window
-     * @param {boolean} [displayOnlyOnce=true] if false, the popup will be displayed at each browsing session of the user
+     * @param {string} [title=''] The title displayed inside the pop-up windows
+     * @param {number} [displayAfter=10] The delay in second before displaying the pop-up window
+     * @param {boolean} [displayOnlyOnce=true] When set to `false`, the pop-up window will be displayed at each browsing session of the user.
      *
      * @description
-     * Displays a pop-in on the page with the provided content.
-     * You can define the time before displaying the pop-in (the timer start when the widget is loaded)
-     * In the content you have access to a `hidePopIn()` function that you can use in an `ng-click`.
+     * The odsPopIn widget displays a pop-in on the page with the provided content.
+     * 
+     * You can define the time before displaying the pop-in (the timer start when the widget is loaded).
+     * In the content, you can access a `hidePopIn()` function that you can use in an `ng-click`.
      *
      * @example
      * <example module="ods-widgets">

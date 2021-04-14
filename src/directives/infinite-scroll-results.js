@@ -23,14 +23,14 @@
          * @scope
          * @restrict A
          * @param {CatalogContext|DatasetContext} odsResultsContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {boolean} [scrollTopWhenRefresh=false] If the context parameters change (which will probably change the results), scroll to the top of the window.
-         * @param {string} [listClass=none] A class (or classes) that will be applied to the list of result.
-         * @param {string} [resultClass=none] A class (or classes) that will be applied to each result.
-         * @param {string} [noResultsMessage] A sentence that will be displayed if there are no results.
-         * @param {string} [noMoreResultsMessage] A sentence that will be displayed if there are no more results to fetch.
-         * @param {string} [noDataMessage] A sentence that will be displayed if the context has no content at all.
+         * @param {boolean} [scrollTopWhenRefresh=false] If the context parameters change (which will probably change the results), the widget scrolls to the top of the window.
+         * @param {string} [listClass=none] A class (or classes) that will be applied to the list of result
+         * @param {string} [resultClass=none] A class (or classes) that will be applied to each result
+         * @param {string} [noResultsMessage] A sentence that will be displayed if there are no results
+         * @param {string} [noMoreResultsMessage] A sentence that will be displayed if there are no more results to fetch
+         * @param {string} [noDataMessage] A sentence that will be displayed if the context has no content at all
          * @description
-         * This widget displays the results of a query inside an infinite scroll list. It uses the HTML template inside the widget tag,
+         * The odsInfiniteScrollResults widget displays the results of a query inside an infinite scroll list. It uses the HTML template inside the widget tag
          * and repeats it for each result.
          *
          * If used with a {@link ods-widgets.directive:odsCatalogContext Catalog Context}, for each result, the following AngularJS variables are available:
@@ -41,7 +41,7 @@
          * If used with a {@link ods-widgets.directive:odsDatasetContext Dataset Context}, for each result, the following AngularJS variables are available:
          *
          *  * item.datasetid: Dataset identifier of the dataset this record belongs to
-         *  * item.fields: an object hold all the key/values for the record
+         *  * item.fields: An object holding all the key/values for the record
          *  * item.geometry: if the record contains geometrical information, this object is present and holds its GeoJSON representation
          *
          * @example

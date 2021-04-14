@@ -10,6 +10,7 @@ describe('services', function () {
                 'exclude.myfield': 'myvalue3',
                 'refine.mysecondfield': undefined,
                 'refine.mythirdfield': null,
+                'timezone': 'Asia/Jakarta',
 
             };
             expect(APIParamsV1ToV2(params)).toEqual({
@@ -20,7 +21,8 @@ describe('services', function () {
                 exclude: [
                     'myfield:myvalue3'
                 ],
-                qv1: '(my query) AND (field:"value")'
+                qv1: '(my query) AND (field:"value")',
+                timezone: 'Asia/Jakarta',
             });
 
         }));

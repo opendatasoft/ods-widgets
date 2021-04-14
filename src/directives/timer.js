@@ -8,22 +8,21 @@
          * @name ods-widgets.directive:odsTimer
          * @scope
          * @restrict E
-         * @param {Number} [delay=1000] The number of milliseconds to wait before executing the expression. Minimum value is 100ms.
-         * @param {Expression} [stopCondition=false] An AngularJS expression returning 'true' or 'false'. The timer stops when the condition is false.
-         * @param {Boolean} [autoStart=false] Starts the timer automatically when the page load
+         * @param {Number} [delay=1000] The number of milliseconds to wait before executing the expression. The minimum value is `100`.
+         * @param {Expression} [stopCondition=false] An AngularJS expression returning 'true' or 'false'. The timer stops when the condition is 'false'.
+         * @param {Boolean} [autoStart=false] Starts the timer automatically when the page loads.
          * @param {Expression} [exec] An AngularJS expression to execute.
          *
          * @description
-         * This widget is a simple timer, it executes the AngularJS expression "exec" every "delay" milliseconds.
-         * It doesn't stop until the user click on the pause button or when the "stopCondition" is true.
-         *
-         * It can be used to animate dashboards to go over a date field and add 1 day every 2 seconds like in the following example.
-         * From and To will increase by 1 day until the user click on pause button.
+         * The odsTimer widget is a simple timer. It executes the AngularJS expression `exec` every `delay` milliseconds.
+         * It doesn't stop until the user clicks on the pause button or when the `stopCondition` is true.
+         * 
+         * It can be used to animate dashboards to go over a date field and add one day every two seconds, like in the following example. "From" and "To" values will increase by one day until the user clicks on the pause button.
          * @example
          * <example module="ods-widgets">
          *     <file name="index.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <div ng-init="values = {'from':undefined,'to':undefined}">
          *                  <ods-timerange context="events"

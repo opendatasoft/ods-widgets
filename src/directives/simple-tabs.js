@@ -9,9 +9,9 @@
          * @scope
          * @restrict E
          * @description
-         * Generate a tabbed interface that allows you to switch between separate views.
+         * The odsSimpleTabs widget generates a tabbed interface that allows you to switch between separate views.
          *
-         * @param {string} [syncToScope='simpleTabActive'] Name of parent scope variable to sync the current active tab.
+         * @param {string} [syncToScope='simpleTabActive'] Name of parent scope variable to sync the current active tab
          */
         return {
             restrict: 'E',
@@ -76,11 +76,13 @@
          * @ngdoc directive
          * @name ods-widgets.directive:odsSimpleTab
          * @restrict E
-         * @requires odsSimpleTabs
+         * @requires ods-widgets.directive:odsSimpleTabs
          *
-         * @param {string} label The label that will be displayed in the tab
-         * @param {string} fontawesomeClass The font-awesome icon name used for the tab, without the 'fa-' prefix.
-         * @param {boolean} [keepContent=false] Whether to destroy and rebuild the pane content at deselection/selection (acts as if using an ng-if when panel is selected/deselected).
+         * @param {string} label The label to be displayed in the tab
+         * @param {string} fontawesomeClass The Font Awesome icon name used for the tab, without the 'fa-' prefix
+         * @param {boolean} [keepContent=false] By default, the widget destroys and rebuilds the pane content at deselection/selection. It acts like an ng-if when the panel is selected/deselected.
+         *
+         * When set to `true`, the widget does not destroy and rebuild the pane content at deselection/selection.
          */
         return {
             require: '^odsSimpleTabs',

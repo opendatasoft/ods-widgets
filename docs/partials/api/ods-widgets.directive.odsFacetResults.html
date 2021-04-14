@@ -4,14 +4,14 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsfacetresults-page"><p>This widget fetches the results of enumerating the values (&quot;categories&quot;) of a facet, and exposes it in a variable available in the scope. It can be used with AngularJS&#39;s ngRepeat to simply build a list
-of results.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsfacetresults-page"><p>The odsFacetResults widget fetches the results of enumerating the values (&quot;categories&quot;) of a facet and exposes it in a variable available in the scope.
+You can use this widget with the AngularJS ngRepeat directive to build a list of results.</p>
 <p>The variable is an array of objects, each containing the following properties:</p>
 <ul>
-<li><code>name</code> : the label of the category</li>
-<li><code>path</code> : the path to use to refine on this category</li>
-<li><code>state</code> : &quot;displayed&quot; or &quot;refined&quot;</li>
-<li><code>count</code> : the number of records in this category</li>
+<li><code>name</code>: the label of the category</li>
+<li><code>path</code>: the path to use to refine on this category</li>
+<li><code>state</code>: &quot;displayed&quot; or &quot;refined&quot;</li>
+<li><code>count</code>: the number of records in this category</li>
 </ul>
 </div></div>
 <h2 id="usage">Usage</h2>
@@ -28,15 +28,20 @@ of results.</p>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>odsFacetResults</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacetresults-page"><p>Variable name to use</p>
 </div> <p><em>(default: results)</em></p></td></tr><tr><td>odsFacetResultsContext</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacetresults-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
 </div></td></tr><tr><td>odsFacetResultsFacetName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacetresults-page"><p>Name of the facet to enumerate</p>
-</div></td></tr><tr><td>odsFacetResultsSort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacetresults-page"><p>How to sort the categories: either <code>count</code>, <code>-count</code> (sort by number of items in each category),
-<code>num</code>, <code>-num</code> (sort by the name of category if it is a number), <code>alphanum</code>, <code>-alphanum</code> (sort by the name of the category).</p>
+</div></td></tr><tr><td>odsFacetResultsSort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacetresults-page"><p>Sorting method used on categories:</p>
+<ul>
+<li><code>count</code> or <code>-count</code> to sort by number of items in each category</li>
+<li><code>num</code> or <code>-num</code> to sort by the name of category, if it is a number</li>
+<li><code>alphanum</code> or <code>-alphanum</code> to sort by the name of the category</li>
+</ul>
+<p>Note: the <code>-</code> character before the name of the sorting method indicates that values will be sorted in descending order instead of ascending order.</p>
 </div> <p><em>(default: count)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsfacetresults-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-10" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-9" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-10" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-10">
+<pre class="prettyprint linenums" ng-set-text="index.html-9" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-9">
     <ods-catalog-context context="catalog"
                          catalog-domain="https://widgets-examples.opendatasoft.com/">
         <label>Select a facet:</label>
@@ -51,6 +56,6 @@ of results.</p>
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-10" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-9" ng-eval-javascript=""></div>
 </div></div>
 </div>

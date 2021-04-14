@@ -4,7 +4,7 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>This widget can take any dataset containing at least two datetime fields and a text field and use it to
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The odsCalendar widget can take any dataset containing at least two datetime fields and a text field and use it to
 display a calendar. It can load at most 1000 events (records) at once.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
@@ -24,17 +24,17 @@ display a calendar. It can load at most 1000 events (records) at once.</p>
 </ul>
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p><a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
-</div></td></tr><tr><td>startField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The name of the datetime field to use as event start datetime.</p>
-</div></td></tr><tr><td>endField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The name of the datetime field to use as event end datetime.</p>
-</div></td></tr><tr><td>titleField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The name of the text field to use as event title.</p>
-</div></td></tr><tr><td>eventColor</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The color (in hexadecimal form) used for all events.</p>
-</div> <p><em>(default: #C32D1C)</em></p></td></tr><tr><td>tooltipFields</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>An ordered, comma separated list of fields to display in the event
-tooltip.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>calendarView</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The default mode for the calendar. Can be &#39;month&#39;, &#39;agendaWeek&#39; or
+</div></td></tr><tr><td>startField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The name of the datetime field to use as event start datetime</p>
+</div></td></tr><tr><td>endField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The name of the datetime field to use as event end datetime</p>
+</div></td></tr><tr><td>titleField</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The name of the text field to use as event title</p>
+</div></td></tr><tr><td>eventColor</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The color (in hexadecimal form) used for all events</p>
+</div> <p><em>(default: #C32D1C)</em></p></td></tr><tr><td>tooltipFields</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>An ordered, comma-separated list of fields to display in the event
+tooltip</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>calendarView</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>The default mode for the calendar. The authorized values are &#39;month&#39;, &#39;agendaWeek&#39;, and
 &#39;agendaDay&#39;.</p>
-</div> <p><em>(default: month)</em></p></td></tr><tr><td>availableCalendarViews</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>A comma separated list of available
-views for the calendar. Must be a sub list of [&#39;month&#39;, &#39;agendaWeek&#39;, &#39;agendaDay&#39;].</p>
-</div> <p><em>(default: 'month','agendaWeek','agendaDay')</em></p></td></tr><tr><td>[syncToUrl]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>If true, persists the <code>calendarView</code> in the page&#39;s URL.</p>
+</div> <p><em>(default: month)</em></p></td></tr><tr><td>availableCalendarViews</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>A comma-separated list of available
+views for the calendar. It must be a sub list of [&#39;month&#39;, &#39;agendaWeek&#39;, &#39;agendaDay&#39;].</p>
+</div> <p><em>(default: 'month','agendaWeek','agendaDay')</em></p></td></tr><tr><td>[syncToUrl]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><p>When set to <code>true</code>, it persists the <code>calendarView</code> in the page URL.</p>
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odscalendar-page"><h4 id="example_source">Source</h4>
@@ -43,7 +43,7 @@ views for the calendar. Must be a sub list of [&#39;month&#39;, &#39;agendaWeek&
 <pre class="prettyprint linenums" ng-set-text="index.html-2" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
 <script type="text/ng-template" id="index.html-2">
         <ods-dataset-context context="events"
-                             events-domain="https://widgets-examples.opendatasoft.com/"
+                             events-domain="https://documentation-resources.opendatasoft.com/"
                              events-dataset="evenements-publics-openagenda-extract">
             <ods-calendar context="events"
                           start-field="date_debut"

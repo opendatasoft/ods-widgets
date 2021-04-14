@@ -52,6 +52,23 @@
                     });
                 }
 
+                // Note: At this point in time, we only need to support the disjunctive parameter of facets; facet sorts,
+                // hierarchical, separator and so on would only be used if we had a widget that displayed facets values
+                // from the API v2.
+                if (paramName.startsWith('disjunctive.')) {
+                    if (paramValue) {
+                        paramsV2.facet = paramsV2.facet || [];
+
+                        var facetName = paramName.substring(12);
+
+                        paramsV2.facet.push('facet(name="' + facetName + '", disjunctive=true)');
+                    }
+                }
+
+                if (paramName === 'timezone' && paramValue) {
+                    paramsV2.timezone = paramValue;
+                }
+
             });
 
             if (qClauses.length) {

@@ -23,14 +23,15 @@
          * @scope
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @description
-         * If you wrap this directive around an element or a set of element, it will display an expandable card above it to show the title and description of the dataset,
-         * along with a link to the portal that shows the dataset, and the license attached to the data.
+         * When wrapped around an element or a set of elements, the odsDatasetCard widget displays an expandable card above it.
+         * 
+         * This card shows the dataset's title and description, a link to the portal that shows the dataset and the license attached to the data.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <ods-dataset-card context="events" style="height: 600px">
          *                  <ods-map context="events"></ods-map>

@@ -11,12 +11,14 @@
          * @restrict AE
          * @param {DatasetContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
-         * This widget enumerates statistic values for a given catalog and injects them as variables in the context. The following AngularJS variables are available:
+         * The odsDomainStatistics widget enumerates statistic values for a given catalog and injects them as variables in the context.
+         * 
+         * The following AngularJS variables are available:
          *
-         *  * CONTEXTNAME.stats.dataset : the number of datasets
-         *  * CONTEXTNAME.stats.keyword : the number of keywords
-         *  * CONTEXTNAME.stats.publisher : the number of publishers
-         *  * CONTEXTNAME.stats.theme : the number of themes
+         *  * `CONTEXTNAME.stats.dataset`: the number of datasets
+         *  * `CONTEXTNAME.stats.keyword`: the number of keywords
+         *  * `CONTEXTNAME.stats.publisher`: the number of publishers
+         *  * `CONTEXTNAME.stats.theme`: the number of themes
          *
          * # First syntax: when declaring a catalog context, directly inject these values
          * <pre>
@@ -36,7 +38,7 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-catalog-context context="examples"
-         *                               examples-domain="https://widgets-examples.opendatasoft.com/"
+         *                               examples-domain="https://documentation-resources.opendatasoft.com/"
          *                               ods-domain-statistics>
          *              <p>Our portal has {{examples.stats.dataset}} datasets, described by {{examples.stats.theme}} themes
          *              and {{examples.stats.keyword}} keywords.</p>

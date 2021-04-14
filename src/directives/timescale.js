@@ -11,25 +11,22 @@
          *  @scope
          *  @param {DatasetContext|DatasetContext[]} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} or array of context to use
          *  @param {string=} [timeField=first date/datetime field available] Name of the field (date or datetime) to filter on
-         *  @param {string=} [*TimeField=first date/datetime field available] For each context you can set the name of the field (date or datetime) to filter on
-         *  @param {string=} [defaultValue=everything] Define the default timescale
+         *  @param {string=} [*TimeField=first date/datetime field available] For each context, you can set the name of the field (date or datetime) to filter on.
+         *  @param {string=} [defaultValue=everything] Sets the default timescale.
          *  @description
-         * Displays a control to select either:
+         * The odsTimescale displays a control to select:
          *
-         * * last day
-         *
-         * * last week
-         *
-         * * last month
-         *
-         * * last year
+         * * the last day,
+         * * the last week,
+         * * the last month, or
+         * * the last year.
          *
          *
          *  @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://widgets-examples.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <ods-timescale context="events" default-value="everything"></ods-timescale>
          *              <ods-map context="events"></ods-map>

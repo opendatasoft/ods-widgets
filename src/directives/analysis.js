@@ -64,10 +64,10 @@
          * @param {string} [odsAnalysis=analysis] <i>(mandatory)</i> Name of the variable
          * @param {DatasetContext} odsAnalysisContext <i>(mandatory)</i> {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use.
          * @param {number} [odsAnalysisMax=all] Maximum number of results to show.
-         * @param {string} [odsAnalysisX=none] Name of the field used as X axis (e.g. date or datetime field, facet, etc.)
-         * @param {string} [odsAnalysisSort=none] Name of serie to sort on.
+         * @param {string} [odsAnalysisX=none] Name of the field used as X-axis (e.g., date or datetime field, facet, etc.)
+         * @param {string} [odsAnalysisSort=none] Name of the series to sort on.
          *
-         * Note that `-` before the name of the serie indicates that the sorting will be descending instead of ascending (e.g. `-serieName`).
+         * Note that `-` before the name of the series indicates that the sorting will be descending instead of ascending (e.g., `-serieName`).
          *
          * @param {string} [odsAnalysisSerieName=none] Function to apply:
          *
@@ -81,18 +81,18 @@
          * Must be written in the following form: `FUNCTION(fieldname)`.
          *
          * @description
-         * The odsAnalysis widget creates a variable that contains the result of an analysis (i.e. an object containing a results array and optionally an aggregations object).
+         * The odsAnalysis widget creates a variable that contains the result of an analysis (i.e., an object containing a results array and optionally an aggregations object).
          *
-         * odsAnalysis allows applying functions to chosen groups of data, to analyze them with the same logic as that of a chart visualization. For instance, an analysis can consist in obtaining the average value for several series of data, broken down by a chosen field used as an X axis. The result can then be sorted by another serie.
+         * odsAnalysis allows applying functions to chosen groups of data to analyze them with the same logic as a chart visualization. For instance, an analysis can obtain the average value for several data series, broken down by a chosen field used as an X-axis. The result can then be sorted by another series.
          *
-         * odsAnalysis can be used with AngularJS's ngRepeat to build a table of analysis results.
+         * odsAnalysis can be used with the AngularJS ngRepeat directive to build a table of analysis results.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                               tree-domain="https://widgets-examples.opendatasoft.com/">
+         *                               tree-domain="https://documentation-resources.opendatasoft.com/">
          *              <table class="table table-bordered table-condensed table-striped">
          *                  <thead>
          *                      <tr>
@@ -107,9 +107,9 @@
          *                          ods-analysis-max="10"
          *                          ods-analysis-x="espece"
          *                          ods-analysis-sort="girth"
-         *                          ods-analysis-serie-height="AVG(hauteur)"
+         *                          ods-analysis-serie-height="AVG(hauteur_en_m)"
          *                          ods-analysis-serie-height-cumulative="false"
-         *                          ods-analysis-serie-girth="AVG(circonference)"
+         *                          ods-analysis-serie-girth="AVG(circonference_en_cm)"
          *
          *                          ng-repeat="result in analysis.results">
          *
@@ -218,43 +218,44 @@
          * @name ods-widgets.directive:odsColorGradient
          * @scope
          * @restrict A
-         * @param {string} odsColorGradient Variable name to use to output the color gradient data structure. variable['colors'] can be used in ods-maps. 'values', 'range' keys are salso available.
+         * @param {string} odsColorGradient Variable name to use to output the color gradient data structure. variable['colors'] can be used in ods-maps. 'values', 'range' keys are also available.
          * @param {DatasetContext} odsColorGradientContext {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {string} odsColorGradientX The X axis of the analysis
-         * @param {string} odsColorGradientSerie FUNC(expression) where FUNC is AVG, SUM, MIN, MAX etc... and expression is the field id to work on.
+         * @param {string} odsColorGradientX The X-axis of the analysis
+         * @param {string} odsColorGradientSerie FUNC(expression) where FUNC is AVG, SUM, MIN, MAX, etc... and expression is the field id to work on.
          * @param {string} [odsColorGradientHigh='rgb(0, 55, 237)'] RGB or HEX color code for highest value of the analysis serie. ex: "rgb(255, 0, 0)", "#abc"
          * @param {string} [odsColorGradientLow='rgb(180, 197, 241)'] RGB or HEX color code for the lowest value of the analysis serie. ex: "rgb(125, 125, 125)", "#ff009a"
          * @param {integer} [odsColorGradientNbClasses=undefined] Number of classes, ie number of color to compute. Mandatory to get a consistent legend with the corresponding number of grades/classes.
-         * @param {integer} [odsColorGradientPowExponent=undefined] Set to 1 for a linear scale (default value), to 0.3 to approximate a logarithmic scale. Power scale tend to look like a log scale when the exponent is less than 1, tend to an exponential scale when bigger than 1.
+         * @param {integer} [odsColorGradientPowExponent=undefined] Set to `1` for a linear scale (default value), to `0.3` to approximate a logarithmic scale. Power scale tends to look like a log scale when the exponent is less than `1` and tends to an exponential scale when bigger than `1`.
          *
          * @description
-         * This widget exposes the results of an analysis transposed to a set of colors for each X values.
-         * The results is available in the scope.
-         * It can be used directly on odsMap color-categories parameter with display=categories mode.
-         * It can also be used on AngularJS's ngRepeat to build custom scales.
+         * The odsColorGradient widget exposes the results of an analysis transposed to a set of colors for each X value.
+         * The results are available in the scope.
+         * 
+         * This widget can be used directly on the odsMap's `color-categories` parameter with the `display=categories` mode.
+         * It can also be used on the AngularJS ngRepeat directive to build custom scales.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="logarithmic-scale.html">
          *          <ods-dataset-context context="regions,population"
-         *                               regions-dataset="contours-geographiques-des-regions-2019-copy"
-         *                               regions-domain="public"
-         *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)', 'disjunctive.region':true}"
-         *                               population-dataset="population-millesimee-communes-2016"
-         *                               population-parameters="{'disjunctive.nom_reg':true}"
-         *                               population-domain="public">
+         *                               regions-dataset="regions-et-collectivites-doutre-mer-france"
+         *                               regions-domain="https://documentation-resources.opendatasoft.com/"
+         *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)', 'disjunctive.reg_name':true}"
+         *                               population-dataset="populations-legales-communes-et-arrondissements-municipaux-france"
+         *                               population-parameters="{'disjunctive.reg_name':true}"
+         *                               population-domain="https://documentation-resources.opendatasoft.com/">
          *
          *              <div ods-color-gradient="colorgradient"
          *                   ods-color-gradient-context="population"
-         *                   ods-color-gradient-x="nom_reg"
-         *                   ods-color-gradient-serie="SUM(population_totale)"
+         *                   ods-color-gradient-x="reg_name"
+         *                   ods-color-gradient-serie="SUM(com_arm_pop_tot)"
          *                   ods-color-gradient-high="rgb(20, 33, 96)"
          *                   ods-color-gradient-low="rgb(180, 197, 241)">
          *
          *                  <ods-map location="5,46.50595,3.40576">
          *                      <ods-map-layer context="regions"
          *                                     color-categories="colorgradient['colors']"
-         *                                     color-by-field="region"
+         *                                     color-by-field="reg_name"
          *                                     color-categories-other="lightgrey"
          *                                     display="categories"
          *                                     shape-opacity="0.85"
@@ -465,7 +466,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://widgets-examples.opendatasoft.com/">
+         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://documentation-resources.opendatasoft.com/">
          *              <div
          *                      ods-analysis="analysis"
          *                      ods-analysis-context="tree"
@@ -473,9 +474,9 @@
          *                      ods-analysis-x="genre"
          *                      ods-analysis-x="espece"
          *                      ods-analysis-sort="circonference"
-         *                      ods-analysis-serie-hauteur="AVG(hauteur)"
+         *                      ods-analysis-serie-hauteur="AVG(hauteur_en_m)"
          *                      ods-analysis-serie-hauteur-cumulative="false"
-         *                      ods-analysis-serie-circonference="AVG(circonference)">
+         *                      ods-analysis-serie-circonference="AVG(circonference_en_cm)">
          *                 <div
          *                      ods-analysis-serie="analysis.results"
          *                      ods-analysis-serie-condition="y > 20"
@@ -494,16 +495,16 @@
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                               tree-domain="https://widgets-examples.opendatasoft.com/">
+         *                               tree-domain="https://documentation-resources.opendatasoft.com/">
          *              <div ods-analysis="analysis"
          *                   ods-analysis-context="tree"
          *                   ods-analysis-max="10"
          *                   ods-analysis-x-genre="genre"
          *                   ods-analysis-x-espece="espece"
          *                   ods-analysis-sort="circonference"
-         *                   ods-analysis-serie-hauteur="AVG(hauteur)"
+         *                   ods-analysis-serie-hauteur="AVG(hauteur_en_m)"
          *                   ods-analysis-serie-hauteur-cumulative="false"
-         *                   ods-analysis-serie-circonference="AVG(circonference)">
+         *                   ods-analysis-serie-circonference="AVG(circonference_en_cm)">
          *                  <div ods-analysis-serie="analysis.results"
          *                       ods-analysis-serie-condition="y > 20"
          *                       ods-analysis-serie-name="hauteur"
@@ -624,7 +625,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://widgets-examples.opendatasoft.com/">
+         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://documentation-resources.opendatasoft.com/">
          *              <div
          *                  ods-analysis="analysis"
          *                  ods-analysis-context="tree"
@@ -632,9 +633,9 @@
          *                  ods-analysis-x-genre="genre"
          *                  ods-analysis-x-espace="espece"
          *                  ods-analysis-sort="circonference"
-         *                  ods-analysis-serie-height="AVG(hauteur)"
+         *                  ods-analysis-serie-height="AVG(hauteur_en_m)"
          *                  ods-analysis-serie-height-cumulative="false"
-         *                  ods-analysis-serie-girth="AVG(circonference)">
+         *                  ods-analysis-serie-girth="AVG(circonference_en_cm)">
          *                  <div
          *                      ods-subaggregation="analysis.results"
          *                      ods-subaggregation-serie-maxheight="MAX(height)"

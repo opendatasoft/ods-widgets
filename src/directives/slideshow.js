@@ -10,21 +10,21 @@
          * @restrict E
          * @scope
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {string} imageField The name of the field containing the image.
-         * @param {string} [titleFields] A comma-separated list of field names to display as comma-separated values in the title.
+         * @param {string} imageField The name of the field containing the image
+         * @param {string} [titleFields] A comma-separated list of field names to display as comma-separated values in the title
          * @param {string} [domainUrl] The URL of the domain
          *
          * @description
-         * This widget displays an image slideshow of a dataset containing media with thumbnails (images, pdf files...).
-         * You will need to set a height for the .ods-slideshow class for it to work correctly or set the height
-         * through the style attribute.
-         * You can also include a tooltip that can access the image's record through the 'record' variable.
+         * The odsSlideshow widget displays an image slideshow of a dataset containing media with thumbnails (images, PDF files, etc.).
+         * 
+         * You will need to set a height for the `.ods-slideshow` class to work correctly or set the height through the style attribute.
+         * You can also include a tooltip to access the image's record through the `record` variable.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="affiches"
-         *                               affiches-domain="https://widgets-examples.opendatasoft.com/"
+         *                               affiches-domain="https://documentation-resources.opendatasoft.com/"
          *                               affiches-dataset="affiches-anciennes">
          *              <ods-slideshow context="affiches"
          *                             image-field="image"

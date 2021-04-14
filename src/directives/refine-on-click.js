@@ -10,7 +10,7 @@
          * @restrict A
          * @scope
          * @description
-         * This directive will refine the given context(s) for a click on an element representing a record.
+         * The refineOnClick directive will refine the given context(s) for a click on an element representing a record.
          *
          * It works in conjunction with a finite set of other directives:
          * * {@link ods-widgets.directive:odsCalendar odsCalendar}
@@ -19,9 +19,8 @@
          * * {@link ods-widgets.directive:odsChart odsChart}
          * * {@link ods-widgets.directive:odsChartSerie odsChartSerie}
          *
-         * When clicking on an item, the contexts will be refined (using the values in the configured fields). By default, if you click
-         * on more than one items, the refinements will add up, which can be useful in situations with multiples values.
-         * If you'd prefer the refinement to be replaced each time you click, you can use `refineOnClickReplaceRefine`.
+         * When clicking on an item, the contexts will be refined using the values in the configured fields. By default, if you click on more than one item, the refinements will add up, which can be useful in situations with multiples values.
+         * If you prefer the refinement to be replaced each time you click, you can use `refineOnClickReplaceRefine`.
          *
          * @example
          *  <example module="ods-widgets">

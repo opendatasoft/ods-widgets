@@ -483,13 +483,13 @@
                             series = items[0].series,
                             s = [];
 
-                        // We copy the item for the header formatting, so that we can sanitize it with no side effects
-                        var headerItem = angular.copy(items[0]);
-                        if (angular.isString(headerItem.key)) {
-                            headerItem.key = ODS.StringUtils.escapeHTML(headerItem.key);
+                        var escapedKey = items[0].key;
+                        if (angular.isString(escapedKey)) {
+                            escapedKey = ODS.StringUtils.escapeHTML(escapedKey);
                         }
 
-                        s = [tooltip.tooltipFooterHeaderFormatter(headerItem)];
+                        // We generate a new item that is a copy of the first one so that we can sanitize it with no side effects
+                        s = [tooltip.tooltipFooterHeaderFormatter(Object.assign({}, items[0], {'key': escapedKey}))];
 
                         // build the values
                         angular.forEach(items, function (item) {
@@ -1893,32 +1893,31 @@
         };
     }]);
 
-
-
-
     mod.directive('odsChart', ["ODSAPI", 'ChartHelper', 'ODSWidgetsConfig', function(ODSAPI, ChartHelper, ODSWidgetsConfig) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsChart
          * @restrict E
          * @scope
-         * @param {string} [timescale=none] Works only with timeseries. If defines the default timescale to use to display the X Axis. It does not affect the way the different series are requested (they have there own timescale) but enforces X axis intervals.
-         * @param {string} [labelX=none] If set, it override the default X Axis label. The default label is generated from series.
-         * @param {boolean} [singleYAxis=false] Enforces the use of only one Y axis for all series. In this case, specific Y axis parameters defined for each series will be ignored.
-         * @param {string} singleYAxisLabel Set the label for the single Y axis.
-         * @param {integer} [min=null] Set the min displayed value for Y axis. Active only when singleYAxis is true.
-         * @param {integer} [max=null] Set the max displayed value for Y axis. Active only when singleYAxis is true.
-         * @param {integer} [step=null] specify the step between each tick on the Y axis. If not defined, it is computed automatically. Active only when singleYAxis is true.
-         * @param {boolean} [scientificDisplay=true] When set to false, force the full display of the numbers on the Y axis. Active only when singleYAxis is true.
-         * @param {boolean} [logarithmic=false] Use a logarithmic scale for Y axis. Active only when singleYAxis is true.
-         * @param {boolean} [displayLegend=true] enable or disable the display of series legend. Active only when singleYAxis is true.
-         * @param {boolean} [alignMonth=true] Align the month values with the month label. The old behaviour was to align values with the middle of the month, setting this parameter to false reverts to the old behaviour.
-         * @param {integer} [labelsXLength=12] Set the maximum number of characters displayed for the X axis labels.
+         * @param {string} [timescale=none] Works only with timeseries. If it defines the default timescale to use to display the X-axis. It does not affect how the different series are requested (they have their own timescale) but enforces X-axis intervals.
+         * @param {string} [labelX=none] If set, it overrides the default X-axis label. The default label is generated from the series.
+         * @param {boolean} [singleYAxis=false] Enforces the use of only one Y-axis for all series. In this case, specific Y-axis parameters defined for each series will be ignored.
+         * @param {string} singleYAxisLabel Sets the label for the single Y-axis.
+         * @param {integer} [min=null] Sets the min displayed value for Y-axis. Active only when singleYAxis is true.
+         * @param {integer} [max=null] Sets the max displayed value for Y-axis. Active only when singleYAxis is true.
+         * @param {integer} [step=null] Specifies the step between each tick on the Y axis. If not defined, it is computed automatically. Active only when singleYAxis is true.
+         * @param {boolean} [scientificDisplay=true] When set to false, force the full display of the numbers on the Y-axis. Active only when singleYAxis is true.
+         * @param {boolean} [logarithmic=false] Uses a logarithmic scale for Y-axis. Active only when singleYAxis is true.
+         * @param {boolean} [displayLegend=true] Enables or disables the display of series legend. Active only when singleYAxis is true.
+         * @param {boolean} [alignMonth=true] Aligns the month values with the month label. The old behavior aligns values with the middle of the month. Setting this parameter to false reverts to the old behavior.
+         * @param {integer} [labelsXLength=12] Sets the maximum number of characters displayed for the X-axis labels.
          *
          * @description
-         * This widget is the base widget allowing to display charts from Opendatasoft datasets.
-         * A Chart is defined by one or more series that get there data from form one or more dataset represented by an {@link ods-widgets.directive:odsDatasetContext Dataset Context},
-         * a type of chart and multiple parameters to fine tune the appearance of chart.
+         * The odsChart widget is the base widget allowing to display charts from Opendatasoft datasets.
+         * A Chart is defined by one or more series that get their data from form one or more datasets represented by a {@link ods-widgets.directive:odsDatasetContext Dataset Context},
+         * a type of chart, and multiple parameters to fine-tune the chart's appearance.
+         * 
+         * Note: `min` and `max` parameters are dynamic, which means that if they change, the chart will be refreshed accordingly.
          *
          * Basic example:
          *    <pre>
@@ -1954,9 +1953,9 @@
          *    <pre>
          *        <ods-dataset-context context="commute,demographics"
          *                             commute-dataset="commute-time-us-counties"
-         *                             commute-domain="https://widgets-examples.opendatasoft.com/">
+         *                             commute-domain="https://documentation-resources.opendatasoft.com/"
          *                             demographics-dataset="us-cities-demographics"
-         *                             demographics-domain="https://widgets-examples.opendatasoft.com/">
+         *                             demographics-domain="https://documentation-resources.opendatasoft.com/">
          *            <ods-chart align-month="true">
          *                <ods-chart-query context="commute" field-x="state" maxpoints="20">
          *                    <ods-chart-serie expression-y="mean_commuting_time" chart-type="column" function-y="AVG" color="#66c2a5" scientific-display="true">
@@ -1974,12 +1973,12 @@
             restrict: 'EA',
             scope: {
                 timescale: '@',
-                labelX: '@',
+                labelX: '@?',
                 singleYAxis: '@',
                 singleYAxisLabel: '@',
                 singleYAxisScale: '@',
-                min: '@',
-                max: '@',
+                min: '@?',
+                max: '@?',
                 step: '@',
                 scientificDisplay: '@',
                 logarithmic: '@',
@@ -2031,11 +2030,14 @@
                     };
                 }
 
-                angular.forEach($scope.chart, function(item, key) {
-                    if (typeof item === "undefined") {
-                        delete $scope.chart[key];
-                    }
-                });
+                function cleanChartObject() {
+                    angular.forEach($scope.chart, function(item, key) {
+                        if (typeof item === "undefined") {
+                            delete $scope.chart[key];
+                        }
+                    });
+                }
+                cleanChartObject();
 
                 if ($attrs.context) {
                     // backward compatibility
@@ -2156,8 +2158,19 @@
                         }
                     };
 
-                    $scope.$watch('labelX', function(nv, ov) {
-                        $scope.chart.xLabel = nv;
+                    $scope.$watch('labelX', function(nv) {
+                        $scope.chart.xLabel = angular.isDefined(nv) ? nv : undefined;
+                        cleanChartObject();
+                    });
+
+                    $scope.$watch('min', function(nv) {
+                        $scope.chart.yRangeMin = angular.isDefined(nv) && nv !== "" ? parseFloat(nv) : undefined;
+                        cleanChartObject();
+                    });
+
+                    $scope.$watch('max', function(nv) {
+                        $scope.chart.yRangeMax = angular.isDefined(nv) && nv !== "" ? parseFloat(nv) : undefined;
+                        cleanChartObject();
                     });
                 }
             }]
@@ -2171,18 +2184,18 @@
          * @name ods-widgets.directive:odsChartQuery
          * @restrict E
          * @scope
-         * @param {string} fieldX Set the field that is used to compute the aggregations during the analysis query.
+         * @param {string} fieldX Sets the field that is used to compute the aggregations during the analysis query.
          * @param {string} [timescale="year"] Works only with timeseries (when fieldX is a date or datetime). Y values will be computed against this interval. For example, if you have daily values in a dataset and ask for a "month" timescale, the Y values for the {@link ods-widgets.directive:odsChartSerie series} inside this query will aggregated month by month and computed.
          * @param {integer} [maxpoints=50] Defines the maximum number of points fetched by the query. With a value of 0, all points will be fetched by the query.
-         * @param {string} [stacked=null] Stack the resulting charts. Stacked values can 'normal' or 'percent'. Only works with columns, bar, line, spline, area and spline area charts.
-         * @param {boolean} [reverseStacks=false] Reverse the order of the displayed stack. Only works with stacked charts when the singleYAxis option is not active on the chart.
-         * @param {string} [seriesBreakdown=none] When declared, all series are break down by the defined facet
-         * @param {string} [seriesBreakdownTimescale=true] if the break down facet is a time serie (date or datetime), it defines the aggregation level for this facet
+         * @param {string} [stacked=null] Stacks the resulting charts. Stacked values can 'normal' or 'percent'. Only works with columns, bar, line, spline, area, and spline area charts.
+         * @param {boolean} [reverseStacks=false] Reverses the order of the displayed stack. Only works with stacked charts when the singleYAxis option is not active on the chart.
+         * @param {string} [seriesBreakdown=none] When declared, all series are broken down by the defined facet.
+         * @param {string} [seriesBreakdownTimescale=true] If the breakdown facet is a time serie (date or datetime), it defines the aggregation level for this facet.
          * @param {object} [categoryColors={}] A object containing a color for each category name. For example: {'my value': '#FF0000', 'my other value': '#0000FF'}
          *
          * @description
-         * odsChartQuery is the sub widget that defines the queries for the series defined inside.
-         * see {@link ods-widgets.directive:odsChart odsChart} for complete examples.
+         * The odsChartQuery widget is the sub widget that defines the queries for the series defined inside.
+         * For complete examples, see {@link ods-widgets.directive:odsChart odsChart}.
          *
          * Note: All parameters are dynamic, which means that if they change, the chart will be refreshed accordingly.
          */
@@ -2297,36 +2310,37 @@
          * @name ods-widgets.directive:odsChartSerie
          * @restrict E
          * @scope
-         * @param {string} [chartType] available types are: 'line', 'spline', 'arearange', 'areasplinerange', 'columnrange', 'area', 'areaspline', 'column', 'bar', 'pie', 'scatter'
-         * @param {string} [functionY] set up the function that will be used to calculate aggreation value. 'COUNT' counts the number of documents for each category defined by expressionY.
-         * @param {string} [expressionY] set up the facet used for aggregation
-         * @param {string} [color] defines the color used for this serie. see colors below
-         * @param {string} [labelY] specify a custom label for the serie
-         * @param {string} [labelsposition='outside'] specify the position of labels. value can 'inside' or 'outside' (for pie charts only)
-         * @param {number} [innersize=0] this parameter can be used to change a pie chart into a donut by creating a hole in the center. The value is expressed in pixels.
+         * @param {string} [chartType] Available types are: 'line', 'spline', 'arearange', 'areasplinerange', 'columnrange', 'area', 'areaspline', 'column', 'bar', 'pie', 'scatter'
+         * @param {string} [functionY] Sets up the function that will be used to calculate aggregation value. 'COUNT' counts the number of documents for each category defined by expressionY.
+         * @param {string} [expressionY] Sets up the facet used for aggregation
+         * @param {string} [color] Defines the color used for this serie. see colors below
+         * @param {string} [labelY] Specifies a custom label for the series
+         * @param {string} [labelsposition='outside'] Specifies the position of labels. The authorized values are 'inside' or 'outside' (for pie charts only).
+         * @param {number} [innersize=0] This parameter can be used to change a pie chart into a donut by creating a hole in the center. The value is expressed in pixels.
          * @param {boolean} [cumulative] Y values are accumulated
-         * @param {boolean} [logarithmic=false] display the serie using a logarithmic scale
-         * @param {integer} [min=null] minimum value to be displayed on the Y axis. If not defined, it is computed automatically.
-         * @param {integer} [max=null] maximum value to be displayed on the Y axis. If not defined, it is computed automatically.
-         * @param {integer} [step=null] specify the step between each tick on the Y axis. If not defined, it is computed automatically.
-         * @param {integer} [index=null] force the display order of the serie. The higher is on top, the lower is below (starts from 1)
-         * @param {boolean} [scientificDisplay=true] When set to false, force the full display of the numbers on the Y axis.
-         * @param {boolean} [displayUnits] enable the display of the units defined for the field in the tooltip
-         * @param {boolean} [displayValues] enable the display of each invidual values in stacks
-         * @param {boolean} [displayStackValues] enable the display of the cumulated values on top of stacks
-         * @param {number} [multiplier] multiply all values for this serie by the defined number
-         * @param {string} [colorThresholds] an array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the defined color is used. The format for this parameter is color-thresholds="[{'value': 5, 'color': '#00ff00'},{'value': 10, 'color': '#ffff00'}]"
-         * @param {string} [subsets] used when functionY is set to 'QUANTILES' to define the wanted quantile
-         * @param {boolean} [subseries] an array of subserie. They are used for range, columnrange and boxplot charts. Each item of the array contains an object like: {"func": "AVG", "yAxis": "myfield"}
-         * @param {string} [refineOnClickContext] context name or array of of contexts name on which to refine when the serie is clicked on. Won't work properly if the fieldX attribute of the parent odsChartQuery is a date or datetime field and if the associated timescale is not one of 'year', 'month', 'day', 'hour', 'minute'
-         * @param {string} [refineOnClick[context]ContextField] name of the field that will be refined for each context.
+         * @param {boolean} [logarithmic=false] Displays the serie using a logarithmic scale
+         * @param {integer} [min=null] Minimum value to be displayed on the Y-axis. If not defined, it is computed automatically.
+         * @param {integer} [max=null] Maximum value to be displayed on the Y axis. If not defined, it is computed automatically.
+         * @param {integer} [step=null] Specifies the step between each tick on the Y-axis. If not defined, it is computed automatically.
+         * @param {integer} [index=null] Forces the display order of the serie. The higher is on top, the lower is below (starts from 1).
+         * @param {boolean} [scientificDisplay=true] When set to false, force the full display of the numbers on the Y-axis.
+         * @param {boolean} [displayUnits] Enables the display of the units defined for the field in the tooltip
+         * @param {boolean} [displayValues] Enables the display of each invidual values in stacks
+         * @param {boolean} [displayStackValues] Enables the display of the cumulated values on top of stacks
+         * @param {number} [multiplier] Multiplies all values for this serie by the defined number
+         * @param {string} [colorThresholds] An array of (value, color) objects. For each threshold value, if the Y value is above the threshold, the defined color is used. The format for this parameter is color-thresholds="[{'value': 5, 'color': '#00ff00'},{'value': 10, 'color': '#ffff00'}]"
+         * @param {string} [subsets] Used when functionY is set to 'QUANTILES' to define the wanted quantile
+         * @param {boolean} [subseries] An array of subseries. They are used for range, columnrange, and boxplot charts. Each item of the array contains an object like: {"func": "AVG", "yAxis": "myfield"}
+         * @param {string} [refineOnClickContext] Context name or array of contexts name on which to refine when the series is clicked on. It won't work properly if the fieldX attribute of the parent odsChartQuery is a date or datetime field and if the associated timescale is not one of 'year', 'month', 'day', 'hour', 'minute'.
+         * @param {string} [refineOnClick[context]ContextField] Name of the field that will be refined for each context
          *
          * @description
-         * odsChartSerie is the sub widget that defines a serie in the chart with all its parameters.
-         * see {@link ods-widgets.directive:odsChart odsChart} for complete examples.
+         * The odsChartSerie widget is the sub widget that defines a series in the chart with all its parameters.
+         * For complete examples, see {@link ods-widgets.directive:odsChart odsChart}.
          * # Available chart types:
-         * There are two available types of charts: simple series and areas that takes a minimal and a maximal value.
-         * ## simple series
+         * There are two available types of charts: simple series and areas that take a minimal and a maximal value.
+         * 
+         * ## Simple series
          * - line
          * - spline
          * - area
@@ -2338,11 +2352,13 @@
          * - polar
          * - spiderweb
          * - funnel
-         * ## areas
+         * 
+         * ## Areas
          * - arearange
          * - areasplinerange
          * - columnrange
-         * # available functions
+         * 
+         * # Available functions
          * - COUNT
          * - AVG
          * - MIN
@@ -2361,41 +2377,71 @@
                 var odsChartQueryController = ctrls[0],
                     refineOnClickCtrl = ctrls[1] || ctrls[2];
 
+                var dynamicAttrs = ['chartType','innersize', 'functionY', 'expressionY', 'labelY', 'min', 'max', 'step', 'multiplier', 'color', 'colorThresholds'];
+
                 var chart = {
-                    type: attrs.chartType || undefined,
-                    innersize: attrs.innersize || undefined,
                     labelsposition: attrs.labelsposition || undefined,
-                    func: attrs.functionY || undefined,
-                    yAxis: attrs.expressionY || undefined,
-                    color: attrs.color || undefined,
                     index: parseInt(attrs.index) || undefined,
                     cumulative: !!attrs.cumulative || false,
-                    yLabelOverride: angular.isDefined(attrs.labelY) ? attrs.labelY : undefined,
                     scale: attrs.logarithmic ? 'logarithmic' : '',
-                    yRangeMin: angular.isDefined(attrs.min) && attrs.min !== "" ? parseFloat(attrs.min) : undefined,
-                    yRangeMax: angular.isDefined(attrs.max) && attrs.max !== "" ? parseFloat(attrs.max) : undefined,
-                    yStep: angular.isDefined(attrs.step) && attrs.step !== "" ? parseFloat(attrs.step) : undefined,
                     displayUnits: attrs.displayUnits === "true",
                     displayValues: attrs.displayValues === "true",
                     displayStackValues: attrs.displayStackValues === "true",
-                    multiplier: angular.isDefined(attrs.multiplier) ? parseFloat(attrs.multiplier) : undefined,
-                    thresholds: attrs.colorThresholds ? scope.$eval(attrs.colorThresholds) : [],
                     subsets: attrs.subsets,
                     charts: attrs.subseries ? JSON.parse(attrs.subseries) : undefined,
                     refineOnClickCtrl: refineOnClickCtrl,
                     scientificDisplay: attrs.scientificDisplay === "true"
                 };
 
-                angular.forEach(chart, function(item, key) {
-                    if (typeof item === "undefined") {
-                        delete chart[key];
-                    }
-                });
+                function updateChartFromDynamicAttrs() {
+                    angular.extend(chart, {
+                        type: attrs.chartType || undefined,
+                        innersize: attrs.innersize || undefined,
+                        func: attrs.functionY || undefined,
+                        yAxis: attrs.expressionY || undefined,
+                        yLabelOverride: angular.isDefined(attrs.labelY) ? attrs.labelY : undefined,
+                        yRangeMin: angular.isDefined(attrs.min) && attrs.min !== "" ? parseFloat(attrs.min) : undefined,
+                        yRangeMax: angular.isDefined(attrs.max) && attrs.max !== "" ? parseFloat(attrs.max) : undefined,
+                        yStep: angular.isDefined(attrs.step) && attrs.step !== "" ? parseFloat(attrs.step) : undefined,
+                        multiplier: angular.isDefined(attrs.multiplier) ? parseFloat(attrs.multiplier) : undefined,
+                        color: attrs.color || undefined,
+                        thresholds: attrs.colorThresholds ? scope.$eval(attrs.colorThresholds) : [],
+                    });
+                }
+                updateChartFromDynamicAttrs();
+
+                function cleanChartObject() {
+                    angular.forEach(chart, function(item, key) {
+                        if (typeof item === "undefined") {
+                            delete chart[key];
+                        }
+                    });
+                }
+                cleanChartObject();
+
                 odsChartQueryController.setChart(chart);
-                attrs.$observe('labelY', function(value) {
-                    chart.yLabelOverride = value;
-                    odsChartQueryController.setChart(chart);
-                });
+
+                // Update the chart if an dynamic attribute changes
+                scope.$watch(
+                    function() {
+                        return attrs;
+                    },
+                    function(nv, ov) {
+                        var updateChart = false;
+                        if (nv && nv !== ov && nv.$attr) {
+                            dynamicAttrs.forEach(function(dynamicAttrKey) {
+                                if (nv[dynamicAttrKey] !== ov[dynamicAttrKey]) {
+                                    updateChart = true;
+                                }
+                            });
+
+                            if (updateChart) {
+                                updateChartFromDynamicAttrs();
+                                cleanChartObject();
+                                odsChartQueryController.setChart(chart);
+                            }
+                        }
+                }, true);
             }
         };
     }]);

@@ -10,23 +10,22 @@
          * @scope
          * @restrict E
          *
-         * @param {DatasetContext} context Context {@link ods-widgets.directive:odsDatasetContext Dataset Context} from which data is
+         * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} from which data is
          * extracted
-         * @param {string} rows Comma-separated list of field names which will be used for row headers' values. These fields must all be facets.
+         * @param {string} rows A comma-separated list of field names which will be used for row headers' values. These fields must all be facets.
          * @param {string} column Name of the field which will be used for column header's values. This field must be a facet.
-         * @param {string} serieXxxLabel Label of the serie, which will be displayed as column header (Xxx being the
-         * name of the serie).
-         * @param {string} serieXxxFunc Function (SUM, AVG, COUNT etc...) used to aggregate the serie's analysis (Xxx
-         * being the name of the serie)
-         * @param {string} serieXxxExpr Name of the field used for the serie's analysis (Xxx being the name of the
-         * serie)
-         * @param {boolean} [repeatRowHeaders=false] Whether to repeat the row headers on each line or not.
-         * @param {boolean} [displayIntermediaryResults=false] Whether to display intermediary subtotals, subaverages
-         * etc...
-         * @param {integer} [numberPrecision=3] The number of decimals to display for number values.
+         * @param {string} serieXxxLabel Label of the series, which will be displayed as column header (Xxx being the
+         * name of the series).
+         * @param {string} serieXxxFunc Function (SUM, AVG, COUNT, etc.) used to aggregate the series analysis (Xxx
+         * being the name of the series)
+         * @param {string} serieXxxExpr Name of the field used for the series analysis (Xxx being the name of the
+         * series)
+         * @param {boolean} [repeatRowHeaders=false] Controls whether to repeat the row headers on each line or not.
+         * @param {boolean} [displayIntermediaryResults=false] Controls whether to display intermediary subtotals, subaverages, etc.
+         * @param {integer} [numberPrecision=3] The number of decimals to display for numeric values
          *
          * @description
-         * This widget create a cross table from a context.
+         * The odsCrossTable widget creates a cross table from a context.
          * It supports multiple aggregations for a single column field and multiple row fields.
          *
          * @example
@@ -34,13 +33,13 @@
          *      <file name="index.html">
          *         <ods-dataset-context context="trees"
          *                              trees-dataset="les-arbres-remarquables-de-paris"
-         *                              trees-domain="https://widgets-examples.opendatasoft.com/">
+         *                              trees-domain="https://documentation-resources.opendatasoft.com/">
          *              <ods-cross-table context="trees"
          *                               rows="arrondissement"
          *                               column="espece"
          *                               serie-height-label="Average height"
          *                               serie-height-func="AVG"
-         *                               serie-height-expr="hauteur"></ods-cross-table>
+         *                               serie-height-expr="hauteur_en_m"></ods-cross-table>
          *          </ods-dataset-context>
          *      </file>
          *  </example>

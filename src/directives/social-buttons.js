@@ -9,11 +9,11 @@
          * @name ods-widgets.directive:odsSocialButtons
          * @scope
          * @restrict A
-         * @param {string} [buttons='twitter,facebook,linkedin,email'] Comma separated list of buttons you want to display.
+         * @param {string} [buttons='twitter,facebook,linkedin,email'] A comma-separated list of buttons you want to display
          * @param {string} [title=current page's title] Title of the post on social media
-         * @param {string} [url=current page's url] Url attached to the post on social media
+         * @param {string} [url=current page's url] URL attached to the post on social media
          * @description
-         * This widget displays a series of buttons for easy sharing on social media.
+         * The odsSocialButtons widget displays a series of buttons for easy sharing on social media.
          *
          * @example
          *  <example module="ods-widgets">

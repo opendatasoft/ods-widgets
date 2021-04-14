@@ -69,95 +69,108 @@
          * @name ods-widgets.directive:odsSelect
          * @scope
          * @restrict E
-         * @param {array} options The input array of value which feeds the select menu.
-         * @param {array} selectedValues The variable name to use to store the selected options' values.
-         * @param {expression} [labelModifier=none] An expression to apply on the options' label.
+         * @param {array} options The input array of value which feeds the list of options
+         * @param {array} selectedValues The variable name to use to store the selected options' values
+         * @param {expression} [labelModifier=none] An expression to apply on the options' label
          * @param {expression} [valueModifier=none] An expression to apply on the options' value. This parameter is used to modify the form of the values exposed by `selected-value`.
-         * @param {expression} [onChange=none] An expression to evaluate whenever an option has been (de)selected.
-         * @param {boolean} [multiple=false] If true, the menu will support multiple selections.
-         * @param {boolean} [isLoading=false] Specifies if the widget should initially display a loader. This parameter will be automatically set to `false` as soon as options are loaded.
-         * @param {boolean} [disabled=false] Specifies if the widget should be disabled.
+         * @param {expression} [onChange=none] An expression to evaluate whenever an option has been (de)selected
+         * @param {boolean} [multiple=false] When set to `true`, the menu will support multiple selections.
+         * @param {boolean} [isLoading=false] Specifies whether the widget should initially display a loader. This parameter will be automatically set to `false` as soon as options are loaded.
+         * @param {boolean} [disabled=false] Specifies whether the widget should be disabled.
          * @param {string} [placeholder="Select one or more elements" or "Select one element"] Specifies a short hint that describes the expected value of the select field.
          *
          * @description
-         * This widget allows the selection of one or more items from a list of options. This list can be made up of strings or objects.
+         * The odsSelect widget shows a list of options from which users can select one or more options. This list can be made up of strings or objects.
          *
-         * If the "options" variable provided to the widget represents a simple array of string, the labels and values of these options will be automatically calculated by the widget.
-         * But if the options provided to the widget are objects, it will be necessary to specify how to handle them using the "label-modifier" and "value-modifier" parameters.
+         * If the `options` variable provided to the widget represents a simple array of strings, option labels and values will be automatically calculated by the widget.
+         * If the options provided to the widget are objects, use the `label-modifier` and `value-modifier` parameters to define how to handle those objects.
          *
-         * The "label-modifier" and "value-modifier" parameters each take an expression that will be applied to the each individual object representing an option.
-         * And finally, the result of the selection will be stored in the variable specified in the "selected-values" parameter.
+         * The `label-modifier` and `value-modifier` parameters each take an expression applied to each object representing an option.
+         * Finally, the selection will be stored in the variable specified in the `selected-values` parameter.
          *
          * <h1>Explanation of the examples</h1>
          *
          * <h2>First example</h2>
          *
-         * In the <b>first example</b> bellow, the widget `ods-result` will store the result of the request in the variable `items`.
-         * The value of the variable `items` will have this form:
+         * The first example shows a list of options from which users can select one or multiple trees.
+         * This example uses the `ods-dataset-context`, `ods-result`, and `ods-select` widgets:
+         * - The `ods-dataset-context` declares a context based on the `les-arbres-remarquables-de-paris` dataset.
+         * - The `ods-results` widget is nested within `ods-dataset-context`. It stores the result of the search request in the variable `items`.
+         *   The value of the variable `items` will have this form:
          *
-         * ```
+         * <pre>
          * [
          *     { fields: { libellefrancais: "Noyer", espece: "nigra",  ... }, ... },
          *     { fields: { libellefrancais: "Marronnier", espece: "hippocastanum",  ... }, ... },
          *     { fields: { libellefrancais: "Chêne", espece: "cerris",  ... }, ... },
          *     ...
          * ]
-         * ```
+         * </pre>
+         *
+         * - The `ods-select` widget is nested within `ods-results`.
+         * It defines the list of options users can select, using the `options` parameter set to `items`.
+         * `items` corresponds to the variable storing the results in `ods-results`.
+         *
          * <b>The parameter `label-modifier`</b>
          *
-         * In this example we want to use the value of the field `libellefrancais` as label.
-         *
-         * To do so, we will need to use the parameter `label-modifier` to access the value of the field, by passing it the following configuration: `"fields.libellefrancais"`.
+         * In this example, the desired value for the option label is the field `libellefrancais` from the source dataset.
+         * To access the value of this field, the `label-modifier` parameter for `ods-select` is set to `"fields.libellefrancais"`.
          *
          * <b>The parameter `value-modifier`</b>
          *
-         * As for the `value-modifier` parameter, we want the shape of the values returned by `selected-values` to look like this:
+         * The desired structure for the values returned by `selected-values` is the following:
          *
-         * ```
+         * <pre>
          * [
          *     { name: "Noyer", species: "nigra" },
          *     { name: "Marronnier", species: "hippocastanum" },
          *     ...
          * ]
-         * ```
+         * </pre>
          *
-         * To do so, we will pass it the following configuration: `"{ 'name': fields.libellefrancais, 'species': fields.espece }"`.
+         * To achieve this, the `value-modifier` for `ods-select` is set to `"{ 'name': fields.libellefrancais, 'species': fields.espece }"`.
          *
          * <h2>Second example</h2>
          *
-         * What we want to accomplish in the <b>second example</b> bellow, is to update the context's parameters by directly injecting the selected values returned by `ods-select`.
+         * The second example shows two lists of options from which users can select one or multiple options:
+         * - From the first list, users can select districts.
+         * - From the second list, users can select tree species.
          *
-         * First, we will use the widget `ods-facet-results` to fetch the values of the facets "arrondissement" and "libellefrancais".
-         * Please note that the values of `facetsArrondissement` and `facetsLibelleFrancais` will have this form:
+         * In the second example, context parameters are updated by injecting the selected values returned by `ods-select`.
+         * This example uses the `ods-dataset-context`, `ods-result`, and `ods-select` widgets:
+         * - The `ods-dataset-context` declares a context based on the `les-arbres-remarquables-de-paris` dataset.
+         * - Two `ods-results` widgets are nested within `ods-dataset-context`. They fetch the values of the facets "arrondissement" and "libellefrancais" from the source dataset and store them in the variables `facetsArrondissement` and `facetsLibelleFrancais`, respectively.
+         * The values of `facetsArrondissement` and `facetsLibelleFrancais` will have this form:
          *
-         * ```
+         * <pre>
          * [
          *     { count: 1, path: "PARIS 1ER ARRDT", state: "displayed", name: "PARIS 1ER ARRDT" },
          *     { count: 8, path: "PARIS 17E ARRDT", state: "displayed", name: "PARIS 17E ARRDT" },
          *     { count: 11, path: "PARIS 7E ARRDT", state: "displayed", name: "PARIS 7E ARRDT" },
          *     ...
          * ]
-         * ```
+         * </pre>
          *
-         * ```
+         * <pre>
          * [
          *     { count: 32, path: "Platane", state: "displayed", name: "Platane" },
          *     { count: 12, path: "Hêtre", state: "displayed", name: "Hêtre" },
          *     { count: 11, path: "Chêne", state: "displayed", name: "Chêne" },
          *     ...
          * ]
-         * ```
+         * </pre>
          *
-         * Now that we have those values injected into the `ods-select` widget, we will pass the following configuration to the `selected-values` parameters: `"ctx.parameters['refine.arrondissement']"` and `"ctx.parameters['refine.libellefrancais']"`.
-         *
-         * This will cause the context to be updated each time an option is selected.
+         * - An `ods-select` widget is nested within each `ods-results`.
+         * They define the lists of options users can select, using the `options` parameter set to `facetsArrondissement` and `facetsLibelleFrancais`, respectively.
+         * To update the context each time an option is selected, the `selected-values` parameters for `ods-select` are set to `ctx.parameters['refine.arrondissement']` and `ctx.parameters['refine.libellefrancais']`, respectively.
+
          *
          * @example
          * <example module="ods-widgets">
          *     <file name="first_example.html">
          *         <ods-dataset-context
          *             context="ctx"
-         *             ctx-domain="https://widgets-examples.opendatasoft.com/"
+         *             ctx-domain="https://documentation-resources.opendatasoft.com/"
          *             ctx-dataset="les-arbres-remarquables-de-paris">
          *             <div ods-results="items" ods-results-context="ctx" ods-results-max="10">
          *                 <ods-select
@@ -176,7 +189,7 @@
          *     <file name="second_example.html">
          *         <ods-dataset-context
          *             context="ctx"
-         *             ctx-domain="https://widgets-examples.opendatasoft.com/"
+         *             ctx-domain="https://documentation-resources.opendatasoft.com/"
          *             ctx-dataset="les-arbres-remarquables-de-paris"
          *             ctx-parameters="{ 'disjunctive.arrondissement': true, 'disjunctive.libellefrancais': true }">
          *             <div ods-facet-results="facetsArrondissement"
@@ -234,9 +247,15 @@
                 '            type="button"' +
                 '            ng-class="{ \'disabled\': disabled }"' +
                 '            ng-disabled="disabled"' +
-                '            ng-click="toggleDropdown()">' +
-                '            <span class="odswidget-select-header-label pull-left"></span>' +
-                '            <i class="fa fa-angle-down pull-right"></i>' +
+                '            ng-click="toggleDropdown()"' +
+                '            aria-haspopup="listbox"' +
+                '            aria-expanded="false"' +
+                '            aria-label="Show options"' +
+                '            translate="aria-label">' +
+                '            <span class="odswidget-select-button-label"></span>' +
+                '            <i class="fa fa-angle-down"' +
+                '               title="Show options"' +
+                '               translate="title"></i>' +
                 '        </button>' +
                 '        <div class="odswidget-select-input-container">' +
                 '            <input class="odswidget-select-input"' +
@@ -245,17 +264,26 @@
                 '                ng-model-options="{ debounce: 300 }"' +
                 '                ng-disabled="disabled"' +
                 '                placeholder="{{ \'Filter\' | translate }}"/>' +
-                '            <i class="fa fa-angle-up pull-right"' +
-                '                ng-click="toggleDropdown()">' +
-                '            </i>' +
+                '            <button class="odswidget-select-button-dropdown-close" ' +
+                '                   title="Hide options"' +
+                '                   translate="title"' +
+                '                   ng-click="toggleDropdown()">' +
+                '               <i class="fa fa-angle-up"' +
+                '                  aria-hidden="true">' +
+                '               </i>' +
+                '            </button>' +
                 '        </div>' +
                 '        <div class="odswidget-select-dropdown-menu">' +
                 '            <ul class="odswidget-select-dropdown-menu-list"' +
-                '               ng-hide="isLoading">' +
-                '                <li class="odswidget-select-dropdown-actions-select-all"' +
+                '                tabindex="-1"' +
+                '                ng-hide="isLoading">' +
+                '                <li class="odswidget-select-dropdown-menu-item odswidget-select-dropdown-actions-select-all"' +
                 '                    ng-show="UIState.dropdown.header.selectAll"' +
-                '                    ng-click="toggleSelectAll()">' +
-                '                    <i class="fa fa-square-o" aria-hidden="true"></i>' +
+                '                    ng-click="toggleSelectAll()"' +
+                '                    ng-keydown="$event.keyCode === 13 && toggleSelectAll()"' +
+                '                    tabindex="0"' +
+                '                    role="option">' +
+                '                    <i class="fa fa-square-o odswidget-select-dropdown-item-icon" aria-hidden="true"></i>' +
                 '                    <span class="odswidget-select-dropdown-label checkbox">' +
                 '                        <span translate>All</span>' +
                 '                        <span class="odswidget-select-dropdown-actions-filtered-items-count"' +
@@ -267,25 +295,30 @@
                 '                        </span>' +
                 '                    </span>' +
                 '                </li>' +
-                '                <hr ng-show="UIState.dropdown.header.divider" />' +
-                '                <li ng-class="{ \'odswidget-select-dropdown-menu-selected\': (item | odsSelectItemIsSelected:_selectedItems:false) }"' +
+                '                <hr class="odswidget-select-dropdown-divider" ng-show="UIState.dropdown.header.divider" />' +
+                '                <li class="odswidget-select-dropdown-menu-item"' +
+                '                    ng-class="{ \'odswidget-select-dropdown-menu-selected\': (item | odsSelectItemIsSelected:_selectedItems:false) }"' +
+                '                    aria-selected="{{ item | odsSelectItemIsSelected:_selectedItems:false }}"' +
+                '                    role="option"' +
+                '                    tabindex="0"' +
                 '                    ng-repeat="item in _items | odsSelectFilter:_inputTextFilter:_displaySelectedItemsOnly:_selectedItems"' +
-                '                    ng-click="toggleSelectOne(item)">' +
+                '                    ng-click="toggleSelectOne(item)"' +
+                '                    ng-keydown="$event.keyCode === 13 && toggleSelectOne(item)">' +
                 '                    <i aria-hidden="true"' +
                 '                        ng-show="UIState.dropdown.list.checkboxes"' +
-                '                        class="{{ item | odsSelectItemIsSelected:_selectedItems:true }}">' +
+                '                        class="odswidget-select-dropdown-item-icon {{ item | odsSelectItemIsSelected:_selectedItems:true }}">' +
                 '                    </i>' +
                 '                    <span class="odswidget-select-dropdown-label"' +
                 '                        ng-class="{ \'checkbox\': multiple }"' +
                 '                        title="{{ item.label }}">' +
                 '                        {{ item.label }}' +
                 '                    </span>' +
-                '                    <i class="fa fa-times-circle"' +
+                '                    <i class="fa fa-times-circle odswidget-select-dropdown-item-close-icon"' +
                 '                        aria-hidden="true"' +
                 '                        ng-show="!multiple && (item | odsSelectItemIsSelected:_selectedItems:false)">' +
                 '                    </i>' +
                 '                </li>' +
-                '                <li class="odswidget-select-dropdown-no-options"' +
+                '                <li class="odswidget-select-dropdown-menu-item odswidget-select-dropdown-no-options"' +
                 '                    ng-show="UIState.dropdown.list.noOptions"' +
                 '                    translate>' +
                 '                    No options' +
@@ -293,7 +326,7 @@
                 '            </ul>' +
                 '            <ul class="odswidget-select-dropdown-menu-list"' +
                 '                ng-show="isLoading">' +
-                '                <li class="odswidget-select-dropdown-no-options">' +
+                '                <li class="odswidget-select-dropdown-menu-item odswidget-select-dropdown-no-options">' +
                 '                    <i class="fa fa-spinner fa-pulse fa-fw"></i>&nbsp;' +
                 '                    <span translate>Options are loading...</span>' +
                 '                </li>' +
@@ -304,27 +337,26 @@
                 '                <div class="odswidget-select-dropdown-menu-footer-actions"' +
                 '                    ng-show="UIState.dropdown.footer.actions.container">' +
                 '                    <span ng-show="UIState.dropdown.footer.actions.filter.container">' +
-                '                        <a href="#"' +
+                '                        <button class="odswidget-select-dropdown-button"' +
                 '                            ng-show="UIState.dropdown.footer.actions.filter.on"' +
                 '                            ng-click="toggleSelectedItemsOnlyFilter()"' +
                 '                            translate>' +
                 '                            Show selection' +
-                '                        </a>' +
-                '                        <a href="#"' +
+                '                        </button>' +
+                '                        <button class="odswidget-select-dropdown-button"' +
                 '                            ng-show="UIState.dropdown.footer.actions.filter.off"' +
                 '                            ng-click="toggleSelectedItemsOnlyFilter()"' +
                 '                            translate>' +
                 '                            Show all' +
-                '                        </a>' +
+                '                        </button> ' +
                 '                        -' +
                 '                    </span>' +
-                '                    <a href="#"' +
-                '                        class="odswidget-select-dropdown-menu-footer-actions-clear"' +
+                '                    <button class="odswidget-select-dropdown-button odswidget-select-dropdown-menu-footer-actions-clear"' +
                 '                        ng-show="UIState.dropdown.footer.actions.reset"' +
                 '                        ng-click="toggleSelectAll(true)"' +
                 '                        translate>' +
                 '                        Clear selection' +
-                '                    </a>' +
+                '                    </button>' +
                 '                </div>' +
                 '            </div>' +
                 '        </div>' +
@@ -576,19 +608,19 @@
 
                         if (selectedItemsCount === 0) {
                             // if no options are selected
-                            elem.className = 'fa fa-square-o';
+                            elem.className = 'fa fa-square-o odswidget-select-dropdown-item-icon';
                         } else if (selectedItemsCount === scope._displayedItems.length) {
                             // if all displayed options are selected
-                            elem.className = 'fa fa-check-square';
+                            elem.className = 'fa fa-check-square odswidget-select-dropdown-item-icon';
                         } else if (selectedItemsCount !== scope._displayedItems.length) {
                             // if some of the displayed options are selected
-                            elem.className = 'fa fa-minus-square';
+                            elem.className = 'fa fa-minus-square odswidget-select-dropdown-item-icon';
                         }
                     }
                 };
 
                 function updateHeaderText() {
-                    var elem = element.find('.odswidget-select-header-label');
+                    var elem = element.find('.odswidget-select-button-label');
                     var selectedItemsLabels = extractLabels(scope._selectedItems);
 
                     if (selectedItemsLabels.length) {
@@ -661,9 +693,10 @@
                     // ... can"t be found any more within the element. The result behavior is
                     // ... that the dropdown menu is closed when the user un-click an item in
                     // ... "Show selection" mode.
-                    var classList = event.target.classList
+                    var classList = event.target.classList;
                     if (classList.contains('odswidget-select-dropdown-label') || classList.contains('odswidget-select-dropdown-menu-footer-actions-clear')) {
                         if (!scope.multiple) {
+                            element.find('.odswidget-select-button').get(0).setAttribute('aria-expanded', 'false');
                             element.find('.odswidget-select-dropdown').removeClass('open');
                         }
                         return;
@@ -671,20 +704,26 @@
 
                     var clickedElementIsChildOfDropdown = element.find(event.target).length > 0;
                     if (!clickedElementIsChildOfDropdown) {
+                        element.find('.odswidget-select-button').get(0).setAttribute('aria-expanded', 'false');
                         element.find('.odswidget-select-dropdown').removeClass('open');
                     }
                 };
 
                 scope.toggleDropdown = function() {
                     var elem = element.find('.odswidget-select-dropdown');
-
+                    var $button = element.find('.odswidget-select-button').get(0);
+                    var $buttonAriaStatus = $button.getAttribute('aria-expanded');
                     if (elem.hasClass('open')) {
                         $document.unbind('click', clickOutsideHandlerCallback);
                     } else {
                         $document.bind('click', clickOutsideHandlerCallback);
                         focusInput();
                     }
-
+                    if($buttonAriaStatus === 'false') {
+                        $button.setAttribute('aria-expanded', 'true');
+                    } else {
+                        $button.setAttribute('aria-expanded', 'false');
+                    }
                     elem.toggleClass('open');
                 };
 
@@ -710,6 +749,16 @@
 
                 scope.$watch('_displaySelectedItemsOnly', function() {
                     updateUIState();
+                });
+
+                element.bind('keydown', function(event) {
+                    // escape key
+                    if(event.keyCode === 27) {
+                        // prevent from exiting fullscreen mode
+                        event.preventDefault();
+                        // close the dropdown
+                        scope.toggleDropdown();
+                    }
                 });
             },
         };

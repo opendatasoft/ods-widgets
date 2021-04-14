@@ -4,12 +4,11 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsreuses-page"><p>This widget displays all reuses published on a domain, in a infinite list of large boxes that presents them
-in a clear display. The lists show the more recent reuses first.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsreuses-page"><p>The odsReuses widget displays all reuses published on a domain in an infinite list of large boxes, presenting reuses in a clear display. The list shows the more recent reuses first.</p>
 <p>You can optionally insert HTML code inside the <code>&lt;ods-reuses&gt;&lt;/ods-reuses&gt;</code> element, in which case it will be used
 as a template for each displayed reuse. The following variables are available in the template:</p>
 <ul>
-<li>`reuse.url: URL to the reuse&#39;s dataset page</li>
+<li><code>reuse.url</code>: URL to the reuse&#39;s dataset page</li>
 <li><code>reuse.title</code>: Title of the reuse</li>
 <li><code>reuse.thumbnail</code>: URL to the thumbnail of the reuse</li>
 <li><code>reuse.description</code>: Description of the reuse</li>
@@ -31,16 +30,16 @@ as a template for each displayed reuse. The following variables are available in
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsreuses-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-29" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-28" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-29" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-29">
+<pre class="prettyprint linenums" ng-set-text="index.html-28" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-28">
     <ods-catalog-context context="paris" paris-domain="https://opendata.paris.fr">
         <ods-reuses context="paris"></ods-reuses>
     </ods-catalog-context>
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-29" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-28" ng-eval-javascript=""></div>
 </div></div>
 </div>

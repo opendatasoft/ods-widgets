@@ -10,30 +10,29 @@
          * @scope
          * @restrict E
          * @param {any} ng-model Assignable angular expression to data-bind to the input
-         * @param {number} min Minimum value of the range input.
-         * @param {number} max Maximum value of the range input.
-         * @param {number} step Sets the value's granularity. By default the granularity is 1
-         * @param {number} selectableMin Limits the minimum value of the range input. Used mainly for two-way data binding
+         * @param {number} min Minimum value of the range input
+         * @param {number} max Maximum value of the range input
+         * @param {number} step Sets the value's granularity. By default, the granularity is `1`.
+         * @param {number} selectableMin Limits the minimum value of the range input. It is used mainly for two-way data binding
          * with a second range-input component. Unlike the two parameters listed below, This one modified the "min" of the
          * range input directly. The two below limit the value of the input.
-         * @param {number} minValuePosition Used mainly for double sliders that depend on each other to set a range between 2 values.
-         * If one slider has been moved beyond the value of the other slider, update the other slider value so that both "balls" are aligned.
-         * This means that the value of the other slider can never be less than the value of the first, forcing a range.
-         * @param {number} maxValuePosition Used mainly for double sliders that depend on each other to set a range between 2 values.
-         * If one slider has been moved beyond the value of the other slider, update the other slider value so that both "balls" are aligned.
-         * This means that the value of the slider can never be more than the value of the other slider, forcing a range.
+         * @param {number} minValuePosition This parameter is used mainly for double sliders that depend on each other to set a range between 2 values.
+         * If one slider has been moved beyond the other slider's value, it updates the other slider value so that both "balls" are aligned.
+         * This means that the other slider's value can never be less than the value of the first, forcing a range.
+         * @param {number} maxValuePosition It is used mainly for double sliders that depend on each other to set a range between 2 values.
+         * If one slider has been moved beyond the other slider's value, it updates the other slider value so that both "balls" are aligned.
+         * This means that the other slider's value can never be more than the value of the first, forcing a range.
          * @param {boolean} [editableValue=false] If enabled, an input type="number" will show to the right of the range
          * input with the current range value which can be modified directly in this input.
-         * @param {string} iconMin Used to display an icon to the left of the range slider. FontAwesome or Opendatasoft
+         * @param {string} iconMin This parameter is used to display an icon to the left of the range slider. FontAwesome or Opendatasoft
          * icon classes should be used here.
-         * @param {string} iconMax Used to display an icon to the right of the range slider. FontAwesome or Opendatasoft
+         * @param {string} iconMax This parameter is used to display an icon to the right of the range slider. FontAwesome or Opendatasoft
          * icon classes should be used here.
-         * @param {string} iconMinTitle Adds a title attr to the min side of the input.
-         * @param {string} iconMaxTitle Adds a title attr to the max side of the input.
-         * @param {string} ariaLabelText Adds an aria-label attribute to the inputs
+         * @param {string} iconMinTitle Adds a `title` attribute to the min side of the input.
+         * @param {string} iconMaxTitle Adds a `title` attribute to the max side of the input.
+         * @param {string} ariaLabelText Adds an `aria-label` attribute to the inputs.
          * @description
-         * This widget displays an input of type range that allows the user to select a numeric value which must
-         * be no less than a given value, and no more than another given value.
+         * The odsRangeInput widget displays an input of type range that allows the user to select a numeric value. This value must be no less than a given value and no more than another given value.
          *
          * @example
          * <example module="ods-widgets">

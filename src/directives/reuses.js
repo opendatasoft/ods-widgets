@@ -11,12 +11,11 @@
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
-         * This widget displays all reuses published on a domain, in a infinite list of large boxes that presents them
-         * in a clear display. The lists show the more recent reuses first.
+         * The odsReuses widget displays all reuses published on a domain in an infinite list of large boxes, presenting reuses in a clear display. The list shows the more recent reuses first.
          *
          * You can optionally insert HTML code inside the `<ods-reuses></ods-reuses>` element, in which case it will be used
          * as a template for each displayed reuse. The following variables are available in the template:
-         * * `reuse.url: URL to the reuse's dataset page
+         * * `reuse.url`: URL to the reuse's dataset page
          * * `reuse.title`: Title of the reuse
          * * `reuse.thumbnail`: URL to the thumbnail of the reuse
          * * `reuse.description`: Description of the reuse

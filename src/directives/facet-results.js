@@ -12,18 +12,24 @@
          * @param {string} [odsFacetResults=results] Variable name to use
          * @param {CatalogContext|DatasetContext} odsFacetResultsContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {string} odsFacetResultsFacetName Name of the facet to enumerate
-         * @param {string} [odsFacetResultsSort=count] How to sort the categories: either `count`, `-count` (sort by number of items in each category),
-         * `num`, `-num` (sort by the name of category if it is a number), `alphanum`, `-alphanum` (sort by the name of the category).
+         * @param {string} [odsFacetResultsSort=count] Sorting method used on categories:
+         *
+         *  - `count` or `-count` to sort by number of items in each category
+         *  - `num` or `-num` to sort by the name of category, if it is a number
+         *  - `alphanum` or `-alphanum` to sort by the name of the category
+         * 
+         * Note: the `-` character before the name of the sorting method indicates that values will be sorted in descending order instead of ascending order.
+         * 
          * @description
-         * This widget fetches the results of enumerating the values ("categories") of a facet, and exposes it in a variable available in the scope. It can be used with AngularJS's ngRepeat to simply build a list
-         * of results.
+         * The odsFacetResults widget fetches the results of enumerating the values ("categories") of a facet and exposes it in a variable available in the scope.
+         * You can use this widget with the AngularJS ngRepeat directive to build a list of results.
          *
          * The variable is an array of objects, each containing the following properties:
          *
-         *  * `name` : the label of the category
-         *  * `path` : the path to use to refine on this category
-         *  * `state` : "displayed" or "refined"
-         *  * `count` : the number of records in this category
+         *  * `name`: the label of the category
+         *  * `path`: the path to use to refine on this category
+         *  * `state`: "displayed" or "refined"
+         *  * `count`: the number of records in this category
          *
          * @example
          *  <example module="ods-widgets">

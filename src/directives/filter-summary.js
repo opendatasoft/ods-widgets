@@ -13,7 +13,7 @@
          * {@link ods-widgets.directive:odsCatalogContext Catalog Context} or
          * {@link ods-widgets.directive:odsDatasetContext Dataset Context} to display the filters of. Can also be a
          * list of contexts.
-         * @param {string} [exclude=none] Optional: Name of parameters to not display, separated by commas. For example `q,rows,start`
+         * @param {string} [exclude=none] Optional: Name of parameters not to display, separated by commas. For example, `q,rows,start`
          * @param {boolean} [clearAllButton=true] Optional: display a "clear all" button underneath the active filters' list.
          * @param {boolean} [hideContextsLabels=false] Optional: if you are working with multiple contexts, the
          * context's label will be displayed within the filter. Set this option to true if you'd like not to display
@@ -21,7 +21,7 @@
          * @param {string} [mycontextLabel] Optional: if you are working with multiple contexts, the context's name
          * (that is "mycontext") will be displayed within the filter. Use this option to specify a custom label.
          * @description
-         * This widget displays a summary of all the active filters on a context: text search, refinements...
+         * The odsFilterSummary widget displays a summary of all the active filters in a context: text search, refinements, etc.
          *
          */
         return {

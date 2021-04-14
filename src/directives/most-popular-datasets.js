@@ -9,11 +9,12 @@
          * @name ods-widgets.directive:odsMostPopularDatasets
          * @scope
          * @restrict E
-         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
-         * @param {integer} [max=5] Amount of datasets to show in list
-         * @param {string} [orderBy=downloads] Order the list by most downloaded or popularity. Options: "downloads" or "popularity".
+         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use.
+         * @param {integer} [max=5] Number of datasets to show in the list.
+         * @param {string} [orderBy=downloads] List order.
+         * Datasets can be sorted by most downloaded or popularity. The authorized values are `downloads` and `popularity`.
          * @description
-         * This widget displays the top datasets of a catalog (default is the 5 top datasets), based on the number of downloads.
+         * The odsMostPopularDatasets widget displays the top datasets of a catalog based on the number of downloads. By default, the widget displays the top five datasets.
          *
          * @example
          *  <example module="ods-widgets">

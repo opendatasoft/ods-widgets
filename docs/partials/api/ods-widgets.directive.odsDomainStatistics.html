@@ -4,12 +4,13 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsdomainstatistics-page"><p>This widget enumerates statistic values for a given catalog and injects them as variables in the context. The following AngularJS variables are available:</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsdomainstatistics-page"><p>The odsDomainStatistics widget enumerates statistic values for a given catalog and injects them as variables in the context.</p>
+<p>The following AngularJS variables are available:</p>
 <ul>
-<li>CONTEXTNAME.stats.dataset : the number of datasets</li>
-<li>CONTEXTNAME.stats.keyword : the number of keywords</li>
-<li>CONTEXTNAME.stats.publisher : the number of publishers</li>
-<li>CONTEXTNAME.stats.theme : the number of themes</li>
+<li><code>CONTEXTNAME.stats.dataset</code>: the number of datasets</li>
+<li><code>CONTEXTNAME.stats.keyword</code>: the number of keywords</li>
+<li><code>CONTEXTNAME.stats.publisher</code>: the number of publishers</li>
+<li><code>CONTEXTNAME.stats.theme</code>: the number of themes</li>
 </ul>
 <h3 id="description_first-syntax-when-declaring-a-catalog-context,-directly-inject-these-values">First syntax: when declaring a catalog context, directly inject these values</h3>
 <pre class="prettyprint linenums">
@@ -40,12 +41,12 @@ as attribute<pre class="prettyprint linenums">&lt;ANY ods-domain-statistics
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsdomainstatistics-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-9" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-8" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-9" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-9">
+<pre class="prettyprint linenums" ng-set-text="index.html-8" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-8">
     <ods-catalog-context context="examples"
-                         examples-domain="https://widgets-examples.opendatasoft.com/"
+                         examples-domain="https://documentation-resources.opendatasoft.com/"
                          ods-domain-statistics>
         <p>Our portal has {{examples.stats.dataset}} datasets, described by {{examples.stats.theme}} themes
         and {{examples.stats.keyword}} keywords.</p>
@@ -54,6 +55,6 @@ as attribute<pre class="prettyprint linenums">&lt;ANY ods-domain-statistics
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-9" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-8" ng-eval-javascript=""></div>
 </div></div>
 </div>

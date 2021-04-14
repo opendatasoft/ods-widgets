@@ -11,7 +11,7 @@
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
-         * This widget displays the 5 top publishers.
+         * The odsTopPublishers widget displays the five top publishers.
          *
          * @example
          *  <example module="ods-widgets">

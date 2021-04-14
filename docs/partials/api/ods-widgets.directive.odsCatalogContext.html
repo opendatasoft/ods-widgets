@@ -4,15 +4,15 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odscatalogcontext-page"><p>The odsCatalogContext widget represents the entire catalog of datasets of a chosen domain, and a set of parameters used to query this catalog. A catalog context can be used by one or more widgets: it allows them sharing information (i.e. the query parameters).</p>
-<p>For instance, a widget that displays a time filter (<a href="#/api/ods-widgets.directive:odsTimerange">odsTimerange</a>) can be plugged on the same context as a results list (<a href="#/api/ods-widgets.directive:odsResultEnumerator">odsResultEnumerator</a>), so that the user can filter the displayed results.</p>
-<p>odsCatalogContext creates a new child scope, within which its declared contexts are available for any other widget used inside that odsCatalogContext element. odsCatalogContext widgets can also be nested inside each others.</p>
-<p>A single odsCatalogContext can declare one or several contexts, which are initialized when declared through the <strong>context</strong> parameter. Each context is configured using parameters prefixed by the context name (<code>contextname-setting</code>, e.g. mycontext-domain).</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odscatalogcontext-page"><p>The odsCatalogContext widget represents the entire catalog of datasets of a chosen domain and a set of parameters used to query this catalog. One or more widgets can use a catalog context: it allows them to share information (i.e., the query parameters).</p>
+<p>For example, a widget that displays a time filter (<a href="#/api/ods-widgets.directive:odsTimerange">odsTimerange</a>) can be plugged into the same context as a results list (<a href="#/api/ods-widgets.directive:odsResultEnumerator">odsResultEnumerator</a>) so that the user can filter the displayed results.</p>
+<p>odsCatalogContext creates a new child scope, within which its declared contexts are available for any other widget used inside that odsCatalogContext element. odsCatalogContext widgets can also be nested inside each other.</p>
+<p>A single odsCatalogContext can declare one or several contexts, which are initialized when declared through the <strong>context</strong> parameter. Each context is configured using parameters prefixed by the context name (<code>contextname-setting</code>, e.g., mycontext-domain).</p>
 <p><b>Properties of odsCatalogContext used as variable</b></p>
 <p>Once created, the context is accessible as a variable named after it. The context contains properties that can be accessed directly:</p>
 <ul>
-<li>domainUrl: full URL of the domain of the context, that can be used to create links</li>
-<li>parameters: parameters object of the context</li>
+<li><code>domainUrl</code>: full URL of the domain of the context that can be used to create links</li>
+<li><code>parameters</code>: parameters object of the context</li>
 </ul>
 </div></div>
 <h2 id="usage">Usage</h2>
@@ -38,14 +38,14 @@ as attribute<pre class="prettyprint linenums">&lt;ANY ods-catalog-context
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscatalogcontext-page"><p><i>(mandatory)</i> Name, or list of names separated by commas, of context(s) to declare. Context names must be in lowercase, can only contain alphanumerical characters, and cannot begin with a number, &quot;data&quot;, or &quot;x&quot;.</p>
 </div></td></tr><tr><td>domain</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscatalogcontext-page"><p>Domain where the dataset(s) can be found. Since the domain value is used to construct an URL to an API root, it can be:</p>
 <ul>
-<li>an alphanum string (e.g. <em>mydomain</em>): it will assume that it is an Opendatasoft domain (e.g. <em>mydomain.opendatasoft.com</em>)</li>
-<li>a hostname (e.g. <em>data.mydomain.com</em>)</li>
-<li>a relative path (e.g. <em>/monitoring</em>): it will be relative to the hostname of the current page</li>
-<li>a hostname and a path (e.g. <em>data.mydomain.com/monitoring</em>)</li>
+<li>an alphanumeric string (e.g., <em>mydomain</em>): it will assume that it is an Opendatasoft domain (e.g., <em>mydomain.opendatasoft.com</em>)</li>
+<li>a hostname (e.g., <em>data.mydomain.com</em>)</li>
+<li>a relative path (e.g., <em>/monitoring</em>): it will be relative to the hostname of the current page</li>
+<li>a hostname and a path (e.g., <em>data.mydomain.com/monitoring</em>)</li>
 </ul>
 <p>By default, if the domain parameter is not set, <a href="#/api/ods-widgets.ODSWidgetsConfigProvider">ODSWidgetsConfig.defaultDomain</a> is used.</p>
-</div> <p><em>(default: ODSWidgetsConfig.defaultDomain)</em></p></td></tr><tr><td>apikey</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscatalogcontext-page"><p>API key to use in every API call for the context (see <a href="https://help.opendatasoft.com/platform/en/managing_account/02_generating_api_key/generating_api_key.html#id1">Generating an API key</a>).</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>parameters</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscatalogcontext-page"><p>Object holding parameters to apply to the context when it is created.</p>
+</div> <p><em>(default: ODSWidgetsConfig.defaultDomain)</em></p></td></tr><tr><td>apikey</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscatalogcontext-page"><p>API key to use in every API call for the context. For more information, see <a href="https://help.opendatasoft.com/platform/en/managing_account/02_generating_api_key/generating_api_key.html#id1">Generating an API key</a>).</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>parameters</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscatalogcontext-page"><p>Object holding parameters to apply to the context when it is created</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>urlSync</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odscatalogcontext-page"><p>Enables synchronization of the parameters to the page&#39;s parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change as well. Note that if this parameter is enabled, <code>parameters</code> and <code>parametersFromContext</code> won&#39;t have any effect. There can also only be a single context with URL synchronization enabled, else the behavior will be unpredictable.</p>
 </div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
@@ -55,7 +55,7 @@ as attribute<pre class="prettyprint linenums">&lt;ANY ods-catalog-context
 <pre class="prettyprint linenums" ng-set-text="simple_example.html"></pre>
 <script type="text/ng-template" id="simple_example.html">
     <ods-catalog-context context="examples"
-                         examples-domain="https://widgets-examples.opendatasoft.com/">
+                         examples-domain="https://documentation-resources.opendatasoft.com/">
         <ods-most-popular-datasets context="examples"></ods-most-popular-datasets>
     </ods-catalog-context>
 </script>
@@ -68,11 +68,15 @@ as attribute<pre class="prettyprint linenums">&lt;ANY ods-catalog-context
 <pre class="prettyprint linenums" ng-set-text="odsresultenumerator_with_catalog_context.html"></pre>
 <script type="text/ng-template" id="odsresultenumerator_with_catalog_context.html">
     <ods-catalog-context context="examples"
-                         examples-domain="https://widgets-examples.opendatasoft.com/">
-           {{ examples }}
-        <ods-result-enumerator context="examples">
-           {{item.datasetid}}
-        </ods-result-enumerator>
+                         examples-domain="https://documentation-resources.opendatasoft.com/">
+
+        <ul>
+            <ods-result-enumerator context="examples">
+                <li>
+                    <a ng-href="{{context.domainUrl + '/explore/dataset/' + item.datasetid + '/'}}" target="_blank">{{item.datasetid}}</a>
+                </li>
+            </ods-result-enumerator>
+        </ul> 
     </ods-catalog-context>
 </script>
 </div>

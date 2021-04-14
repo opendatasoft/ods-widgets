@@ -10,7 +10,7 @@
          * @scope
          * @restrict A
          * @description
-         * Get the height and width of the element where odsGetElementLayout is set. The variable is an object that contains 2 keys : 'height' and 'width'
+         * The odsGetElementLayout widget gets the height and width of an element. The variable is an object that contains 2 keys: 'height' and 'width'.
          *
          * @example
          *  <example module="ods-widgets">
@@ -48,7 +48,7 @@
          * @scope
          * @restrict A
          * @description
-         * Get the height and width of the window. The variable is an object that contains 2 keys : 'height' and 'width'
+         * The odsGetElementLayout widget gets the height and width of the window. The variable is an object that contains 2 keys: 'height' and 'width'.
          *
          * @example
          *  <example module="ods-widgets">

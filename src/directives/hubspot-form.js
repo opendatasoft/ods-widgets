@@ -13,7 +13,7 @@
          * @param {string} portalId The portal ID
          * @param {string} formId The form ID
          * @description
-         * Integrates a Hubspot form given a portal ID and the form ID.
+         * The odsHubspotForm widget integrates a HubSpot form given a portal ID and the form ID.
          *
          * @example
          *     <pre>

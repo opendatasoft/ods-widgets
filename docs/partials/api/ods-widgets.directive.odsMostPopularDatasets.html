@@ -4,7 +4,7 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><p>This widget displays the top datasets of a catalog (default is the 5 top datasets), based on the number of downloads.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><p>The odsMostPopularDatasets widget displays the top datasets of a catalog based on the number of downloads. By default, the widget displays the top five datasets.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-most-popular-datasets
@@ -16,16 +16,17 @@
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> to use</p>
-</div></td></tr><tr><td>max</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><p>Amount of datasets to show in list</p>
-</div> <p><em>(default: 5)</em></p></td></tr><tr><td>orderBy</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><p>Order the list by most downloaded or popularity. Options: &quot;downloads&quot; or &quot;popularity&quot;.</p>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><p><a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> to use.</p>
+</div></td></tr><tr><td>max</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><p>Number of datasets to show in the list.</p>
+</div> <p><em>(default: 5)</em></p></td></tr><tr><td>orderBy</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><p>List order.
+Datasets can be sorted by most downloaded or popularity. The authorized values are <code>downloads</code> and <code>popularity</code>.</p>
 </div> <p><em>(default: downloads)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsmostpopulardatasets-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-21" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-20" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-21" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-21">
+<pre class="prettyprint linenums" ng-set-text="index.html-20" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-20">
     <ods-catalog-context context="example"
                          example-domain="data.opendatasoft.com">
         <ods-most-popular-datasets context="example"></ods-most-popular-datasets>
@@ -33,6 +34,6 @@
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-21" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-20" ng-eval-javascript=""></div>
 </div></div>
 </div>

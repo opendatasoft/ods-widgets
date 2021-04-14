@@ -10,8 +10,7 @@
          * @restrict A
          *
          * @description
-         * Enables the auto resize functionality on widget that supports it. By default, it forces the affected element to fill the height
-         * to the bottom of the window.
+         * The odsAutoResize widget enables the auto-resize functionality on a widget that supports it. By default, this widget forces the affected element to fill the height to the bottom of the window.
          *
          * @example
          *  <example module="ods-widgets">
@@ -46,7 +45,8 @@
                         }, 50);
                     });
                 }
-            }
+            },
+            controller: function() {}
         };
     }];
 

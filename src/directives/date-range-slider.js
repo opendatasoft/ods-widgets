@@ -9,33 +9,33 @@
          * @restrict E
          * @scope
          * @param {DatasetContext|DatasetContext[]} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} or array of context to use
-         * @param {string} [initialFrom=none] Default date for the "from" field: either "yesterday", "now" or a string representing a date
-         * @param {string} [initialTo=none] Default date for the "to" field: either "yesterday", "now" or a string representing a date
-         * @param {expression} [startBound=none] Beginning bound of the range slider, it will define the minimum selectable from: either "yesterday", "now" or a string representing a date. As an AngularJS expression is expected, no need to use {{}} syntax for variables or expressions, and if you want to provide a static string value, surround it by simple quotes.
-         * @param {expression} [endBound=none] End bound of the range slider, it will define the maximum selectable to: either "yesterday", "now" or a string representing a date. As an AngularJS expression is expected, no need to use {{}} syntax for variables or expressions, and if you want to provide a static string value, surround it by simple quotes.
-         * @param {string} [dateFormat='YYYY-MM-DD'] Define the format to render the two bounds and the selection.
+         * @param {string} [initialFrom=none] Default date for the "from" field: "yesterday", "now", or a string representing a date
+         * @param {string} [initialTo=none] Default date for the "to" field: "yesterday", "now", or a string representing a date
+         * @param {expression} [startBound=none] Beginning bound of the range slider, it will define the minimum selectable from "yesterday", "now", or a string representing a date. As an AngularJS expression is expected, no need to use {{}} syntax for variables or expressions, and if you want to provide a static string value, surround it with simple quotes.
+         * @param {expression} [endBound=none] End bound of the range slider, it will define the maximum selectable to "yesterday", "now", or a string representing a date. As an AngularJS expression is expected, no need to use {{}} syntax for variables or expressions, and if you want to provide a static string value, surround it with simple quotes.
+         * @param {string} [dateFormat='YYYY-MM-DD'] Defines the format to render the two bounds and the selection.
          * @param {string} [dateField=none] Date field to query on. If no field is provided, the first date type field of the dataset is used.
-         * @param {string} [precision='day'] Define the precision, 'day', 'month' or 'year', default is 'day'
+         * @param {string} [precision='day'] Defines the precision, 'day', 'month' or 'year', default is 'day'
          * @param {string} [suffix=none] Context parameter query suffix. Used to avoid collision with other widget queries.
-         * @param {string} [to=none] Set a variable that will get the iso formatted value of the first input
-         * @param {string} [from=none] Set a variable that will get the iso formatted value of the second input
+         * @param {string} [to=none] Sets a variable that will get the iso formatted value of the first input
+         * @param {string} [from=none] Sets a variable that will get the iso formatted value of the second input
          *
          * @description
-         * This widget displays a range slider to select the two bounds of a date range.
+         * The odsDateRangeSlider widget displays a range slider to select the two bounds of a date range.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="ctx"
-         *              ctx-dataset="evenements-publics-cibul@public"
-         *              ctx-domain="public">
+         *              ctx-dataset="product-release-notes"
+         *              ctx-domain="documentation-resources">
          *              <div class="ods-box" ng-init="obj = {}">
          *                  <ods-date-range-slider context="ctx"
          *                      date-format="YYYY"
          *                      precision="year"
-         *                      initial-from="2019/02/01"
-         *                      initial-to="2019/02/15"
-         *                      start-bound="'2000/01/01'"
+         *                      initial-from="2019/01/01"
+         *                      initial-to="2019/12/31"
+         *                      start-bound="'2010/01/01'"
          *                      end-bound="'2020/03/30'"
          *                      from="obj.from"
          *                      to="obj.to">
@@ -117,7 +117,7 @@
             },
             template: '' +
                 '<div class="odswidget odswidget-date-range-slider odswidget-date-range-slider-{{ uniqueId }}">' +
-                '    <input type="text" value="" />' +
+                '    <input type="hidden" value="" />' +
                 '</div>',
             link: function (scope, element, attrs) {
                 //scope.uniqueId = 'date-range-slider-' + Math.random().toString(36).substring(7);

@@ -46,24 +46,30 @@
          * @scope
          * @restrict E
          * @param {DatasetContext} context <i>(mandatory)</i> {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use. If the **context** parameter is managed with {@link ods-widgets.directive:odsMapLayer odsMapLayer}, it should not be configured for odsMap.
-         * @param {string} location Default location of the map upon initialization, under the following format: `zoom,latitude,longitude`. E.g. to have a map centered on Paris, France, `12,48.85218,2.36996` should be used. By default, if a location is not specified, the map will try to fit all the displayed data when initializing.
+         * @param {string} location Controls the default location of the map upon initialization. The value must be set under the following format: `zoom,latitude,longitude`.
+         * For example, if you want to have a map centered on Paris, France, you should use `12,48.85218,2.36996`.
+         * By default, if a location is not specified, the map will try to fit all the displayed data when initializing.
          * @param {string} basemap Identifier of the basemap to use by default, as defined in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.basemaps}. By default, the first available basemap will be used.
-         * @param {integer} [minZoom=none] Limits the map to a minimum zoom value. By default this is defined by the minimum zoom of the basemap.
-         * @param {integer} [maxZoom=none] Limits the map to a maximum zoom value. By default this is defined by the maximum zoom of the basemap.
-         * @param {boolean} [scrollWheelZoom=true] If `true`, scrolling the mouse wheel over the map can be used to zoom in or zoom out.
-         * @param {boolean} [staticMap=false] If `true`, the map can't be zoomed in/out or moved. Markers are still clickable.
-         * @param {boolean} [noRefit=false] By default, the map refits its view whenever the displayed data changes. If `true`, the map stays at the same location.
-         * @param {boolean} [toolbarGeolocation=true] If `true`, the "geolocate" button is displayed in the map's toolbar.
-         * @param {boolean} [autoGeolocation=false] If `true`, the geolocation which centers and zooms the map on the location of the user, is automatically done upon initialization. autoGeolocation is only available when there is no **location** parameter set for the widget. Caution: location sharing must be allowed priorly for Firefox users when multiple odsMap widget are set with `autoGeolocation=true` on the same page.
-         * @param {boolean} [toolbarDrawing=true] If `false`, the drawing tools, to draw filter areas, are not displayed in the map's toolbar.
-         * @param {boolean} [toolbarFullscreen=true] If `false`, the "fullscreen" button is not displayed in the map's toolbar.
-         * @param {boolean} [displayControl=false] If `true`, displays a control to choose whether or not groups or single datasets outside groups should be displayed, using toggle buttons. Note: it shouldn't be combined with the usage of **showIf** on {@link ods-widgets.directive:odsMapLayer odsMapLayer}, as it will lead to inconsistencies in the user interface.
-         * @param {boolean} [displayControlSingleLayer=false] If `true`, only one layer is displayed at a time using the control of groups and single datasets display.
-         * @param {boolean} odsAutoResize see {@link ods-widgets.directive:odsAutoResize Auto Resize} for more informations
-         * @param {boolean} [searchBox=false] If `true`, a search box is displayed on the map, to jump to another locations through a search, or search specific data on the map.
-         * @param {boolean} [displayLegend=true] If `true`, displays a caption in the bottom right corner of the map.
-         * @param {boolean} [syncToUrl=none] If `true`, the settings of the **location** and **basemap** parameters are used in the page's URL.
-         * @param {Object} [syncToObject=none] An object that is updated by the map's settings for the **location** and **basemap** parameters corresponding to new changes of location and basemap.
+         * @param {integer} [minZoom=none] Limits the map to a minimum zoom value. By default, this is defined by the minimum zoom of the basemap.
+         * @param {integer} [maxZoom=none] Limits the map to a maximum zoom value. By default, this is defined by the maximum zoom of the basemap.
+         * @param {boolean} [scrollWheelZoom=true] When set to `true`, scrolling the mouse wheel over the map can be used to zoom in or zoom out.
+         * @param {boolean} [staticMap=false] When set to `true`, the map can't be zoomed in/out or moved. Markers are still clickable.
+         * @param {boolean} [noRefit=false] By default, the map refits its view whenever the displayed data changes. When set to `true`, the map stays at the same location.
+         * @param {boolean} [toolbarGeolocation=true] When set to `true`, the "geolocate" button is displayed in the map's toolbar.
+         * @param {boolean} [autoGeolocation=false] When set to `true`, the geolocation, which centers and zooms the map on the user's location, is automatically done upon initialization. `autoGeolocation` is only available when there is no **location** parameter set for the widget.
+         * 
+         * Caution: location sharing must be allowed priorly for Firefox users when multiple odsMap widget are set with `autoGeolocation=true` on the same page.
+         * @param {boolean} [toolbarDrawing=true] When set to `false`, the drawing tools to draw filter areas are not displayed in the map's toolbar.
+         * @param {boolean} [toolbarFullscreen=true] When set to `false`, the "fullscreen" button is not displayed in the map's toolbar.
+         * @param {boolean} [displayControl=false] When set to `true`, displays a control to choose whether groups or single datasets outside groups should be displayed, using toggle buttons.
+         * 
+         * Note: it shouldn't be combined with the usage of **showIf** on {@link ods-widgets.directive:odsMapLayer odsMapLayer}, as it will lead to inconsistencies in the user interface.
+         * @param {boolean} [displayControlSingleLayer=false] When set to `true`, only one layer is displayed at a time using the control of groups and single datasets display.
+         * @param {boolean} odsAutoResize For more information, see {@link ods-widgets.directive:odsAutoResize Auto Resize}.
+         * @param {boolean} [searchBox=false] When set to `true`, a search box is displayed on the map so that users can jump to another location through a search or search specific data on the map.
+         * @param {boolean} [displayLegend=true] When set to `true`, a caption is displayed in the bottom right corner of the map.
+         * @param {boolean} [syncToUrl=none] When set to `true`, the settings of the **location** and **basemap** parameters are used in the page's URL.
+         * @param {Object} [syncToObject=none] An object updated by the map's settings for the **location** and **basemap** parameters corresponding to new changes of location and basemap.
          *
          * @description
          * The odsMap widget allows to build a map visualization and display data through various modes that can be composed of several dynamic layers, each being based on a {@link ods-widgets.directive:odsDatasetContext Dataset Context}.
@@ -76,12 +82,12 @@
          *     <ods-map context="mycontext" location="12,48.85218,2.36996"></ods-map>
          * </pre>
          *
-         * odsMap can be combined with 2 related map widgets to create more complex maps and fully configure their modes and behaviors.
+         * odsMap can be combined with two related map widgets to create more complex maps and fully configure their modes and behaviors.
          *
          *  - {@link ods-widgets.directive:odsMapLayer odsMapLayer}, allows to declare a layer of data to display on the map
          *  - {@link ods-widgets.directive:odsMapLayerGroup odsMapLayerGroup}, allows to declare a group of layers
          *
-         * In its fullest form, a map visualization would then be composed of several layers organised in groups (see {@link ods-widgets.directive:odsMapLayer odsMapLayer} and {@link ods-widgets.directive:odsMapLayerGroup odsMapLayerGroup} widgets reference pages for more information on how to use and configure them).
+         * In its fullest form, a map visualization would then be composed of several layers organized in groups. For more information on how to use and configure the odsMapLayer and odsMapLayerGroup widgets, see the {@link ods-widgets.directive:odsMapLayer odsMapLayer} and {@link ods-widgets.directive:odsMapLayerGroup odsMapLayerGroup} documentation.
          *
          * <pre>
          *    <ods-map ...>
@@ -95,14 +101,14 @@
          *    </ods-map>
          * </pre>
          *
-         * odsMap, when used for a complex map visualization, is mostly used set the basic configurations of the map (e.g. basemap, location). odsMap also helps settings all map-controlling options, such as zoom configurations, buttons and search bar display, as well as groups and layers behavior control.
+         * odsMap, when used for a complex map visualization, is mostly used to set the basic configurations of the map (e.g., basemap, location). odsMap also helps set all map-controlling options, such as zoom configurations, buttons, search bar display, and groups and layers behavior control.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="odsMap_used_alone.html">
          *  <ods-dataset-context context="countries"
-         *                       countries-dataset="natural-earth-countries-150m"
-         *                       countries-domain="https://widgets-examples.opendatasoft.com/">
+         *                       countries-dataset="natural-earth-countries-110m"
+         *                       countries-domain="https://documentation-resources.opendatasoft.com/">
          *      <ods-map context="countries"
          *               location="2,41.88759,0.90273"
          *               basemap="jawg.light"></ods-map>
@@ -151,9 +157,9 @@
             '    <ods-map-search-box ng-if="searchBox"></ods-map-search-box>' +
             '    <ods-map-legend ng-if="displayLegend && allContextsInitialized" map-config="mapConfig"></ods-map-legend>' +
             '    <div ng-transclude></div>' + // Can't find any better solution...
-            '    <div ng-if="forcedTimezone" class="map-timezone-caption">' +
+            '    <div ng-if="tz" class="map-timezone-caption">' +
             '       <i class="fa fa-info" aria-hidden="true"></i>' +
-            '       All dates and times are in {{ forcedTimezone }} time.' +
+            '       <span translate>All dates and times are in {{tz}} time.</span>' +
             '    </div>' +
             '</div>',
             link: function(scope, element, attrs, ctrl) {
@@ -171,7 +177,7 @@
                 var toolbarGeolocation,
                     toolbarFullscreen,
                     autoGeolocation;
-                scope.forcedTimezone = null;
+                scope.tz = null;
 
                 if (angular.isUndefined(scope.toolbarGeolocation)) {
                     if (angular.isDefined(scope.mapConfig.toolbarGeolocation)) {
@@ -225,7 +231,7 @@
                     scope.context.wait().then(function (nv) {
                         if (nv) {
                             if (scope.context.dataset.metas.timezone) {
-                                scope.forcedTimezone = scope.context.dataset.metas.timezone;
+                                scope.tz = scope.context.dataset.metas.timezone;
                             }
                             if (scope.context.dataset.extra_metas && scope.context.dataset.extra_metas.visualization) {
                                 layer.tooltipDisabled = Boolean(scope.context.dataset.extra_metas.visualization.map_tooltip_disabled);
@@ -1243,99 +1249,97 @@
          * @restrict E
          * @param {string} title <i>(mandatory)</i> Title of the group of layers
          * @param {string} [description=none] Description of the group of layers
-         * @param {string} [pictoColor=#000000] Color of the group of layers' pictogram, in the following format: `#000000`.
-         * @param {string} [pictoIcon=none] Name of the group of layers' pictogram.
-         * @param {boolean} [displayed=true] If `true`, displays the group of layers by default.
+         * @param {string} [pictoColor=#000000] Color of the pictogram for the group of layers', in the following format: `#000000`
+         * @param {string} [pictoIcon=none] Name of pictogram for the group of layers
+         * @param {boolean} [displayed=true] When set to `true`, the group of layers is displayed by default.
          *
          * @description
          *
-         * The odsMapLayerGroup widget allows to declare a group of layers, which are declared through the {@link ods-widgets.directive:odsMapLayer odsMapLayer} widget. odsMapLayerGroup is indeed one of the map-related  widgets, that can only be used based on {@link ods-widgets.directive:odsMap odsMap}, the primary map-related widgets (see {@link ods-widgets.directive:odsMap odsMap} widget reference page for more information on map visualizations).
+         * The odsMapLayerGroup widget allows to declare a group of layers, which are declared through the {@link ods-widgets.directive:odsMapLayer odsMapLayer} widget. odsMapLayerGroup is one of the map-related widgets that can only be used based on {@link ods-widgets.directive:odsMap odsMap}, the primary map-related widgets. For more information on {@link ods-widgets.directive:odsMap odsMap}, see the documentation for this widget.
          *
          *
          * @example
          *
          *  <example module="ods-widgets">
          *      <file name="odsMap_with_odsMapLayer_odsMapLayerGroup.html">
-         *  <ods-dataset-context context="culturalheritage,naturalheritage,mixedheritage"
-         *                       culturalheritage-dataset="world-heritage-unesco-list"
-         *                       culturalheritage-parameters="{'refine.category':'Cultural'}"
-         *                       culturalheritage-domain="https://widgets-examples.opendatasoft.com/"
-         *                       naturalheritage-dataset="world-heritage-unesco-list"
-         *                       naturalheritage-parameters="{'refine.category':'Natural'}"
-         *                       naturalheritage-domain="https://widgets-examples.opendatasoft.com/"
-         *                       mixedheritage-dataset="world-heritage-unesco-list"
-         *                       mixedheritage-parameters="{'refine.category':'Mixed'}"
-         *                       mixedheritage-domain="https://widgets-examples.opendatasoft.com/">
-         *      <ods-map no-refit="true"
-         *               scroll-wheel-zoom="false"
-         *               display-control="true"
-         *               search-box="false"
-         *               toolbar-fullscreen="true"
-         *               toolbar-geolocation="true"
-         *               location="2,22.59373,2.8125">
-         *          <ods-map-layer-group>
-         *              <ods-map-layer context="culturalheritage"
-         *                             color="#FA8C44"
-         *                             picto="ods-circle"
-         *                             show-marker="true"
-         *                             display="auto"
-         *                             shape-opacity="0.5"
-         *                             point-opacity="1"
-         *                             border-color="#FFFFFF"
-         *                             border-opacity="1"
-         *                             border-size="1"
-         *                             border-pattern="solid"
-         *                             caption="true"
-         *                             caption-picto-icon="ods-monument"
-         *                             caption-picto-color="#FA8C44"
-         *                             title="Cultural Heritage"
-         *                             size="4"
-         *                             size-min="3"
-         *                             size-max="5"
-         *                             size-function="linear"></ods-map-layer>
-         *          </ods-map-layer-group>
-         *          <ods-map-layer-group>
-         *              <ods-map-layer context="naturalheritage"
-         *                             color="#93117E"
-         *                             picto="ods-circle"
-         *                             show-marker="true"
-         *                             display="auto"
-         *                             shape-opacity="0.5"
-         *                             point-opacity="1"
-         *                             border-color="#FFFFFF"
-         *                             border-opacity="1"
-         *                             border-size="1"
-         *                             border-pattern="solid"
-         *                             caption="true"
-         *                             caption-picto-icon="ods-deciduous"
-         *                             caption-picto-color="#93117E"
-         *                             title="Natural Heritage"
-         *                             size="4"
-         *                             size-min="3"
-         *                             size-max="5"
-         *                             size-function="linear"></ods-map-layer>
-         *          </ods-map-layer-group>
-         *          <ods-map-layer-group>
-         *              <ods-map-layer context="mixedheritage"
-         *                             color="#CDBCD9"
-         *                             show-marker="true"
-         *                             display="auto"
-         *                             shape-opacity="0.5"
-         *                             point-opacity="1"
-         *                             border-color="#FFFFFF"
-         *                             border-opacity="1"
-         *                             border-size="1"
-         *                             border-pattern="solid"
-         *                             caption="true"
-         *                             caption-picto-color="#CDBCD9"
-         *                             title="Mixed Heritage"
-         *                             size="4"
-         *                             size-min="3"
-         *                             size-max="5"
-         *                             size-function="linear"></ods-map-layer>
-         *          </ods-map-layer-group>
-         *      </ods-map>
-         *  </ods-dataset-context>
+         *  <ods-dataset-context context="under100000,under500000,greaterthan500000"
+         *                 under100000-dataset="doc-geonames-cities-5000"
+         *                 under100000-parameters="{'q.population':' population > 0 AND population < 100000'}"
+         *                 under100000-domain="https://documentation-resources.opendatasoft.com/"
+         *                 under500000-dataset="doc-geonames-cities-5000"
+         *                 under500000-parameters="{'q.population':' population >= 100000 AND population < 500000'}"
+         *                 under500000-domain="https://documentation-resources.opendatasoft.com/"
+         *                 greaterthan500000-dataset="doc-geonames-cities-5000"
+         *                 greaterthan500000-parameters="{'q.population':'population >= 500000'}"
+         *                 greaterthan500000-domain="https://documentation-resources.opendatasoft.com/">
+         *<ods-map no-refit="true"
+         *         scroll-wheel-zoom="false"
+         *         display-control="true"
+         *         search-box="false"
+         *         toolbar-fullscreen="true"
+         *         toolbar-geolocation="true"
+         *         location="2,22.59373,2.8125">
+         *    <ods-map-layer-group>
+         *        <ods-map-layer context="under100000"
+         *                       color="#FA8C44"
+         *                       picto="ods-circle"
+         *                       show-marker="true"
+         *                       display="auto"
+         *                       shape-opacity="0.5"
+         *                       point-opacity="1"
+         *                       border-color="#FFFFFF"
+         *                       border-opacity="1"
+         *                       border-size="1"
+         *                       border-pattern="solid"
+         *                       caption="true"
+         *                       caption-picto-color="#FA8C44"
+         *                       title="Cities with less than 100,000 inhabitants"
+         *                       size="4"
+         *                       size-min="3"
+         *                       size-max="5"
+         *                       size-function="linear"></ods-map-layer>
+         *    </ods-map-layer-group>
+         *    <ods-map-layer-group>
+         *        <ods-map-layer context="under500000"
+         *                       color="#93117E"
+         *                       picto="ods-circle"
+         *                       show-marker="true"
+         *                       display="auto"
+         *                       shape-opacity="0.5"
+         *                       point-opacity="1"
+         *                       border-color="#FFFFFF"
+         *                       border-opacity="1"
+         *                       border-size="1"
+         *                       border-pattern="solid"
+         *                       caption="true"
+         *                       caption-picto-color="#93117E"
+         *                       title="Cities with a population beetween 100,000 & 500,000 inhabitants"
+         *                       size="4"
+         *                       size-min="3"
+         *                       size-max="5"
+         *                       size-function="linear"></ods-map-layer>
+         *    </ods-map-layer-group>
+         *    <ods-map-layer-group>
+         *        <ods-map-layer context="greaterthan500000"
+         *                       color="#CDBCD9"
+         *                       show-marker="true"
+         *                       display="auto"
+         *                       shape-opacity="0.5"
+         *                       point-opacity="1"
+         *                       border-color="#FFFFFF"
+         *                       border-opacity="1"
+         *                       border-size="1"
+         *                       border-pattern="solid"
+         *                       caption="true"
+         *                       caption-picto-color="#CDBCD9"
+         *                       title="Cities with more than 500,000 inhabitants"
+         *                       size="4"
+         *                       size-min="3"
+         *                       size-max="5"
+         *                       size-function="linear"></ods-map-layer>
+         *    </ods-map-layer-group>
+         *</ods-map>
+         *</ods-dataset-context>
          *      </file>
          *  </example>
          *
@@ -1381,7 +1385,7 @@
        * @name ods-widgets.directive:odsMapLayer
        * @scope
        * @restrict E
-       * @param {DatasetContext} context <i>(mandatory)</i> {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use.
+       * @param {DatasetContext} context <i>(mandatory)</i> {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
        * @param {expression} [showIf=none] AngularJS expression to evaluate: if it evaluates to true, the layer is visible.
        * @param {number} [showZoomMin=none] Makes the layer visible only if the zoom level is superior or equal to the value.
        * @param {number} [showZoomMax=none] Makes the layer visible only if the zoom level is inferior or equal to the value.
@@ -1394,9 +1398,9 @@
        *  - `choropleth`: based on a number field or aggregation, colors the data using a color scale
        *  - `clusters`: spatially groups the data in clusters ; each cluster displays the number of points it contains. When at maximum zoom, all points are shown.
        *  - `clustersforced`: spatially aggregates the data in clusters ; the number displayed on the cluster is the result of an aggregation function.
-       *  - `raw`: displays the data directly without clustering or organizing them. This mode should not be used for large datasets (i.e. more than 5,000 points to display), as it may freeze the user's browser.
-       *  - `aggregation`: data is aggregated based on a geo shape (e.g. 2 records with the exact same shape associated). By default, the color represents the number of aggregated records, but it can be the result of an aggregation function. This mode supports aggregating the context using a join with another context that contains geometrical shapes: use a `joinContext` property, and `localKey` and `remoteKey` to configure the field names of the local and joined datasets. It is also possible to configure one of the fields from the "remote" dataset, for them to be displayed when the mouse hovers the shapes: use `hoverField` and the name of a field to do so.
-       * @param {string} [function=none] For heatmap, choropleth and clusters mode only - Function used to aggregate the data:
+       *  - `raw`: displays the data directly without clustering or organizing them. This mode should not be used for large datasets (i.e., datasets with more than 5,000 points to display), as it may freeze the user's browser.
+       *  - `aggregation`: data is aggregated based on a geo shape (e.g., 2 records with the exact same shape associated). By default, the color represents the number of aggregated records, but it can be the result of an aggregation function. This mode supports aggregating the context using a join with another context that contains geometrical shapes: use a `joinContext` property, and `localKey` and `remoteKey` to configure the field names of the local and joined datasets. It is also possible to configure one of the fields from the "remote" dataset, for them to be displayed when the mouse hovers the shapes: use `hoverField` and the name of a field to do so.
+       * @param {string} [function=none] For the `heatmap`, `choropleth`, and `clusters` modes only–function used to aggregate the data:
        *
        * - AVG: average
        * - COUNT
@@ -1406,9 +1410,9 @@
        * - SUM
        * @param {expression} [expression=none] Expression used to aggregate the data. This parameter is not required when the function is COUNT.
        *
-       * @param {string} [color=none] Color of the displayed shapes and markers.
-       * @param {string} [borderColor=white] Color of the shapes' borders.
-       * @param {number} [borderSize=1] In pixels, width of the shapes' borders.
+       * @param {string} [color=none] Color of the displayed shapes and markers
+       * @param {string} [borderColor=white] Color of the shapes' borders
+       * @param {number} [borderSize=1] The width of the shapes' borders, in pixels
        * @param {string} [borderPattern=solid] Pattern of the shapes' borders:
        *
        *  - `solid`
@@ -1423,55 +1427,55 @@
        * @param {number} [borderOpacity=1] Opacity of the shapes' borders. The value must be between `0` (transparent) and `1` (opaque).
        * @param {number} [shapeOpacity=0.5] Opacity of the shapes. The value must be between `0` (transparent) and `1` (opaque).
        * @param {number} [pointOpacity=1] Opacity of the markers. The value must be between `0` (transparent) and `1` (opaque).
-       * @param {number} [lineWidth=5] In pixels, width of the lines. Only applicable for "line" type shapes.
+       * @param {number} [lineWidth=5] The width of the lines, in pixels. Only applicable for "line" type shapes.
        *
-       * @param {objet} [colorCategories=none] For categories mode only - Object that links textual values and colors (e.g. `{'Paris': '#FF0000', 'Nantes: '#00FF00'}`).
-       * @param {string} [colorCategoriesOther=none] For categories mode only - Default color for values that were not originally taken into account by the `color-categories` object.
-       * @param {string} [colorUndefined=none] For choropleth mode only - Default color for the `undefined` values.
-       * @param {string} [colorOutOfBounds=none] For choropleth mode only - Default color for values out of the expected `color-numeric-ranges` scale.
-       * @param {string} [colorNumericRanges=none] For choropleth mode only - Color scale used (e.g. `{'0': '#FF0000', '1': '#FFFF00'}`). The key is the upper bound used for this color (e.g. still using the previous example, it would be #FF0000 until 0, then #FFFF00 until 1, etc.)
-       * @param {number} [colorNumericRangeMin=none] For choropleth mode only - Minimum bound used. Any value below that bound will be considered out of the scale, and will use the color of the `color-out-of-bounds` parameter.
-       * @param {string} [colorGradient=none] For heatmap mode only - Object that links upper numeric bounds and colors (e.g. `{0.2: '#FF0000', 1: '#00FF00'}`).
-       * @param {string} [colorByField=none] For categories and choropleth modes only - Field used to choose the color.
+       * @param {objet} [colorCategories=none] For the `categories` mode only–object that links textual values and colors (e.g., `{'Paris': '#FF0000', 'Nantes: '#00FF00'}`).
+       * @param {string} [colorCategoriesOther=none] For the `categories` mode only–default color for values that were not originally taken into account by the `color-categories` object.
+       * @param {string} [colorUndefined=none] For the `choropleth` mode only–default color for the `undefined` values.
+       * @param {string} [colorOutOfBounds=none] For the `choropleth` mode only–default color for values out of the expected `color-numeric-ranges` scale.
+       * @param {string} [colorNumericRanges=none] For the `choropleth` mode only–color scale used (e.g., `{'0': '#FF0000', '1': '#FFFF00'}`). The key is the upper bound used for this color (e.g., still using the previous example, it would be #FF0000 until 0, then #FFFF00 until 1, etc.)
+       * @param {number} [colorNumericRangeMin=none] For the `choropleth` mode only–minimum bound used. Any value below that bound will be considered out of the scale, and will use the color of the `color-out-of-bounds` parameter.
+       * @param {string} [colorGradient=none] For the `heatmap` mode only–object that links upper numeric bounds and colors (e.g., `{0.2: '#FF0000', 1: '#00FF00'}`)
+       * @param {string} [colorByField=none] For categories and choropleth modes only - Field used to choose the color
        *
-       * @param {number} [radius=4] For heatmap mode only - Width of the perimeter.
-       * @param {number} [size=4] for markers, 7 for pictograms] Size of the markers.
-       * @param {number} [sizeMin=3] For clusters mode only - Minimum size of the clusters.
-       * @param {number} [sizeMax=5] For clusters mode only - Maximum size of the clusters.
-       * @param {string} [sizeFunction=none] For clusters mode only - Calculation function of the clusters size:
+       * @param {number} [radius=4] For the `heatmap` mode only–width of the perimeter
+       * @param {number} [size=4] For markers, 7 for pictograms–size of the markers
+       * @param {number} [sizeMin=3] For the `clusters` mode only–minimum size of the clusters
+       * @param {number} [sizeMax=5] For the `clusters` mode only–maximum size of the clusters
+       * @param {string} [sizeFunction=none] For the `clusters` mode only–calculation function of the clusters size:
        *
        *  - `linear`
        *  - `log` (logarithmic)
        *
-       * @param {string} [picto=none] Pictogram used for the markers.
-       * @param {boolean} [showMarker=none] If `true`, displays a marker around the pictogram.
+       * @param {string} [picto=none] Pictogram used for the markers
+       * @param {boolean} [showMarker=none] When set to `true`, displays a marker around the pictogram.
        *
        * @param {string} tooltipSort Identifier of the field used to sort tooltips that represent several records for the same point or shape.
        *
        * Note that `-` before the name of the sorting method indicates that the sorting will be descending instead of ascending.
        *
        * By default, numeric fields are sorted in decreasing order, date and datetime are sorted chronologically, and text fields are sorted alphanumerically.
-       * @param {boolean} [tooltipDisabled=none] If `true`, clicking on a point or shape does not display the associated tooltip.
-       * @param {boolean} [caption=none] If `true`, displays a caption for the map layer in the bottom right corner of the map.
+       * @param {boolean} [tooltipDisabled=none] When set to `true`, clicking on a point or shape does not display the associated tooltip.
+       * @param {boolean} [caption=none] When set to `true`, displays a caption for the map layer in the bottom right corner of the map.
        * @param {string} [captionTitle=none] Title of the map layer caption.
-       * @param {string} [captionPictoColor=none] Color used for the caption's pictogram.
-       * @param {string} [captionPictoIcon=none] Pictogram used in the caption.
-       * @param {string} [title=none] Title used in the map layer's control selection.
-       * @param {string} [description=none] Description used in the map layer's control selection.
-       * @param {boolean} [excludeFromRefit=none] If `true`, the calculation that rezooms the map when filters or data change does not take the map layer into account.
+       * @param {string} [captionPictoColor=none] Color used for the caption's pictogram
+       * @param {string} [captionPictoIcon=none] Pictogram used in the caption
+       * @param {string} [title=none] Title used in the map layer's control selection
+       * @param {string} [description=none] Description used in the map layer's control selection
+       * @param {boolean} [excludeFromRefit=none] When set to `true`, the calculation that rezooms the map when filters or data change does not take the map layer into account.
        *
        * @param {string} [refineOnClickContext=none] Name, or list of names separated by commas (`[ctx1, ctx2]`) of contexts that should be refined when clicking on a point or shape of the map layer.
-       * @param {string} [refineOnClickMapField=none] (or `refine-on-click-CONTEXTNAME-map-field` if more than one context) - Field of the map layer that is used to retrieve the value used for the refine.
-       * @param {string} [refineOnClickContextField=none] (or `refine-on-click-CONTEXTNAME-context-field` if more than one context) - Field used in the context of the refine (`refine.FIELDNAME=VALUE`).
-       * @param {boolean} [refineOnClickReplaceRefine=none] (or `refine-on-click-CONTEXTNAME-replace-refine` if more than one context) - If `true`, each click replaces the previous refine instead of adding to it.
+       * @param {string} [refineOnClickMapField=none] (or `refine-on-click-CONTEXTNAME-map-field` if more than one context) - Field of the map layer that is used to retrieve the value used for the refine
+       * @param {string} [refineOnClickContextField=none] (or `refine-on-click-CONTEXTNAME-context-field` if more than one context) - Field used in the context of the refine (`refine.FIELDNAME=VALUE`)
+       * @param {boolean} [refineOnClickReplaceRefine=none] (or `refine-on-click-CONTEXTNAME-replace-refine` if more than one context) - When set to `true`, each click replaces the previous refine instead of adding to it.
        *
        * @description
        *
-       * The odsMapLayer widget allows to declare the data layers that can be displayed on a map visualization. odsMapLayer is indeed one of the map-related  widgets, that can only be used based on {@link ods-widgets.directive:odsMap odsMap}, the primary map-related widgets (see {@link ods-widgets.directive:odsMap odsMap} widget reference page for more information on map visualizations).
+       * The odsMapLayer widget allows to declare the data layers that can be displayed on a map visualization. odsMapLayer is one of the map-related widgets that can only be used based on {@link ods-widgets.directive:odsMap odsMap}, the primary map-related widgets. For more information on {@link ods-widgets.directive:odsMap odsMap}, see the documentation for this widget.
        *
-       * A map visualization can be comprised of several data layers, which are dynamic (i.e. if the context changes, the layer is refreshed and displays the new relevant data).
+       * A map visualization can comprise several data layers, which are dynamic. In other words, if the context changes, the layer is refreshed and displays the new relevant data.
        *
-       * Each of these data layers is based on a context, and can have its own display mode and configurations.
+       * Each data layer is based on a context and can have its own display mode and configurations.
        *
        * <pre>
        *     <ods-map>
@@ -1485,12 +1489,12 @@
        *
        * Map visualizations can either display:
        *
-       * - the layer data itself (i.e. each point is a record from the dataset),
-       * - or, an aggregation of data (i.e. each point is the result of an aggregation function).
+       * - the layer data itself (i.e., each point is a record from the dataset), or
+       * - an aggregation of data (i.e., each point is the result of an aggregation function).
        *
-       * Several display modes are available (see **display** parameter in the table below). However, only some of them support aggregation functions: `aggregation`, `heatmap` and `clustersforced`.
+       * Several display modes are available (see **display** parameter in the table below). However, only some of them support aggregation functions: `aggregation`, `heatmap`, and `clustersforced`.
        *
-       * Aggregation functions are specified in the odsMapLayer widget through 2 parameters: **function** and **expression** (see same-named parameters in the table below), which defines the value used for the function (usually, the name of a field).
+       * Aggregation functions are specified in the odsMapLayer widget through 2 parameters: **function** and **expression**, which define the value used for the function (usually, the name of a field). For more information, see the "Parameters" table.
        *
        * <pre>
        *     <ods-map>
@@ -1501,15 +1505,21 @@
        *
        * <b>Layers display color configurations</b>
        *
-       * Apart from `heatmap`, all display modes support color configuration. 3 types of configuration are available, depending on the display mode.
+       * Apart from `heatmap`, all display modes support color configuration. Three configuration types are available, depending on the display mode:
        *
-       * - `color`: a color, as an hex code (#FF0F05) or a CSS color name (e.g. "red"). Available for any mode.
-       * - `colorScale`: the name of a {@link http://colorbrewer2.org/ ColorBrewer} scheme (e.g. "YlGnBu"). Available only for `aggregation`.
-       * - `colorRanges`: a serie of colors and ranges separated by a semicolon, to decide a color depending on a value. For example "red;20;orange;40;#00CE00" to color anything between 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color. It can be combined with a decimal or integer field name in `colorByField` to configure which field will be used to decide on the color (for `raw`), or with `function` and `expression` to determine the calculation used for the color (for `aggregation`). Available for `raw` and `aggregation`.
+       * - `color`: a color, as an hex code (#FF0F05) or a CSS color name (e.g., "red"). Available for any display mode.
+       * - `colorScale`: the name of a {@link http://colorbrewer2.org/ ColorBrewer} scheme (e.g., "YlGnBu"). Available only for `aggregation`.
+       * - `colorRanges`: a series of colors and ranges separated by a semicolon, to decide a color depending on a value. For example "red;20;orange;40;#00CE00" colors anything between 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color.
+       * 
+       * It can be combined with a decimal or integer field name in `colorByField` to configure which field will be used to decide on the color (for `raw`) or with `function` and `expression` to determine the calculation used for the color (for `aggregation`).
+       * 
+       * Available for `raw` and `aggregation` display modes.
        *
-       * An additional `colorFunction` property can contain the `log` value to use logarithmic scales (instead of the default linear scale) for generating the color scale. Available for `aggregation` and with `color` and `colorScale` display modes (or when none is specified).
+       * An additional `colorFunction` property can contain the `log` value to use logarithmic scales (instead of the default linear scale) for generating the color scale.
+       * 
+       * Available for `aggregation` and with `color` and `colorScale` display modes, or when none is specified.
        *
-       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://help.opendatasoft.com/platform/en/other_resources/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference</a>
+       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://help.opendatasoft.com/platform/en/other_resources/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference documentation</a>.
        *
        * When displaying shapes, `borderColor` and `opacity` can be used to configure the color of the shape border and the opacity of the shape's fill.
        *
@@ -1602,7 +1612,7 @@
        *      <file name="odsMap_with_odsMapLayer.html">
        *  <ods-dataset-context context="genderequalityineurope"
        *                       genderequalityineurope-dataset="gender-equality-in-europe"
-       *                       genderequalityineurope-domain="https://widgets-examples.opendatasoft.com/">
+       *                       genderequalityineurope-domain="https://documentation-resources.opendatasoft.com/">
        *      <ods-map no-refit="true"
        *               scroll-wheel-zoom="false"
        *               display-control="false"

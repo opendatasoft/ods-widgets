@@ -10,9 +10,9 @@
          * @restrict E
          * @scope
          * @param {string} username The GitHub username
-         * @param {string} gist-id The Gist id. See the Gist URL to find it
+         * @param {string} gist-id The Gist identifier. See the Gist URL to find it.
          * @description
-         * Integrates a GitHub Gist widget into a page and add a copy to clipboard button in it.
+         * The odsGist widget integrates a GitHub Gist widget with a "copy to clipboard" button into a page.
          *
          * @example
          *  <example module="ods-widgets">

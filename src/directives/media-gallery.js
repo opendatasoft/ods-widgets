@@ -11,20 +11,20 @@
          * @scope
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {string} [displayedFields=all] A comma-separated list of fields to display in the details for each thumbnail. If no value is specified, the options configured for the dataset are used or all fields if nothing configured.
-         * @param {string} [imageFields=all] A comma-separated list of fields to display in the gallery as thumbnails. If no value is specified, the options configured for the dataset are used or all media fields if nothing configured.
-         * @param {string} [odsWidgetTooltip] {@link ods-widgets.directive:odsWidgetTooltip Widget Tooltip}
-         * @param {boolean} [odsAutoResize] see {@link ods-widgets.directive:odsAutoResize Auto Resize} for more informations
-         * @param {boolean} [refineOnClick] see {@link ods-widgets.directive:refineOnClick Refine on click} for more informations. This option takes precedence over the widget tooltip.
+         * @param {string} [imageFields=all] A comma-separated list of fields to display in the gallery as thumbnails. If no value is specified, the options configured for the dataset are used or all media fields if nothing is configured.
+         * @param {string} [odsWidgetTooltip] For more information, see {@link ods-widgets.directive:odsWidgetTooltip Widget Tooltip}.
+         * @param {boolean} [odsAutoResize] For more information, see {@link ods-widgets.directive:odsAutoResize Auto Resize}.
+         * @param {boolean} [refineOnClick] For more information, see {@link ods-widgets.directive:refineOnClick Refine on click}. This option takes precedence over the widget tooltip.
          *
          * @description
-         * This widget displays an image gallery of a dataset containing media with thumbnails (images, pdf files...) with infinite scroll.
+         * The odsMediaGallery widget displays an image gallery of a dataset containing media with thumbnails (images, PDF files, etc.) with infinite scroll.
          * You can use the {@link ods-widgets.directive:odsWidgetTooltip Widget Tooltip} directive to customize the detail view appearing when selecting a thumbnail.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="affiches"
-         *                               affiches-domain="https://widgets-examples.opendatasoft.com/"
+         *                               affiches-domain="https://documentation-resources.opendatasoft.com/"
          *                               affiches-dataset="affiches-anciennes">
          *              <ods-media-gallery context="affiches" ods-auto-resize ods-widget-tooltip>
          *                  <h3>My custom tooltip</h3>

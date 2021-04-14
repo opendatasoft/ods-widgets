@@ -8,9 +8,9 @@
          * @name ods-widgets.directive:odsThemeBoxes
          * @scope
          * @restrict E
-         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to pull the theme list from.
+         * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to pull the theme list from
          * @description
-         * This widget enumerates the themes available on the domain, by showing their pictos and the number of datasets they contain.
+         * The odsThemeBoxes widget enumerates the themes available on the domain by showing their pictograms and the number of datasets they contain.
          * They require the `themes` setting to be configured in {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig}.
          */
         return {

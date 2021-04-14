@@ -11,7 +11,7 @@
          * @restrict E
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @description
-         * This widget displays the last datasets of a catalog (default is last 5), based on the *modified* metadata.
+         * The odsLastDatasetsFeed widget displays the last datasets of a catalog based on the *modified* metadata. By default, the widget displays the last five datasets.
          *
          * @example
          *  <example module="ods-widgets">

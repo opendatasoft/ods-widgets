@@ -17,13 +17,15 @@
          *  @ngdoc directive
          *  @name ods-widgets.directive:odsKeyboard
          *  @restrict AE
-         *  @param {string} odsKeyboardKey the keyboard key code, see https://keycode.info/ and get the 'event.key'
-         *  @param {string} odsKeyboardExpression the expression to execute
-         *  @param {boolean} odsKeyboardPreventDefault to prevent the event to trigger the default behavior. Usefull for Escape, Space mainly. Default to 'false'
+         *  @param {string} odsKeyboardKey The keyboard key code. You can get the correct 'event.key' here: https://keycode.info/.
+         *  @param {string} odsKeyboardExpression The expression to execute
+         *  @param {boolean} odsKeyboardPreventDefault When set to `true`, it prevents the event from triggering the default behavior, which is useful for Escape and Space mainly.
+         * Default to `false`.
          *  @description
-         *  Bind a keyboard key to execute the associated ngClick or specific expression.
-         *  Get the correct key here : https://keycode.info/
-         *  For the space bar, use 'Space' code.
+         *  The odsKeyboard widget binds a keyboard key to execute the associated ngClick or specific expression.
+         * 
+         *  You can get the correct key code here: https://keycode.info/.
+         *  For the space bar, use the 'Space' code.
          *
          *  @example
          *  <example module="ods-widgets">

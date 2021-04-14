@@ -4384,4 +4384,3 @@ L.EditToolbar.Delete = L.Handler.extend({
 
 
 }(window, document));
-//# sourceMappingURL=leaflet.draw-src.map

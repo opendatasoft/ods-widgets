@@ -14,43 +14,45 @@
          *  @param {string} dataset <i>(mandatory)</i> Identifier of the dataset(s) on which the context is based.
          *  @param {string} [domain=ODSWidgetsConfig.defaultDomain] Domain where the dataset(s) can be found. Since the domain value is used to construct a URL to an API root, it can be:
          *
-         *  - an alphanum string (e.g. *mydomain*): it will assume that it is an Opendatasoft domain (e.g. *mydomain.opendatasoft.com*)
-         *  - a hostname (e.g. *data.mydomain.com*)
-         *  - a relative path (e.g. _/monitoring_): it will be relative to the hostname of the current page
-         *  - a hostname and a path (e.g. *data.mydomain.com/monitoring*)
+         *  - an alphanumeric string (e.g., *mydomain*): it will assume that it is an Opendatasoft domain (e.g., *mydomain.opendatasoft.com*)
+         *  - a hostname (e.g., *data.mydomain.com*)
+         *  - a relative path (e.g., _/monitoring_): it will be relative to the hostname of the current page
+         *  - a hostname and a path (e.g., *data.mydomain.com/monitoring*)
          *
          * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
          *
          *  @param {string} [apikey=none] API key to use in every API call for the context (see {@link https://help.opendatasoft.com/platform/en/managing_account/02_generating_api_key/generating_api_key.html#id1 Generating an API key}).
-         *  @param {string} [sort=none] Sort expression to apply by default to all widgets plugged to the declared context. The expression should be written using one of the following syntaxes:
+         *  @param {string} [sort=none] Sorts expression to apply by default to all widgets plugged to the declared context. The expression should be written using one of the following syntaxes:
          *
          *  - `field` for an ascending order,
          *  - `-field` for a descending order.
          *
-         *  @param {object} [parameters=none] Object holding parameters to apply to the context when it is created. Any parameter from the API can be used here (such as `q`, `refine.FIELD` etc.)
+         *  @param {object} [parameters=none] Object holding parameters to apply to the context when it is created. Any parameter from the API can be used here (such as `q` or `refine.FIELD`).
          *  @param {number} [refreshDelay=none] Number of milliseconds to wait before the context is automatically refreshed. If this parameter is not set, the context will not automatically refresh. The minimum delay is 10000ms.
          *  @param {string} [parametersFromContext=none] Name of another declared context to replicate the parameters and queries from. Any modification on the parameters of this context or the original one will be applied to both.
-         *  @param {boolean} [urlSync=none] Enables synchronization of the parameters to the page's parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change as well. Note that if this parameter is enabled, `parameters` and `parametersFromContext` won't have any effect. There can only be a single context with URL synchronization enabled, else the behavior will be unpredictable.
+         *  @param {boolean} [urlSync=none] Enables the synchronization of the parameters to the page's parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change.
+         * 
+         * Note: if this parameter is enabled, `parameters` and `parametersFromContext` won't have any effect. There can only be a single context with URL synchronization enabled. Else the behavior will be unpredictable.
          *
          *  @description
          *
-         *  The odsDatasetContext widget represents a dataset from a chosen domain, and a set of parameters used to query its data. odsDatasetContext can be used by one or more widgets: it allows them sharing information (i.e. the query parameters).
+         *  The odsDatasetContext widget represents a dataset from a chosen domain and a set of parameters used to query its data. One or more widgets can use odsDatasetContext: it allows them to share information (i.e., the query parameters).
          *
-         *  For instance, a widget that displays a filter ({@link ods-widgets.directive:odsFacets odsFacets}) can be plugged on the same context as a table view widgets ({@link ods-widgets.directive:odsTable odsTable}), so that the user can filter the data displayed in the table.
+         *  For example, a widget that displays a filter ({@link ods-widgets.directive:odsFacets odsFacets}) can be plugged into the same context as a table view widget ({@link ods-widgets.directive:odsTable odsTable}) so that the user can filter the data displayed in the table.
          *
-         *  odsDatasetContext creates a new child scope, within which its declared contexts are available for any other widget used inside that odsDatasetContext element. odsDatasetContext widgets can also be nested inside each others.
+         *  odsDatasetContext creates a new child scope, within which its declared contexts are available for any other widget used inside that odsDatasetContext element. odsDatasetContext widgets can also be nested inside each other.
          *
-         *  A single odsDatasetContext can declare one or several contexts, which are initialized when declared through the **context** parameter. Each context is configured using parameters prefixed by the context name (`contextname-setting`, e.g. mycontext-domain).
+         *  A single odsDatasetContext can declare one or several contexts, which are initialized when declared through the **context** parameter. Each context is configured using parameters prefixed by the context name (`contextname-setting`, e.g., mycontext-domain).
          *
          *  <b>Properties of odsDatasetContext used as variable</b>
          *
          *  Once created, the context is accessible as a variable named after it. The context contains properties that can be accessed directly:
          *
-         *  * domainUrl: full URL of the domain of the context, that can be used to create links
-         *  * parameters: parameters object of the context
-         *  * dataset: dataset object for the context
-         *  * getDownloadURL(format[, dict options]): method that returns a URL to download the data, including currently active filters (e.g. refinements, queries etc.). By default the URL will allow downloading a CSV export, but another format can be passed, such as "geojson" or "json". Two optional parameters are also available: `{'use_labels_for_header': '<true/false>', 'fields': '<list of comma separated field name>'}`
-         *  * getQueryStringURL([dict options]): method that builds the URL suffix (`?key1=value1&key2=value2&...`) based on context parameters (active filters, refinement, sort, query, etc.). The optional dictionary parameter allows building the URL with additional key/value parameters.
+         *  * `domainUrl`: full URL of the domain of the context that can be used to create links
+         *  * `parameters`: parameters object of the context
+         *  * `dataset`: dataset object for the context
+         *  * `getDownloadURL(format[, dict options])`: method that returns a URL to download the data, including currently active filters (e.g. refinements, queries etc.). By default the URL will allow downloading a CSV export, but another format can be passed, such as "geojson" or "json". Two optional parameters are also available: `{'use_labels_for_header': '<true/false>', 'fields': '<list of comma separated field name>'}`
+         *  * `getQueryStringURL([dict options])`: method that builds the URL suffix (`?key1=value1&key2=value2&...`) based on context parameters (active filters, refinement, sort, query, etc.). The optional dictionary parameter allows building the URL with additional key/value parameters.
          *
          *  @example
          *
@@ -58,9 +60,9 @@
          *      <file name="visualizations_based_on_dataset_context.html">
          *          <ods-dataset-context context="trees,events"
          *                               trees-dataset="les-arbres-remarquables-de-paris"
-         *                               trees-domain="https://widgets-examples.opendatasoft.com/"
+         *                               trees-domain="https://documentation-resources.opendatasoft.com/"
          *                               events-dataset="evenements-publics-openagenda-extract"
-         *                               events-domain="https://widgets-examples.opendatasoft.com/">
+         *                               events-domain="https://documentation-resources.opendatasoft.com/">
          *               <!-- Shows a list of the trees -->
          *               <ods-table context="trees"></ods-table>
          *               <!-- Shows a map of events -->
@@ -73,7 +75,7 @@
          *      <file name="dataset_context_with_parameters.html">
          *          <ods-dataset-context context="demographics"
          *                               demographics-dataset="us-cities-demographics"
-         *                               demographics-domain="https://widgets-examples.opendatasoft.com/"
+         *                               demographics-domain="https://documentation-resources.opendatasoft.com/"
          *                               demographics-parameters="{'q': 'Santa', 'refine.state': 'California'}">
          *                <!-- Demographics for all cities in California that have 'Santa' in their name -->
          *                <ods-table context="demographics"></ods-table>

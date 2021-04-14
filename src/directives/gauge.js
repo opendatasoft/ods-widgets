@@ -9,12 +9,13 @@
          * @name ods-widgets.directive:odsGauge
          * @scope
          * @restrict E
-         * @param {string} [displayMode=circle] Type of chart : 'circle' or 'bar'
-         * @param {float} [max=100] The maximum value for the gauge.
-         * @param {float} value A number between 0 and the defined max
+         * @param {string} [displayMode=circle] Type of chart: 'circle' or 'bar'
+         * @param {float} [max=100] The maximum value for the gauge
+         * @param {float} value A number between 0 and the defined `max` value
          * @description
-         * This widget displays a gauge in one of the two following modes: circle or horizontal bar.
-         * The widget relies on CSS3 and SVG and as a result is entirely customizable in CSS.
+         * The odsGauge widget displays a gauge in one of the two following modes: circle or horizontal bar.
+         * The widget relies on CSS3 and SVG. As a result, it is entirely customizable in CSS.
+         * 
          * The widget will decide its size based on its width, so you can make it larger or smaller using the CSS `width`
          * property; however, the widget will always take the necessary height, so forcing the height using CSS won't work.
          * Values exceeding the given max will be represented as a full gauge, whereas values lower than 0 will be

@@ -11,26 +11,26 @@
          * @restrict E
          * @scope
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @param {string} startField The name of the datetime field to use as event start datetime.
-         * @param {string} endField The name of the datetime field to use as event end datetime.
-         * @param {string} titleField The name of the text field to use as event title.
-         * @param {string} [eventColor=#C32D1C] The color (in hexadecimal form) used for all events.
-         * @param {string} [tooltipFields=none] An ordered, comma separated list of fields to display in the event
-         * tooltip.
-         * @param {string} [calendarView=month] The default mode for the calendar. Can be 'month', 'agendaWeek' or
+         * @param {string} startField The name of the datetime field to use as event start datetime
+         * @param {string} endField The name of the datetime field to use as event end datetime
+         * @param {string} titleField The name of the text field to use as event title
+         * @param {string} [eventColor=#C32D1C] The color (in hexadecimal form) used for all events
+         * @param {string} [tooltipFields=none] An ordered, comma-separated list of fields to display in the event
+         * tooltip
+         * @param {string} [calendarView=month] The default mode for the calendar. The authorized values are 'month', 'agendaWeek', and
          * 'agendaDay'.
-         * @param {string} [availableCalendarViews='month','agendaWeek','agendaDay'] A comma separated list of available
-         * views for the calendar. Must be a sub list of ['month', 'agendaWeek', 'agendaDay'].
-         * @param {boolean} [syncToUrl] If true, persists the `calendarView` in the page's URL.
+         * @param {string} [availableCalendarViews='month','agendaWeek','agendaDay'] A comma-separated list of available
+         * views for the calendar. It must be a sub list of ['month', 'agendaWeek', 'agendaDay'].
+         * @param {boolean} [syncToUrl] When set to `true`, it persists the `calendarView` in the page URL.
          * @description
-         * This widget can take any dataset containing at least two datetime fields and a text field and use it to
+         * The odsCalendar widget can take any dataset containing at least two datetime fields and a text field and use it to
          * display a calendar. It can load at most 1000 events (records) at once.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *              <ods-dataset-context context="events"
-         *                                   events-domain="https://widgets-examples.opendatasoft.com/"
+         *                                   events-domain="https://documentation-resources.opendatasoft.com/"
          *                                   events-dataset="evenements-publics-openagenda-extract">
          *                  <ods-calendar context="events"
          *                                start-field="date_debut"

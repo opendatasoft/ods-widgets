@@ -4,9 +4,9 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>This widget displays a &quot;picto&quot; specified by a url and force a fill color on it.
-This element can be styled (height, width...), especially if the picto is vectorial (SVG).</p>
-<p>All parameters expect javascript variables or litterals. If you want to provide hardcoded strings you&#39;ll have to wrap them in quotes, as shown in the example below.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>The odsPicto widget displays a pictogram specified by a URL and forces a fill color on it.
+This element can be styled (height, width, etc.), especially if the pictogram is vectorial (SVG).</p>
+<p>All parameters expect javascript variables or literals. If you want to provide hardcoded strings, you&#39;ll have to wrap them in quotes, as shown in the following example.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-picto
@@ -19,23 +19,23 @@ This element can be styled (height, width...), especially if the picto is vector
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>url</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>The url of the svg or image to display</p>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>url</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>The URL of the SVG or image to display</p>
 </div></td></tr><tr><td>color</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>The color to use to fill the SVG</p>
 </div></td></tr><tr><td>colorByAttribute</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>An object containing a mapping between elements within the SVG, and colors.
-The elements within the SVG with a matching <code>data-fill-id</code> attribute will take the corresponding color.</p>
-</div></td></tr><tr><td>classes</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>The classes to directly apply to the svg element</p>
+The elements within the SVG with a matching <code>data-fill-id</code> attribute take the corresponding color.</p>
+</div></td></tr><tr><td>classes</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>The classes to directly apply to the SVG element</p>
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><h4 id="example_source">Source</h4>
-<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-23" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
+<div source-edit="ods-widgets" source-edit-deps="angular.js" source-edit-html="index.html-22" source-edit-css="" source-edit-js="" source-edit-json="" source-edit-unit="" source-edit-scenario=""></div>
 <div class="tabbable"><div class="tab-pane" title="index.html">
-<pre class="prettyprint linenums" ng-set-text="index.html-23" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
-<script type="text/ng-template" id="index.html-23">
+<pre class="prettyprint linenums" ng-set-text="index.html-22" ng-html-wrap-loaded="ods-widgets angular.js"></pre>
+<script type="text/ng-template" id="index.html-22">
     <ods-picto url="'assets/opendatasoft-logo.svg'"
                color="'#33629C'" style="width: 64px; height: 64px"></ods-picto>
 </script>
 </div>
 </div><h4 id="example_demo">Demo</h4>
-<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-23" ng-eval-javascript=""></div>
+<div class="well doc-example-live animate-container" ng-embed-app="ods-widgets" ng-set-html="index.html-22" ng-eval-javascript=""></div>
 </div></div>
 </div>

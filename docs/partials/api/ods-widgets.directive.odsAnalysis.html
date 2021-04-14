@@ -4,9 +4,9 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>The odsAnalysis widget creates a variable that contains the result of an analysis (i.e. an object containing a results array and optionally an aggregations object).</p>
-<p>odsAnalysis allows applying functions to chosen groups of data, to analyze them with the same logic as that of a chart visualization. For instance, an analysis can consist in obtaining the average value for several series of data, broken down by a chosen field used as an X axis. The result can then be sorted by another serie.</p>
-<p>odsAnalysis can be used with AngularJS&#39;s ngRepeat to build a table of analysis results.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>The odsAnalysis widget creates a variable that contains the result of an analysis (i.e., an object containing a results array and optionally an aggregations object).</p>
+<p>odsAnalysis allows applying functions to chosen groups of data to analyze them with the same logic as a chart visualization. For instance, an analysis can obtain the average value for several data series, broken down by a chosen field used as an X-axis. The result can then be sorted by another series.</p>
+<p>odsAnalysis can be used with the AngularJS ngRepeat directive to build a table of analysis results.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as attribute<pre class="prettyprint linenums">&lt;ANY ods-analysis="{string}"
@@ -24,9 +24,9 @@
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>odsAnalysis</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p><i>(mandatory)</i> Name of the variable</p>
 </div> <p><em>(default: analysis)</em></p></td></tr><tr><td>odsAnalysisContext</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p><i>(mandatory)</i> <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use.</p>
 </div></td></tr><tr><td>odsAnalysisMax</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Maximum number of results to show.</p>
-</div> <p><em>(default: all)</em></p></td></tr><tr><td>odsAnalysisX</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Name of the field used as X axis (e.g. date or datetime field, facet, etc.)</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>odsAnalysisSort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Name of serie to sort on.</p>
-<p>Note that <code>-</code> before the name of the serie indicates that the sorting will be descending instead of ascending (e.g. <code>-serieName</code>).</p>
+</div> <p><em>(default: all)</em></p></td></tr><tr><td>odsAnalysisX</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Name of the field used as X-axis (e.g., date or datetime field, facet, etc.)</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>odsAnalysisSort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Name of the series to sort on.</p>
+<p>Note that <code>-</code> before the name of the series indicates that the sorting will be descending instead of ascending (e.g., <code>-serieName</code>).</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>odsAnalysisSerieName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsanalysis-page"><p>Function to apply:</p>
 <ul>
 <li>AVG: average</li>
@@ -46,7 +46,7 @@
 <script type="text/ng-template" id="index.html">
     <ods-dataset-context context="tree"
                          tree-dataset="les-arbres-remarquables-de-paris"
-                         tree-domain="https://widgets-examples.opendatasoft.com/">
+                         tree-domain="https://documentation-resources.opendatasoft.com/">
         <table class="table table-bordered table-condensed table-striped">
             <thead>
                 <tr>
@@ -61,9 +61,9 @@
                     ods-analysis-max="10"
                     ods-analysis-x="espece"
                     ods-analysis-sort="girth"
-                    ods-analysis-serie-height="AVG(hauteur)"
+                    ods-analysis-serie-height="AVG(hauteur_en_m)"
                     ods-analysis-serie-height-cumulative="false"
-                    ods-analysis-serie-girth="AVG(circonference)"
+                    ods-analysis-serie-girth="AVG(circonference_en_cm)"
 
                     ng-repeat="result in analysis.results">
 

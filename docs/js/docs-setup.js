@@ -71,8 +71,8 @@ NG_DOCS={
       "shortName": "odsAdvAnalysis",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget exposes the results of an aggregation function over a context. It uses the",
-      "keywords": "$schema accept accepted accessible adva aggregation allows alternative angularjs api apiv2 arrondissement arrondissements asc attribute attributes average avg bar benefits blank calculation called case cases change changes chart charts circonference_moyenne clause code columns-order combination compare complete compute computing conclusion configuration contained context count create created creating criteria crucial ctx ctx-dataset ctx-domain data desc descending designed differently directive display displayed displaying districts documentation documented dynamic easiest enables encoding espece example exposes expressions field file filter flexibility full function github greater group group-by group-by-clause hauteur height helps html https implies insert io items json keywords la labellimit language les-arbres-remarquables-de-paris limit mark match matches month moyenne multiple mydata myfield named names nom_dept nominal number observation-meteorologique-historiques-france-synop ods ods-adv-analysis ods-adv-analysis-context ods-adv-analysis-group-by ods-adv-analysis-select ods-adv-analysis-where ods-widgets odsadvanalysis odsadvanalysiscontext odsadvancedanalysis odsadvtable odsql odsvegalite odsvegalitechart offer offers op opendatasoft optional order order-by-clause outcome output parameter parameters paris population provide provided purposes quantitative quantite_arbres query recognize refresh regroup request requests requirements return returns rows search second select series set simple size solution sort spec species specific sticky-first-column sticky-header sum support table takes temperature three time title totals tree_species trees true type usage v1 values values-adva variable variables view ways weighted where-clause widget widgets won work working x-axis x_axis y-axis y_axis year",
+      "shortDescription": "The odsAdvAnalysis widget exposes the results of an aggregation function over a context. It uses the",
+      "keywords": "$schema accept accepted accessible adva aggregation allows alternative angularjs api apiv2 arrondissement arrondissements asc attribute attributes average avg bar benefits blank calculation called case cases change changes chart charts circonference_moyenne clause code columns-order combination compare compute computing conclusion configuration contained context count create created creating criteria crucial ctx ctx-dataset ctx-domain data desc descending designed differently directive display displayed displaying districts documentation documented dynamic easiest encoding espece example exposes expressions field file filter flexibility function github gold gold-prices greater group group-by group-by-clause hauteur height helps html https implies insert introduction io items json keywords labellimit language les-arbres-remarquables-de-paris limits mark match matches month moyenne multiple mydata myfield named names nominal number ods ods-adv-analysis ods-adv-analysis-context ods-adv-analysis-group-by ods-adv-analysis-select ods-adv-analysis-where ods-widgets odsadvanalysis odsadvanalysiscontext odsadvancedanalysis odsadvtable odsql odsvegalite odsvegalitechart offer offers op opendatasoft optional order order-by-clause outcome output parameter parameters paris population price provide provided purpose quantitative quantite_arbres query recognize refresh regroup request requests requirements return returns rows search second select series set simple size solution sort spec species specific sticky-first-column sticky-header sum support table takes three time title totals tree_species trees true type usage v1 values values-adva variable variables view ways weighted where-clause widget widgets won work working x-axis x_axis y-axis y_axis year",
       "isDeprecated": false
     },
     {
@@ -81,8 +81,8 @@ NG_DOCS={
       "shortName": "odsAdvTable",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget is used to analyze data from a table perspective.",
-      "keywords": "a_simple_example_with_static_data ability an_example_using_odsadvanalysis analyze api apply array arrondissement asc calculated cat cell column columnname columns columns-options columns-order compute conjunction context count course ctx ctx-dataset ctx-domain data decimal decimals define desc directive district dog espece feed feeds felix fixed format formatting genre genus hauteur header hedwig height html https input interesting label left les-arbres-remarquables-de-paris meters module mouse names ng-init number numbers object ods-adv-analysis ods-adv-analysis-context ods-adv-analysis-group-by ods-adv-analysis-select ods-adv-analysis-where ods-widgets odsadvanalysis opendatasoft options order owl paris perspective pets pikachu places position rename reorder representing rex round set side sort species static sticky-first-column sticky-header strings suffix table text top totals true widget",
+      "shortDescription": "The odsAdvTable widget is used to analyze data from a table perspective.",
+      "keywords": "a_simple_example_with_static_data ability an_example_using_odsadvanalysis analyze api apply array arrondissement asc calculated cat cell column columnname columns columns-options columns-order compute conjunction context count ctx ctx-dataset ctx-domain data decimal decimals define desc directive district dog espece feed feeds felix fixed format formatting genre genus hauteur_en_m header hedwig height html https input interesting label left les-arbres-remarquables-de-paris meters module mouse names ng-init number numbers object ods-adv-analysis ods-adv-analysis-context ods-adv-analysis-group-by ods-adv-analysis-select ods-adv-analysis-where ods-widgets odsadvanalysis odsadvtable opendatasoft options order owl paris perspective pets pikachu places position rename reorder representing rex round set side sort species static sticky-first-column sticky-header strings suffix table text top totals true widget",
       "isDeprecated": false
     },
     {
@@ -92,7 +92,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "The odsAggregation widget creates a variable that contains the result of an aggregation function based on a context.",
-      "keywords": "aggregation aggregations api apply average avg based biggest chosen circonference cm commas commute commute-dataset commute-domain commute-time-us-counties compute context count creates dataset declarations declared demographics demographics-dataset demographics-domain determine deviation directive enable expression field fields function functions girth group hauteur height holds html https instance les-arbres-remarquables-de-paris max maxgirth maximum mean_commuting_time meters min mingirth minimum minutes module multiple multiple_aggregations multiple_aggregations_same_context names number numeric ods-aggregation ods-aggregation-context ods-aggregation-expression ods-aggregation-function ods-aggregation-maxgirth-expression ods-aggregation-maxgirth-function ods-aggregation-mingirth-expression ods-aggregation-mingirth-function ods-aggregation-people-context ods-aggregation-people-expression ods-aggregation-people-function ods-aggregation-time-context ods-aggregation-time-expression ods-aggregation-time-function ods-aggregation-total-function ods-widgets odsaggregation odsaggregationcontext opendatasoft parameter paris people ranging records remarkable replaced result separated simple_aggregation smallest specific standard statistical stddev sum supports time total tree tree-dataset tree-domain trees us-cities-demographics values variable widget",
+      "keywords": "aggregation aggregations api apply average average-commute-time-by-county avg based biggest chosen circonference_en_cm cm commas commute commute-dataset commute-domain commuting_time compute context count creates dataset declarations declared demographics demographics-dataset demographics-domain determine deviation directive enable expression field fields function functions girth group hauteur_en_m height holds html https instance les-arbres-remarquables-de-paris max maxgirth maximum meters min mingirth minimum minutes module multiple multiple_aggregations multiple_aggregations_same_context names number numeric ods-aggregation ods-aggregation-context ods-aggregation-expression ods-aggregation-function ods-aggregation-maxgirth-expression ods-aggregation-maxgirth-function ods-aggregation-mingirth-expression ods-aggregation-mingirth-function ods-aggregation-people-context ods-aggregation-people-expression ods-aggregation-people-function ods-aggregation-time-context ods-aggregation-time-expression ods-aggregation-time-function ods-aggregation-total-function ods-widgets odsaggregation odsaggregationcontext opendatasoft parameter paris people ranging records remarkable replaced result separated simple_aggregation smallest specific standard statistical stddev sum supports time total tree tree-dataset tree-domain trees us-cities-demographics values variable widget",
       "isDeprecated": false
     },
     {
@@ -101,8 +101,8 @@ NG_DOCS={
       "shortName": "odsAnalysis",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "The odsAnalysis widget creates a variable that contains the result of an analysis (i.e. an object containing a results array and optionally an aggregations object).",
-      "keywords": "aggregations allows analysis analyze angularjs api apply applying array ascending average avg axis broken build chart chosen class consist context count creates data dataset datetime descending deviation directive espece facet false field form function functions girth groups height html https indicates instance les-arbres-remarquables-de-paris logic max maximum min minimum module ng-repeat ngrepeat note number object obtaining ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-girth ods-analysis-serie-height ods-analysis-serie-height-cumulative ods-analysis-sort ods-analysis-x ods-widgets odsanalysis odsanalysiscontext opendatasoft optionally result serie series sort sorted sorting standard stddev sum table table-bordered table-condensed table-striped tree tree-dataset tree-domain variable visualization widget written",
+      "shortDescription": "The odsAnalysis widget creates a variable that contains the result of an analysis (i.e., an object containing a results array and optionally an aggregations object).",
+      "keywords": "aggregations allows analysis analyze angularjs api apply applying array ascending average avg broken build chart chosen class context count creates data dataset datetime descending deviation directive espece facet false field form function functions girth groups height html https indicates instance les-arbres-remarquables-de-paris logic max maximum min minimum module ng-repeat ngrepeat note number object ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-girth ods-analysis-serie-height ods-analysis-serie-height-cumulative ods-analysis-sort ods-analysis-x ods-widgets odsanalysis odsanalysiscontext opendatasoft optionally result series sort sorted sorting standard stddev sum table table-bordered table-condensed table-striped tree tree-dataset tree-domain variable visualization widget written x-axis",
       "isDeprecated": false
     },
     {
@@ -111,8 +111,8 @@ NG_DOCS={
       "shortName": "odsAutoResize",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Enables the auto resize functionality on widget that supports it. By default, it forces the affected element to fill the height",
-      "keywords": "api auto bottom default directive element enables fill forces functionality height html module ods-auto-resize ods-widgets resize supports widget window",
+      "shortDescription": "The odsAutoResize widget enables the auto-resize functionality on a widget that supports it. By default, this widget forces the affected element to fill the height to the bottom of the window.",
+      "keywords": "api auto-resize bottom default directive element enables fill forces functionality height html module ods-auto-resize ods-widgets odsautoresize supports widget window",
       "isDeprecated": false
     },
     {
@@ -121,8 +121,8 @@ NG_DOCS={
       "shortName": "odsCalendar",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget can take any dataset containing at least two datetime fields and a text field and use it to",
-      "keywords": "agendaday agendaweek api c32d1c calendar calendarview color comma context dataset date_de_fin date_debut datetime default description directive display end-field endfield evenements-publics-openagenda-extract event event-color events events-dataset events-domain field fields form hexadecimal html https image latlon lien list load mode module month ods-widgets opendatasoft ordered persists separated start start-field startfield text title title-field titlefield titre tooltip tooltip-fields true url views widget",
+      "shortDescription": "The odsCalendar widget can take any dataset containing at least two datetime fields and a text field and use it to",
+      "keywords": "agendaday agendaweek api authorized c32d1c calendar calendarview color comma-separated context dataset date_de_fin date_debut datetime default description directive display end-field endfield evenements-publics-openagenda-extract event event-color events events-dataset events-domain field fields form hexadecimal html https image latlon lien list load mode module month ods-widgets odscalendar opendatasoft ordered persists set start start-field startfield text title title-field titlefield titre tooltip tooltip-fields true url values views widget",
       "isDeprecated": false
     },
     {
@@ -131,8 +131,8 @@ NG_DOCS={
       "shortName": "odsCatalogContext",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "The odsCatalogContext widget represents the entire catalog of datasets of a chosen domain, and a set of parameters used to query this catalog. A catalog context can be used by one or more widgets: it allows them sharing information (i.e. the query parameters).",
-      "keywords": "accessed accessible ae allows alphanum alphanumerical api apply assume behavior call catalog change characters child chosen commas configured construct context contextname-setting contexts create created creates current data dataset datasetid datasets declare declared default defaultdomain directive directly displayed displays domain domainurl element enabled enables entire examples examples-domain filter full generating holding hostname html https id1 initialized inside instance key links list lowercase module mycontext-domain mydomain named names nested note number object ods-widgets odscatalogcontext odsresultenumerator odsresultenumerator_with_catalog_context odstimerange odswidgetsconfig odswidgetsconfigprovider opendatasoft parameter parameters parametersfromcontext path plugged prefixed properties query relative represents root scope separated set sharing simple_example single string synchronization time unpredictable url user variable widget widgets won",
+      "shortDescription": "The odsCatalogContext widget represents the entire catalog of datasets of a chosen domain and a set of parameters used to query this catalog. One or more widgets can use a catalog context: it allows them to share information (i.e., the query parameters).",
+      "keywords": "_blank accessed accessible ae allows alphanumeric alphanumerical api apply assume behavior call catalog change characters child chosen commas configured construct context contextname-setting contexts create created creates current data dataset datasetid datasets declare declared default defaultdomain directive directly displayed displays domain domainurl element enabled enables entire example examples examples-domain filter full generating holding hostname html https id1 initialized inside item key links list lowercase module mycontext-domain mydomain named names nested ng-href note number object ods-widgets odscatalogcontext odsresultenumerator odsresultenumerator_with_catalog_context odstimerange odswidgetsconfig odswidgetsconfigprovider opendatasoft parameter parameters parametersfromcontext path plugged prefixed properties query relative represents root scope separated set share sharing simple_example single string synchronization target time unpredictable url user variable widget widgets won",
       "isDeprecated": false
     },
     {
@@ -141,8 +141,8 @@ NG_DOCS={
       "shortName": "odsChart",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget is the base widget allowing to display charts from Opendatasoft datasets.",
-      "keywords": "active affect align align-month allowing api appearance automatically avg axis base basic behaviour case characters chart chart-type charts circonference color column commute commute-dataset commute-domain commute-time-us-counties computed context count data dataset datasets default defined defines demographics demographics-dataset demographics-domain directive disable display displayed enable enforces espece example expression-y false fc8d62 field-x fine force form full function-y generated hauteur https ignored intervals label labels legend les-arbres-remarquables-de-paris logarithmic max maximum maxpoints mean_commuting_time middle min month multiple number numbers ods-widgets opendatasoft override parameter parameters represented requested reverts scale scientific-display series set setting single singleyaxis singleyaxislabel specific step sum tick timescale timeseries trees trees-dataset trees-domain true tune type us-cities-demographics values widget works",
+      "shortDescription": "The odsChart widget is the base widget allowing to display charts from Opendatasoft datasets.",
+      "keywords": "active affect align-month aligns allowing api appearance automatically avg axis base basic behavior case change characters chart chart-type charts circonference color column commute commute-dataset commute-domain commute-time-us-counties computed context count data dataset datasets default defined defines demographics demographics-dataset demographics-domain directive disables display displayed dynamic enables enforces espece example expression-y false fc8d62 field-x fine-tune force form full function-y generated hauteur https ignored intervals label labels legend les-arbres-remarquables-de-paris logarithmic max maximum maxpoints mean_commuting_time middle min month multiple note number numbers ods-widgets odschart opendatasoft overrides parameter parameters refreshed represented requested reverts scale scientific-display series set sets setting single singleyaxis singleyaxislabel specific specifies step sum tick timescale timeseries trees trees-dataset trees-domain true type us-cities-demographics values widget works x-axis y-axis",
       "isDeprecated": false
     },
     {
@@ -151,8 +151,8 @@ NG_DOCS={
       "shortName": "odsChartQuery",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "odsChartQuery is the sub widget that defines the queries for the series defined inside.",
-      "keywords": "active aggregated aggregation aggregations analysis api area bar break category change chart charts color columns complete compute computed daily dataset datetime declared defined defines directive displayed dynamic example examples facet fetched ff0000 field fieldx inside interval level maximum month normal note number object ods-widgets odschart odschartquery option order parameters percent points queries query refreshed reverse serie series set singleyaxis spline stack stacked time timescale timeseries values widget works year",
+      "shortDescription": "The odsChartQuery widget is the sub widget that defines the queries for the series defined inside.",
+      "keywords": "active aggregated aggregation aggregations analysis api area bar breakdown broken category change chart charts color columns complete compute computed daily dataset datetime declared defined defines directive displayed dynamic example examples facet fetched ff0000 field fieldx inside interval level maximum month normal note number object ods-widgets odschart odschartquery option order parameters percent points queries query refreshed reverses serie series sets singleyaxis spline stack stacked stacks time timescale timeseries values widget works year",
       "isDeprecated": false
     },
     {
@@ -161,8 +161,8 @@ NG_DOCS={
       "shortName": "odsChartSerie",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "odsChartSerie is the sub widget that defines a serie in the chart with all its parameters.",
-      "keywords": "accumulated aggreation aggregation api area arearange areas areaspline areasplinerange array associated attribute automatically avg axis bar boxplot calculate category center change chart charts clicked color color-thresholds colors column columnrange complete computed constant context contexts count counts creating cumulated custom datetime day define defined defines directive display displayed documents donut enable examples expressed expressiony facet false ffff00 field fieldx force format full func function functions functiony funnel higher hole hour inside invidual item label labels logarithmic lower max maximal maximum min minimal minimum minute month multiply myfield number numbers object objects ods-widgets odschart odschartquery odschartserie order parameter parameters parent pie pixels polar position properly quantile quantiles range refine refined scale scatter serie series set simple spiderweb spline stacks stddev step subserie sum takes threshold tick timescale tooltip top types units values wanted widget won work yaxis year",
+      "shortDescription": "The odsChartSerie widget is the sub widget that defines a series in the chart with all its parameters.",
+      "keywords": "accumulated aggregation api area arearange areas areaspline areasplinerange array associated attribute authorized automatically avg axis bar boxplot calculate category center change chart charts clicked color color-thresholds colors column columnrange complete computed constant context contexts count counts creating cumulated custom datetime day define defined defines directive display displayed displays documents donut enables examples expressed expressiony facet false ffff00 field fieldx force forces format full func function functions functiony funnel higher hole hour inside invidual item label labels logarithmic lower max maximal maximum min minimal minimum minute month multiplies myfield number numbers object objects ods-widgets odschart odschartquery odschartserie order parameter parameters parent pie pixels polar position properly quantile quantiles range refine refined scale scatter serie series set sets simple specifies spiderweb spline stacks stddev step subseries sum threshold tick timescale tooltip top types units values wanted widget won work y-axis yaxis year",
       "isDeprecated": false
     },
     {
@@ -171,8 +171,8 @@ NG_DOCS={
       "shortName": "odsClearAllFilters",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a button which will clear all active filters in the given context.",
-      "keywords": "active api array button catalog clear clearing context contexts dataset directive display displays exclude filters list ods-widgets parameters widget",
+      "shortDescription": "The odsClearAllFilters widget displays a button that will clear all active filters in the given context.",
+      "keywords": "active api array button catalog clear clearing context contexts dataset directive display displays exclude filters list ods-widgets odsclearallfilters operation parameters widget",
       "isDeprecated": false
     },
     {
@@ -181,8 +181,8 @@ NG_DOCS={
       "shortName": "odsColorGradient",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget exposes the results of an analysis transposed to a set of colors for each X values.",
-      "keywords": "abc analysis angularjs api approximate avg axis bigger build categories cities classes code color color-by-field color-categories color-categories-other colorgradient colors compute consistent context contours-geographiques-des-regions-2019-copy corresponding custom data dataset directive directly disjunctive display exponent exponential exposes expression ff009a field func grades gradient guyane hex highest html legend lightgrey linear location log logarithmic logarithmic-scale lowest mandatory martinique max mayotte min mode module ngrepeat nom_reg number ods-color-gradient ods-color-gradient-context ods-color-gradient-high ods-color-gradient-low ods-color-gradient-serie ods-color-gradient-x ods-maps ods-widgets odscolorgradient odscolorgradientcontext odscolorgradientserie odscolorgradientx odsmap output parameter population population-dataset population-domain population-millesimee-communes-2016 population-parameters power public range region regions regions-dataset regions-domain regions-parameters reunion rgb salso scale scales scope serie set shape-opacity structure sum tend title transposed values variable widget work",
+      "shortDescription": "The odsColorGradient widget exposes the results of an analysis transposed to a set of colors for each X value.",
+      "keywords": "abc analysis angularjs api approximate avg bigger build categories cities classes code color color-by-field color-categories color-categories-other colorgradient colors compute consistent context corresponding custom data dataset directive directly disjunctive display exponent exponential exposes expression ff009a field func grades gradient guyane hex highest html https legend lightgrey linear location log logarithmic logarithmic-scale lowest mandatory martinique max mayotte min mode module ngrepeat number ods-color-gradient ods-color-gradient-context ods-color-gradient-high ods-color-gradient-low ods-color-gradient-serie ods-color-gradient-x ods-maps ods-widgets odscolorgradient odscolorgradientcontext odscolorgradientserie odscolorgradientx odsmap opendatasoft output parameter population population-dataset population-domain population-parameters populations-legales-communes-et-arrondissements-municipaux-france power range reg_name regions regions-dataset regions-domain regions-et-collectivites-doutre-mer-france regions-parameters reunion rgb scale scales scope serie set shape-opacity structure sum title transposed values variable widget work x-axis",
       "isDeprecated": false
     },
     {
@@ -191,8 +191,8 @@ NG_DOCS={
       "shortName": "odsCrossTable",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget create a cross table from a context.",
-      "keywords": "aggregate aggregations analysis api arrondissement average avg column comma-separated context count create cross data dataset decimals directive display displayed espece extracted facet facets field fields function hauteur header headers height html https intermediary label les-arbres-remarquables-de-paris list module multiple names number ods-widgets opendatasoft repeat row rows serie serie-height-expr serie-height-func serie-height-label seriexxxexpr seriexxxfunc seriexxxlabel single subaverages subtotals supports table trees trees-dataset trees-domain values widget",
+      "shortDescription": "The odsCrossTable widget creates a cross table from a context.",
+      "keywords": "aggregate aggregations analysis api arrondissement average avg column comma-separated context controls count creates cross data dataset decimals directive display displayed espece extracted facet facets field fields function hauteur_en_m header headers height html https intermediary label les-arbres-remarquables-de-paris list module multiple names number numeric ods-widgets odscrosstable opendatasoft repeat row rows serie-height-expr serie-height-func serie-height-label series seriexxxexpr seriexxxfunc seriexxxlabel single subaverages subtotals supports table trees trees-dataset trees-domain values widget",
       "isDeprecated": false
     },
     {
@@ -201,8 +201,8 @@ NG_DOCS={
       "shortName": "odsDatasetCard",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "If you wrap this directive around an element or a set of element, it will display an expandable card above it to show the title and description of the dataset,",
-      "keywords": "api attached card context data dataset description directive display element evenements-publics-openagenda-extract events events-dataset events-domain expandable height html https license link module ods-widgets opendatasoft portal set style title wrap",
+      "shortDescription": "When wrapped around an element or a set of elements, the odsDatasetCard widget displays an expandable card above it.",
+      "keywords": "api attached card context data dataset description directive displays element elements evenements-publics-openagenda-extract events events-dataset events-domain expandable height html https license link module ods-widgets odsdatasetcard opendatasoft portal set style title widget wrapped",
       "isDeprecated": false
     },
     {
@@ -211,18 +211,8 @@ NG_DOCS={
       "shortName": "odsDatasetContext",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "The odsDatasetContext widget represents a dataset from a chosen domain, and a set of parameters used to query its data. odsDatasetContext can be used by one or more widgets: it allows them sharing information (i.e. the query parameters).",
-      "keywords": "accessed accessible active additional ae allow allows alphanum alphanumerical api applied apply ascending assume automatically based behavior building builds california call change characters child chosen cities comma commas configured construct context contextname-setting contexts create created creates csv current currently data dataset dataset_context_with_parameters declare declared default defaultdomain delay demographics demographics-dataset demographics-domain demographics-parameters descending dict dictionary directive directly displayed displays domain domainurl download downloading element enabled enables evenements-publics-openagenda-extract events events-dataset events-domain export expression field fields filter filters format full generating geojson getdownloadurl getquerystringurl holding hostname html https id1 identifier including initialized inside instance json key les-arbres-remarquables-de-paris links list lowercase map method milliseconds minimum modification module mycontext-domain mydomain named names nested note number object ods-widgets odsdatasetcontext odsfacets odstable odswidgetsconfig odswidgetsconfigprovider opendatasoft optional options order original parameter parameters parametersfromcontext passed path plugged prefixed properties queries query refine refinement refinements refresh refreshed relative replicate represents returns root santa scope separated set sharing single sort string suffix synchronization syntaxes table trees trees-dataset trees-domain unpredictable url us-cities-demographics use_labels_for_header user variable view visualizations_based_on_dataset_context wait widget widgets won written",
-      "isDeprecated": false
-    },
-    {
-      "section": "api",
-      "id": "ods-widgets.directive:odsDatasetJsonSchema",
-      "shortName": "odsDatasetJsonSchema",
-      "type": "directive",
-      "moduleName": "ods-widgets",
-      "shortDescription": "Generate a dataset&#39;s JSON schema and display it within a pre tag.",
-      "keywords": "api context dataset directive display generate html http https json les-arbres-remarquables-de-paris module ods-widgets opendatasoft org pre schema tag tree tree-dataset tree-domain",
+      "shortDescription": "The odsDatasetContext widget represents a dataset from a chosen domain and a set of parameters used to query its data. One or more widgets can use odsDatasetContext: it allows them to share information (i.e., the query parameters).",
+      "keywords": "accessed accessible active additional ae allow allows alphanumeric alphanumerical api applied apply ascending assume automatically based behavior building builds california call change characters child chosen cities comma commas configured construct context contextname-setting contexts create created creates csv current currently data dataset dataset_context_with_parameters declare declared default defaultdomain delay demographics demographics-dataset demographics-domain demographics-parameters descending dict dictionary directive directly displayed displays domain domainurl download downloading element enabled enables evenements-publics-openagenda-extract events events-dataset events-domain example export expression field fields filter filters format full generating geojson getdownloadurl getquerystringurl holding hostname html https id1 identifier including initialized inside json key les-arbres-remarquables-de-paris links list lowercase map method milliseconds minimum modification module mycontext-domain mydomain named names nested note number object ods-widgets odsdatasetcontext odsfacets odstable odswidgetsconfig odswidgetsconfigprovider opendatasoft optional options order original parameter parameters parametersfromcontext passed path plugged prefixed properties queries query refine refinement refinements refresh refreshed relative replicate represents returns root santa scope separated set share sharing single sort sorts string suffix synchronization syntaxes table trees trees-dataset trees-domain unpredictable url us-cities-demographics use_labels_for_header user variable view visualizations_based_on_dataset_context wait widget widgets won written",
       "isDeprecated": false
     },
     {
@@ -231,8 +221,8 @@ NG_DOCS={
       "shortName": "odsDatasetSchema",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Display a table describing the schema of a dataset. For each field, it provides the label, name,",
-      "keywords": "api context dataset describing description directive display example field html https label les-arbres-remarquables-de-paris module ods-widgets opendatasoft schema table tree tree-dataset tree-domain type",
+      "shortDescription": "The odsDatasetSchema widget displays a table describing the schema of a dataset. For each field, it provides the label, name,",
+      "keywords": "api context dataset describing description directive displays example field html https label les-arbres-remarquables-de-paris module ods-widgets odsdatasetschema opendatasoft schema table tree tree-dataset tree-domain type widget",
       "isDeprecated": false
     },
     {
@@ -241,8 +231,8 @@ NG_DOCS={
       "shortName": "odsDateRangeSlider",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a range slider to select the two bounds of a date range.",
-      "keywords": "angularjs api array avoid bound bounds class collision context ctx ctx-dataset ctx-domain dataset date-format day default define directive displays end-bound evenements-publics-cibul expected expression expressions field format formatted html initial-from initial-to input iso maximum minimum module month ng-init obj ods-box ods-widgets parameter precision provide provided public queries query quotes range render representing second select selectable selection set simple slider start-bound static string suffix surround syntax type variable variables widget year yesterday yyyy yyyy-mm-dd",
+      "shortDescription": "The odsDateRangeSlider widget displays a range slider to select the two bounds of a date range.",
+      "keywords": "angularjs api array avoid bound bounds class collision context ctx ctx-dataset ctx-domain dataset date-format day default define defines directive displays documentation-resources end-bound expected expression expressions field format formatted html initial-from initial-to input iso maximum minimum module month ng-init obj ods-box ods-widgets odsdaterangeslider parameter precision product-release-notes provide provided queries query quotes range render representing second select selectable selection sets simple slider start-bound static string suffix surround syntax type variable variables widget year yesterday yyyy yyyy-mm-dd",
       "isDeprecated": false
     },
     {
@@ -251,8 +241,8 @@ NG_DOCS={
       "shortName": "odsDatetime",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Get the ISO local datetime and store it into a variable (into the scope).",
-      "keywords": "api call current datetime directive equivalent format gains hh html iso javascript local method module moment ods-datetime ods-widgets refresh refreshdatetime scope store variable yyyy-mm-dd",
+      "shortDescription": "The odsDatetime widget gets the ISO local datetime and stores it into a variable (into the scope).",
+      "keywords": "api call current datetime directive equivalent format gains hh html iso javascript local method module moment ods-datetime ods-widgets odsdatetime refresh refreshdatetime scope stores variable widget yyyy-mm-dd",
       "isDeprecated": false
     },
     {
@@ -261,8 +251,8 @@ NG_DOCS={
       "shortName": "odsDisqus",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget shows a Disqus panel where users can comment the page.",
-      "keywords": "account api comment default define directive discussion disqus disqusshortname identifier independant ods-widgets odswidgetsconfig odswidgetsconfigprovider panel parameter recommended share shortname start tied url users widget",
+      "shortDescription": "The odsDisqus widget shows a Disqus panel where users can comment on the page.",
+      "keywords": "account api comment default define directive discussion disqus disqusshortname identifier independent ods-widgets odsdisqus odswidgetsconfig odswidgetsconfigprovider panel parameter recommends share short shortname start tied url users widget",
       "isDeprecated": false
     },
     {
@@ -271,8 +261,8 @@ NG_DOCS={
       "shortName": "odsDomainStatistics",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget enumerates statistic values for a given catalog and injects them as variables in the context. The following AngularJS variables are available:",
-      "keywords": "ae angularjs api catalog catalog-domain context contextname contributed dataset datasets declaring dedicated described directive directly enumerates examples examples-domain html https inject injects keyword keywords module number ods-domain-statistics ods-widgets opendatasoft portal publisher publishers second statistic stats syntax tag theme themes values variables widget",
+      "shortDescription": "The odsDomainStatistics widget enumerates statistic values for a given catalog and injects them as variables in the context.",
+      "keywords": "ae angularjs api catalog catalog-domain context contextname contributed dataset datasets declaring dedicated described directive directly enumerates examples examples-domain html https inject injects keyword keywords module number ods-domain-statistics ods-widgets odsdomainstatistics opendatasoft portal publisher publishers second statistic stats syntax tag theme themes values variables widget",
       "isDeprecated": false
     },
     {
@@ -281,8 +271,8 @@ NG_DOCS={
       "shortName": "odsFacetResults",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget fetches the results of enumerating the values (&quot;categories&quot;) of a facet, and exposes it in a variable available in the scope. It can be used with AngularJS&#39;s ngRepeat to simply build a list",
-      "keywords": "alphanum angularjs api array build catalog catalog-domain categories category context count dataset directive displayed enumerate enumerating exposes facet fetches html https item items label list module ng-model ng-repeat ngrepeat num number objects ods-facet-results ods-facet-results-context ods-facet-results-facet-name ods-widgets odsfacetresultscontext odsfacetresultsfacetname opendatasoft path properties publisher records refine refined scope simply sort userchoice values variable widget",
+      "shortDescription": "The odsFacetResults widget fetches the results of enumerating the values (&quot;categories&quot;) of a facet and exposes it in a variable available in the scope.",
+      "keywords": "alphanum angularjs api array ascending build catalog catalog-domain categories category character context count dataset descending directive displayed enumerate enumerating exposes facet fetches html https indicates item items label list method module ng-model ng-repeat ngrepeat note num number objects ods-facet-results ods-facet-results-context ods-facet-results-facet-name ods-widgets odsfacetresults odsfacetresultscontext odsfacetresultsfacetname opendatasoft order path properties publisher records refine refined scope sort sorted sorting userchoice values variable widget",
       "isDeprecated": false
     },
     {
@@ -291,8 +281,8 @@ NG_DOCS={
       "shortName": "odsFacets",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "The odsFacets widget displays filters based on a dataset or a domain&#39;s catalog of datasets, allowing the users to dynamically refine on one or more categories for the defined context (i.e. each filter being composed of several categories, which are values of the field the filter is based on).",
-      "keywords": "allow allowing allows alphanum angularjs api apply ascending based blue box catalog categories category change character class clicked clicking collapsed combined common complete composed configuration configuration-options-for-facets configure configuring context contexts count countries countries-dataset countries-domain countries-facet-name country data dataset datasets date_mise_a_jour datetime default defined defining descending directive directly disjunctive display displayed displays domain dynamically effectively element elements enables evaluate evaluates evenements-publics-openagenda-extract events events-dataset events-domain excluded expanded expression facet facetname facets field fields filter filters function green hidecategoryif hideifsinglecategory hides hierarchical html https icon-tags including indicates instance interested items levels link list making mandatory mapped matching metadata method mode module mots_cles multiple mycontext myfield mysecondfield natural-earth-countries-150m ng-non-bindable note num number ods-widgets odsfacet odsfacets odsfacets_with_odsfacet odstable opendatasoft option order original parameter parameters path prevent properly range red refer refine refine-also refinealso_parameter refined refinements regular replaced row-fluid schema search selected selection setting share significant-volcanic-eruption-database sort sorting sovereignt space span span4 span8 specific suggest-like supported supports table tag tags template time title true typed typical users value1 value2 values variables visibleitems volcaniceruption volcaniceruption-dataset volcaniceruption-domain widget work working works wrapper",
+      "shortDescription": "The odsFacets widget displays filters based on a dataset or a domain&#39;s catalog of datasets. This widget allows to dynamically refine on one or more categories for the defined context (i.e., each filter being composed of several categories, which are values of the field the filter is based on).",
+      "keywords": "allow allows alphanum angularjs api apply ascending based blue box case catalog categories category change character class clicked clicking collapsed combined common complete composed configuration configuration-options-for-facets configure configuring context contexts count countries countries-dataset countries-domain countries-facet-name country_code data dataset datasets date_mise_a_jour datetime default defined defining descending desired directive directly disjunctive display displayed displays doc-geonames-cities-5000 domain dynamically effectively element elements enables evaluate evaluates evenements-publics-openagenda-extract events events-dataset events-domain example excluded expanded expression facet facetname facets field fields filter filters geonamescities geonamescities-dataset geonamescities-domain green hidecategoryif hideifsinglecategory hides hierarchical html https icon-tags including indicates items levels link list making mandatory mapped matching metadata method mode module mots_cles multiple mycontext myfield mysecondfield natural-earth-countries-110m ng-non-bindable note num number ods-widgets odsfacet odsfacets odsfacets_with_odsfacet odstable opendatasoft option order original parameter parameters path prevent properly range red refine refine-also refinealso_parameter refined refinements regular replaced row-fluid schema search selected selections set setting share sort sorted sorting sovereignt space span span4 span8 specific suggest-like supported supports suppose table tag tags template time title true typed typical value1 value2 values variables visibleitems widget work working works wrapper",
       "isDeprecated": false
     },
     {
@@ -301,8 +291,8 @@ NG_DOCS={
       "shortName": "odsFilterSummary",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a summary of all the active filters on a context: text search, refinements...",
-      "keywords": "active api button catalog clear commas context contexts custom dataset directive display displayed displays example filter filters label list multiple mycontext ods-widgets option optional parameters refinements rows search separated set start summary text true underneath widget working",
+      "shortDescription": "The odsFilterSummary widget displays a summary of all the active filters in a context: text search, refinements, etc.",
+      "keywords": "active api button catalog clear commas context contexts custom dataset directive display displayed displays example filter filters label list multiple mycontext ods-widgets odsfiltersummary option optional parameters refinements rows search separated set start summary text true underneath widget working",
       "isDeprecated": false
     },
     {
@@ -311,8 +301,8 @@ NG_DOCS={
       "shortName": "odsGauge",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a gauge in one of the two following modes: circle or horizontal bar.",
-      "keywords": "api bar based chart circle css css3 customizable decide defined directive display-mode displays empty entirely exceeding forcing full gauge height horizontal html larger lower max maximum modes module number ods-widgets property relies represented result size smaller svg type values widget width won work",
+      "shortDescription": "The odsGauge widget displays a gauge in one of the two following modes: circle or horizontal bar.",
+      "keywords": "api bar based chart circle css css3 customizable decide defined directive display-mode displays empty entirely exceeding forcing full gauge height horizontal html larger lower max maximum modes module number ods-widgets odsgauge property relies represented result size smaller svg type values widget width won work",
       "isDeprecated": false
     },
     {
@@ -321,8 +311,8 @@ NG_DOCS={
       "shortName": "odsGeoNavigation",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "The geographic navigation filter can be used to navigate visually inside a catalog using a geographic",
-      "keywords": "active api catalog context country coverage current datasets default defaultfilter depend directive display filter geographic highest include indication inside leading level levels location lowest metadata minlevel navigate navigation ods-widgets odsfacets option path point references selection set starting true user visual visually world",
+      "shortDescription": "The odsGeoNavigation widget allows to visually navigate a catalog using geographic metadata (currently, only the &quot;Geographic coverage&quot; metadata).",
+      "keywords": "active allows api catalog context country coverage current datasets default defaultfilter depend directive display filter geographic highest include indication leading level levels location lowest metadata minlevel navigate navigation ods-widgets odsfacets odsgeonavigation option path point references selection set starting true user visual visually widget world",
       "isDeprecated": false
     },
     {
@@ -331,8 +321,8 @@ NG_DOCS={
       "shortName": "odsGeotooltip",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This directive, when used to surround a text, displays a tooltip showing a point and/or a shape in a map.",
-      "keywords": "angular api appears array content context coordinates coords delay directive directly display displays ensure evenements-publics-openagenda-extract events events-dataset events-domain example field fields form geo_point_2d geo_shape geojson geometry height hover html https item latitude latlon location longitude map max milliseconds module numbers object ods-widgets odsresultenumerator opendatasoft passing people pixels place point property quotes record records shape showing simple specific string surround text tooltip treats type values width working",
+      "shortDescription": "When used to surround a text, the odsGeotooltip widget displays a tooltip showing a point and/or a shape in a map.",
+      "keywords": "angular api appears array content context coordinates coords delay directive directly display displays ensure evenements-publics-openagenda-extract events events-dataset events-domain field fields form geo_point_2d geo_shape geojson geometry height hover html https item latitude latlon location longitude map max milliseconds module numbers object ods-widgets odsgeotooltip odsresultenumerator opendatasoft passing people pixels place point property quotes record records shape showing simple specific string surround text tooltip treats type values widget width working",
       "isDeprecated": false
     },
     {
@@ -341,8 +331,8 @@ NG_DOCS={
       "shortName": "odsGetElementLayout",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Get the height and width of the element where odsGetElementLayout is set. The variable is an object that contains 2 keys : &#39;height&#39; and &#39;width&#39;",
-      "keywords": "api directive element height html layout module object ods-get-element-layout ods-widgets odsgetelementlayout px set variable width",
+      "shortDescription": "The odsGetElementLayout widget gets the height and width of an element. The variable is an object that contains 2 keys: &#39;height&#39; and &#39;width&#39;.",
+      "keywords": "api directive element height html layout module object ods-get-element-layout ods-widgets odsgetelementlayout px variable widget width",
       "isDeprecated": false
     },
     {
@@ -351,8 +341,8 @@ NG_DOCS={
       "shortName": "odsGetWindowLayout",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Get the height and width of the window. The variable is an object that contains 2 keys : &#39;height&#39; and &#39;width&#39;",
-      "keywords": "api directive height html module mylayout object ods-get-window-layout ods-widgets px variable width window",
+      "shortDescription": "The odsGetElementLayout widget gets the height and width of the window. The variable is an object that contains 2 keys: &#39;height&#39; and &#39;width&#39;.",
+      "keywords": "api directive height html module mylayout object ods-get-window-layout ods-widgets odsgetelementlayout px variable widget width window",
       "isDeprecated": false
     },
     {
@@ -361,8 +351,8 @@ NG_DOCS={
       "shortName": "odsGist",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Integrates a GitHub Gist widget into a page and add a copy to clipboard button in it.",
-      "keywords": "add amli api b845c8d4b3a2ce08c0a5ce3dd0d7625d button clipboard copy directive find gist gist-id github html integrates module ods-widgets url username widget",
+      "shortDescription": "The odsGist widget integrates a GitHub Gist widget with a &quot;copy to clipboard&quot; button into a page.",
+      "keywords": "amli api b845c8d4b3a2ce08c0a5ce3dd0d7625d button clipboard copy directive find gist gist-id github html identifier integrates module ods-widgets odsgist url username widget",
       "isDeprecated": false
     },
     {
@@ -371,8 +361,8 @@ NG_DOCS={
       "shortName": "odsHubspotForm",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Integrates a Hubspot form given a portal ID and the form ID.",
-      "keywords": "api d1234564-987987987-4564654-7897-456465465 directive form form-id formid hubspot integrates ods-widgets portal portal-id portalid",
+      "shortDescription": "The odsHubspotForm widget integrates a HubSpot form given a portal ID and the form ID.",
+      "keywords": "api d1234564-987987987-4564654-7897-456465465 directive form form-id formid hubspot integrates ods-widgets odshubspotform portal portal-id portalid widget",
       "isDeprecated": false
     },
     {
@@ -381,8 +371,8 @@ NG_DOCS={
       "shortName": "odsInfiniteScrollResults",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays the results of a query inside an infinite scroll list. It uses the HTML template inside the widget tag,",
-      "keywords": "_blank angularjs api applied belongs catalog change class classes content context dataset datasetid directive displayed displays domainurl example example-domain fetch fields geojson geometrical geometry hold holding holds html https identifier infinite inside item key list metadata metas module ng-href object ods-widgets odsresultscontext opendatasoft parameters query record repeats representation result scroll sentence tag target template title top variables widget window",
+      "shortDescription": "The odsInfiniteScrollResults widget displays the results of a query inside an infinite scroll list. It uses the HTML template inside the widget tag",
+      "keywords": "_blank angularjs api applied belongs catalog change class classes content context dataset datasetid directive displayed displays domainurl example example-domain fetch fields geojson geometrical geometry holding holds html https identifier infinite inside item key list metadata metas module ng-href object ods-widgets odsinfinitescrollresults odsresultscontext opendatasoft parameters query record repeats representation result scroll scrolls sentence tag target template title top variables widget window",
       "isDeprecated": false
     },
     {
@@ -391,8 +381,8 @@ NG_DOCS={
       "shortName": "odsKeyboard",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Bind a keyboard key to execute the associated ngClick or specific expression.",
-      "keywords": "ae api arrow arrowleft arrowright associated bar behavior bind class code correct count counter cursor default directive enter escape event execute expression false fit-content html https info key keyboard left module ng-click ng-init ngclick ods-button ods-keyboard ods-keyboard-expression ods-keyboard-key ods-keyboard-prevent-default ods-widgets odskeyboardexpression odskeyboardkey odskeyboardpreventdefault pointer prevent set space specific style trigger true underline usefull values",
+      "shortDescription": "The odsKeyboard widget binds a keyboard key to execute the associated ngClick or specific expression.",
+      "keywords": "ae api arrow arrowleft arrowright associated bar behavior binds class code correct count counter cursor default directive enter escape event execute expression false fit-content html https info key keyboard left module ng-click ng-init ngclick ods-button ods-keyboard ods-keyboard-expression ods-keyboard-key ods-keyboard-prevent-default ods-widgets odskeyboard odskeyboardexpression odskeyboardkey odskeyboardpreventdefault pointer prevents set space specific style triggering true underline values widget",
       "isDeprecated": false
     },
     {
@@ -401,8 +391,8 @@ NG_DOCS={
       "shortName": "odsLastDatasetsFeed",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays the last datasets of a catalog (default is last 5), based on the modified metadata.",
-      "keywords": "api based catalog context data datasets directive displays example example-domain html metadata module ods-widgets opendatasoft widget",
+      "shortDescription": "The odsLastDatasetsFeed widget displays the last datasets of a catalog based on the modified metadata. By default, the widget displays the last five datasets.",
+      "keywords": "api based catalog context data datasets default directive displays example example-domain html metadata module ods-widgets odslastdatasetsfeed opendatasoft widget",
       "isDeprecated": false
     },
     {
@@ -411,8 +401,8 @@ NG_DOCS={
       "shortName": "odsLastReusesFeed",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays the last 5 reuses published on a domain.",
-      "keywords": "adding api catalog clicking context created_at customize dataset datetime default description directive directly display displays domain first_name format fr html http images inside iso last_name lll maximum module number ods-widgets original paris paris-domain published redirect reuse reuses submission submitter tag template thumbnail title titles url user variables widget",
+      "shortDescription": "This widget displays the last five reuses published on a domain.",
+      "keywords": "adding api catalog clicking context created_at customize dataset datetime default description directive directly display displays domain first_name format html https images inside iso last_name lll maximum module number ods-widgets opendatasoft original public public-domain published redirect reuse reuses submission submitter tag template thumbnail title titles url user variables widget",
       "isDeprecated": false
     },
     {
@@ -421,8 +411,8 @@ NG_DOCS={
       "shortName": "odsLegend",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a map legend computed with the color gradient structure from odsColorGradient widget.",
-      "keywords": "alternative api based categories cities classes code color color-by-field color-categories color-categories-other color-gradient colorgradient colors computed context contours-geographiques-des-regions-2019-copy dataset decimal decimal-precision default directive disjunctive display displays gradient guyane html legend lightgrey linear location map martinique max mayotte min mode module no-value-color nom_reg number object ods-color-gradient ods-color-gradient-context ods-color-gradient-high ods-color-gradient-low ods-color-gradient-nb-classes ods-color-gradient-serie ods-color-gradient-x ods-widgets odscolorgradient option population population-dataset population-domain population-millesimee-communes-2016 population-parameters precision provided public range region regions regions-dataset regions-domain regions-parameters reunion rgb set shape-opacity single square step steps structure sub-title subtitle sum title values warning widget",
+      "shortDescription": "The odsLegend widget displays a map legend computed with the color gradient structure from the odsColorGradient widget.",
+      "keywords": "alternative api authorized based categories cities classes code color color-by-field color-categories color-categories-other color-gradient colorgradient colors computed context dataset decimal decimal-precision default directive disjunctive display displays gradient guyane html https legend lightgrey linear location map martinique maximum mayotte minimum mode module no-value-color note number object ods-color-gradient ods-color-gradient-context ods-color-gradient-high ods-color-gradient-low ods-color-gradient-nb-classes ods-color-gradient-serie ods-color-gradient-x ods-widgets odscolorgradient odslegend opendatasoft option population population-dataset population-domain population-parameters populations-legales-communes-et-arrondissements-municipaux-france precision provided providing range reg_name region regions regions-dataset regions-domain regions-et-collectivites-doutre-mer-france regions-parameters reunion rgb sets shape-opacity single square step steps structure sub-title subtitle sum title values widget",
       "isDeprecated": false
     },
     {
@@ -432,7 +422,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "The odsMap widget allows to build a map visualization and display data through various modes that can be composed of several dynamic layers, each being based on a Dataset Context.",
-      "keywords": "allowed allows api areas auto autogeolocation automatic automatically bar base based basemap basemaps basic behavior behaviors bottom box build button buttons caption caution centered centers changes choose clickable combined complex composed configurations configure configured context control corner corresponding countries countries-dataset countries-domain create data dataset datasets declare default defined directive display displayed displays draw drawing dynamic false filter firefox fit form format france fullest fullscreen fully geolocate geolocation group groups helps html https identifier inconsistencies informations initialization initializing interface jawg jump latitude layer layers lead light limits location locations longitude managed map map-controlling maps markers maximum minimum mode modes module mouse moved multiple mycontext natural-earth-countries-150m note object ods-widgets odsautoresize odsmap odsmap_used_alone odsmaplayer odsmaplayergroup odswidgetsconfig odswidgetsconfigprovider opendatasoft options organised parameter parameters paris priorly reference refits resize scrolling search set settings sharing shouldn simple single specific stays time toggle toolbar tools true updated url usage user users view visualization wheel widget widgets zoom zoomed zooms",
+      "keywords": "allowed allows api areas auto autogeolocation automatic automatically bar base based basemap basemaps basic behavior behaviors bottom box build button buttons caption caution centered centers changes choose clickable combined complex composed configurations configure configured context control controls corner corresponding countries countries-dataset countries-domain create data dataset datasets declare default defined directive display displayed displays documentation draw drawing dynamic example false filter firefox fit form format france fullest fullscreen fully geolocate geolocation group groups helps html https identifier inconsistencies initialization initializing interface jawg jump latitude layer layers lead light limits location longitude managed map map-controlling maps markers maximum minimum mode modes module mouse moved multiple mycontext natural-earth-countries-110m note object ods-widgets odsautoresize odsmap odsmap_used_alone odsmaplayer odsmaplayergroup odswidgetsconfig odswidgetsconfigprovider opendatasoft options organized parameter parameters paris priorly refits resize scrolling search set settings sharing shouldn simple single specific stays time toggle toolbar tools true updated url usage user users view visualization wheel widget widgets zoom zoomed zooms",
       "isDeprecated": false
     },
     {
@@ -441,8 +431,8 @@ NG_DOCS={
       "shortName": "odsMapLayer",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "The odsMapLayer widget allows to declare the data layers that can be displayed on a map visualization. odsMapLayer is indeed one of the map-related  widgets, that can only be used based on odsMap, the primary map-related widgets (see odsMap widget reference page for more information on map visualizations).",
-      "keywords": "_blank aac3dd account adding additional aggregate aggregated aggregates aggregating aggregation allows alphanumerically angular angularjs angularjs-enabled apart api appears applicable area ascending associated auto automatically average avg based bbd5e7 best border border-color border-opacity border-pattern border-size bordercolor borders bottom bound bounds browser calculation caption case categories categorizes change changes choose chooses choropleth chronologically click clicked clicking cluster clustering clusters clustersforced code color color-by-field color-categories color-numeric-range-min color-numeric-ranges color-out-of-bounds color-undefined colorbrewer colorbyfield colorfunction colorranges colors colorscale combined commas comprised configuration configurations configure configured considered context contexts control corner count css ctx2 custom data dataset datasets datetime decide decimal declare decreasing default defined defines density depending descending description determine deviation directive directly disabled display display-control displayed displaying displays dots dynamic easily equal evaluate evaluates exact example expected expression f8b334 false ff0000 ff0f05 ffff00 ffffff field field1 field2 field3 field4 fieldname fields fill filter filters freeze function functions gender-equality-in-europe genderequalityineurope genderequalityineurope-dataset genderequalityineurope-domain general_index generating geo geometrical geometry groups heatmap hex hidden hide hoverfield hovers href html http https icon identifier indicates indicating inferior inside integer intensity item items join joincontext joined key keywords large layer layers level levels linear lines links list listed local localkey location log logarithmic long-dashes map map-related marker markers max maximum medium-dashes medium-short method min minimum mode modes module mouse multiple mycontext mycontext1 mycontext2 mycontext3 mycontext5 myvalue names nantes ngif no-refit note number numeric object occurs ods-widgets odsmap odsmap_with_odsmaplayer odsmaplayer opacity opendatasoft orange order org organizing originally parameter parameters paris pattern perimeter picto pictogram pictograms pixels point point-opacity points prefixed previous primary property provided ranges raw record records red reference refine refine-on-click-context refine-on-click-contextname-context-field refine-on-click-contextname-map-field refine-on-click-contextname-replace-refine refine-on-click-mycontext-context-field refine-on-click-mycontext-map-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-map-field refined refineonclick refreshed relevant remote remotekey replaces represent represented represents required result retrieve reverse reversed rezooms same-named scale scales scheme scroll-wheel-zoom search-box selection semicolon separated serie set shape shape-opacity shapes short-dashes short-dot short-dot-dot show-if show-zoom-max show-zoom-min showheatmap showif showzoommax showzoommin simple size solid sort sorted sorting spatially specific stacked standard starting stddev sum superior support supports table tag target template templates text textual title toolbar-fullscreen toolbar-geolocation tooltip tooltip-disabled tooltip-sort tooltips tooltipsort top trigger triggers true type types undefined upper user values variation visible visualization visualizations widget widgets width ylgnbu zoom",
+      "shortDescription": "The odsMapLayer widget allows to declare the data layers that can be displayed on a map visualization. odsMapLayer is one of the map-related widgets that can only be used based on odsMap, the primary map-related widgets. For more information on odsMap, see the documentation for this widget.",
+      "keywords": "_blank aac3dd account adding additional aggregate aggregated aggregates aggregating aggregation allows alphanumerically angular angularjs angularjs-enabled apart api appears applicable area ascending associated auto automatically average avg based bbd5e7 best border border-color border-opacity border-pattern border-size bordercolor borders bottom bound bounds browser calculation caption case categories categorizes change changes choose chooses choropleth chronologically click clicked clicking cluster clustering clusters clustersforced code color color-by-field color-categories color-numeric-range-min color-numeric-ranges color-out-of-bounds color-undefined colorbrewer colorbyfield colorfunction colorranges colors colorscale combined commas comprise configuration configurations configure configured considered context contexts control corner count css ctx2 custom data dataset datasets datetime decide decimal declare decreasing default define defined density depending descending description determine deviation directive directly disabled display display-control displayed displaying displays documentation dots dynamic easily equal evaluate evaluates exact example expected expression f8b334 false ff0000 ff0f05 ffff00 ffffff field field1 field2 field3 field4 fieldname fields fill filter filters freeze function functions gender-equality-in-europe genderequalityineurope genderequalityineurope-dataset genderequalityineurope-domain general_index generating geo geometrical geometry groups heatmap hex hidden hide hoverfield hovers href html http https icon identifier indicates indicating inferior inside integer intensity item items join joincontext joined key keywords large layer layers level levels linear lines links list listed local localkey location log logarithmic long-dashes map map-related marker markers max maximum medium-dashes medium-short method min minimum mode modes module mouse multiple mycontext mycontext1 mycontext2 mycontext3 mycontext5 myvalue names nantes ngif no-refit note number numeric object occurs ods-widgets odsmap odsmap_with_odsmaplayer odsmaplayer opacity opendatasoft orange order org organizing originally parameter parameters paris pattern perimeter picto pictogram pictograms pixels point point-opacity points prefixed previous primary property provided ranges raw record records red reference refine refine-on-click-context refine-on-click-contextname-context-field refine-on-click-contextname-map-field refine-on-click-contextname-replace-refine refine-on-click-mycontext-context-field refine-on-click-mycontext-map-field refine-on-click-mycontext2-context-field refine-on-click-mycontext2-map-field refined refineonclick refreshed relevant remote remotekey replaces represent represented represents required result retrieve reverse reversed rezooms scale scales scheme scroll-wheel-zoom search-box selection semicolon separated series set shape shape-opacity shapes short-dashes short-dot short-dot-dot show-if show-zoom-max show-zoom-min showheatmap showif showzoommax showzoommin simple size solid sort sorted sorting spatially specific stacked standard starting stddev sum superior support supports table tag target template templates text textual three title toolbar-fullscreen toolbar-geolocation tooltip tooltip-disabled tooltip-sort tooltips tooltipsort top trigger triggers true type types undefined upper user values variation visible visualization visualizations widget widgets width ylgnbu zoom",
       "isDeprecated": false
     },
     {
@@ -451,8 +441,8 @@ NG_DOCS={
       "shortName": "odsMapLayerGroup",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "The odsMapLayerGroup widget allows to declare a group of layers, which are declared through the odsMapLayer widget. odsMapLayerGroup is indeed one of the map-related  widgets, that can only be used based on odsMap, the primary map-related widgets (see odsMap widget reference page for more information on map visualizations).",
-      "keywords": "allows api auto based border-color border-opacity border-pattern border-size caption caption-picto-color caption-picto-icon category cdbcd9 color context cultural culturalheritage culturalheritage-dataset culturalheritage-domain culturalheritage-parameters declare declared default description directive display display-control displays fa8c44 false ffffff format group heritage html https layers linear location map map-related mixed mixedheritage mixedheritage-dataset mixedheritage-domain mixedheritage-parameters module natural naturalheritage naturalheritage-dataset naturalheritage-domain naturalheritage-parameters no-refit ods-circle ods-deciduous ods-monument ods-widgets odsmap odsmap_with_odsmaplayer_odsmaplayergroup odsmaplayer odsmaplayergroup opendatasoft picto pictogram point-opacity primary reference refine scroll-wheel-zoom search-box shape-opacity show-marker size size-function size-max size-min solid title toolbar-fullscreen toolbar-geolocation true visualizations widget widgets world-heritage-unesco-list",
+      "shortDescription": "The odsMapLayerGroup widget allows to declare a group of layers, which are declared through the odsMapLayer widget. odsMapLayerGroup is one of the map-related widgets that can only be used based on odsMap, the primary map-related widgets. For more information on odsMap, see the documentation for this widget.",
+      "keywords": "allows api auto based beetween border-color border-opacity border-pattern border-size caption caption-picto-color cdbcd9 cities color context declare declared default description directive display display-control displayed doc-geonames-cities-5000 documentation fa8c44 false ffffff format greaterthan500000 greaterthan500000-dataset greaterthan500000-domain greaterthan500000-parameters group html https inhabitants layers linear location map-related module no-refit ods-circle ods-widgets odsmap odsmap_with_odsmaplayer_odsmaplayergroup odsmaplayer odsmaplayergroup opendatasoft picto pictogram point-opacity population primary scroll-wheel-zoom search-box set shape-opacity show-marker size size-function size-max size-min solid title toolbar-fullscreen toolbar-geolocation true under100000 under100000-dataset under100000-domain under100000-parameters under500000 under500000-dataset under500000-domain under500000-parameters widget widgets",
       "isDeprecated": false
     },
     {
@@ -461,8 +451,8 @@ NG_DOCS={
       "shortName": "odsMediaGallery",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays an image gallery of a dataset containing media with thumbnails (images, pdf files...) with infinite scroll.",
-      "keywords": "affiches affiches-anciennes affiches-dataset affiches-domain api appearing auto click comma-separated configured context custom customize dataset detail details directive display displays fields files gallery getrecordtitle html https image infinite informations list media module ods-auto-resize ods-widget-tooltip ods-widgets opendatasoft option options pdf precedence refine resize scroll selecting takes thumbnail thumbnails tooltip view widget",
+      "shortDescription": "The odsMediaGallery widget displays an image gallery of a dataset containing media with thumbnails (images, PDF files, etc.) with infinite scroll.",
+      "keywords": "affiches affiches-anciennes affiches-dataset affiches-domain api appearing auto click comma-separated configured context custom customize dataset detail details directive display displays fields files gallery getrecordtitle html https image infinite list media module ods-auto-resize ods-widget-tooltip ods-widgets odsmediagallery opendatasoft option options pdf precedence refine resize scroll selecting takes thumbnail thumbnails tooltip view widget",
       "isDeprecated": false
     },
     {
@@ -471,8 +461,8 @@ NG_DOCS={
       "shortName": "odsMostPopularDatasets",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays the top datasets of a catalog (default is the 5 top datasets), based on the number of downloads.",
-      "keywords": "amount api based catalog context data datasets directive displays downloaded downloads example example-domain html list module number ods-widgets opendatasoft options order popularity top widget",
+      "shortDescription": "The odsMostPopularDatasets widget displays the top datasets of a catalog based on the number of downloads. By default, the widget displays the top five datasets.",
+      "keywords": "api authorized based catalog context data datasets default directive displays downloaded downloads example example-domain html list module number ods-widgets odsmostpopulardatasets opendatasoft order popularity sorted top values widget",
       "isDeprecated": false
     },
     {
@@ -481,8 +471,8 @@ NG_DOCS={
       "shortName": "odsMostUsedThemes",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays the 5 most used themes.",
-      "keywords": "api catalog context data directive displays example example-domain html module ods-widgets opendatasoft themes widget",
+      "shortDescription": "The odsMostUsedThemes widget displays the five most used themes.",
+      "keywords": "api catalog context data directive displays example example-domain html module ods-widgets odsmostusedthemes opendatasoft themes widget",
       "isDeprecated": false
     },
     {
@@ -491,8 +481,8 @@ NG_DOCS={
       "shortName": "odsPageRefresh",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget can be used to periodically refresh the page.",
-      "keywords": "ae api directive milliseconds minimum number ods-widgets periodically refresh refreshing wait widget",
+      "shortDescription": "The odsPageRefresh widget can be used to periodically refresh the page.",
+      "keywords": "ae api directive milliseconds minimum number ods-widgets odspagerefresh periodically refresh refreshing wait widget",
       "isDeprecated": false
     },
     {
@@ -501,8 +491,8 @@ NG_DOCS={
       "shortName": "odsPaginationBlock",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a pagination control that you can use to make the context &quot;scroll&quot; through a list of results. It doesn&#39;t display",
-      "keywords": "active api attribute catalog change changing contained context control crawl dataset default directive display displays doesn don element engines fetched include links list my-results nofollow note number ods-widgets odsresultenumerator pagination paired parameter perpage rel relevant rows scroll search system top trigger true widget window",
+      "shortDescription": "The odsPaginationBlock widget displays a pagination control that you can use to make the context &quot;scroll&quot; through a list of results.",
+      "keywords": "active api attribute behavior catalog caused change changing container context control controls crawl css dataset default directive display displays doesn don element engines fetched fonts forcing height higher includes inside issue large line-height links list my-results nofollow note number ods-widgets odspaginationblock odsresultenumerator overflowing pagination paired parameter perpage precise prevent properties rel relevant result rows scroll scrollbar scrolling search second set settings situation start system top trigger true typically understanding vertically widget window won",
       "isDeprecated": false
     },
     {
@@ -511,8 +501,8 @@ NG_DOCS={
       "shortName": "odsPicto",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a &quot;picto&quot; specified by a url and force a fill color on it.",
-      "keywords": "api apply assets attribute classes color colorbyattribute colors corresponding data-fill-id defs directive directly display displays element elements example expect fill force hardcoded height html image implement javascript litterals ll mapping matching module object ods-widgets parameters picto provide quotes strings style styled svg url variables vectorial widget width wrap",
+      "shortDescription": "The odsPicto widget displays a pictogram specified by a URL and forces a fill color on it.",
+      "keywords": "api apply assets attribute classes color colorbyattribute colors corresponding data-fill-id defs directive directly display displays element elements example expect fill forces hardcoded height html image implement javascript literals ll mapping matching module object ods-widgets odspicto parameters pictogram provide quotes strings style styled svg url variables vectorial widget width wrap",
       "isDeprecated": false
     },
     {
@@ -521,8 +511,8 @@ NG_DOCS={
       "shortName": "odsPopIn",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Displays a pop-in on the page with the provided content.",
-      "keywords": "access ad adipiscing aliqua aliquip amet anim api aute browsing center cillum class color commodo consectetur consequat content culpa cupidatat data define delay deserunt directive display-after display-only-once displayed displaying displays dolor dolore duis ea eiusmod elit enim esse est eu excepteur exercitation experience fa fa-arrow-right fa-thumbs-o-up false ffd202 font-size fugiat function hidepopin href html improve incididunt inside internally ipsum irure labore laboris laborum loaded lorem magna minim module mollit ng-click nisi nostrud nulla occaecat ods-widgets officia pariatur pop-in popup proident provided qui quis reference reprehenderit second sed session signup sint sit start style sunt tempor test text-align time timer title ullamco uniquely user ut velit veniam voluptate widget window",
+      "shortDescription": "The odsPopIn widget displays a pop-in on the page with the provided content.",
+      "keywords": "access ad adipiscing aliqua aliquip amet anim api aute browsing center cillum class color commodo consectetur consequat content culpa cupidatat data define delay deserunt directive display-after display-only-once displayed displaying displays dolor dolore duis ea eiusmod elit enim esse est eu excepteur exercitation experience fa fa-arrow-right fa-thumbs-o-up false ffd202 font-size fugiat function hidepopin href html improve incididunt inside internally ipsum irure labore laboris laborum loaded lorem magna minim module mollit ng-click nisi nostrud nulla occaecat ods-widgets odspopin officia pariatur pop-in pop-up proident provided qui quis reference reprehenderit second sed session set signup sint sit start style sunt tempor test text-align time timer title ullamco uniquely user ut velit veniam voluptate widget window windows",
       "isDeprecated": false
     },
     {
@@ -531,8 +521,8 @@ NG_DOCS={
       "shortName": "odsRangeInput",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays an input of type range that allows the user to select a numeric value which must",
-      "keywords": "adds aligned allows angular api aria-label aria-label-text arialabeltext assignable attr attribute balls binding classes component current currentvalue data data-bind debounce default depend directive directly display displays double enabled expression fa fa-globe fa-tree fontawesome forcing granularity html icon icon-max icon-max-title icon-min icon-min-title iconmax iconmaxtitle iconmin iconmintitle input inputs layer left level limit limits listed max maximum maxvalue maxvalueposition min minimum minvalue minvalueposition modified module moved ng-init ng-model ng-model-options number numeric ods-widgets opendatasoft parameters range range-input second select selectablemin set sets side slider sliders step street title translate two-way type update user values view visibility widget world",
+      "shortDescription": "The odsRangeInput widget displays an input of type range that allows the user to select a numeric value. This value must be no less than a given value and no more than another given value.",
+      "keywords": "adds aligned allows angular api aria-label aria-label-text arialabeltext assignable attribute balls binding classes component current currentvalue data data-bind debounce default depend directive directly display displays double enabled expression fa fa-globe fa-tree fontawesome forcing granularity html icon icon-max icon-max-title icon-min icon-min-title iconmax iconmaxtitle iconmin iconmintitle input inputs layer left level limit limits listed max maximum maxvalue maxvalueposition min minimum minvalue minvalueposition modified module moved ng-init ng-model ng-model-options number numeric ods-widgets odsrangeinput opendatasoft parameter parameters range range-input second select selectablemin set sets side slider sliders step street title translate two-way type updates user values view visibility widget world",
       "isDeprecated": false
     },
     {
@@ -541,8 +531,8 @@ NG_DOCS={
       "shortName": "odsRecordImage",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Displays an image from a record",
-      "keywords": "api base context current dataset default directive displays domain field file image ods-widgets record url",
+      "shortDescription": "The odsRecordImage displays an image from a record.",
+      "keywords": "api base context current dataset default directive displays domain field file image ods-widgets odsrecordimage record url",
       "isDeprecated": false
     },
     {
@@ -551,8 +541,8 @@ NG_DOCS={
       "shortName": "odsResultEnumerator",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget enumerates the results of a search (records for a Dataset Context, datasets for a Catalog Context) and repeats the template (the content of the directive element) for each of them.",
-      "keywords": "_blank angularjs api belongs block browse catalog changed content context dataset datasetid datasets directive display displayed domainurl dynamically element enumerates example example-domain fields geojson geometrical geometry hits hold holding holds html https identifier item key maximum metadata metas module ng-href number object ods-widgets opendatasoft pagination record repeats representation result search target template title variable variables widget",
+      "shortDescription": "The odsResultEnumerator widget enumerates the search results (records for a Dataset Context, datasets for a Catalog Context). It repeats the template (the content of the directive element) for each of them.",
+      "keywords": "_blank angularjs api belongs block browse catalog changed content context dataset datasetid datasets directive displayed displays domainurl dynamically element enumerates example example-domain fields geojson geometrical geometry hits hold holding holds html https identifier item key maximum metadata metas module ng-href number object ods-widgets odsresultenumerator opendatasoft pagination record repeats representation result search target template title variable variables widget",
       "isDeprecated": false
     },
     {
@@ -561,7 +551,7 @@ NG_DOCS={
       "shortName": "odsResults",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget exposes the results of a search (as an array) in a variable available in the scope. It can be",
+      "shortDescription": "This widget exposes the results of a search as an array in a variable available in the scope.",
       "keywords": "adds adresse angularjs api array build catalog changed class context dataset directive dynamically exposes fields html https item items les-arbres-remarquables-de-paris libellefrancais list matching maximum module ng-repeat ngrepeat nhits number ods-results ods-results-context ods-results-max ods-widgets odsresultscontext odsresultsmax opendatasoft property query records scope search simply sort table table-bordered table-condensed table-striped total tree tree-dataset tree-domain tree-parameters trees variable widget",
       "isDeprecated": false
     },
@@ -571,8 +561,8 @@ NG_DOCS={
       "shortName": "odsReuses",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays all reuses published on a domain, in a infinite list of large boxes that presents them",
-      "keywords": "api boxes case catalog clear code context created_at dataset datetime description directive display displayed displays domain element first_name format fr html https infinite insert inside iso large last_name list lists lll module ods-widgets optionally original paris paris-domain presents published reuse reuses submission submitter template thumbnail title url user variables widget",
+      "shortDescription": "The odsReuses widget displays all reuses published on a domain in an infinite list of large boxes, presenting reuses in a clear display. The list shows the more recent reuses first.",
+      "keywords": "api boxes case catalog clear code context created_at dataset datetime description directive display displayed displays domain element first_name format fr html https infinite insert inside iso large last_name list lll module ods-widgets odsreuses optionally original paris paris-domain presenting published reuse reuses submission submitter template thumbnail title url user variables widget",
       "isDeprecated": false
     },
     {
@@ -581,8 +571,8 @@ NG_DOCS={
       "shortName": "odsSearchbox",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.",
-      "keywords": "add api attribute autofocus button catalog configures context current default directive display displays domain elements empty example explore focus form generated homepage html indicating input internally local ods-widgets placeholder redirect redirects search searchbox set sort submit text user wide widget",
+      "shortDescription": "The odsSearchbox widget displays a wide search box that redirects the search on the Explore homepage of the domain.",
+      "keywords": "adds api attribute autofocus box button catalog configures context controls default directive display displays domain elements empty example explore focus form generated homepage html indicating input internally local ods-widgets odssearchbox order performed placeholder redirect redirects required search set sort submit text user wide widget",
       "isDeprecated": false
     },
     {
@@ -591,8 +581,8 @@ NG_DOCS={
       "shortName": "odsSelect",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget allows the selection of one or more items from a list of options. This list can be made up of strings or objects.",
-      "keywords": "access accomplish allows api applied apply array arrdt arrondissement automatically bellow calculated cerris ch configuration context count ctx ctx-dataset ctx-domain ctx-parameters describes directive directly disabled disjunctive display displayed displayed-fields districts element elements espece evaluate example examples expected exposed expression facets facetsarrondissement facetslibellefrancais false feeds fetch field fields finally first_example form genre handle hint hippocastanum html https individual initially injected injecting input items label label-modifier labels length les-arbres-remarquables-de-paris libellefrancais list loaded loader marronnier menu modify module multiple nigra note noyer object objects ods-facet-results ods-facet-results-context ods-facet-results-facet-name ods-result ods-results ods-results-context ods-results-max ods-select ods-widgets opendatasoft option options parameter parameters paris pass passing path placeholder platane provided refine representing represents request result returned second_example select selected selected-value selected-values selectedtrees selectedvalues selection selections set shape short simple species specifies store stored string strings support time trees true update updated value-modifier values variable widget",
+      "shortDescription": "The odsSelect widget shows a list of options from which users can select one or more options. This list can be made up of strings or objects.",
+      "keywords": "access achieve api applied apply array arrdt arrondissement automatically based calculated cerris ch context corresponds count ctx ctx-dataset ctx-domain ctx-parameters dataset declares define defines describes desired directive disabled disjunctive display displayed displayed-fields districts element elements espece evaluate example examples expected exposed expression facets facetsarrondissement facetslibellefrancais false feeds fetch field fields finally first_example form genre handle hint hippocastanum html https initially injecting input items label label-modifier labels length les-arbres-remarquables-de-paris libellefrancais list lists loaded loader marronnier menu modify module multiple nested nigra noyer object objects ods-dataset-context ods-facet-results ods-facet-results-context ods-facet-results-facet-name ods-result ods-results ods-results-context ods-results-max ods-select ods-widgets odsselect opendatasoft option options parameter parameters paris path placeholder platane provided refine representing represents request result returned search second second_example select selected selected-value selected-values selectedtrees selectedvalues selection selections set short simple source species specifies store stored stores storing strings structure support time tree trees true update updated users value-modifier values variable variables widget widgets",
       "isDeprecated": false
     },
     {
@@ -601,7 +591,7 @@ NG_DOCS={
       "shortName": "odsSimpleTab",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "keywords": "api content deselection destroy directive displayed fa- font-awesome fontawesomeclass icon label ng-if ods-widgets odssimpletabs pane panel prefix rebuild selected tab",
+      "keywords": "acts api awesome content default deselection destroy destroys directive displayed fa- font fontawesomeclass icon label ng-if ods-widgets pane panel prefix rebuild rebuilds selected set tab true widget",
       "isDeprecated": false
     },
     {
@@ -610,8 +600,8 @@ NG_DOCS={
       "shortName": "odsSimpleTabs",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Generate a tabbed interface that allows you to switch between separate views.",
-      "keywords": "active allows api current directive generate interface ods-widgets parent scope separate simpletabactive switch sync tab tabbed variable views",
+      "shortDescription": "The odsSimpleTabs widget generates a tabbed interface that allows you to switch between separate views.",
+      "keywords": "active allows api current directive generates interface ods-widgets odssimpletabs parent scope separate simpletabactive switch sync tab tabbed variable views widget",
       "isDeprecated": false
     },
     {
@@ -620,8 +610,8 @@ NG_DOCS={
       "shortName": "odsSlideshow",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays an image slideshow of a dataset containing media with thumbnails (images, pdf files...).",
-      "keywords": "access affiches affiches-anciennes affiches-dataset affiches-domain api attribute class comma-separated context correctly dataset directive display displays domain field fields files height html https image image-field imagefield include list media module names ods-slideshow ods-widgets opendatasoft pdf record set slideshow style thumbnails title title-fields titre tooltip url values variable widget work",
+      "shortDescription": "The odsSlideshow widget displays an image slideshow of a dataset containing media with thumbnails (images, PDF files, etc.).",
+      "keywords": "access affiches affiches-anciennes affiches-dataset affiches-domain api attribute class comma-separated context correctly dataset directive display displays domain field fields files height html https image image-field imagefield include list media module names ods-slideshow ods-widgets odsslideshow opendatasoft pdf record set slideshow style thumbnails title title-fields titre tooltip url values variable widget work",
       "isDeprecated": false
     },
     {
@@ -630,8 +620,8 @@ NG_DOCS={
       "shortName": "odsSocialButtons",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a series of buttons for easy sharing on social media.",
-      "keywords": "api attached buttons comma directive display displays easy email facebook html linkedin list media module ods-widgets post separated series sharing social title twitter url widget",
+      "shortDescription": "The odsSocialButtons widget displays a series of buttons for easy sharing on social media.",
+      "keywords": "api attached buttons comma-separated directive display displays easy email facebook html linkedin list media module ods-widgets odssocialbuttons post series sharing social title twitter url widget",
       "isDeprecated": false
     },
     {
@@ -640,8 +630,8 @@ NG_DOCS={
       "shortName": "odsSpinner",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays the custom Opendatasoft spinner.",
-      "keywords": "animated animation api browser color css current custom directive displayed displays doesn font gif html loading match module ods-widgets opendatasoft size spinner support svg widget",
+      "shortDescription": "The odsSpinner widget displays the custom Opendatasoft spinner.",
+      "keywords": "animated animation api browser color css current custom directive displayed displays doesn font gif html loading match module ods-widgets odsspinner opendatasoft size spinner support svg widget",
       "isDeprecated": false
     },
     {
@@ -660,8 +650,8 @@ NG_DOCS={
       "shortName": "odsTable",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a table view of a dataset, with infinite scroll and an ability to sort columns (depending on the",
-      "keywords": "ability api column columns comma-separated commute commute-dataset commute-domain commute-time-us-counties context dataset default directive display displayed displays fields html https infinite list module ods-widgets opendatasoft scroll sort table types view widget",
+      "shortDescription": "The odsTable widget displays a table view of a dataset, with infinite scroll and an ability to sort columns depending on the column types.",
+      "keywords": "ability api average-commute-time-by-county column columns comma-separated commute commute-dataset commute-domain context dataset default depending directive display displayed displays fields html https infinite list module ods-widgets odstable opendatasoft scroll sort table types view widget",
       "isDeprecated": false
     },
     {
@@ -670,8 +660,8 @@ NG_DOCS={
       "shortName": "odsTagCloud",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a &quot;tag cloud&quot; of the values available in a facet (either the facet of a dataset, or a",
-      "keywords": "api apply build catalog catalog-domain click cloud context count data dataset defined depends directive displays facet facet-name facetname filter html keyword maximum module number occurences ods-widgets opendatasoft parameter redirect refined tag tags url values weight widget",
+      "shortDescription": "The odsTagCloud widget displays a &quot;tag cloud&quot; of the values available in a facet.",
+      "keywords": "api apply build catalog catalog-domain click cloud context data dataset defined depends directive displays facet facet-name facetname filter html keyword maximum module number occurrences ods-widgets odstagcloud opendatasoft parameter redirect refined specifies tag tags url values weight widget",
       "isDeprecated": false
     },
     {
@@ -680,8 +670,8 @@ NG_DOCS={
       "shortName": "odsTextSearch",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays a search box that can be used to do a full-text search on a context.",
-      "keywords": "adds allow api array attribute autofocus automatically box catalog changes chosen clickable content context contexts dataset declared default depending directive display displays empty evenements-publics-openagenda-extract events events-dataset events-domain events-field field fields full-text function html https instance integrate label languages les-arbres-remarquables-de-paris libellefrancais loading manually module multiple mycontext-field ods-widgets odstextsearch opendatasoft operators overriding parameter placeholder prevents query required restricted search searchbox select selected set simple simple_text_search specific start suffixvalue support syntax text text_search_with_multiple_contexts textbox textual titre trees trees-dataset trees-domain trees-field typing widget widgets won",
+      "shortDescription": "The odsTextSearch widget displays a search box to perform a full-text search in a context.",
+      "keywords": "adds allow api array attribute autofocus automatically box catalog changes chosen clickable content context contexts dataset declared default depending directive display displays empty evenements-publics-openagenda-extract events events-dataset events-domain events-field example field fields full-text function html https instance integrate label languages les-arbres-remarquables-de-paris libellefrancais loading manually module multiple mycontext-field ods-widgets odstextsearch opendatasoft operators overriding parameter perform placeholder prevents query required restricted search selected selecting set simple simple_text_search specific start suffixvalue support syntax text text_search_with_multiple_contexts textual titre trees trees-dataset trees-domain trees-field typing widget widgets won",
       "isDeprecated": false
     },
     {
@@ -690,8 +680,8 @@ NG_DOCS={
       "shortName": "odsThemeBoxes",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget enumerates the themes available on the domain, by showing their pictos and the number of datasets they contain.",
-      "keywords": "api catalog configured context datasets directive domain enumerates list number ods-widgets odswidgetsconfig odswidgetsconfigprovider pictos pull require setting showing theme themes widget",
+      "shortDescription": "The odsThemeBoxes widget enumerates the themes available on the domain by showing their pictograms and the number of datasets they contain.",
+      "keywords": "api catalog configured context datasets directive domain enumerates list number ods-widgets odsthemeboxes odswidgetsconfig odswidgetsconfigprovider pictograms pull require setting showing theme themes widget",
       "isDeprecated": false
     },
     {
@@ -700,8 +690,8 @@ NG_DOCS={
       "shortName": "odsThemePicto",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays the &quot;picto&quot; of a theme, based on the themes setting in ODSWidgetsConfig.",
-      "keywords": "api based directive display displays element label ods-widgets odswidgetsconfig odswidgetsconfigprovider picto setting styled theme themes vectorial widget width",
+      "shortDescription": "The odsThemePicto widget displays the pictogram of a theme based on the themes setting in ODSWidgetsConfig.",
+      "keywords": "api based directive display displays element label ods-widgets odsthemepicto odswidgetsconfig odswidgetsconfigprovider pictogram setting styled theme themes vectorial widget width",
       "isDeprecated": false
     },
     {
@@ -710,8 +700,8 @@ NG_DOCS={
       "shortName": "odsTimer",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget is a simple timer, it executes the AngularJS expression &quot;exec&quot; every &quot;delay&quot; milliseconds.",
-      "keywords": "add angularjs animate api automatically button click cnt condition context count dashboards day default-from default-to delay directive doesn evenements-publics-openagenda-extract events events-dataset events-domain example exec execute executes executing expression false field html https increase load milliseconds minimum module moment momentadd ng-init number ods-aggregation ods-aggregation-context ods-aggregation-function ods-widgets opendatasoft pause returning seconds simple starts stop-condition stopcondition stops timer true user values wait widget yyyy-mm-dd",
+      "shortDescription": "The odsTimer widget is a simple timer. It executes the AngularJS expression exec every delay milliseconds.",
+      "keywords": "add angularjs animate api automatically button clicks cnt condition context count dashboards day default-from default-to delay directive doesn evenements-publics-openagenda-extract events events-dataset events-domain example exec execute executes executing expression false field html https increase loads milliseconds minimum module moment momentadd ng-init number ods-aggregation ods-aggregation-context ods-aggregation-function ods-widgets odstimer opendatasoft pause returning seconds simple starts stop-condition stopcondition stops timer true user values wait widget yyyy-mm-dd",
       "isDeprecated": false
     },
     {
@@ -720,8 +710,8 @@ NG_DOCS={
       "shortName": "odsTimerange",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays two fields to select the two bounds of a date and time range.",
-      "keywords": "add api apply array bounds careful context contexts dataset date-format datenow datetime dd default default-from default-to defaultfrom defaultto define directive display-time displayed displayformat displays evenements-publics-openagenda-extract events events-dataset events-domain field fieldname fields filter form format formatted from_date hh html https input inputs iso label module momentadd months multiple ods-datetime ods-widgets opendatasoft overriding parameter parameters prevents range replaced representing second select selector set string suffix time timerange to_date true values variable widget widgets yesterday yyyy-mm-dd",
+      "shortDescription": "The odsTimerange widget displays two fields to select the two bounds of a date and time range.",
+      "keywords": "adds api apply array bounds context contexts dataset date-format datenow datetime dd default default-from default-to defaultfrom defaultto defines directive display-time displayed displayformat displays evenements-publics-openagenda-extract events events-dataset events-domain field fieldname fields filter form format formatted from_date hh html https input inputs iso label module momentadd months multiple ods-datetime ods-widgets odstimerange opendatasoft overriding parameter parameters prevents range replaced representing second select selector sets string suffix time timerange to_date true values variable widget widgets yesterday yyyy-mm-dd",
       "isDeprecated": false
     },
     {
@@ -730,8 +720,8 @@ NG_DOCS={
       "shortName": "odsTimescale",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "Displays a control to select either:",
-      "keywords": "api array context control dataset datetime day default default-value define directive displays evenements-publics-openagenda-extract events events-dataset events-domain field filter html https module month ods-widgets opendatasoft select set timescale week year",
+      "shortDescription": "The odsTimescale displays a control to select:",
+      "keywords": "api array context control dataset datetime day default default-value directive displays evenements-publics-openagenda-extract events events-dataset events-domain field filter html https module month ods-widgets odstimescale opendatasoft select set sets timescale week year",
       "isDeprecated": false
     },
     {
@@ -740,8 +730,8 @@ NG_DOCS={
       "shortName": "odsToggleModel",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget, when used on a checkbox, allows the checkbox to be used to &quot;toggle&quot; a value in an object, in other words to add it or remove when the checkbox",
-      "keywords": "add allows api apply array case catalog catalog-domain catalog-parameters checkbox checkboxes checked context created csv datasetid directive disjunctive eurostat hold holds html https item items key length metas model module multiple ng-repeat object ods-results ods-results-context ods-results-max ods-toggle-key ods-toggle-model ods-toggle-value ods-widgets odstogglekey odstogglemodel odstogglevalue opendatasoft openstreetmap parameters publisher refine remove toggle toggled type unchecked values variable widget",
+      "shortDescription": "The odsToggleModel widget, when used on a checkbox, allows the checkbox to be used to &quot;toggle&quot; a value in an object. In other words, the value is added when the checkbox is selected and removed when the checkbox is cleared.",
+      "keywords": "allows api apply array authorized case catalog catalog-domain catalog-parameters checkbox checkboxes cleared context created csv datasetid directive disjunctive eurostat hold holding html https item items key length metas model module multiple ng-repeat object ods-results ods-results-context ods-results-max ods-toggle-key ods-toggle-model ods-toggle-value ods-widgets odstogglekey odstogglemodel odstogglevalue opendatasoft openstreetmap parameters publisher refine removed selected toggle toggled type values variable widget",
       "isDeprecated": false
     },
     {
@@ -750,8 +740,8 @@ NG_DOCS={
       "shortName": "odsTopPublishers",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget displays the 5 top publishers.",
-      "keywords": "api catalog context data directive displays example example-domain html module ods-widgets opendatasoft publishers top widget",
+      "shortDescription": "The odsTopPublishers widget displays the five top publishers.",
+      "keywords": "api catalog context data directive displays example example-domain html module ods-widgets odstoppublishers opendatasoft publishers top widget",
       "isDeprecated": false
     },
     {
@@ -760,8 +750,8 @@ NG_DOCS={
       "shortName": "odsVegaLiteChart",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget builds a vega-lite chart according to the given specs.",
-      "keywords": "$schema analysis api applying array attribute attributes avg bar builds called case chart circonference commute commute-dataset commute-domain commute-time-us-counties configuration container context control controlled counties county css currently data declared demographics demographics-dataset demographics-domain dimensions directive documentation encoding espece false field fields fill find fixed github hauteur height html https installed io json les-arbres-remarquables-de-paris mark mean_commuting_time methods module mydatasource nominal note object ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-circonference ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-sort ods-analysis-x ods-results ods-results-context ods-widgets odswidget-vega-lite-chart opendatasoft plugin points quantitative receive representation res rules sources spec specification specs string tree tree-dataset tree-domain trees type us-cities-demographics values values-counties values-mydatasource values-trees vega vega-lite widget width",
+      "shortDescription": "The odsVegaLiteChart widget builds a vega-lite chart according to the given specifications.",
+      "keywords": "$schema analysis api applying array attribute attributes average-commute-time-by-county avg bar builds called case chart circonference_en_cm commute commute-dataset commute-domain commute-parameters commuting_time configuration container context control controlled counties county css currently data declared demographics demographics-dataset demographics-domain dimensions directive documentation encoding espece false field fields fill fixed github hauteur height html https installed io json les-arbres-remarquables-de-paris mark methods module mydatasource nominal note object ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-circonference ods-analysis-serie-hauteur ods-analysis-serie-hauteur-cumulative ods-analysis-sort ods-analysis-x ods-results ods-results-context ods-widgets odsvegalitechart odswidget-vega-lite-chart opendatasoft plugin points quantitative receive representation res rules sources spec specification specifications string tree tree-dataset tree-domain trees type us-cities-demographics values values-counties values-mydatasource values-trees vega vega-lite widget width",
       "isDeprecated": false
     },
     {
@@ -770,8 +760,8 @@ NG_DOCS={
       "shortName": "odsWidgetTooltip",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This directive is a helper for displaying custom tooltip.",
-      "keywords": "access affiches affiches-anciennes affiches-dataset affiches-domain allows api appear array calling compiled configure context custom default directive displayedfields displaying fields getrecordtitle helper html https lists module ods-auto-resize ods-widget-tooltip ods-widgets opendatasoft record rendering template tooltip usable widget",
+      "shortDescription": "The odsWidgetTooltip directive is a helper for displaying custom tooltip.",
+      "keywords": "access affiches affiches-anciennes affiches-dataset affiches-domain allows api appear array calling compiled configure context custom default directive displayedfields displaying fields getrecordtitle helper html https lists module ods-auto-resize ods-widget-tooltip ods-widgets odswidgettooltip opendatasoft record rendering template tooltip usable widget",
       "isDeprecated": false
     },
     {
@@ -780,8 +770,8 @@ NG_DOCS={
       "shortName": "refineOnClick",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This directive will refine the given context(s) for a click on an element representing a record.",
-      "keywords": "add api click clicking configured conjunction context contexts default directive directives element field1 field2 field3 field4 fields finite html item items module multiples mycontext mycontext2 ods-widgets odscalendar odschart odschartserie odsmap odsmediagallery prefer record refine refine-on-click refine-on-click-context refine-on-click-context-field refine-on-click-mycontext-context-field refine-on-click-mycontext-record-field refine-on-click-mycontext-replace-refine refine-on-click-mycontext2-context-field refine-on-click-mycontext2-record-field refine-on-click-record-field refined refinement refinements refineonclickreplacerefine replaced representing set situations time true values works",
+      "shortDescription": "The refineOnClick directive will refine the given context(s) for a click on an element representing a record.",
+      "keywords": "add api click clicking configured conjunction context contexts default directive directives element field1 field2 field3 field4 fields finite html item module multiples mycontext mycontext2 ods-widgets odscalendar odschart odschartserie odsmap odsmediagallery prefer record refine refine-on-click refine-on-click-context refine-on-click-context-field refine-on-click-mycontext-context-field refine-on-click-mycontext-record-field refine-on-click-mycontext-replace-refine refine-on-click-mycontext2-context-field refine-on-click-mycontext2-record-field refine-on-click-record-field refined refinement refinements refineonclick refineonclickreplacerefine replaced representing set situations time true values works",
       "isDeprecated": false
     },
     {

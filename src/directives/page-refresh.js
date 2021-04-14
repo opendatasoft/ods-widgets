@@ -8,10 +8,10 @@
          * @name ods-widgets.directive:odsPageRefresh
          * @scope
          * @restrict AE
-         * @param {Number} [delay=10000] The number of milliseconds to wait before refreshing the page. Minimum value is 10000ms.
+         * @param {Number} [delay=10000] The number of milliseconds to wait before refreshing the page. The minimum value is `10000`.
          *
          * @description
-         * This widget can be used to periodically refresh the page.
+         * The odsPageRefresh widget can be used to periodically refresh the page.
          *
          */
         return {

@@ -4,9 +4,10 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>This widget is the base widget allowing to display charts from Opendatasoft datasets.
-A Chart is defined by one or more series that get there data from form one or more dataset represented by an <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>,
-a type of chart and multiple parameters to fine tune the appearance of chart.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>The odsChart widget is the base widget allowing to display charts from Opendatasoft datasets.
+A Chart is defined by one or more series that get their data from form one or more datasets represented by a <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>,
+a type of chart, and multiple parameters to fine-tune the chart&#39;s appearance.</p>
+<p>Note: <code>min</code> and <code>max</code> parameters are dynamic, which means that if they change, the chart will be refreshed accordingly.</p>
 <p>Basic example:
    <pre class="prettyprint linenums">
        &lt;ods-dataset-context context="trees"
@@ -39,9 +40,9 @@ a type of chart and multiple parameters to fine tune the appearance of chart.</p
    <pre class="prettyprint linenums">
        &lt;ods-dataset-context context="commute,demographics"
                             commute-dataset="commute-time-us-counties"
-                            commute-domain="https://widgets-examples.opendatasoft.com/"&gt;
+                            commute-domain="https://documentation-resources.opendatasoft.com/"
                             demographics-dataset="us-cities-demographics"
-                            demographics-domain="https://widgets-examples.opendatasoft.com/"&gt;
+                            demographics-domain="https://documentation-resources.opendatasoft.com/"&gt;
            &lt;ods-chart align-month="true"&gt;
                &lt;ods-chart-query context="commute" field-x="state" maxpoints="20"&gt;
                    &lt;ods-chart-serie expression-y="mean_commuting_time" chart-type="column" function-y="AVG" color="#66c2a5" scientific-display="true"&gt;
@@ -74,17 +75,17 @@ a type of chart and multiple parameters to fine tune the appearance of chart.</p
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>timescale</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Works only with timeseries. If defines the default timescale to use to display the X Axis. It does not affect the way the different series are requested (they have there own timescale) but enforces X axis intervals.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>labelX</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>If set, it override the default X Axis label. The default label is generated from series.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>singleYAxis</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Enforces the use of only one Y axis for all series. In this case, specific Y axis parameters defined for each series will be ignored.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>singleYAxisLabel</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Set the label for the single Y axis.</p>
-</div></td></tr><tr><td>min</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Set the min displayed value for Y axis. Active only when singleYAxis is true.</p>
-</div> <p><em>(default: null)</em></p></td></tr><tr><td>max</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Set the max displayed value for Y axis. Active only when singleYAxis is true.</p>
-</div> <p><em>(default: null)</em></p></td></tr><tr><td>step</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>specify the step between each tick on the Y axis. If not defined, it is computed automatically. Active only when singleYAxis is true.</p>
-</div> <p><em>(default: null)</em></p></td></tr><tr><td>scientificDisplay</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>When set to false, force the full display of the numbers on the Y axis. Active only when singleYAxis is true.</p>
-</div> <p><em>(default: true)</em></p></td></tr><tr><td>logarithmic</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Use a logarithmic scale for Y axis. Active only when singleYAxis is true.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>displayLegend</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>enable or disable the display of series legend. Active only when singleYAxis is true.</p>
-</div> <p><em>(default: true)</em></p></td></tr><tr><td>alignMonth</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Align the month values with the month label. The old behaviour was to align values with the middle of the month, setting this parameter to false reverts to the old behaviour.</p>
-</div> <p><em>(default: true)</em></p></td></tr><tr><td>labelsXLength</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Set the maximum number of characters displayed for the X axis labels.</p>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>timescale</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Works only with timeseries. If it defines the default timescale to use to display the X-axis. It does not affect how the different series are requested (they have their own timescale) but enforces X-axis intervals.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>labelX</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>If set, it overrides the default X-axis label. The default label is generated from the series.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>singleYAxis</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Enforces the use of only one Y-axis for all series. In this case, specific Y-axis parameters defined for each series will be ignored.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>singleYAxisLabel</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Sets the label for the single Y-axis.</p>
+</div></td></tr><tr><td>min</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Sets the min displayed value for Y-axis. Active only when singleYAxis is true.</p>
+</div> <p><em>(default: null)</em></p></td></tr><tr><td>max</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Sets the max displayed value for Y-axis. Active only when singleYAxis is true.</p>
+</div> <p><em>(default: null)</em></p></td></tr><tr><td>step</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Specifies the step between each tick on the Y axis. If not defined, it is computed automatically. Active only when singleYAxis is true.</p>
+</div> <p><em>(default: null)</em></p></td></tr><tr><td>scientificDisplay</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>When set to false, force the full display of the numbers on the Y-axis. Active only when singleYAxis is true.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>logarithmic</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Uses a logarithmic scale for Y-axis. Active only when singleYAxis is true.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>displayLegend</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Enables or disables the display of series legend. Active only when singleYAxis is true.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>alignMonth</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Aligns the month values with the month label. The old behavior aligns values with the middle of the month. Setting this parameter to false reverts to the old behavior.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>labelsXLength</td><td><a href="" class="label type-hint type-hint-integer">integer</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschart-page"><p>Sets the maximum number of characters displayed for the X-axis labels.</p>
 </div> <p><em>(default: 12)</em></p></td></tr></tbody></table></div>
 </div>

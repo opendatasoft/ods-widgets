@@ -10,36 +10,36 @@
          * @scope
          * @restrict E
          *
-         * @param {object} colorGradient object that provides colors, values and range of value. Also number of classes for steps display mode.
+         * @param {object} colorGradient An object providing colors, values, and a range of value. It also provides the number of classes for the `steps` display mode.
          * @param {string} title Legend title
          * @param {string} [subtitle='']  Legend sub-title
-         * @param {string} [noValueColor=undefined] Display another step or square with the provided default color, can be any HTML color code.
-         * @param {integer} [decimalPrecision=0] Set the decimal values precision
-         * @param {string} [display=linear] Display mode, can be 'steps' or 'linear'
+         * @param {string} [noValueColor=undefined] Displays another step or square with the provided default color. The authorized values are any HTML color code.
+         * @param {integer} [decimalPrecision=0] Sets the decimal values precision.
+         * @param {string} [display=linear] Display mode. The authorized values are 'steps' and 'linear'.
          *
          * @description
-         * This widget displays a map legend computed with the color gradient structure from odsColorGradient widget.
-         * 'steps' display is a legend with different steps, based on the range of values. Each step has it's own color and value range.
-         * 'linear' display is a single color gradient from the min to the max value.
+         * The odsLegend widget displays a map legend computed with the color gradient structure from the odsColorGradient widget.
+         * The `steps` display mode is a legend with different steps based on the range of values. Each step has its own color and value range.
+         * The `linear` display mode is a single color gradient from the minimum to the maximum value.
          *
-         * WARNING: 'steps' display mode is only possible if ods-color-gradient-nb-classes option has been provided on odsColorGradient widget !
+         * Note: You can use the `steps` display mode only if the ods-color-gradient-nb-classes option has been provided to the odsColorGradient widget.
          *
          * @example
          *  <example module="ods-widgets">
          *      <file name="legend.html">
          *          <ods-dataset-context context="regions,population"
-         *                               regions-dataset="contours-geographiques-des-regions-2019-copy"
-         *                               regions-domain="public"
+         *                               regions-dataset="regions-et-collectivites-doutre-mer-france"
+         *                               regions-domain="https://documentation-resources.opendatasoft.com/"
          *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)',
-         *                                                   'disjunctive.region':true}"
-         *                               population-dataset="population-millesimee-communes-2016"
-         *                               population-parameters="{'disjunctive.nom_reg':true}"
-         *                               population-domain="public">
+         *                                                   'disjunctive.reg_name':true}"
+         *                               population-dataset="populations-legales-communes-et-arrondissements-municipaux-france"
+         *                               population-parameters="{'disjunctive.reg_name':true}"
+         *                               population-domain="https://documentation-resources.opendatasoft.com/">
          *
          *              <div ods-color-gradient="colorgradient"
          *                   ods-color-gradient-context="population"
-         *                   ods-color-gradient-x="nom_reg"
-         *                   ods-color-gradient-serie="SUM(population_totale)"
+         *                   ods-color-gradient-x="reg_name"
+         *                   ods-color-gradient-serie="SUM(com_arm_pop_tot)"
          *                   ods-color-gradient-high="rgb(20, 33, 96)"
          *                   ods-color-gradient-low="rgb(180, 197, 241)"
          *                   ods-color-gradient-nb-classes="4">
@@ -47,7 +47,7 @@
          *                  <ods-map location="5,46.50595,3.40576">
          *                      <ods-map-layer context="regions"
          *                                     color-categories="colorgradient['colors']"
-         *                                     color-by-field="region"
+         *                                     color-by-field="reg_name"
          *                                     color-categories-other="lightgrey"
          *                                     display="categories"
          *                                     shape-opacity="0.85"

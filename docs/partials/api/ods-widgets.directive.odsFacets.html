@@ -4,9 +4,9 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>The odsFacets widget displays filters based on a dataset or a domain&#39;s catalog of datasets, allowing the users to dynamically refine on one or more categories for the defined context (i.e. each filter being composed of several categories, which are values of the field the filter is based on).</p>
-<p>For instance, odsFacet could be used to refine the data displayed in a table (<a href="#/api/ods-widgets.directive:odsTable">odsTable</a>), to see only the specific data one is interested in.</p>
-<p>Used alone without any configuration, the widget will display by default filters from all the &quot;facet&quot; fields of a dataset if it is used with a <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>, or based on typical metadata from a dataset catalog if used with a <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a>.</p>
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>The odsFacets widget displays filters based on a dataset or a domain&#39;s catalog of datasets. This widget allows to dynamically refine on one or more categories for the defined context (i.e., each filter being composed of several categories, which are values of the field the filter is based on).</p>
+<p>For example, odsFacet can be used to refine the data displayed in a table (<a href="#/api/ods-widgets.directive:odsTable">odsTable</a>) to see only the desired data.</p>
+<p>Suppose the widget is used without any configuration. In that case, it will display by default filters from all the &quot;facet&quot; fields of a dataset when used with a <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a>. It will display by default filters from typical metadata from a dataset catalog when used with a <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a>.</p>
 <pre class="prettyprint linenums">
    &lt;ods-facets context="mycontext"&gt;&lt;/ods-facets&gt;
 </pre>
@@ -19,8 +19,8 @@
 <li>hideIfSingleCategory</li>
 <li>hideCategoryIf</li>
 </ul>
-<p>Note: these parameters are the same as some used for odsFacets, refer to the odsFacets parameters table below for more information on how to configure them.</p>
-<p>odsFacet allows to configure which facets are displayed, using the <strong>name</strong> parameter.</p>
+<p>Note: these parameters are the same as some used for odsFacets. For more information about configuration, see the odsFacets parameters table.</p>
+<p>odsFacet allows to configure which facets are displayed using the <strong>name</strong> parameter.</p>
 <pre class="prettyprint linenums">
    &lt;ods-facets context="mycontext"&gt;
        &lt;h3&gt;First field&lt;/h3&gt;
@@ -61,39 +61,39 @@ Note: There must not be any space character between the odsFacet tag and the spa
        context="{string}"
        value-search="{string}"
        refine-also="{DatasetContext|CatalogContext|DatasetContext[]|CatalogContext[]}"
-       [contextname]-facet-name="{string}"&gt;
+       [context-name]-facet-name="{string}"&gt;
 &lt;/ods-facets&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
 </ul>
 </div>
-<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p><i>(mandatory)</i> <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use.</p>
-</div></td></tr><tr><td>name</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p><i>(mandatory)</i> Name of the field the filter is based on.</p>
+<h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>context</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p><i>(mandatory)</i> <a href="#/api/ods-widgets.directive:odsCatalogContext">Catalog Context</a> or <a href="#/api/ods-widgets.directive:odsDatasetContext">Dataset Context</a> to use</p>
+</div></td></tr><tr><td>name</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p><i>(mandatory)</i> Name of the field the filter is based on</p>
 </div></td></tr><tr><td>title</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Title to display above the filter</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>sort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Sorting method used on the categories:</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>sort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Sorting method used on categories:</p>
 <ul>
 <li><code>count</code> or <code>-count</code> to sort by number of items in each category</li>
 <li><code>num</code> or <code>-num</code> to sort by the name of category, if it is a number</li>
 <li><p><code>alphanum</code> or <code>-alphanum</code> to sort by the name of the category</p>
-<p>Note that <code>-</code> before the name of the sorting method indicates that the sorting will be descending instead of ascending.</p>
+<p>Note: the <code>-</code> character before the name of the sorting method indicates that values will be sorted in descending order instead of ascending order.</p>
 <p>Configuring a specific order is also possible, by setting a list of value: <code>[&#39;value1&#39;, &#39;value2&#39;]</code>.</p>
 </li>
 </ul>
 </div> <p><em>(default: -count)</em></p></td></tr><tr><td>visibleItems</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Number of categories to show. If there are more categories for the filter, they are collapsed by default, but can be expanded by clicking on a &quot;more&quot; link.</p>
-</div> <p><em>(default: 6)</em></p></td></tr><tr><td>hideIfSingleCategory</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>If <code>true</code>, hides filters if only one category to refine on is available.</p>
+</div> <p><em>(default: 6)</em></p></td></tr><tr><td>hideIfSingleCategory</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>When set to <code>true</code>, hides filters if only one category to refine on is available.</p>
 </div> <p><em>(default: false)</em></p></td></tr><tr><td>hideCategoryIf</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>AngularJS expression to evaluate: if it evaluates to <code>true</code>, the category is displayed. In the expression, the following elements can be used:</p>
 <ul>
 <li><code>category.name</code> (value of the category)</li>
 <li><code>category.path</code> (complete path to the category, including hierarchical levels)</li>
 <li><code>category.state</code> (refined, excluded, or displayed)</li>
 </ul>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>disjunctive</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>If <code>true</code>, the filter is in disjunctive mode, which means that after a first value is selected, other available values can also be selected. All selected values are combined as &quot;or&quot;. E.g. after clicking &quot;red&quot;, &quot;green&quot; and &quot;blue&quot; can also be clicked, and the resulting values can be either green, red, or blue.</p>
-<p> Note that this parameter is directly related to the schema of the dataset: for this parameter to function, the field must allow multiple selection in filters (see <a href="https://help.opendatasoft.com/platform/en/publishing_data/05_processing_data/defining_a_dataset_schema.html#configuration-options-for-facets">Defining a dataset schema</a>).</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>timerangeFilter</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>If <code>true</code>, an option to filter using a time range is displayed above the categories. This parameter only works for date and datetime fields, and must be used with a context (see <strong>context</strong> parameter).</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>disjunctive</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>When set to <code>true</code>, the filter is in disjunctive mode, which means that other available values can also be selected after a first value is selected. All selected values are combined as &quot;or&quot;. For example, after clicking &quot;red&quot;, &quot;green&quot; and &quot;blue&quot; can also be clicked. The resulting values can be green, red, or blue.</p>
+<p> Note: this parameter is directly related to the schema of the dataset. For this parameter to work properly, the field must allow multiple selections in filters. For more information, see <a href="https://help.opendatasoft.com/platform/en/publishing_data/05_processing_data/defining_a_dataset_schema.html#configuration-options-for-facets">Defining a dataset schema</a>).</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>timerangeFilter</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>When set to <code>true</code>, an option to filter using a time range is displayed above the categories. This parameter only works for date and datetime fields and must be used with a context (see <strong>context</strong> parameter).</p>
 </div> <p><em>(default: false)</em></p></td></tr><tr><td>context</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Name of the context to refine on. This parameter is mandatory for the <strong>timerangeFilter</strong> parameter.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>valueSearch</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>If <code>true</code>, a search box is displayed above the categories, to search within the available categories. If <code>suggest</code>, the matching categories are not displayed until there is at least one character typed into the search box, effectively making it into a suggest-like search box.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>refineAlso</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext[]</a><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext[]</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Enables the widget to apply its refinements on other contexts, e.g. for contexts which share common date. The value of this parameter should be the name of another context, or a list of contexts.</p>
-</div> <p><em>(default: none)</em></p></td></tr><tr><td>[contextname]FacetName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Name of the facet in one of the other contexts, defined through the <strong>refineAlso</strong> parameter, that the original facet should be mapped on. <code>[contextname]</code> must be replaced with the name of that other context.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>valueSearch</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>When set to <code>true</code>, a search box is displayed above the categories to search within the available categories. If <code>suggest</code>, the matching categories are not displayed until there is at least one character typed into the search box, effectively making it into a suggest-like search box.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>refineAlso</td><td><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext</a><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext</a><a href="" class="label type-hint type-hint-datasetcontext">DatasetContext[]</a><a href="" class="label type-hint type-hint-catalogcontext">CatalogContext[]</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Enables the widget to apply its refinements on other contexts, e.g., for contexts which share a common data. The value of this parameter should be the name of another context or a list of contexts.</p>
+</div> <p><em>(default: none)</em></p></td></tr><tr><td>[contextName]FacetName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Name of the facet in one of the other contexts, defined through the <strong>refineAlso</strong> parameter, that the original facet should be mapped on. <code>[contextName]</code> must be replaced with the name of that other context.</p>
 </div> <p><em>(default: Current facet's name)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><h4 id="example_source">Source</h4>
@@ -102,7 +102,7 @@ Note: There must not be any space character between the odsFacet tag and the spa
 <pre class="prettyprint linenums" ng-set-text="odsFacets_with_odsFacet.html"></pre>
 <script type="text/ng-template" id="odsFacets_with_odsFacet.html">
     <ods-dataset-context context="events"
-                         events-domain="https://widgets-examples.opendatasoft.com/"
+                         events-domain="https://documentation-resources.opendatasoft.com/"
                          events-dataset="evenements-publics-openagenda-extract">
         <div class="row-fluid">
             <div class="span4">
@@ -131,13 +131,13 @@ Note: There must not be any space character between the odsFacet tag and the spa
 <div class="tabbable"><div class="tab-pane" title="refineAlso_parameter.html">
 <pre class="prettyprint linenums" ng-set-text="refineAlso_parameter.html"></pre>
 <script type="text/ng-template" id="refineAlso_parameter.html">
-    <ods-dataset-context context="volcaniceruption, countries"
-                         volcaniceruption-domain="https://widgets-examples.opendatasoft.com/"
-                         volcaniceruption-dataset="significant-volcanic-eruption-database"
-                         countries-domain="https://widgets-examples.opendatasoft.com/"
-                         countries-dataset="natural-earth-countries-150m">
-        <ods-facets context="volcaniceruption">
-              <ods-facet name="country"
+    <ods-dataset-context context="geonamescities, countries"
+                         geonamescities-domain="https://documentation-resources.opendatasoft.com/"
+                         geonamescities-dataset="doc-geonames-cities-5000"
+                         countries-domain="https://documentation-resources.opendatasoft.com/"
+                         countries-dataset="natural-earth-countries-110m">
+        <ods-facets context="geonamescities">
+              <ods-facet name="country_code"
                          refine-also="[countries]"
                          countries-facet-name="sovereignt"></ods-facet>
         </ods-facets>

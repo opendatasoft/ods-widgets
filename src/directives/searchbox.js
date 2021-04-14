@@ -8,16 +8,15 @@
          * @name ods-widgets.directive:odsSearchbox
          * @scope
          * @restrict E
-         * @param {string} placeholder the text to display as a placeholder when the searchbox is empty
-         * @param {string} sort the default sort for the results
+         * @param {string} placeholder Controls the text to display as a placeholder when the search box is empty.
+         * @param {string} sort Controls the default sort order for the results.
          * @param {CatalogContext} [context=none] {@link ods-widgets.directive:odsCatalogContext Catalog Context} indicating the domain to redirect the user to show the search results.
-         * If none, the search is done on the local domain (/explore/ of the current domain the user is).
-         * @param {string} [autofocus] Add the autofocus attribute (no need for a value) to set the focus in the text search input
-         * @param {string} [formId=none] Configures the `id` attribute of the form generated internally by the widget, which can be used from other HTML elements (for example
-         * to submit the search from another button)
+         * If `none`, the search is performed on the local domain; that is, the domain to which the widget has been added.
+         * @param {string} [autofocus] Adds the autofocus attribute to set the focus in the text search input. No value is required.
+         * @param {string} [formId=none] Configures the `id` attribute of the form generated internally by the widget, which can be used from other HTML elements. For example, it can be used to submit the search from another button.
          *
          * @description
-         * This widget displays a wide searchbox that redirects the search on the Explore homepage of the domain.
+         * The odsSearchbox widget displays a wide search box that redirects the search on the Explore homepage of the domain.
          *
          */
         return {
