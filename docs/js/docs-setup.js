@@ -71,8 +71,8 @@ NG_DOCS={
       "shortName": "odsAdvAnalysis",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "The odsAdvAnalysis widget exposes the results of an aggregation function over a context. It uses the",
-      "keywords": "$schema accept accepted accessible adva aggregation allows alternative angularjs api apiv2 arrondissement arrondissements asc attribute attributes average avg bar benefits blank calculation called case cases change changes chart charts circonference_moyenne clause code columns-order combination compare compute computing conclusion configuration contained context count create created creating criteria crucial ctx ctx-dataset ctx-domain data desc descending designed differently directive display displayed displaying districts documentation documented dynamic easiest encoding espece example exposes expressions field file filter flexibility function github gold gold-prices greater group group-by group-by-clause hauteur height helps html https implies insert introduction io items json keywords labellimit language les-arbres-remarquables-de-paris limits mark match matches month moyenne multiple mydata myfield named names nominal number ods ods-adv-analysis ods-adv-analysis-context ods-adv-analysis-group-by ods-adv-analysis-select ods-adv-analysis-where ods-widgets odsadvanalysis odsadvanalysiscontext odsadvancedanalysis odsadvtable odsql odsvegalite odsvegalitechart offer offers op opendatasoft optional order order-by-clause outcome output parameter parameters paris population price provide provided purpose quantitative quantite_arbres query recognize refresh regroup request requests requirements return returns rows search second select series set simple size solution sort spec species specific sticky-first-column sticky-header sum support table takes three time title totals tree_species trees true type usage v1 values values-adva variable variables view ways weighted where-clause widget widgets won work working x-axis x_axis y-axis y_axis year",
+      "shortDescription": "The odsAdvAnalysis widget exposes the results of an aggregation function over a context.",
+      "keywords": "$schema accept accepted accessible adva aggregation allows alternative angularjs api arrondissement arrondissements asc attribute attributes average avg bar benefits blank calculation called case cases change changes chart charts circonference_moyenne clause code columns-order combination compare compute computing conclusion configuration contained context count create created creating criteria crucial ctx ctx-dataset ctx-domain data desc descending designed differently directive display displayed displaying districts documentation documented dynamic easiest encoding espece example exposes expressions field file filter flexibility function github gold gold-prices greater group group-by group-by-clause hauteur height helps html https implies insert introduction io items json keywords labellimit language les-arbres-remarquables-de-paris limits mark match matches month moyenne multiple mydata myfield named names nominal number ods ods-adv-analysis ods-adv-analysis-context ods-adv-analysis-group-by ods-adv-analysis-select ods-adv-analysis-where ods-widgets odsadvanalysis odsadvanalysiscontext odsadvancedanalysis odsadvtable odsql odsvegalite odsvegalitechart offer offers op opendatasoft optional order order-by-clause outcome output parameter parameters paris population price provide provided purpose quantitative quantite_arbres query recognize refresh regroup request requests requirements return returns rows search second select series set simple size solution sort spec species specific sticky-first-column sticky-header sum support table takes three time title totals tree_species trees true type usage v1 v2 values values-adva variable variables view ways weighted where-clause widget widgets won work working x-axis x_axis y-axis y_axis year",
       "isDeprecated": false
     },
     {
@@ -531,8 +531,8 @@ NG_DOCS={
       "shortName": "odsRecordImage",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "The odsRecordImage displays an image from a record.",
-      "keywords": "api base context current dataset default directive displays domain field file image ods-widgets odsrecordimage record url",
+      "shortDescription": "The odsRecordImage widget displays an image from a record.",
+      "keywords": "api base context current dataset default directive displays domain field file image ods-widgets odsrecordimage record url widget",
       "isDeprecated": false
     },
     {
@@ -551,8 +551,8 @@ NG_DOCS={
       "shortName": "odsResults",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget exposes the results of a search as an array in a variable available in the scope.",
-      "keywords": "adds adresse angularjs api array build catalog changed class context dataset directive dynamically exposes fields html https item items les-arbres-remarquables-de-paris libellefrancais list matching maximum module ng-repeat ngrepeat nhits number ods-results ods-results-context ods-results-max ods-widgets odsresultscontext odsresultsmax opendatasoft property query records scope search simply sort table table-bordered table-condensed table-striped total tree tree-dataset tree-domain tree-parameters trees variable widget",
+      "shortDescription": "The odsResults widget exposes the results of a search as an array in a variable available in the scope.",
+      "keywords": "adds adresse angularjs api array build catalog changed class context dataset directive dynamically exposes fields html https item items les-arbres-remarquables-de-paris libellefrancais list matching maximum module ng-repeat ngrepeat nhits number ods-results ods-results-context ods-results-max ods-widgets odsresults odsresultscontext odsresultsmax opendatasoft property query records scope search simply sort table table-bordered table-condensed table-striped total tree tree-dataset tree-domain tree-parameters trees variable widget",
       "isDeprecated": false
     },
     {
@@ -640,7 +640,7 @@ NG_DOCS={
       "shortName": "odsSubaggregation",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "This widget computes aggregations on an analysis result. It",
+      "shortDescription": "The odsSubaggregation widget computes aggregations on an analysis result.",
       "keywords": "aggregation aggregations analysis angularjs api average avg avggirth build circonference computes context directive espece expression false genre girth height html https les-arbres-remarquables-de-paris max maxheight module ngrepeat ods-analysis ods-analysis-context ods-analysis-max ods-analysis-serie-girth ods-analysis-serie-height ods-analysis-serie-height-cumulative ods-analysis-sort ods-analysis-x-espace ods-analysis-x-genre ods-subaggregation ods-subaggregation-serie-avggirth ods-subaggregation-serie-maxheight ods-widgets odssubaggregation odssubaggregationserie opendatasoft result simply table tree tree-dataset tree-domain widget",
       "isDeprecated": false
     },
@@ -720,8 +720,8 @@ NG_DOCS={
       "shortName": "odsTimescale",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "The odsTimescale displays a control to select:",
-      "keywords": "api array context control dataset datetime day default default-value directive displays evenements-publics-openagenda-extract events events-dataset events-domain field filter html https module month ods-widgets odstimescale opendatasoft select set sets timescale week year",
+      "shortDescription": "The odsTimescale widget displays a control to select:",
+      "keywords": "api array context control dataset datetime day default default-value directive displays evenements-publics-openagenda-extract events events-dataset events-domain field filter html https module month ods-widgets odstimescale opendatasoft select set sets timescale week widget year",
       "isDeprecated": false
     },
     {
@@ -760,8 +760,8 @@ NG_DOCS={
       "shortName": "odsWidgetTooltip",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "The odsWidgetTooltip directive is a helper for displaying custom tooltip.",
-      "keywords": "access affiches affiches-anciennes affiches-dataset affiches-domain allows api appear array calling compiled configure context custom default directive displayedfields displaying fields getrecordtitle helper html https lists module ods-auto-resize ods-widget-tooltip ods-widgets odswidgettooltip opendatasoft record rendering template tooltip usable widget",
+      "shortDescription": "The odsWidgetTooltip widget is a helper for displaying custom tooltips.",
+      "keywords": "access affiches affiches-anciennes affiches-dataset affiches-domain allows api appear array calling compiled configure context custom default directive displayedfields displaying fields getrecordtitle helper html https lists module ods-auto-resize ods-widget-tooltip ods-widgets odswidgettooltip opendatasoft record rendering template tooltip tooltips usable widget",
       "isDeprecated": false
     },
     {

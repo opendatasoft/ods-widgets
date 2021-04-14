@@ -13,7 +13,7 @@
          * @param {CatalogContext|DatasetContext} odsResultsContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {number} [odsResultsMax=10] Maximum number of results to show. The value can be changed dynamically using a variable.
          * @description
-         * This widget exposes the results of a search as an array in a variable available in the scope.
+         * The odsResults widget exposes the results of a search as an array in a variable available in the scope.
          * It can be used with the AngularJS ngRepeat directive to build a list of results simply.
          * It also adds to the context variable a `nhits` property containing the total number of records matching the query regardless of the odsResultsMax value.
          *

@@ -11,7 +11,7 @@
          * @transclude
          *
          * @description
-         * The odsWidgetTooltip directive is a helper for displaying custom tooltip.
+         * The odsWidgetTooltip widget is a helper for displaying custom tooltips.
          * 
          * It allows to configure the usable fields in the tooltip and the template and does the HTML rendering giving back the compiled HTML to the calling widget.
          * 

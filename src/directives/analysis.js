@@ -619,8 +619,8 @@
          * @param {string} odsSubaggregation Analysis results
          * @param {number} odsSubaggregationSerie* Aggregation expression
          * @description
-         * This widget computes aggregations on an analysis result. It
-         * It can be used with AngularJS's ngRepeat to simply build a table of analysis results.
+         * The odsSubaggregation widget computes aggregations on an analysis result.
+         * You can use this widget with the AngularJS ngRepeat directive to simply build a table of analysis results.
          *
          * @example
          *  <example module="ods-widgets">

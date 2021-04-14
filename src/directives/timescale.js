@@ -14,7 +14,7 @@
          *  @param {string=} [*TimeField=first date/datetime field available] For each context, you can set the name of the field (date or datetime) to filter on.
          *  @param {string=} [defaultValue=everything] Sets the default timescale.
          *  @description
-         * The odsTimescale displays a control to select:
+         * The odsTimescale widget displays a control to select:
          *
          * * the last day,
          * * the last week,

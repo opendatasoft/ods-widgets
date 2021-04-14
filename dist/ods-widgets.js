@@ -16181,8 +16181,8 @@ mod.directive('infiniteScroll', [
          * @param {string} [odsAdvAnalysisLimit] Limits the number of items to return.
          *
          * @description
-         * The odsAdvAnalysis widget exposes the results of an aggregation function over a context. It uses the
-         * ODS Search APIv2 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-search-v2/#odsql), which offers greater flexibility than the v1.
+         * The odsAdvAnalysis widget exposes the results of an aggregation function over a context.
+         * It uses the ODS Search API v2 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-search-v2/#odsql), which offers greater flexibility than the v1.
          * 
          * The parameters for this widgets are dynamic, which implies two benefits:
          * - First, changes in context parameters will refresh the results of the widget.
@@ -16223,7 +16223,7 @@ mod.directive('infiniteScroll', [
          *         ctx-dataset="gold-prices">
          *         <div ods-adv-analysis="myData"
          *             ods-adv-analysis-context="ctx"
-         *             ods-adv-analysis-select="avg(prices) as y_axis"
+         *             ods-adv-analysis-select="avg(price) as y_axis"
          *             ods-adv-analysis-where="date > date'2017'"
          *             ods-adv-analysis-group-by="month(date) as x_axis, year(date) as series">
          *             {{myData}}
@@ -17893,8 +17893,8 @@ mod.directive('infiniteScroll', [
          * @param {string} odsSubaggregation Analysis results
          * @param {number} odsSubaggregationSerie* Aggregation expression
          * @description
-         * This widget computes aggregations on an analysis result. It
-         * It can be used with AngularJS's ngRepeat to simply build a table of analysis results.
+         * The odsSubaggregation widget computes aggregations on an analysis result.
+         * You can use this widget with the AngularJS ngRepeat directive to simply build a table of analysis results.
          *
          * @example
          *  <example module="ods-widgets">
@@ -31115,7 +31115,7 @@ mod.directive('infiniteScroll', [
          * @param {string} [field=none] Field to use. By default, the first `file` field is used, but you can specify the field name if there is more than one field.
          * @param {string} [domainUrl=none] The base URL of the domain where the dataset can be found. By default, the current domain is used.
          * @description
-         * The odsRecordImage displays an image from a record.
+         * The odsRecordImage widget displays an image from a record.
          *
          */
         return {
@@ -31372,7 +31372,7 @@ mod.directive('infiniteScroll', [
          * @param {CatalogContext|DatasetContext} odsResultsContext {@link ods-widgets.directive:odsCatalogContext Catalog Context} or {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {number} [odsResultsMax=10] Maximum number of results to show. The value can be changed dynamically using a variable.
          * @description
-         * This widget exposes the results of a search as an array in a variable available in the scope.
+         * The odsResults widget exposes the results of a search as an array in a variable available in the scope.
          * It can be used with the AngularJS ngRepeat directive to build a list of results simply.
          * It also adds to the context variable a `nhits` property containing the total number of records matching the query regardless of the odsResultsMax value.
          *
@@ -34869,7 +34869,7 @@ mod.directive('infiniteScroll', [
          *  @param {string=} [*TimeField=first date/datetime field available] For each context, you can set the name of the field (date or datetime) to filter on.
          *  @param {string=} [defaultValue=everything] Sets the default timescale.
          *  @description
-         * The odsTimescale displays a control to select:
+         * The odsTimescale widget displays a control to select:
          *
          * * the last day,
          * * the last week,
@@ -35595,7 +35595,7 @@ mod.directive('infiniteScroll', [
          * @transclude
          *
          * @description
-         * The odsWidgetTooltip directive is a helper for displaying custom tooltip.
+         * The odsWidgetTooltip widget is a helper for displaying custom tooltips.
          * 
          * It allows to configure the usable fields in the tooltip and the template and does the HTML rendering giving back the compiled HTML to the calling widget.
          * 

@@ -18,8 +18,8 @@
          * @param {string} [odsAdvAnalysisLimit] Limits the number of items to return.
          *
          * @description
-         * The odsAdvAnalysis widget exposes the results of an aggregation function over a context. It uses the
-         * ODS Search APIv2 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-search-v2/#odsql), which offers greater flexibility than the v1.
+         * The odsAdvAnalysis widget exposes the results of an aggregation function over a context.
+         * It uses the ODS Search API v2 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-search-v2/#odsql), which offers greater flexibility than the v1.
          * 
          * The parameters for this widgets are dynamic, which implies two benefits:
          * - First, changes in context parameters will refresh the results of the widget.
@@ -60,7 +60,7 @@
          *         ctx-dataset="gold-prices">
          *         <div ods-adv-analysis="myData"
          *             ods-adv-analysis-context="ctx"
-         *             ods-adv-analysis-select="avg(prices) as y_axis"
+         *             ods-adv-analysis-select="avg(price) as y_axis"
          *             ods-adv-analysis-where="date > date'2017'"
          *             ods-adv-analysis-group-by="month(date) as x_axis, year(date) as series">
          *             {{myData}}
