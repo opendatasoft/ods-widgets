@@ -19,8 +19,8 @@
          *
          * @description
          * The odsAdvAnalysis widget exposes the results of an aggregation function over a context.
-         * It uses the ODS Search API v2 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-search-v2/#odsql), which offers greater flexibility than the v1.
-         * 
+         * It uses the ODS Explore API V2 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29), which offers greater flexibility than the v1.
+         *
          * The parameters for this widgets are dynamic, which implies two benefits:
          * - First, changes in context parameters will refresh the results of the widget.
          * - Second, AngularJS variables are accepted as attributes.
@@ -33,7 +33,7 @@
          * <h2>Examples of requests to make</h2>
          *
          * How to compute a weighted average:
-         * 
+         *
          * In this example, the widget will return the average height of the trees according to the population size of each species in Paris districts.
          * <pre>
          *     <ods-dataset-context
@@ -170,6 +170,8 @@
             restrict: 'A',
             scope: true,
             controller: ['$scope', '$attrs', function($scope, $attrs) {
+                var dataCall = ODSAPIv2.uniqueCall(ODSAPIv2.datasets.aggregates);
+
                 var runQuery = function(variableName, context, select, where, limit, groupBy, orderBy) {
                     var params = APIParamsV1ToV2(context.parameters);
                     params = angular.extend(params, {
@@ -179,8 +181,7 @@
                         group_by: groupBy,
                         order_by: orderBy
                     });
-                    ODSAPIv2
-                        .uniqueCall(ODSAPIv2.datasets.aggregates)(context, params)
+                    dataCall(context, params)
                         .then(function(response) {
                             var result = response.data;
                             $scope[variableName] = result.aggregations;

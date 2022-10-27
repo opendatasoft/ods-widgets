@@ -17,7 +17,8 @@ For complete examples, see <a href="#/api/ods-widgets.directive:odsChart">odsCha
        reverse-stacks="{boolean}"
        series-breakdown="{string}"
        series-breakdown-timescale="{string}"
-       category-colors="{object}"&gt;
+       category-colors="{object}"
+       sort="{string}"&gt;
 &lt;/ods-chart-query&gt;</pre>
 <h3 id="usage_directive-info">Directive info</h3>
 <div class="directive-info"><ul><li>This directive creates new scope.</li>
@@ -31,5 +32,13 @@ For complete examples, see <a href="#/api/ods-widgets.directive:odsChart">odsCha
 </div> <p><em>(default: false)</em></p></td></tr><tr><td>seriesBreakdown</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>When declared, all series are broken down by the defined facet.</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>seriesBreakdownTimescale</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>If the breakdown facet is a time serie (date or datetime), it defines the aggregation level for this facet.</p>
 </div> <p><em>(default: true)</em></p></td></tr><tr><td>categoryColors</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>A object containing a color for each category name. For example: {&#39;my value&#39;: &#39;#FF0000&#39;, &#39;my other value&#39;: &#39;#0000FF&#39;}</p>
-</div> <p><em>(default: {})</em></p></td></tr></tbody></table></div>
+</div> <p><em>(default: {})</em></p></td></tr><tr><td>sort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odschartquery-page"><p>Displays the results in a specific order. The following values are available:</p>
+<ul>
+<li>To sort based on horizontal axis, use <code>x</code> or <code>-x</code>. For date-based axes, you need to include the name of
+the field, and the highest precision in the displayed data. For example, if the field name is <code>mydate</code>, and
+the data includes the year, you can use <code>x.mydate.year</code>.</li>
+<li>To sort based on the displayed values, use <code>y</code> or <code>-y</code> if there is a single serie. If there are multiple
+series, use <code>series{n}-{m}</code> where <code>n</code> is the {n}th <code>ods-chart-query</code>, and m is the {m}th <code>ods-chart-serie</code></li>
+</ul>
+</div> <p><em>(default: none)</em></p></td></tr></tbody></table></div>
 </div>

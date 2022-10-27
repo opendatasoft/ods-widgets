@@ -31,4 +31,19 @@
             }
         };
     }]);
+
+    mod.service('odsNetworkErrorMessages', ['translate',  function(translate) {
+        this.getForXHRStatus = function(xhrStatus) {
+            switch (xhrStatus) {
+            case 'offline':
+                return translate('It seems you are not connected to internet.');
+            case 'error':
+                return translate('The server could not be reached, it may be a temporary network error.');
+            case 'timeout':
+                return translate('The server did not answer in a timely manner.');
+            default:
+                return translate('A network error happened during the call.');
+            }
+        };
+    }]);
 })();

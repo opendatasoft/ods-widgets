@@ -117,8 +117,9 @@ module.exports = function(grunt) {
                 expand: true,
                 cwd: 'assets/',
                 src: [
-                    'ods-logo-helphub.svg',
-                    'opendatasoft-logo.svg',
+                    'ods-logo-noir.svg',
+                    'menu-fill.svg',
+                    'apps-custo.svg',
                     'ods-favicon.ico',
                     'widget_doc_schema.png'
                 ],
@@ -163,7 +164,7 @@ module.exports = function(grunt) {
                 ],
                 template: 'src-docs/templates/index.tmpl',
                 html5Mode: false,
-                image: 'assets/ods-logo-helphub.svg',
+                image: 'assets/ods-logo-noir.svg',
 				title: "ODS-Widgets",
 				bestMatch: false,
                 startPage: '/introduction/'

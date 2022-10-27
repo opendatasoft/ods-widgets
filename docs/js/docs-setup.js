@@ -72,7 +72,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "The odsAdvAnalysis widget exposes the results of an aggregation function over a context.",
-      "keywords": "$schema accept accepted accessible adva aggregation allows alternative angularjs api arrondissement arrondissements asc attribute attributes average avg bar benefits blank calculation called case cases change changes chart charts circonference_moyenne clause code columns-order combination compare compute computing conclusion configuration contained context count create created creating criteria crucial ctx ctx-dataset ctx-domain data desc descending designed differently directive display displayed displaying districts documentation documented dynamic easiest encoding espece example exposes expressions field file filter flexibility function github gold gold-prices greater group group-by group-by-clause hauteur height helps html https implies insert introduction io items json keywords labellimit language les-arbres-remarquables-de-paris limits mark match matches month moyenne multiple mydata myfield named names nominal number ods ods-adv-analysis ods-adv-analysis-context ods-adv-analysis-group-by ods-adv-analysis-select ods-adv-analysis-where ods-widgets odsadvanalysis odsadvanalysiscontext odsadvancedanalysis odsadvtable odsql odsvegalite odsvegalitechart offer offers op opendatasoft optional order order-by-clause outcome output parameter parameters paris population price provide provided purpose quantitative quantite_arbres query recognize refresh regroup request requests requirements return returns rows search second select series set simple size solution sort spec species specific sticky-first-column sticky-header sum support table takes three time title totals tree_species trees true type usage v1 v2 values values-adva variable variables view ways weighted where-clause widget widgets won work working x-axis x_axis y-axis y_axis year",
+      "keywords": "$schema accept accepted accessible adva aggregation allows alternative angularjs api arrondissement arrondissements asc attribute attributes average avg bar benefits blank calculation called case cases change changes chart charts circonference_moyenne clause code columns-order combination compare compute computing conclusion configuration contained context count create created creating criteria crucial ctx ctx-dataset ctx-domain data desc descending designed differently directive display displayed displaying districts documentation documented dynamic easiest encoding espece example explore exposes expressions field file filter flexibility function github gold gold-prices greater group group-by group-by-clause hauteur height helps html https implies insert introduction io items json keywords labellimit language les-arbres-remarquables-de-paris limits mark match matches month moyenne multiple mydata myfield named names nominal number ods ods-adv-analysis ods-adv-analysis-context ods-adv-analysis-group-by ods-adv-analysis-select ods-adv-analysis-where ods-widgets odsadvanalysis odsadvanalysiscontext odsadvancedanalysis odsadvtable odsql odsvegalite odsvegalitechart offer offers op opendatasoft optional order order-by-clause outcome output parameter parameters paris population price provide provided purpose quantitative quantite_arbres query recognize refresh regroup request requests requirements return returns rows second select series set simple size solution sort spec species specific sticky-first-column sticky-header sum support table takes three time title totals tree_species trees true type usage v1 v2 values values-adva variable variables view ways weighted where-clause widget widgets won work working x-axis x_axis y-axis y_axis year",
       "isDeprecated": false
     },
     {
@@ -152,7 +152,7 @@ NG_DOCS={
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "The odsChartQuery widget is the sub widget that defines the queries for the series defined inside.",
-      "keywords": "active aggregated aggregation aggregations analysis api area bar breakdown broken category change chart charts color columns complete compute computed daily dataset datetime declared defined defines directive displayed dynamic example examples facet fetched ff0000 field fieldx inside interval level maximum month normal note number object ods-widgets odschart odschartquery option order parameters percent points queries query refreshed reverses serie series sets singleyaxis spline stack stacked stacks time timescale timeseries values widget works year",
+      "keywords": "active aggregated aggregation aggregations analysis api area axes axis bar based breakdown broken category change chart charts color columns complete compute computed daily data dataset date-based datetime declared defined defines directive displayed displays dynamic example examples facet fetched ff0000 field fieldx highest horizontal include includes inside interval level maximum month multiple mydate normal note number object ods-chart-query ods-chart-serie ods-widgets odschart odschartquery option order parameters percent points precision queries query refreshed reverses serie series sets single singleyaxis sort specific spline stack stacked stacks time timescale timeseries values widget works year",
       "isDeprecated": false
     },
     {
@@ -193,16 +193,6 @@ NG_DOCS={
       "moduleName": "ods-widgets",
       "shortDescription": "The odsCrossTable widget creates a cross table from a context.",
       "keywords": "aggregate aggregations analysis api arrondissement average avg column comma-separated context controls count creates cross data dataset decimals directive display displayed espece extracted facet facets field fields function hauteur_en_m header headers height html https intermediary label les-arbres-remarquables-de-paris list module multiple names number numeric ods-widgets odscrosstable opendatasoft repeat row rows serie-height-expr serie-height-func serie-height-label series seriexxxexpr seriexxxfunc seriexxxlabel single subaverages subtotals supports table trees trees-dataset trees-domain values widget",
-      "isDeprecated": false
-    },
-    {
-      "section": "api",
-      "id": "ods-widgets.directive:odsDatasetCard",
-      "shortName": "odsDatasetCard",
-      "type": "directive",
-      "moduleName": "ods-widgets",
-      "shortDescription": "When wrapped around an element or a set of elements, the odsDatasetCard widget displays an expandable card above it.",
-      "keywords": "api attached card context data dataset description directive displays element elements evenements-publics-openagenda-extract events events-dataset events-domain expandable height html https license link module ods-widgets odsdatasetcard opendatasoft portal set style title widget wrapped",
       "isDeprecated": false
     },
     {
@@ -377,16 +367,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "ods-widgets.directive:odsKeyboard",
-      "shortName": "odsKeyboard",
-      "type": "directive",
-      "moduleName": "ods-widgets",
-      "shortDescription": "The odsKeyboard widget binds a keyboard key to execute the associated ngClick or specific expression.",
-      "keywords": "ae api arrow arrowleft arrowright associated bar behavior binds class code correct count counter cursor default directive enter escape event execute expression false fit-content html https info key keyboard left module ng-click ng-init ngclick ods-button ods-keyboard ods-keyboard-expression ods-keyboard-key ods-keyboard-prevent-default ods-widgets odskeyboard odskeyboardexpression odskeyboardkey odskeyboardpreventdefault pointer prevents set space specific style triggering true underline values widget",
-      "isDeprecated": false
-    },
-    {
-      "section": "api",
       "id": "ods-widgets.directive:odsLastDatasetsFeed",
       "shortName": "odsLastDatasetsFeed",
       "type": "directive",
@@ -517,22 +497,12 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "ods-widgets.directive:odsRangeInput",
-      "shortName": "odsRangeInput",
-      "type": "directive",
-      "moduleName": "ods-widgets",
-      "shortDescription": "The odsRangeInput widget displays an input of type range that allows the user to select a numeric value. This value must be no less than a given value and no more than another given value.",
-      "keywords": "adds aligned allows angular api aria-label aria-label-text arialabeltext assignable attribute balls binding classes component current currentvalue data data-bind debounce default depend directive directly display displays double enabled expression fa fa-globe fa-tree fontawesome forcing granularity html icon icon-max icon-max-title icon-min icon-min-title iconmax iconmaxtitle iconmin iconmintitle input inputs layer left level limit limits listed max maximum maxvalue maxvalueposition min minimum minvalue minvalueposition modified module moved ng-init ng-model ng-model-options number numeric ods-widgets odsrangeinput opendatasoft parameter parameters range range-input second select selectablemin set sets side slider sliders step street title translate two-way type updates user values view visibility widget world",
-      "isDeprecated": false
-    },
-    {
-      "section": "api",
       "id": "ods-widgets.directive:odsRecordImage",
       "shortName": "odsRecordImage",
       "type": "directive",
       "moduleName": "ods-widgets",
       "shortDescription": "The odsRecordImage widget displays an image from a record.",
-      "keywords": "api base context current dataset default directive displays domain field file image ods-widgets odsrecordimage record url widget",
+      "keywords": "api base context current dataset default directive displays domain field image ods-widgets odsrecordimage record url widget",
       "isDeprecated": false
     },
     {

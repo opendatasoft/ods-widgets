@@ -1,11 +1,11 @@
-(function() {
+(function () {
     'use strict';
 
     var mod = angular.module('ods-widgets');
 
     var MAX_RECORDS = 10000; // Maximum reachable record via the search endpoint
 
-    mod.directive('odsPaginationBlock', ['$location', function($location) {
+    mod.directive('odsPaginationBlock', ['$location', function ($location) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsPaginationBlock
@@ -26,7 +26,7 @@
          * In this situation, forcing a height on the widget may fix the issue.
          * @description
          * The odsPaginationBlock widget displays a pagination control that you can use to make the context "scroll" through a list of results.
-         * 
+         *
          * The widget doesn't display results. Therefore, it should be paired with another widget.
          * The widget doesn't control the number of results fetched by the context. The `perPage` parameter should be the same as the `rows` parameter on the context.
          *
@@ -40,35 +40,36 @@
             restrict: 'E',
             replace: true,
             template: '' +
-                '<div class="odswidget odswidget-pagination" ng-show="pages.length > 1">' +
+                '<nav role="navigation" aria-label="Pagination navigation" translate="aria-label" class="odswidget odswidget-pagination" ng-show="pages.length > 1">' +
                 '    <ul class="odswidget-pagination__page-list">' +
                 '        <li class="odswidget-pagination__page" ng-repeat="page in pages">' +
                 '            <a class="odswidget-pagination__page-link" ' +
                 '               ng-class="{\'odswidget-pagination__page-link--active\': page.start == (context.parameters.start||0)}" ' +
                 '               ng-attr-rel="{{nofollow?\'nofollow\':undefined}}"' +
                 '               ng-attr-aria-label="{{page.ariaLabel?page.ariaLabel:undefined}}"' +
+                '               ng-attr-aria-current="{{(page.start == (context.parameters.start||0))}}" ' +
                 '               ng-click="click($event, page.start)" ' +
                 '               href="?start={{ page.start }}" ' +
                 '               rel="nofollow">{{ page.label }}</a>' +
                 '        </li>' +
                 '    </ul>' +
-                '</div>',
+                '</nav>',
             scope: {
                 context: '=',
                 perPage: '@',
                 nofollow: '@',
                 containerIdentifier: '@'
             },
-            controller: ['$scope', '$anchorScroll', 'translate', function($scope, $anchorScroll, translate) {
+            controller: ['$scope', '$anchorScroll', 'translate', function ($scope, $anchorScroll, translate) {
                 $scope.location = $location;
                 $scope.pages = [];
                 $scope.perPage = $scope.perPage || 10;
 
-                $scope.click = function(e, start) {
+                $scope.click = function (e, start) {
                     e.preventDefault();
                     $scope.context.parameters.start = start;
                 };
-                var buildPages = function() {
+                var buildPages = function () {
                     if ($scope.context.nhits === 0) {
                         $scope.pages = [];
                         return;
@@ -78,8 +79,8 @@
                     var pages = [];
                     var pageNum;
                     if (pagesCount <= 8) {
-                        for (pageNum=1; pageNum<=pagesCount; pageNum++) {
-                            pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
+                        for (pageNum = 1; pageNum <= pagesCount; pageNum++) {
+                            pages.push({ 'label': pageNum, 'start': (pageNum - 1) * $scope.perPage });
                         }
                     } else {
                         // If too many items, cut them : "first", the 3 before the current page,
@@ -91,38 +92,38 @@
                             currentPage = Math.floor($scope.context.parameters.start / $scope.perPage) + 1;
                         }
                         if (currentPage <= 5) {
-                            for (pageNum=1; pageNum<=8; pageNum++) {
-                                pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
+                            for (pageNum = 1; pageNum <= 8; pageNum++) {
+                                pages.push({ 'label': pageNum, 'start': (pageNum - 1) * $scope.perPage });
                             }
-                            pages.push({'label': '>>', 'ariaLabel': translate('Last page'), 'start': (pagesCount-1)*$scope.perPage});
-                        } else if (currentPage >= (pagesCount-4)) {
-                            pages.push({'label': '<<', 'ariaLabel': translate('First page'), 'start': 0});
-                            for (pageNum=(pagesCount-7); pageNum<=pagesCount; pageNum++) {
-                                pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
+                            pages.push({ 'label': '>>', 'ariaLabel': translate('Last page'), 'start': (pagesCount - 1) * $scope.perPage });
+                        } else if (currentPage >= (pagesCount - 4)) {
+                            pages.push({ 'label': '<<', 'ariaLabel': translate('First page'), 'start': 0 });
+                            for (pageNum = (pagesCount - 7); pageNum <= pagesCount; pageNum++) {
+                                pages.push({ 'label': pageNum, 'start': (pageNum - 1) * $scope.perPage });
                             }
                         } else {
-                            pages.push({'label': '<<', 'ariaLabel': translate('First page'), 'start': 0});
-                            for (pageNum=(currentPage-3); pageNum<=(currentPage+3); pageNum++) {
-                                pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
+                            pages.push({ 'label': '<<', 'ariaLabel': translate('First page'), 'start': 0 });
+                            for (pageNum = (currentPage - 3); pageNum <= (currentPage + 3); pageNum++) {
+                                pages.push({ 'label': pageNum, 'start': (pageNum - 1) * $scope.perPage });
                             }
-                            pages.push({'label': '>>', 'ariaLabel': translate('Last page'), 'start': (pagesCount-1)*$scope.perPage});
+                            pages.push({ 'label': '>>', 'ariaLabel': translate('Last page'), 'start': (pagesCount - 1) * $scope.perPage });
                         }
                     }
                     $scope.pages = pages;
                 };
 
-                var unwatch = $scope.$watch('context', function(nv, ov) {
+                var unwatch = $scope.$watch('context', function (nv, ov) {
                     if (nv) {
-                        $scope.$watch('context.nhits', function(newValue, oldValue) {
+                        $scope.$watch('context.nhits', function (newValue, oldValue) {
                             if ($scope.context.nhits !== undefined && $scope.perPage)
                                 buildPages();
                         });
-                        $scope.$watch('perPage', function(newValue, oldValue) {
+                        $scope.$watch('perPage', function (newValue, oldValue) {
                             $scope.perPage = $scope.perPage || 10;
                             if ($scope.context.nhits && $scope.perPage)
                                 buildPages();
                         });
-                        $scope.$watch('context.parameters.start', function(newValue, oldValue) {
+                        $scope.$watch('context.parameters.start', function (newValue, oldValue) {
                             if ($scope.context.nhits && $scope.perPage)
                                 buildPages();
                             if (angular.isDefined(newValue) || angular.isDefined(oldValue)) {

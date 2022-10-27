@@ -146,14 +146,14 @@
             '<div class="odswidget odswidget-timerange">' +
             '    <div class="odswidget-timerange__from">' +
             '        <span class="odswidget-timerange__label" ng-bind="labelFrom"></span>' +
-            '        <input type="text" placeholder="{{ placeholderFrom }}" class="odswidget-timerange__input" aria-label="Start date" translate="aria-label">' +
+            '        <input type="text" placeholder="{{ placeholderFrom }}" class="odswidget-timerange__input" aria-label="{{\'Start date\'|translate}}" title="{{\'Start date\'|translate}}">' +
             '        <button type="reset" class="odswidget-timerange__reset" ng-show="from" ng-click="resetSearchFrom()" aria-label="Reset search" translate="aria-label">' +
             '           <i class="fa fa-times-circle" aria-hidden="true"></i>' +
             '        </button>' +
             '    </div>' +
             '    <div class="odswidget-timerange__to">' +
             '        <span class="odswidget-timerange__label" ng-bind="labelTo"></span>' +
-            '        <input type="text" placeholder="{{ placeholderTo }}" class="odswidget-timerange__input" aria-label="End date" translate="aria-label">' +
+            '        <input type="text" placeholder="{{ placeholderTo }}" class="odswidget-timerange__input" aria-label="{{\'End date\'|translate}}" title="{{\'End date\'|translate}}">' +
             '        <button type="reset" class="odswidget-timerange__reset" ng-show="to" ng-click="resetSearchTo()" aria-label="Reset search" translate="aria-label">' +
             '           <i class="fa fa-times-circle" aria-hidden="true"></i>' +
             '        </button>' +

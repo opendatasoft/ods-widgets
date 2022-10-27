@@ -24,6 +24,10 @@
                 params.apikey = context.apikey;
             }
 
+            if (ODSWidgetsConfig.language) {
+                params.lang = ODSWidgetsConfig.language;
+            }
+
             var options = {
                 params: params,
             };
@@ -55,6 +59,18 @@
                 });
         };
 
+        var getCatalogRoot = function(context) {
+            var source = context.parameters.source;
+
+            if (['monitoring', 'shared'].indexOf(source) >= 0) {
+                // Supported alternative roots
+                return source;
+            }
+
+            // Default root
+            return 'catalog';
+        };
+
         return {
             'uniqueCall': function(func) {
                 /*
@@ -83,10 +99,10 @@
             },
             datasets: {
                 records: function(context, parameters, timeout) {
-                    return request(context, '/api/v2/catalog/datasets/' + context.dataset.datasetid + '/records', parameters, timeout);
+                    return request(context, '/api/v2/' + getCatalogRoot(context) + '/datasets/' + context.dataset.datasetid + '/records', parameters, timeout);
                 },
                 aggregates: function(context, parameters, timeout) {
-                    return request(context, '/api/v2/catalog/datasets/' + context.dataset.datasetid + '/aggregates', parameters, timeout);
+                    return request(context, '/api/v2/' + getCatalogRoot(context) + '/datasets/' + context.dataset.datasetid + '/aggregates', parameters, timeout);
                 }
             }
         };

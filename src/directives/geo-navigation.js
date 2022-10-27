@@ -142,6 +142,10 @@
                             scope.currentShapeLayer = L.geoJson(shape, getShapeStyle());
                             map.addLayer(scope.currentShapeLayer);
                             map.fitBounds(scope.currentShapeLayer.getBounds());
+                            // Sometimes on initial load, the map doesn't work unless we invalidate size. Not sure
+                            // exactly why, this happens only on some browsers (Chome & FF, but not Safari),
+                            // and appeared suddenly (early 2022).
+                            map.invalidateSize();
                         });
                     });
                 };

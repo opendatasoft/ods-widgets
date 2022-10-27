@@ -3,6 +3,8 @@
 
     var mod = angular.module('ods-widgets');
 
+    var disqusShortnamePattern = /^[a-z0-9-]*$/g;
+
     mod.directive('odsDisqus', ['ODSWidgetsConfig', '$location', '$window', function(ODSWidgetsConfig, $location, $window) {
         /**
          * @ngdoc directive
@@ -25,6 +27,13 @@
             template: '<div id="disqus_thread" class="odswidget"></div>',
             link: function (scope) {
                 $window.disqus_shortname = scope.shortname || ODSWidgetsConfig.disqusShortname;
+                $window.disqus_shortname = $window.disqus_shortname.toLowerCase();
+                if (!$window.disqus_shortname.match(disqusShortnamePattern)) {
+                    console.error(
+                        'odsDisqus: The Disqus shortname should be a string with only alphanumeric characters or ' +
+                        'dashes, such as "mydisqusshortname"; but the received value is "' + $window.disqus_shortname + '".');
+                    return;
+                }
                 if (scope.identifier) {
                     $window.disqus_identifier = scope.identifier;
                 }
