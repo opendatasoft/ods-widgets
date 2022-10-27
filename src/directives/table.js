@@ -354,9 +354,7 @@
 
                         div = document.createElement('div');
                         div.className = 'odswidget-table__cell-container';
-                        if (field.type === "int" || field.type === "double") {
-                            div.className += ' odswidget-table__cell-container__right-aligned';
-                        }
+
                         td.appendChild(div);
 
                         var newScope, node;
@@ -375,11 +373,11 @@
                             if (field && field.type === 'geo_point_2d') {
                                 newScope.fieldValue = fieldValue;
                                 node = $compile('<ods-geotooltip width="300" height="300" coords="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
-                                div.dir = 'ltr';
+                                node.dir = 'ltr';
                             } else if (field && field.type === 'geo_shape') {
                                 newScope.fieldValue = $filter('truncate')(fieldValue);
                                 node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
-                                div.dir = 'ltr';
+                                node.dir = 'ltr';
                             } else if (field && field.type === 'file') {
                                 var html = $filter('nofollow')($filter('prettyText')(fieldValue)).toString();
                                 html = html.replace(/<a /, '<a ods-resource-download-conditions ');
@@ -389,13 +387,15 @@
                                     node = $compile(html)(newScope)[0];
                                     node.title = record.fields[field.name] ? record.fields[field.name].filename : '';
                                 }
-                                div.dir = 'ltr';
+                                node.dir = 'ltr';
                             } else {
                                 node = document.createElement('span');
                                 node.title = fieldValue;
                                 node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
-                                if (field && field.type === 'text') {
-                                    div.dir = $scope.context.dataset.metas.language === 'ar' ? 'rtl' : 'ltr';
+                                try {
+                                    node.dir = 'auto';
+                                } catch (error) {
+                                    // IE 11 crashes, we can just ignore it
                                 }
                             }
                         }

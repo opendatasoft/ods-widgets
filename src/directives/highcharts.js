@@ -1916,7 +1916,7 @@
          * The odsChart widget is the base widget allowing to display charts from Opendatasoft datasets.
          * A Chart is defined by one or more series that get their data from form one or more datasets represented by a {@link ods-widgets.directive:odsDatasetContext Dataset Context},
          * a type of chart, and multiple parameters to fine-tune the chart's appearance.
-         * 
+         *
          * Note: `min` and `max` parameters are dynamic, which means that if they change, the chart will be refreshed accordingly.
          *
          * Basic example:
@@ -2192,6 +2192,13 @@
          * @param {string} [seriesBreakdown=none] When declared, all series are broken down by the defined facet.
          * @param {string} [seriesBreakdownTimescale=true] If the breakdown facet is a time serie (date or datetime), it defines the aggregation level for this facet.
          * @param {object} [categoryColors={}] A object containing a color for each category name. For example: {'my value': '#FF0000', 'my other value': '#0000FF'}
+         * @param {string} [sort=none] Displays the results in a specific order. The following values are available:
+         *
+         * - To sort based on horizontal axis, use `x` or `-x`. For date-based axes, you need to include the name of
+         * the field, and the highest precision in the displayed data. For example, if the field name is `mydate`, and
+         * the data includes the year, you can use `x.mydate.year`.
+         * - To sort based on the displayed values, use `y` or `-y` if there is a single serie. If there are multiple
+         * series, use `series{n}-{m}` where `n` is the {n}th `ods-chart-query`, and m is the {m}th `ods-chart-serie`
          *
          * @description
          * The odsChartQuery widget is the sub widget that defines the queries for the series defined inside.
@@ -2304,7 +2311,7 @@
         };
     }]);
 
-    mod.directive('odsChartSerie', ["ODSAPI", 'ChartHelper', '$compile', '$parse', function(ODSAPI, ChartHelper, $compile, $parse) {
+    mod.directive('odsChartSerie', ["ODSAPI", 'ChartHelper', 'ODSWidgetsConfig', '$compile', '$parse', function(ODSAPI, ChartHelper, ODSWidgetsConfig, $compile, $parse) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsChartSerie
@@ -2339,7 +2346,7 @@
          * For complete examples, see {@link ods-widgets.directive:odsChart odsChart}.
          * # Available chart types:
          * There are two available types of charts: simple series and areas that take a minimal and a maximal value.
-         * 
+         *
          * ## Simple series
          * - line
          * - spline
@@ -2352,12 +2359,12 @@
          * - polar
          * - spiderweb
          * - funnel
-         * 
+         *
          * ## Areas
          * - arearange
          * - areasplinerange
          * - columnrange
-         * 
+         *
          * # Available functions
          * - COUNT
          * - AVG
@@ -2394,6 +2401,14 @@
                 };
 
                 function updateChartFromDynamicAttrs() {
+                    var color;
+                    if (attrs.color == "range-custom" && !(ODSWidgetsConfig.chartColors &&
+                        ODSWidgetsConfig.chartColors.length > 0)) {
+                        color = undefined;
+                    } else {
+                        color = attrs.color;
+                    }
+
                     angular.extend(chart, {
                         type: attrs.chartType || undefined,
                         innersize: attrs.innersize || undefined,
@@ -2404,7 +2419,7 @@
                         yRangeMax: angular.isDefined(attrs.max) && attrs.max !== "" ? parseFloat(attrs.max) : undefined,
                         yStep: angular.isDefined(attrs.step) && attrs.step !== "" ? parseFloat(attrs.step) : undefined,
                         multiplier: angular.isDefined(attrs.multiplier) ? parseFloat(attrs.multiplier) : undefined,
-                        color: attrs.color || undefined,
+                        color: color,
                         thresholds: attrs.colorThresholds ? scope.$eval(attrs.colorThresholds) : [],
                     });
                 }

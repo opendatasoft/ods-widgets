@@ -8,6 +8,8 @@
             restrict: 'A',
             scope: true,
             controller: ['$scope', '$attrs', function($scope, $attrs) {
+                var dataCall = ODSAPIv2.uniqueCall(ODSAPIv2.datasets.records);
+
                 var runQuery = function(variableName, context, select, where, orderBy, rows) {
                     var params = APIParamsV1ToV2(context.parameters);
                     params = angular.extend(params, {
@@ -16,9 +18,7 @@
                         order_by: orderBy,
                         rows: rows || undefined
                     });
-
-                    ODSAPIv2
-                        .uniqueCall(ODSAPIv2.datasets.records)(context, params)
+                    dataCall(context, params)
                         .then(function(response) {
                             var result = response.data;
                             $scope[variableName] = result.records.map(function(entry) { return entry.record.fields; });

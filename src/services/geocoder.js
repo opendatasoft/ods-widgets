@@ -2,17 +2,6 @@
     'use strict';
     var mod = angular.module('ods-widgets');
 
-    mod.factory('Geocoder', ['ODSWidgetsConfig', 'AlgoliaPlaces', 'JawgGeocoder', function(ODSWidgetsConfig, AlgoliaPlaces, JawgGeocoder) {
-        /*
-        Returns the geocoding service deopending on ODSWidgetsConfig's `geocodingProvider` setting
-         */
-        if (ODSWidgetsConfig.geocodingProvider === 'jawg') {
-            return JawgGeocoder;
-        } else {
-            return AlgoliaPlaces;
-        }
-    }]);
-
     /*
     Calls to the following services should return an array of:
         {
@@ -27,91 +16,7 @@
             "type": "country"|"region"|"city"|"street"|"address"|"poi"|"railway"|"aeroway"
      */
 
-    mod.service('AlgoliaPlaces', ['$http', 'ODSWidgetsConfig', '$q',  function($http, ODSWidgetsConfig, $q) {
-        /*
-            Documentation: https://community.algolia.com/places/rest.html
-         */
-        var computeParents = function(algoliaSuggestion) {
-            var parents = '';
-
-            ['city', 'administrative', 'country'].forEach(function(prop) {
-                if (angular.isDefined(algoliaSuggestion[prop])) {
-                    if (parents.length > 0) {
-                        parents += ', ';
-                    }
-                    parents += algoliaSuggestion[prop];
-                }
-            });
-
-            return parents;
-        };
-        var computeType = function(algoliaSuggestion) {
-            // Note: Algolia doesn't contain regions
-            if (algoliaSuggestion._tags.indexOf("aeroway") >= 0) {
-                return "aeroway";
-            } else if (algoliaSuggestion._tags.indexOf("railway") >= 0) {
-                return "railway";
-            } else if (algoliaSuggestion.is_country) {
-                return "country";
-            } else if (algoliaSuggestion.is_city) {
-                return "city";
-            } else if (algoliaSuggestion.is_highway) {
-                return "street";
-            } else {
-                return "address"; // Can't be more precise than that :/
-            }
-        };
-
-        var options = {};
-        if (ODSWidgetsConfig.algoliaPlacesApplicationId && ODSWidgetsConfig.algoliaPlacesAPIKey) {
-            options.headers = {
-                'X-Algolia-Application-Id': ODSWidgetsConfig.algoliaPlacesApplicationId,
-                'X-Algolia-API-Key': ODSWidgetsConfig.algoliaPlacesAPIKey
-            };
-        }
-
-        var currentRequest = null;
-        return function(query, aroundLatLng) {
-            var deferred = $q.defer();
-            var queryOptions = angular.extend({}, options);
-
-            if (currentRequest) {
-                currentRequest.resolve();
-            }
-            currentRequest = $q.defer();
-            queryOptions.timeout = currentRequest.promise;
-            queryOptions.params = {
-                'query': query,
-                'aroundLatLngViaIP': false,
-                'language': ODSWidgetsConfig.language || 'en',
-                'hitsPerPage': 5
-            };
-            if (aroundLatLng) {
-                queryOptions.params.aroundLatLng = aroundLatLng.join(',');
-            }
-
-            $http.get('https://places-dsn.algolia.net/1/places/query', queryOptions).then(function(response) {
-                var result = response.data;
-                var suggestions = [];
-                angular.forEach(result.hits, function(suggestion) {
-                    suggestions.push({
-                        location: suggestion._geoloc,
-                        name: suggestion.locale_names[0],
-                        highlightedName: suggestion._highlightResult.locale_names[0].value,
-                        parents: computeParents(suggestion),
-                        type: computeType(suggestion)
-                    })
-                });
-                deferred.resolve(suggestions);
-            }, function() {
-                deferred.reject();
-            });
-
-            return deferred.promise;
-        };
-    }]);
-
-    mod.service('JawgGeocoder', ['$http', 'ODSWidgetsConfig', '$q', function($http, ODSWidgetsConfig, $q) {
+    mod.service('Geocoder', ['$http', 'ODSWidgetsConfig', '$q', function($http, ODSWidgetsConfig, $q) {
         // https://www.jawg.io/docs/apidocs/places/autocomplete/#layers
         // Regarding configuration: https://app.clubhouse.io/opendatasoft/story/17461/experiment-alternative-geocoding-api-as-a-backend-for-geosearch#activity-19300
         var includedLayers = [
@@ -168,12 +73,18 @@
 
             ['locality', 'region', 'country'].forEach(function(prop) {
                 var existingProp = jawgSuggestion.properties[prop];
+
+                if (!existingProp && prop === 'locality') {
+                    // localadmin can be a fallback for locality, depending on the country and data source
+                    existingProp = jawgSuggestion.properties['localadmin'];
+                }
+
                 if (angular.isDefined(existingProp) && existingProp !== jawgSuggestion.properties.name) {
                     if (previousParent !== existingProp) {
                         if (parents.length > 0) {
                             parents += ', ';
                         }
-                        parents += jawgSuggestion.properties[prop];
+                        parents += existingProp;
                         previousParent = existingProp;
                     }
                 }
@@ -256,6 +167,6 @@
                 deferred.reject();
             });
             return deferred.promise;
-        }
+        };
     }]);
 }());

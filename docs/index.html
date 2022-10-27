@@ -92,92 +92,65 @@
     </head>
 
     <body>
-
         <div class="ods-header">
+            <button type="button"
+                    class="menu-button ods-header__menu-toggle"
+                    id="sidebar-button"
+                    aria-label="Main menu">
+                        <img class="ods-header__menu-toggle__openlogo" id="sidebar-button" src="/assets/menu-fill.svg" alt="Open documentation menu">
+            </button>
 
-            <div class="ods-header__brand">
+            <a class="ods-header-logo ods-header-logo-link"
+               href="https://help.opendatasoft.com/">
+                <img src="grunt-styles/assets/ods-logo-noir.svg" alt="Opendatasoft logo">
+            <span class="ods-header__brandname">
+                Help Center
+            </span>
+            </a>
 
-                <button type="button"
-                        class="ods-header__menu-toggle"
-                        id="sidebar-button">
-                    Menu
-                </button>
-
-                <a class="ods-header__logo"
-                    href="#/introduction/">
-                    <img src="grunt-styles/assets/ods-logo-helphub.svg"
-                        alt="ODS Widgets documentation">
-                </a>
-
-                <button type="button"
-                        class="ods-header__menu-toggle"
-                        id="helphub-button">
-                    Help Hub
-                </button>
-
-            </div>
-
-            <div class="ods-header__nav"
-                 id="helphub-nav">
-
-                <div class="ods-header__nav-item">
-                    <a class="ods-header__nav-item-link"
-                        href="/">
-                        Help Hub
-                    </a>
-                </div>
-
+            <div class="ods-header__nav" id="helphub-nav">
                 <div class="ods-header__nav-item">
                     <a class="ods-header__nav-item-link"
                         href="/platform/en/">
                         User guide
                     </a>
                 </div>
-
                 <div class="ods-header__nav-item">
                     <a class="ods-header__nav-item-link"
                         href="https://codelibrary.opendatasoft.com/">
                         Code library
                     </a>
                 </div>
-
                 <div class="ods-header__nav-item">
-                    <a class="ods-header__nav-item-link"
-                        href="/faq-glossary/en/">
-                        FAQ
-                    </a>
-                </div>
-
-                <div class="ods-header__nav-item">
-                    <a class="ods-header__nav-item-link ods-header__nav-item-link--active"
+                    <a class="ods-header__nav-item-link is-active"
                         href="#/introduction/">
                         Widgets
                     </a>
                 </div>
-
                 <div class="ods-header__nav-item">
                     <a class="ods-header__nav-item-link"
                         href="/en/apis/">
                         APIs
                     </a>
                 </div>
-
                 <div class="ods-header__nav-item">
                     <a class="ods-header__nav-item-link"
-                        href="https://academy.opendatasoft.com/page/homepage">
-                        Academy
+                      href="https://academy.opendatasoft.com/page/homepage">
+                      Academy
                     </a>
                 </div>
-
                 <div class="ods-header__nav-item">
                     <a class="ods-header__nav-item-link"
-                        href="https://documentation-resources.opendatasoft.com/pages/release-notes/?headless=true">
-                        Release notes
+                      href="https://changes.opendatasoft.com/en">
+                      Release notes
                     </a>
                 </div>
-
             </div>
-
+            <button type="button"
+                    class="menu-button ods-header__menu-toggle"
+                    id="helphub-button">
+                        <img class="ods-header__menu-toggle__openlogo" id="helphub-button" src="assets/apps-custo.svg" alt="Open help center menu">
+            </button>
         </div>
 
         <div role="main" class="ods-container">

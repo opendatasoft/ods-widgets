@@ -82,7 +82,7 @@
                 var match = re.exec(value);
                 if (match !== null) {
                     // It looks like an image
-                    return $sce.trustAsHtml('<img class="odswidget odswidget-imagified" src="' + match[1] + '" />');
+                    return $sce.trustAsHtml('<img class="odswidget odswidget-imagified" src="' + ODS.StringUtils.escapeHTML(match[1]) + '" />');
                 }
             }
             return value;
@@ -117,16 +117,19 @@
                 var match = re_youtube.exec(url.trim());
                 if (match !== null) {
                     // The first match is the Youtube ID
+                    // We can trust this code because the match can't contain offensive characters
                     return $sce.trustAsHtml('<iframe width="200" height="113" src="//www.youtube.com/embed/'+match[1]+'" frameborder="0" allowfullscreen></iframe>');
                 }
                 match = re_dailymotion.exec(url.trim());
                 if (match !== null) {
-                    // The first match is the Youtube ID
+                    // The first match is the Dailymotion ID
+                    // We can trust this code because the match can't contain offensive characters
                     return $sce.trustAsHtml('<iframe frameborder="0" width="200" height="113" src="//www.dailymotion.com/embed/video/'+match[1]+'" allowfullscreen></iframe>');
                 }
                 match = re_vimeo.exec(url.trim());
                 if (match !== null) {
-                    // The first match is the Youtube ID
+                    // The first match is the Vimeo ID
+                    // We can trust this code because the match can't contain offensive characters
                     return $sce.trustAsHtml('<iframe src="https://player.vimeo.com/video/'+match[1]+'" width="200" height="113" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>');
                 }
             }
@@ -215,7 +218,7 @@
             }
             var url = '/explore/dataset/'+datasetid+'/files/'+value.id+'/300/';
 
-            return $sce.trustAsHtml('<img class="odswidget odswidget-imagified" src="' + url + '" />');
+            return $sce.trustAsHtml('<img class="odswidget odswidget-imagified" src="' + ODS.StringUtils.escapeHTML(url) + '" />');
         };
     }]);
 
@@ -355,7 +358,7 @@
                     // return link to file if available
                     if (datasetID) {
                         var url = domainURL + '/explore/dataset/' + datasetID + '/files/' + value.id + '/download/';
-                        return $sce.trustAsHtml('<a target="_self" href="' + url + '">' + (value.filename || record.filename) + '</a>');
+                        return $sce.trustAsHtml('<a target="_self" href="' + ODS.StringUtils.escapeHTML(url) + '">' + ODS.StringUtils.escapeHTML(value.filename || record.filename) + '</a>');
                     }
 
                     return value.filename || record.filename;

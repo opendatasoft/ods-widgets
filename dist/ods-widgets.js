@@ -9021,6 +9021,10 @@ mod.directive('infiniteScroll', [
                 params.apikey = context.apikey;
             }
 
+            if (ODSWidgetsConfig.language) {
+                params.lang = ODSWidgetsConfig.language;
+            }
+
             var options = {
                 params: params,
             };
@@ -9052,6 +9056,18 @@ mod.directive('infiniteScroll', [
                 });
         };
 
+        var getCatalogRoot = function(context) {
+            var source = context.parameters.source;
+
+            if (['monitoring', 'shared'].indexOf(source) >= 0) {
+                // Supported alternative roots
+                return source;
+            }
+
+            // Default root
+            return 'catalog';
+        };
+
         return {
             'uniqueCall': function(func) {
                 /*
@@ -9080,10 +9096,10 @@ mod.directive('infiniteScroll', [
             },
             datasets: {
                 records: function(context, parameters, timeout) {
-                    return request(context, '/api/v2/catalog/datasets/' + context.dataset.datasetid + '/records', parameters, timeout);
+                    return request(context, '/api/v2/' + getCatalogRoot(context) + '/datasets/' + context.dataset.datasetid + '/records', parameters, timeout);
                 },
                 aggregates: function(context, parameters, timeout) {
-                    return request(context, '/api/v2/catalog/datasets/' + context.dataset.datasetid + '/aggregates', parameters, timeout);
+                    return request(context, '/api/v2/' + getCatalogRoot(context) + '/datasets/' + context.dataset.datasetid + '/aggregates', parameters, timeout);
                 }
             }
         };
@@ -10525,17 +10541,6 @@ mod.directive('infiniteScroll', [
     'use strict';
     var mod = angular.module('ods-widgets');
 
-    mod.factory('Geocoder', ['ODSWidgetsConfig', 'AlgoliaPlaces', 'JawgGeocoder', function(ODSWidgetsConfig, AlgoliaPlaces, JawgGeocoder) {
-        /*
-        Returns the geocoding service deopending on ODSWidgetsConfig's `geocodingProvider` setting
-         */
-        if (ODSWidgetsConfig.geocodingProvider === 'jawg') {
-            return JawgGeocoder;
-        } else {
-            return AlgoliaPlaces;
-        }
-    }]);
-
     /*
     Calls to the following services should return an array of:
         {
@@ -10550,91 +10555,7 @@ mod.directive('infiniteScroll', [
             "type": "country"|"region"|"city"|"street"|"address"|"poi"|"railway"|"aeroway"
      */
 
-    mod.service('AlgoliaPlaces', ['$http', 'ODSWidgetsConfig', '$q',  function($http, ODSWidgetsConfig, $q) {
-        /*
-            Documentation: https://community.algolia.com/places/rest.html
-         */
-        var computeParents = function(algoliaSuggestion) {
-            var parents = '';
-
-            ['city', 'administrative', 'country'].forEach(function(prop) {
-                if (angular.isDefined(algoliaSuggestion[prop])) {
-                    if (parents.length > 0) {
-                        parents += ', ';
-                    }
-                    parents += algoliaSuggestion[prop];
-                }
-            });
-
-            return parents;
-        };
-        var computeType = function(algoliaSuggestion) {
-            // Note: Algolia doesn't contain regions
-            if (algoliaSuggestion._tags.indexOf("aeroway") >= 0) {
-                return "aeroway";
-            } else if (algoliaSuggestion._tags.indexOf("railway") >= 0) {
-                return "railway";
-            } else if (algoliaSuggestion.is_country) {
-                return "country";
-            } else if (algoliaSuggestion.is_city) {
-                return "city";
-            } else if (algoliaSuggestion.is_highway) {
-                return "street";
-            } else {
-                return "address"; // Can't be more precise than that :/
-            }
-        };
-
-        var options = {};
-        if (ODSWidgetsConfig.algoliaPlacesApplicationId && ODSWidgetsConfig.algoliaPlacesAPIKey) {
-            options.headers = {
-                'X-Algolia-Application-Id': ODSWidgetsConfig.algoliaPlacesApplicationId,
-                'X-Algolia-API-Key': ODSWidgetsConfig.algoliaPlacesAPIKey
-            };
-        }
-
-        var currentRequest = null;
-        return function(query, aroundLatLng) {
-            var deferred = $q.defer();
-            var queryOptions = angular.extend({}, options);
-
-            if (currentRequest) {
-                currentRequest.resolve();
-            }
-            currentRequest = $q.defer();
-            queryOptions.timeout = currentRequest.promise;
-            queryOptions.params = {
-                'query': query,
-                'aroundLatLngViaIP': false,
-                'language': ODSWidgetsConfig.language || 'en',
-                'hitsPerPage': 5
-            };
-            if (aroundLatLng) {
-                queryOptions.params.aroundLatLng = aroundLatLng.join(',');
-            }
-
-            $http.get('https://places-dsn.algolia.net/1/places/query', queryOptions).then(function(response) {
-                var result = response.data;
-                var suggestions = [];
-                angular.forEach(result.hits, function(suggestion) {
-                    suggestions.push({
-                        location: suggestion._geoloc,
-                        name: suggestion.locale_names[0],
-                        highlightedName: suggestion._highlightResult.locale_names[0].value,
-                        parents: computeParents(suggestion),
-                        type: computeType(suggestion)
-                    })
-                });
-                deferred.resolve(suggestions);
-            }, function() {
-                deferred.reject();
-            });
-
-            return deferred.promise;
-        };
-    }]);
-
-    mod.service('JawgGeocoder', ['$http', 'ODSWidgetsConfig', '$q', function($http, ODSWidgetsConfig, $q) {
+    mod.service('Geocoder', ['$http', 'ODSWidgetsConfig', '$q', function($http, ODSWidgetsConfig, $q) {
         // https://www.jawg.io/docs/apidocs/places/autocomplete/#layers
         // Regarding configuration: https://app.clubhouse.io/opendatasoft/story/17461/experiment-alternative-geocoding-api-as-a-backend-for-geosearch#activity-19300
         var includedLayers = [
@@ -10691,12 +10612,18 @@ mod.directive('infiniteScroll', [
 
             ['locality', 'region', 'country'].forEach(function(prop) {
                 var existingProp = jawgSuggestion.properties[prop];
+
+                if (!existingProp && prop === 'locality') {
+                    // localadmin can be a fallback for locality, depending on the country and data source
+                    existingProp = jawgSuggestion.properties['localadmin'];
+                }
+
                 if (angular.isDefined(existingProp) && existingProp !== jawgSuggestion.properties.name) {
                     if (previousParent !== existingProp) {
                         if (parents.length > 0) {
                             parents += ', ';
                         }
-                        parents += jawgSuggestion.properties[prop];
+                        parents += existingProp;
                         previousParent = existingProp;
                     }
                 }
@@ -10779,7 +10706,7 @@ mod.directive('infiniteScroll', [
                 deferred.reject();
             });
             return deferred.promise;
-        }
+        };
     }]);
 }());
 ;(function () {
@@ -11031,6 +10958,21 @@ mod.directive('infiniteScroll', [
             default:
                 return translate('The server encountered an internal error. Please retry the request or contact the ' +
                     'administrator.');
+            }
+        };
+    }]);
+
+    mod.service('odsNetworkErrorMessages', ['translate',  function(translate) {
+        this.getForXHRStatus = function(xhrStatus) {
+            switch (xhrStatus) {
+            case 'offline':
+                return translate('It seems you are not connected to internet.');
+            case 'error':
+                return translate('The server could not be reached, it may be a temporary network error.');
+            case 'timeout':
+                return translate('The server did not answer in a timely manner.');
+            default:
+                return translate('A network error happened during the call.');
             }
         };
     }]);
@@ -11566,8 +11508,13 @@ mod.directive('infiniteScroll', [
                         var latLng, yOffset;
 
                         if (angular.isDefined(e.target.getLatLng)) {
+                            // This is a Marker from a regular drawn point
                             latLng = e.target.getLatLng();
                             yOffset = service.getMarkerTooltipYOffset(e.target, layerConfig);
+                        } else if (e.layer && angular.isDefined(e.layer.getLatLng)) {
+                            // This is a Marker from a GeoJSON layer
+                            latLng = e.layer.getLatLng();
+                            yOffset = service.getMarkerTooltipYOffset(e.layer, layerConfig);
                         } else {
                             latLng = e.latlng;
                             yOffset = 0; // Displayed where the user clicked
@@ -11867,7 +11814,11 @@ mod.directive('infiniteScroll', [
                 };
 
                 // Is it a shape containing points?
-                var hasPoints = geoJSON.type === "GeometryCollection" && Boolean(geoJSON.geometries.filter(function(geometry) { return geometry.type === 'Point'}).length);
+                var hasPoints = (
+                        geoJSON.type === "GeometryCollection" &&
+                        Boolean(geoJSON.geometries.filter(function(geometry) { return geometry.type === 'Point'; }).length)
+                    ) ||
+                    geoJSON.type === 'MultiPoint';
 
                 if (hasPoints) {
                     // We have to wait until the SVG is ready to be rendered in the markers
@@ -14199,7 +14150,7 @@ mod.directive('infiniteScroll', [
                 var match = re.exec(value);
                 if (match !== null) {
                     // It looks like an image
-                    return $sce.trustAsHtml('<img class="odswidget odswidget-imagified" src="' + match[1] + '" />');
+                    return $sce.trustAsHtml('<img class="odswidget odswidget-imagified" src="' + ODS.StringUtils.escapeHTML(match[1]) + '" />');
                 }
             }
             return value;
@@ -14234,16 +14185,19 @@ mod.directive('infiniteScroll', [
                 var match = re_youtube.exec(url.trim());
                 if (match !== null) {
                     // The first match is the Youtube ID
+                    // We can trust this code because the match can't contain offensive characters
                     return $sce.trustAsHtml('<iframe width="200" height="113" src="//www.youtube.com/embed/'+match[1]+'" frameborder="0" allowfullscreen></iframe>');
                 }
                 match = re_dailymotion.exec(url.trim());
                 if (match !== null) {
-                    // The first match is the Youtube ID
+                    // The first match is the Dailymotion ID
+                    // We can trust this code because the match can't contain offensive characters
                     return $sce.trustAsHtml('<iframe frameborder="0" width="200" height="113" src="//www.dailymotion.com/embed/video/'+match[1]+'" allowfullscreen></iframe>');
                 }
                 match = re_vimeo.exec(url.trim());
                 if (match !== null) {
-                    // The first match is the Youtube ID
+                    // The first match is the Vimeo ID
+                    // We can trust this code because the match can't contain offensive characters
                     return $sce.trustAsHtml('<iframe src="https://player.vimeo.com/video/'+match[1]+'" width="200" height="113" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>');
                 }
             }
@@ -14332,7 +14286,7 @@ mod.directive('infiniteScroll', [
             }
             var url = '/explore/dataset/'+datasetid+'/files/'+value.id+'/300/';
 
-            return $sce.trustAsHtml('<img class="odswidget odswidget-imagified" src="' + url + '" />');
+            return $sce.trustAsHtml('<img class="odswidget odswidget-imagified" src="' + ODS.StringUtils.escapeHTML(url) + '" />');
         };
     }]);
 
@@ -14472,7 +14426,7 @@ mod.directive('infiniteScroll', [
                     // return link to file if available
                     if (datasetID) {
                         var url = domainURL + '/explore/dataset/' + datasetID + '/files/' + value.id + '/download/';
-                        return $sce.trustAsHtml('<a target="_self" href="' + url + '">' + (value.filename || record.filename) + '</a>');
+                        return $sce.trustAsHtml('<a target="_self" href="' + ODS.StringUtils.escapeHTML(url) + '">' + ODS.StringUtils.escapeHTML(value.filename || record.filename) + '</a>');
                     }
 
                     return value.filename || record.filename;
@@ -16182,8 +16136,8 @@ mod.directive('infiniteScroll', [
          *
          * @description
          * The odsAdvAnalysis widget exposes the results of an aggregation function over a context.
-         * It uses the ODS Search API v2 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-search-v2/#odsql), which offers greater flexibility than the v1.
-         * 
+         * It uses the ODS Explore API V2 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29), which offers greater flexibility than the v1.
+         *
          * The parameters for this widgets are dynamic, which implies two benefits:
          * - First, changes in context parameters will refresh the results of the widget.
          * - Second, AngularJS variables are accepted as attributes.
@@ -16196,7 +16150,7 @@ mod.directive('infiniteScroll', [
          * <h2>Examples of requests to make</h2>
          *
          * How to compute a weighted average:
-         * 
+         *
          * In this example, the widget will return the average height of the trees according to the population size of each species in Paris districts.
          * <pre>
          *     <ods-dataset-context
@@ -16333,6 +16287,8 @@ mod.directive('infiniteScroll', [
             restrict: 'A',
             scope: true,
             controller: ['$scope', '$attrs', function($scope, $attrs) {
+                var dataCall = ODSAPIv2.uniqueCall(ODSAPIv2.datasets.aggregates);
+
                 var runQuery = function(variableName, context, select, where, limit, groupBy, orderBy) {
                     var params = APIParamsV1ToV2(context.parameters);
                     params = angular.extend(params, {
@@ -16342,8 +16298,7 @@ mod.directive('infiniteScroll', [
                         group_by: groupBy,
                         order_by: orderBy
                     });
-                    ODSAPIv2
-                        .uniqueCall(ODSAPIv2.datasets.aggregates)(context, params)
+                    dataCall(context, params)
                         .then(function(response) {
                             var result = response.data;
                             $scope[variableName] = result.aggregations;
@@ -16390,6 +16345,8 @@ mod.directive('infiniteScroll', [
             restrict: 'A',
             scope: true,
             controller: ['$scope', '$attrs', function($scope, $attrs) {
+                var dataCall = ODSAPIv2.uniqueCall(ODSAPIv2.datasets.records);
+
                 var runQuery = function(variableName, context, select, where, orderBy, rows) {
                     var params = APIParamsV1ToV2(context.parameters);
                     params = angular.extend(params, {
@@ -16398,9 +16355,7 @@ mod.directive('infiniteScroll', [
                         order_by: orderBy,
                         rows: rows || undefined
                     });
-
-                    ODSAPIv2
-                        .uniqueCall(ODSAPIv2.datasets.records)(context, params)
+                    dataCall(context, params)
                         .then(function(response) {
                             var result = response.data;
                             $scope[variableName] = result.records.map(function(entry) { return entry.record.fields; });
@@ -19450,244 +19405,6 @@ mod.directive('infiniteScroll', [
 })();
 ;(function() {
     'use strict';
-    var mod = angular.module('ods-widgets');
-
-
-    var positionEmbed = function(elem, position) {
-        var datasetItem = elem.find('.dataset-item').first();
-        var cardHeight = jQuery(elem.find('.card-container')).outerHeight();
-        if (position === "bottom") {
-            jQuery(datasetItem).css('top', 0);
-            jQuery(datasetItem).css('bottom', cardHeight);
-        } else { // top
-            jQuery(datasetItem).css('top', cardHeight);
-            jQuery(datasetItem).css('bottom', 0);
-        }
-    };
-
-    mod.directive('odsDatasetCard', function() {
-        /**
-         * @ngdoc directive
-         * @name ods-widgets.directive:odsDatasetCard
-         * @restrict E
-         * @scope
-         * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
-         * @description
-         * When wrapped around an element or a set of elements, the odsDatasetCard widget displays an expandable card above it.
-         * 
-         * This card shows the dataset's title and description, a link to the portal that shows the dataset and the license attached to the data.
-         *
-         * @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
-         *                               events-dataset="evenements-publics-openagenda-extract">
-         *              <ods-dataset-card context="events" style="height: 600px">
-         *                  <ods-map context="events"></ods-map>
-         *              </ods-dataset-card>
-         *          </ods-dataset-context>
-         *      </file>
-         *  </example>
-         */
-        return {
-            restrict: 'E',
-            scope: {
-                context: '='
-            },
-            template: '<div class="odswidget odswidget-dataset-card">' +
-            '   <div class="card-container" ng-class="{bottom: position == \'bottom\', expanded: expanded, expandable: isExpandable()}">' +
-            '       <h2 class="dataset-title" ng-click="expanded = !expanded" ng-show="!expanded || (expanded && !context.dataset.metas.description)">{{context.dataset.metas.title}}</h2>' +
-            '       <div ng-click="expanded = !expanded" class="expand-control" title="Show/hide details" translate="title">' +
-            '           <span translate>Details</span> ' +
-            '           <i class="fa fa-chevron-down" ng-show="!expanded" aria-hidden="true"></i>' +
-            '           <i class="fa fa-chevron-up" aria-hidden="true" ng-hide="!expanded"></i>' +
-            '       </div>' +
-            '       <div class="dataset-expanded" ng-click="expanded = !expanded"">'+
-            '           <h2 class="dataset-title" ng-show="expanded">' +
-            '               {{context.dataset.metas.title}}' +
-            '           </h2>' +
-            '           <p class="dataset-description" ng-if="expanded" ng-bind-html="safeHtml(context.dataset.metas.description)"></p>' +
-            '       </div>' +
-            '       <div class="dataset-infos">' +
-            '           <span class="dataset-infos-text">' +
-            '               <a ng-href="{{datasetUrl}}" target="_blank" ng-bind-html="websiteName"></a>' +
-            '               <span ng-show="context.dataset.metas.license"> - ' +
-            '                   <span translate>License</span> ' +
-            '                   {{context.dataset.metas.license}}' +
-            '               </span>' +
-            '           </span>' +
-            '       </div>' +
-            '   </div>' +
-            '   <div class="dataset-item" ng-transclude></div>' +
-            '</div>',
-
-            replace: true,
-            transclude: true,
-
-            link: function(scope, elem, attrs) {
-                scope.position = attrs.position || "top";
-                // moves embedded item down so the card doesn't overlap when collapsed
-            },
-
-            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', '$timeout',
-                function($scope, $element, ODSWidgetsConfig, $transclude, $sce, $timeout) {
-
-                    $scope.websiteName = ODSWidgetsConfig.websiteName;
-                    $scope.expanded = false;
-
-
-                    $scope.safeHtml = function(html) {
-                        return $sce.trustAsHtml(html);
-                    };
-
-
-                    $scope.isExpandable = function() {
-                        if (!$scope.context || !$scope.context.dataset || !$scope.context.dataset.datasetid) {
-                            // No data yet
-                            return false;
-                        }
-
-                        if (!$scope.context.dataset.metas.description) {
-                            return false;
-                        }
-
-                        return true;
-                    };
-
-
-                    var unwatch = $scope.$watch('context', function(nv, ov) {
-                        if (!nv || !nv.dataset) {
-                            return;
-                        }
-                        // waiting for re-render
-                        $timeout(function() {
-                            positionEmbed($element, $scope.position);
-                        }, 0);
-                        $scope.expanded = false;
-                        $scope.datasetUrl = $scope.context.domainUrl + '/explore/dataset/' + $scope.context.dataset.datasetid + '/';
-                        if (!$scope.websiteName) {
-                            $scope.websiteName = $scope.context.domainUrl;
-                        }
-                        unwatch();
-                    }, true);
-                    positionEmbed($element, $scope.position);
-                }]
-        };
-    });
-
-
-    mod.directive('odsMultidatasetsCard', ['ODSWidgetsConfig', function(ODSWidgetsConfig) {
-        return {
-            restrict: 'E',
-            scope: {
-                odsTitle: '=',
-                datasets: '=',
-                context: '='
-            },
-            template: '<div class="odswidget-multidatasets-card">' +
-            '   <div class="card-container multidatasets" ng-class="{bottom: (position == \'bottom\'), expanded: expanded, expandable: isExpandable()}">' +
-            '       <h2 ng-show="!expanded" ng-click="tryToggleExpand()">' +
-            '           {{ odsTitle }}' +
-            '       </h2>' +
-            '       <div ng-click="tryToggleExpand()" class="expand-control" ng-class="{expanded: expanded}" title="Show/hide details">' +
-            '           <span translate>Details</span> ' +
-            '           <i class="fa fa-chevron-down" aria-hidden="true"></i>' +
-            '       </div>' +
-            '       <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="!expanded">' +
-            '           <span class="count-text" ng-hide="!datasetObjectKeys || datasetObjectKeys.length <= 1">' +
-            '               <span translate translate-n="datasetObjectKeys.length" translate-plural="{{ $count }} datasets">{{ $count }} dataset</span>' +
-            '          </span>' +
-            '       </h3>' +
-            '       <div class="datasets-expanded">' +
-            '           <h2 ng-show="expanded" ng-click="tryToggleExpand()">' +
-            '               {{ odsTitle }}' +
-            '           </h2>' +
-            '           <h3 class="datasets-counter" ng-click="tryToggleExpand()" ng-show="expanded">' +
-            '               <span class="count-text">' +
-            '                   <span ng-if="datasetObjectKeys.length == 0" translate>no dataset to display</span>' +
-            '                   <span ng-if="datasetObjectKeys.length > 0" translate translate-n="datasetObjectKeys.length" translate-plural="{{ $count }} datasets">{{ $count }} dataset</span>' +
-            '               </span>' +
-            '           </h3>' +
-            '           <ul class="dataset-list"' +
-            '              ng-show="(datasetObjectKeys && datasetObjectKeys.length === 1) || (isExpandable() && expanded)"' +
-            '              ng-class="{\'single-dataset\': datasetObjectKeys.length === 1}">' +
-            '               <li ng-repeat="(key, dataset) in datasets"> ' +
-            '                   <a ng-href="{{context.domainUrl}}/explore/dataset/{{dataset.datasetid}}/" target="_blank">{{ dataset.metas.title }}</a>' +
-            '                  <span ng-show="dataset.metas.license">- <span translate>License</span> {{ dataset.metas.license }}</span>' +
-            '               </li>' +
-            '           </ul>' +
-            '       </div>' +
-            '       <div class="dataset-infos">' +
-            '           <span class="dataset-infos-text">' +
-            '               <a ng-href="/" target="_blank" ng-bind-html="websiteName"></a>' +
-            '           </span>' +
-            '       </div>' +
-            '   </div>' +
-            '   <!-- embedded content (chart, map etc.) -->' +
-            '   <div class="dataset-item" ng-transclude></div>' +
-            '</div>',
-
-            replace: true,
-            transclude: true,
-
-            link: function(scope, elem, attrs) {
-                scope.position = attrs.position || "top";
-                // moves embedded item down so the card doesn't overlap when collapsed
-            },
-
-            controller: ['$scope', '$element', 'ODSWidgetsConfig', '$transclude', '$sce', '$timeout',
-                function($scope, $element, ODSWidgetsConfig, $transclude, $sce, $timeout) {
-                    $scope.datasetObjectKeys = [];
-                    $scope.websiteName = ODSWidgetsConfig.websiteName;
-
-
-                    $scope.safeHtml = function(html) {
-                        return $sce.trustAsHtml(html);
-                    };
-
-
-                    $scope.isExpandable = function() {
-                        if (!$scope.datasetObjectKeys.length || ($scope.datasetObjectKeys.length === 1)) {
-                            return false;
-                        }
-                        return true;
-                    };
-
-
-                    $scope.tryToggleExpand = function() {
-                        if ($scope.isExpandable()) {
-                            $scope.expanded = !$scope.expanded;
-                        }
-                    };
-
-
-                    var unwatch = $scope.$watch('datasets', function(nv, ov) {
-                        if (nv) {
-                            var keys = Object.keys(nv);
-                            if (keys.length === 0) {
-                                return;
-                            }
-                            $scope.datasetObjectKeys = keys;
-
-                            // waiting for re-render
-                            $timeout(function() {
-                                positionEmbed($element, $scope.position);
-                            }, 0);
-                            $scope.expanded = false;
-                            unwatch();
-                        }
-                    }, true);
-
-                    $timeout(function() {
-                        positionEmbed($element, $scope.position);
-                    }, 0);
-                }]
-        };
-    }]);
-})();
-;(function() {
-    'use strict';
 
     var mod = angular.module('ods-widgets');
 
@@ -20442,6 +20159,8 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
+    var disqusShortnamePattern = /^[a-z0-9-]*$/g;
+
     mod.directive('odsDisqus', ['ODSWidgetsConfig', '$location', '$window', function(ODSWidgetsConfig, $location, $window) {
         /**
          * @ngdoc directive
@@ -20464,6 +20183,13 @@ mod.directive('infiniteScroll', [
             template: '<div id="disqus_thread" class="odswidget"></div>',
             link: function (scope) {
                 $window.disqus_shortname = scope.shortname || ODSWidgetsConfig.disqusShortname;
+                $window.disqus_shortname = $window.disqus_shortname.toLowerCase();
+                if (!$window.disqus_shortname.match(disqusShortnamePattern)) {
+                    console.error(
+                        'odsDisqus: The Disqus shortname should be a string with only alphanumeric characters or ' +
+                        'dashes, such as "mydisqusshortname"; but the received value is "' + $window.disqus_shortname + '".');
+                    return;
+                }
                 if (scope.identifier) {
                     $window.disqus_identifier = scope.identifier;
                 }
@@ -20484,7 +20210,8 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-}());;(function() {
+}());
+;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');
@@ -21893,6 +21620,10 @@ mod.directive('infiniteScroll', [
                             scope.currentShapeLayer = L.geoJson(shape, getShapeStyle());
                             map.addLayer(scope.currentShapeLayer);
                             map.fitBounds(scope.currentShapeLayer.getBounds());
+                            // Sometimes on initial load, the map doesn't work unless we invalidate size. Not sure
+                            // exactly why, this happens only on some browsers (Chome & FF, but not Safari),
+                            // and appeared suddenly (early 2022).
+                            map.invalidateSize();
                         });
                     });
                 };
@@ -24542,7 +24273,7 @@ mod.directive('infiniteScroll', [
          * The odsChart widget is the base widget allowing to display charts from Opendatasoft datasets.
          * A Chart is defined by one or more series that get their data from form one or more datasets represented by a {@link ods-widgets.directive:odsDatasetContext Dataset Context},
          * a type of chart, and multiple parameters to fine-tune the chart's appearance.
-         * 
+         *
          * Note: `min` and `max` parameters are dynamic, which means that if they change, the chart will be refreshed accordingly.
          *
          * Basic example:
@@ -24818,6 +24549,13 @@ mod.directive('infiniteScroll', [
          * @param {string} [seriesBreakdown=none] When declared, all series are broken down by the defined facet.
          * @param {string} [seriesBreakdownTimescale=true] If the breakdown facet is a time serie (date or datetime), it defines the aggregation level for this facet.
          * @param {object} [categoryColors={}] A object containing a color for each category name. For example: {'my value': '#FF0000', 'my other value': '#0000FF'}
+         * @param {string} [sort=none] Displays the results in a specific order. The following values are available:
+         *
+         * - To sort based on horizontal axis, use `x` or `-x`. For date-based axes, you need to include the name of
+         * the field, and the highest precision in the displayed data. For example, if the field name is `mydate`, and
+         * the data includes the year, you can use `x.mydate.year`.
+         * - To sort based on the displayed values, use `y` or `-y` if there is a single serie. If there are multiple
+         * series, use `series{n}-{m}` where `n` is the {n}th `ods-chart-query`, and m is the {m}th `ods-chart-serie`
          *
          * @description
          * The odsChartQuery widget is the sub widget that defines the queries for the series defined inside.
@@ -24930,7 +24668,7 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-    mod.directive('odsChartSerie', ["ODSAPI", 'ChartHelper', '$compile', '$parse', function(ODSAPI, ChartHelper, $compile, $parse) {
+    mod.directive('odsChartSerie', ["ODSAPI", 'ChartHelper', 'ODSWidgetsConfig', '$compile', '$parse', function(ODSAPI, ChartHelper, ODSWidgetsConfig, $compile, $parse) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsChartSerie
@@ -24965,7 +24703,7 @@ mod.directive('infiniteScroll', [
          * For complete examples, see {@link ods-widgets.directive:odsChart odsChart}.
          * # Available chart types:
          * There are two available types of charts: simple series and areas that take a minimal and a maximal value.
-         * 
+         *
          * ## Simple series
          * - line
          * - spline
@@ -24978,12 +24716,12 @@ mod.directive('infiniteScroll', [
          * - polar
          * - spiderweb
          * - funnel
-         * 
+         *
          * ## Areas
          * - arearange
          * - areasplinerange
          * - columnrange
-         * 
+         *
          * # Available functions
          * - COUNT
          * - AVG
@@ -25020,6 +24758,14 @@ mod.directive('infiniteScroll', [
                 };
 
                 function updateChartFromDynamicAttrs() {
+                    var color;
+                    if (attrs.color == "range-custom" && !(ODSWidgetsConfig.chartColors &&
+                        ODSWidgetsConfig.chartColors.length > 0)) {
+                        color = undefined;
+                    } else {
+                        color = attrs.color;
+                    }
+
                     angular.extend(chart, {
                         type: attrs.chartType || undefined,
                         innersize: attrs.innersize || undefined,
@@ -25030,7 +24776,7 @@ mod.directive('infiniteScroll', [
                         yRangeMax: angular.isDefined(attrs.max) && attrs.max !== "" ? parseFloat(attrs.max) : undefined,
                         yStep: angular.isDefined(attrs.step) && attrs.step !== "" ? parseFloat(attrs.step) : undefined,
                         multiplier: angular.isDefined(attrs.multiplier) ? parseFloat(attrs.multiplier) : undefined,
-                        color: attrs.color || undefined,
+                        color: color,
                         thresholds: attrs.colorThresholds ? scope.$eval(attrs.colorThresholds) : [],
                     });
                 }
@@ -25302,103 +25048,6 @@ mod.directive('infiniteScroll', [
                     fetchResults(true);
                 }
             }]
-        };
-    });
-}());
-;(function () {
-    'use strict';
-    var mod = angular.module('ods-widgets');
-
-    var crossBrowserTranslation = {
-        " ": "Spacebar",
-        "ArrowUp": "Up",
-        "ArrowDown": "Down",
-        "ArrowLeft": "Left",
-        "ArrowRight": "Right",
-        "Escape": "Esc",
-        "Delete": "Del"
-    };
-
-    mod.directive('odsKeyboard', function () {
-        /**
-         *  @ngdoc directive
-         *  @name ods-widgets.directive:odsKeyboard
-         *  @restrict AE
-         *  @param {string} odsKeyboardKey The keyboard key code. You can get the correct 'event.key' here: https://keycode.info/.
-         *  @param {string} odsKeyboardExpression The expression to execute
-         *  @param {boolean} odsKeyboardPreventDefault When set to `true`, it prevents the event from triggering the default behavior, which is useful for Escape and Space mainly.
-         * Default to `false`.
-         *  @description
-         *  The odsKeyboard widget binds a keyboard key to execute the associated ngClick or specific expression.
-         * 
-         *  You can get the correct key code here: https://keycode.info/.
-         *  For the space bar, use the 'Space' code.
-         *
-         *  @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *              <div ng-init="values = { 'count' : 0 }">
-         *                  <div style="cursor: pointer;text-decoration: underline;color: #0086d6;width: fit-content;"
-         *                       ods-keyboard
-         *                       ods-keyboard-key="ArrowLeft"
-         *                       ods-keyboard-prevent-default="true"
-         *                       ng-click="values.count = values.count - 1">
-         *                          Left arrow : -1
-         *                  </div>
-         *                  <ods-keyboard   class="ods-button"
-         *                                  ods-keyboard-key="ArrowRight"
-         *                                  ods-keyboard-prevent-default="true"
-         *                                  ods-keyboard-expression="values.count = values.count + 1">
-         *                          Right arrow : +1
-         *                  </ods-keyboard>
-         *                  <div style="cursor: pointer;text-decoration: underline;color: #0086d6;width: fit-content;"
-         *                       ods-keyboard
-         *                       ods-keyboard-key="Enter"
-         *                       ng-click="values.count = 0">
-         *                      Enter : set to 0
-         *                  </div>
-         *                  <p>
-         *                      Counter = {{ values.count }}
-         *                  </p>
-         *              </div>
-         *     </file>
-         * </example>
-         */
-        return {
-            restrict: 'AE',
-            link: function (scope, elem, attrs) {
-                var key = attrs.odsKeyboardKey;
-                var expr = attrs.odsKeyboardExpression || attrs.ngClick;
-                var preventDefault = attrs.odsKeyboardPreventDefault || false;
-
-                if (angular.isUndefined(key)) return;
-                if (angular.isUndefined(expr)) return;
-
-                if (key === "Space")
-                    key = " ";
-
-                var cb = function (e) {
-                    if (e.key === key || (key in crossBrowserTranslation && e.key === crossBrowserTranslation[key])) {
-                        if (!(e.target.tagName === 'INPUT' ||
-                                e.target.tagName === 'SELECT' ||
-                                e.target.tagName === 'TEXTAREA' ||
-                                (e.target.contentEditable && e.target.contentEditable === 'true'))) {
-                            scope.$evalAsync(expr);
-                            if (preventDefault) {
-                                e.preventDefault();
-                            }
-                        }
-                    } else {
-                        return;
-                    }
-                }
-
-                $(document).on("keydown", cb);
-
-                scope.$on('$destroy', function () {
-                    $(document).off("keydown", cb);
-                });
-            }
         };
     });
 }());
@@ -30491,14 +30140,14 @@ mod.directive('infiniteScroll', [
             },
         };
     }]);
-}());;(function() {
+}());;(function () {
     'use strict';
 
     var mod = angular.module('ods-widgets');
 
     var MAX_RECORDS = 10000; // Maximum reachable record via the search endpoint
 
-    mod.directive('odsPaginationBlock', ['$location', function($location) {
+    mod.directive('odsPaginationBlock', ['$location', function ($location) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsPaginationBlock
@@ -30519,7 +30168,7 @@ mod.directive('infiniteScroll', [
          * In this situation, forcing a height on the widget may fix the issue.
          * @description
          * The odsPaginationBlock widget displays a pagination control that you can use to make the context "scroll" through a list of results.
-         * 
+         *
          * The widget doesn't display results. Therefore, it should be paired with another widget.
          * The widget doesn't control the number of results fetched by the context. The `perPage` parameter should be the same as the `rows` parameter on the context.
          *
@@ -30533,35 +30182,36 @@ mod.directive('infiniteScroll', [
             restrict: 'E',
             replace: true,
             template: '' +
-                '<div class="odswidget odswidget-pagination" ng-show="pages.length > 1">' +
+                '<nav role="navigation" aria-label="Pagination navigation" translate="aria-label" class="odswidget odswidget-pagination" ng-show="pages.length > 1">' +
                 '    <ul class="odswidget-pagination__page-list">' +
                 '        <li class="odswidget-pagination__page" ng-repeat="page in pages">' +
                 '            <a class="odswidget-pagination__page-link" ' +
                 '               ng-class="{\'odswidget-pagination__page-link--active\': page.start == (context.parameters.start||0)}" ' +
                 '               ng-attr-rel="{{nofollow?\'nofollow\':undefined}}"' +
                 '               ng-attr-aria-label="{{page.ariaLabel?page.ariaLabel:undefined}}"' +
+                '               ng-attr-aria-current="{{(page.start == (context.parameters.start||0))}}" ' +
                 '               ng-click="click($event, page.start)" ' +
                 '               href="?start={{ page.start }}" ' +
                 '               rel="nofollow">{{ page.label }}</a>' +
                 '        </li>' +
                 '    </ul>' +
-                '</div>',
+                '</nav>',
             scope: {
                 context: '=',
                 perPage: '@',
                 nofollow: '@',
                 containerIdentifier: '@'
             },
-            controller: ['$scope', '$anchorScroll', 'translate', function($scope, $anchorScroll, translate) {
+            controller: ['$scope', '$anchorScroll', 'translate', function ($scope, $anchorScroll, translate) {
                 $scope.location = $location;
                 $scope.pages = [];
                 $scope.perPage = $scope.perPage || 10;
 
-                $scope.click = function(e, start) {
+                $scope.click = function (e, start) {
                     e.preventDefault();
                     $scope.context.parameters.start = start;
                 };
-                var buildPages = function() {
+                var buildPages = function () {
                     if ($scope.context.nhits === 0) {
                         $scope.pages = [];
                         return;
@@ -30571,8 +30221,8 @@ mod.directive('infiniteScroll', [
                     var pages = [];
                     var pageNum;
                     if (pagesCount <= 8) {
-                        for (pageNum=1; pageNum<=pagesCount; pageNum++) {
-                            pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
+                        for (pageNum = 1; pageNum <= pagesCount; pageNum++) {
+                            pages.push({ 'label': pageNum, 'start': (pageNum - 1) * $scope.perPage });
                         }
                     } else {
                         // If too many items, cut them : "first", the 3 before the current page,
@@ -30584,38 +30234,38 @@ mod.directive('infiniteScroll', [
                             currentPage = Math.floor($scope.context.parameters.start / $scope.perPage) + 1;
                         }
                         if (currentPage <= 5) {
-                            for (pageNum=1; pageNum<=8; pageNum++) {
-                                pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
+                            for (pageNum = 1; pageNum <= 8; pageNum++) {
+                                pages.push({ 'label': pageNum, 'start': (pageNum - 1) * $scope.perPage });
                             }
-                            pages.push({'label': '>>', 'ariaLabel': translate('Last page'), 'start': (pagesCount-1)*$scope.perPage});
-                        } else if (currentPage >= (pagesCount-4)) {
-                            pages.push({'label': '<<', 'ariaLabel': translate('First page'), 'start': 0});
-                            for (pageNum=(pagesCount-7); pageNum<=pagesCount; pageNum++) {
-                                pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
+                            pages.push({ 'label': '>>', 'ariaLabel': translate('Last page'), 'start': (pagesCount - 1) * $scope.perPage });
+                        } else if (currentPage >= (pagesCount - 4)) {
+                            pages.push({ 'label': '<<', 'ariaLabel': translate('First page'), 'start': 0 });
+                            for (pageNum = (pagesCount - 7); pageNum <= pagesCount; pageNum++) {
+                                pages.push({ 'label': pageNum, 'start': (pageNum - 1) * $scope.perPage });
                             }
                         } else {
-                            pages.push({'label': '<<', 'ariaLabel': translate('First page'), 'start': 0});
-                            for (pageNum=(currentPage-3); pageNum<=(currentPage+3); pageNum++) {
-                                pages.push({'label': pageNum, 'start': (pageNum-1)*$scope.perPage});
+                            pages.push({ 'label': '<<', 'ariaLabel': translate('First page'), 'start': 0 });
+                            for (pageNum = (currentPage - 3); pageNum <= (currentPage + 3); pageNum++) {
+                                pages.push({ 'label': pageNum, 'start': (pageNum - 1) * $scope.perPage });
                             }
-                            pages.push({'label': '>>', 'ariaLabel': translate('Last page'), 'start': (pagesCount-1)*$scope.perPage});
+                            pages.push({ 'label': '>>', 'ariaLabel': translate('Last page'), 'start': (pagesCount - 1) * $scope.perPage });
                         }
                     }
                     $scope.pages = pages;
                 };
 
-                var unwatch = $scope.$watch('context', function(nv, ov) {
+                var unwatch = $scope.$watch('context', function (nv, ov) {
                     if (nv) {
-                        $scope.$watch('context.nhits', function(newValue, oldValue) {
+                        $scope.$watch('context.nhits', function (newValue, oldValue) {
                             if ($scope.context.nhits !== undefined && $scope.perPage)
                                 buildPages();
                         });
-                        $scope.$watch('perPage', function(newValue, oldValue) {
+                        $scope.$watch('perPage', function (newValue, oldValue) {
                             $scope.perPage = $scope.perPage || 10;
                             if ($scope.context.nhits && $scope.perPage)
                                 buildPages();
                         });
-                        $scope.$watch('context.parameters.start', function(newValue, oldValue) {
+                        $scope.$watch('context.parameters.start', function (newValue, oldValue) {
                             if ($scope.context.nhits && $scope.perPage)
                                 buildPages();
                             if (angular.isDefined(newValue) || angular.isDefined(oldValue)) {
@@ -30911,194 +30561,6 @@ mod.directive('infiniteScroll', [
     }]);
 })();
 
-;(function () {
-    'use strict';
-
-    var mod = angular.module('ods-widgets');
-
-    mod.directive('odsRangeInput', ['$timeout', 'translate', '$compile', function ($timeout, translate, $compile) {
-        /**
-         * @ngdoc directive
-         * @name ods-widgets.directive:odsRangeInput
-         * @scope
-         * @restrict E
-         * @param {any} ng-model Assignable angular expression to data-bind to the input
-         * @param {number} min Minimum value of the range input
-         * @param {number} max Maximum value of the range input
-         * @param {number} step Sets the value's granularity. By default, the granularity is `1`.
-         * @param {number} selectableMin Limits the minimum value of the range input. It is used mainly for two-way data binding
-         * with a second range-input component. Unlike the two parameters listed below, This one modified the "min" of the
-         * range input directly. The two below limit the value of the input.
-         * @param {number} minValuePosition This parameter is used mainly for double sliders that depend on each other to set a range between 2 values.
-         * If one slider has been moved beyond the other slider's value, it updates the other slider value so that both "balls" are aligned.
-         * This means that the other slider's value can never be less than the value of the first, forcing a range.
-         * @param {number} maxValuePosition It is used mainly for double sliders that depend on each other to set a range between 2 values.
-         * If one slider has been moved beyond the other slider's value, it updates the other slider value so that both "balls" are aligned.
-         * This means that the other slider's value can never be more than the value of the first, forcing a range.
-         * @param {boolean} [editableValue=false] If enabled, an input type="number" will show to the right of the range
-         * input with the current range value which can be modified directly in this input.
-         * @param {string} iconMin This parameter is used to display an icon to the left of the range slider. FontAwesome or Opendatasoft
-         * icon classes should be used here.
-         * @param {string} iconMax This parameter is used to display an icon to the right of the range slider. FontAwesome or Opendatasoft
-         * icon classes should be used here.
-         * @param {string} iconMinTitle Adds a `title` attribute to the min side of the input.
-         * @param {string} iconMaxTitle Adds a `title` attribute to the max side of the input.
-         * @param {string} ariaLabelText Adds an `aria-label` attribute to the inputs.
-         * @description
-         * The odsRangeInput widget displays an input of type range that allows the user to select a numeric value. This value must be no less than a given value and no more than another given value.
-         *
-         * @example
-         * <example module="ods-widgets">
-         *     <file name="index.html">
-         *         <div ng-init="values = {minvalue: 10, maxvalue: 30, currentvalue: 15}">
-         *             <ods-range-input ng-model="values.currentvalue"
-         *                  ng-model-options="{ debounce: 300 }"
-         *                  min="values.minvalue"
-         *                  max="values.maxvalue"
-         *                  step="1"
-         *                  icon-min="fa fa-globe"
-         *                  icon-max="fa fa-tree"
-         *                  icon-min-title="{{ 'World view'| translate }}"
-         *                  icon-max-title="{{ 'Street level' | translate }}"
-         *                  aria-label-text="Set layer visibility"></ods-range-input>
-         *              {{ values.currentvalue }}
-         *          </div>
-         *     </file>
-         * </example>
-         */
-        return {
-            restrict: 'E',
-            replace: true,
-            scope: {
-                ngModel: '=',
-                min: '=',
-                max: '=',
-                step: '=',
-                selectableMin: '=',
-                minValuePosition: '=?',
-                maxValuePosition: '=?',
-                editableValue: '=',
-                iconMin: '@',
-                iconMax: '@',
-                iconMinTitle: '@?',
-                iconMaxTitle: '@?',
-                ariaLabelText: '@'
-            },
-            require: 'ngModel',
-            link: function (scope, element, attrs, ngModelCtrl) {
-
-                var template =  '<div class="ods-range-input">' +
-                                '    <i class="ods-range-input__icon ods-range-input__icon--min" ng-if="iconMin" title="{{ iconMinTitle }}" ng-class="iconMin" aria-hidden="true"></i>' +
-                                '    <input type="range"' +
-                                '           min="{{ actualMin }}"' +
-                                '           max="{{ max }}"' +
-                                '           step="{{ step }}"' +
-                                '           class="ods-range-input__range-input"' +
-                                '           ng-change="onRangeChange()"' +
-                                '           ng-model-options="{ debounce: 0 }"' +
-                                '           ng-model="values.internalRange"' +
-                                '           aria-label="{{rangeLabel}}"' +
-                                '           title="{{ values.internalRange }}">' +
-                                '    <i class="ods-range-input__icon ods-range-input__icon--max" ng-if="iconMax" title="{{ iconMaxTitle }}" ng-class="iconMax" aria-hidden="true"></i>' +
-                                '    <input class="ods-range-input__value-input" ' +
-                                '          ng-change="onValueChange()" ' +
-                                '          ng-if="editableValue" ' +
-                                '          type="number" ' +
-                                '          ng-model="values.internalValue"' +
-                                '          ng-model-options="{ debounce: 0 }"' +
-                                '          ng-blur="onValueBlur()"' +
-                                '          min="{{ actualMin }}" ' +
-                                '          max="{{ max }}" ' +
-                                '          step="{{ step }}"' +
-                                '          aria-label="{{inputLabel}}">' +
-                                '</div>';
-
-
-
-                var newElement = angular.element(template);
-                element.replaceWith(newElement);
-                $compile(newElement)(scope);
-
-                var inputElement = element.find('.ods-range-input__input');
-                scope.values = {};
-                if (angular.isDefined(scope.selectableMin)) {
-                    scope.actualMin = scope.selectableMin;
-                } else {
-                    scope.actualMin = scope.min;
-                }
-
-                scope.rangeLabel = format_string(translate('{label} slider'), {label: scope.ariaLabelText});
-                scope.inputLabel = format_string(translate('{label} input'), {label: scope.ariaLabelText});
-
-                var isValueInvalid = function () {
-                    return isNaN(scope.values.internalValue) || scope.values.internalValue < scope.actualMin || scope.values.internalValue > scope.max;
-                };
-
-                scope.onRangeChange = function() {
-                    var num = scope.values.internalRange;
-                    scope.values.internalValue = num;
-                    ngModelCtrl.$setViewValue(num);
-                };
-
-                scope.onValueChange = function() {
-                    if (isValueInvalid()) {
-                        return;
-                    }
-
-                    scope.values.internalRange = scope.values.internalValue;
-                    ngModelCtrl.$setViewValue(scope.values.internalValue);
-                };
-
-                scope.onValueBlur = function () {
-                    if (isValueInvalid()) {
-                        scope.onRangeChange();
-                    }
-                };
-
-                ngModelCtrl.$render = function() {
-                    scope.values.internalValue = ngModelCtrl.$modelValue;
-                    scope.values.internalRange = ngModelCtrl.$modelValue;
-                };
-
-                scope.$watch('selectableMin', function (newValue, oldValue) {
-                    if (newValue !== oldValue) {
-                        inputElement.css({width: ((scope.max - newValue) / (scope.max - scope.min) * 100) + '%'});
-                        scope.actualMin = newValue;
-                        if (newValue >= scope.ngModel) {
-                            scope.ngModel = newValue;
-                        }
-                    }
-                });
-
-                // Used mainly for double sliders that depend on each other to set a range between 2 values.
-                // If one slider has been moved beyond the value of the other slider, update the other slider value so that both "balls" are aligned.
-                // This means that the value of the other slider can never be less than the value of the first, forcing a range.
-                scope.$watch('minValuePosition', function(newValue, oldValue) {
-                    if(newValue !== oldValue) {
-                        if (newValue >= scope.ngModel) {
-                            scope.ngModel = newValue;
-                        }
-
-                    }
-                });
-                // If one slider has been moved beyond the value of the other slider, update the other slider value so that both "balls" are aligned.
-                // This means that the value of the slider can never be more than the value of the other slider, forcing a range.
-                scope.$watch('maxValuePosition', function(newValue, oldValue) {
-                    if(newValue !== oldValue) {
-                        if (newValue <= scope.ngModel) {
-                            scope.ngModel = newValue;
-                        }
-                    }
-                });
-
-                // Workaround for the lousy AngularJS support of input[range]
-                $timeout(function() {
-                    newElement.find('.ods-range-input__range-input').val(scope.values.internalRange);
-                });
-            }
-        };
-    }]);
-})();
 ;(function() {
     'use strict';
 
@@ -31112,7 +30574,7 @@ mod.directive('infiniteScroll', [
          * @scope
          * @param {DatasetContext} context {@link ods-widgets.directive:odsDatasetContext Dataset Context} to use
          * @param {Object} record Record to take the image from
-         * @param {string} [field=none] Field to use. By default, the first `file` field is used, but you can specify the field name if there is more than one field.
+         * @param {string} field <i>(mandatory)</i> Field to use.
          * @param {string} [domainUrl=none] The base URL of the domain where the dataset can be found. By default, the current domain is used.
          * @description
          * The odsRecordImage widget displays an image from a record.
@@ -31278,12 +30740,12 @@ mod.directive('infiniteScroll', [
     // backward compatibility with previous implementations
     mod.directive('refineOnClickContext', refineOnClickDirective);
 })();
-;(function() {
+;(function () {
     'use strict';
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsResultEnumerator', function() {
+    mod.directive('odsResultEnumerator', function () {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsResultEnumerator
@@ -31336,20 +30798,20 @@ mod.directive('infiniteScroll', [
                 showPagination: '@?'
             },
             template: '' +
-            '<div class="odswidget odswidget-result-enumerator">' +
-            '    <div ods-results="items" ods-results-context="context" ods-results-max="{{max}}" class="odswidget-result-enumerator__results">' +
-            '        <div ng-if="loading"><ods-spinner class="odswidget-spinner--large"></ods-spinner></div>' +
-            '        <div ng-if="!loading && !items.length" class="odswidget-result-enumerator__no-results-message" translate>No results</div>' +
-            '        <div ng-if="!loading && items.length && hitsCounter" class="odswidget-result-enumerator__results-count">{{context.nhits}} <span translate>results</span></div>' +
-            '        <div ng-repeat="item in items" inject class="odswidget-result-enumerator__item"></div>' +
-            '    </div>' +
-            '    <ods-pagination-block ng-if="pagination" context="context" per-page="{{max}}" container-identifier="{{localId}}"></ods-pagination-block>' +
-            '</div>',
-            link: function(scope, element) {
-                scope.localId = 'odsResultEnumerator-'+ODS.StringUtils.getRandomUUID();
+                '<div class="odswidget odswidget-result-enumerator">' +
+                '    <div ods-results="items" ods-results-context="context" ods-results-max="{{max}}" class="odswidget-result-enumerator__results">' +
+                '        <div ng-if="loading"><ods-spinner class="odswidget-spinner--large"></ods-spinner></div>' +
+                '        <div ng-if="!loading && !items.length" class="odswidget-result-enumerator__no-results-message" role="status" translate>No results</div>' +
+                '        <div ng-if="!loading && items.length && hitsCounter" class="odswidget-result-enumerator__results-count" role="status">{{context.nhits}} <span translate>results</span></div>' +
+                '        <div ng-repeat="item in items" inject class="odswidget-result-enumerator__item"></div>' +
+                '    </div>' +
+                '    <ods-pagination-block ng-if="pagination" context="context" per-page="{{max}}" container-identifier="{{localId}}"></ods-pagination-block>' +
+                '</div>',
+            link: function (scope, element) {
+                scope.localId = 'odsResultEnumerator-' + ODS.StringUtils.getRandomUUID();
                 element.children()[0].id = scope.localId;
             },
-            controller: ['$scope', function($scope) {
+            controller: ['$scope', function ($scope) {
                 $scope.hitsCounter = (angular.isString($scope.showHitsCounter) && $scope.showHitsCounter.toLowerCase() === 'true');
                 $scope.pagination = (angular.isString($scope.showPagination) && $scope.showPagination.toLowerCase() === 'true');
             }]
@@ -32041,14 +31503,13 @@ mod.directive('infiniteScroll', [
                     $scope._items = parseOptions($scope.options);
                     $scope.selectedValues = extractSelectedItemsValues($scope._selectedItems);
                     updateDisplayedItems();
-                    $scope.isLoading = !Object.keys($scope._items).length;
                 };
 
                 function parseOptions(options) {
                     return options.reduce(function(accumulator, option) {
                         var label = $scope.labelModifier ? $parse($scope.labelModifier)(option) : option;
                         var value = $scope.valueModifier ? $parse($scope.valueModifier)(option) : option;
-                        var isFullyDefined = !!label && !!value;
+                        var isFullyDefined = label !== undefined && label !== null && value !== undefined && value !== null;
                         var key = JSON.stringify(value); // Note that we use the stringified value as the key.
 
                         if (!isFullyDefined) {
@@ -32176,7 +31637,7 @@ mod.directive('infiniteScroll', [
 
                 $scope.$watch('options', function(newVal) {
                     if (angular.isDefined(newVal)) {
-                        $scope.isLoading = newVal.length > 500;
+                        $scope.isLoading = false;
                         $timeout(function() {
                             // Since we may need to display the loader first, this function is
                             // ... queued using $timeout, therefore it will run after the DOM has
@@ -33433,9 +32894,7 @@ mod.directive('infiniteScroll', [
 
                         div = document.createElement('div');
                         div.className = 'odswidget-table__cell-container';
-                        if (field.type === "int" || field.type === "double") {
-                            div.className += ' odswidget-table__cell-container__right-aligned';
-                        }
+
                         td.appendChild(div);
 
                         var newScope, node;
@@ -33454,11 +32913,11 @@ mod.directive('infiniteScroll', [
                             if (field && field.type === 'geo_point_2d') {
                                 newScope.fieldValue = fieldValue;
                                 node = $compile('<ods-geotooltip width="300" height="300" coords="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
-                                div.dir = 'ltr';
+                                node.dir = 'ltr';
                             } else if (field && field.type === 'geo_shape') {
                                 newScope.fieldValue = $filter('truncate')(fieldValue);
                                 node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
-                                div.dir = 'ltr';
+                                node.dir = 'ltr';
                             } else if (field && field.type === 'file') {
                                 var html = $filter('nofollow')($filter('prettyText')(fieldValue)).toString();
                                 html = html.replace(/<a /, '<a ods-resource-download-conditions ');
@@ -33468,13 +32927,15 @@ mod.directive('infiniteScroll', [
                                     node = $compile(html)(newScope)[0];
                                     node.title = record.fields[field.name] ? record.fields[field.name].filename : '';
                                 }
-                                div.dir = 'ltr';
+                                node.dir = 'ltr';
                             } else {
                                 node = document.createElement('span');
                                 node.title = fieldValue;
                                 node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
-                                if (field && field.type === 'text') {
-                                    div.dir = $scope.context.dataset.metas.language === 'ar' ? 'rtl' : 'ltr';
+                                try {
+                                    node.dir = 'auto';
+                                } catch (error) {
+                                    // IE 11 crashes, we can just ignore it
                                 }
                             }
                         }
@@ -34572,14 +34033,14 @@ mod.directive('infiniteScroll', [
             '<div class="odswidget odswidget-timerange">' +
             '    <div class="odswidget-timerange__from">' +
             '        <span class="odswidget-timerange__label" ng-bind="labelFrom"></span>' +
-            '        <input type="text" placeholder="{{ placeholderFrom }}" class="odswidget-timerange__input" aria-label="Start date" translate="aria-label">' +
+            '        <input type="text" placeholder="{{ placeholderFrom }}" class="odswidget-timerange__input" aria-label="{{\'Start date\'|translate}}" title="{{\'Start date\'|translate}}">' +
             '        <button type="reset" class="odswidget-timerange__reset" ng-show="from" ng-click="resetSearchFrom()" aria-label="Reset search" translate="aria-label">' +
             '           <i class="fa fa-times-circle" aria-hidden="true"></i>' +
             '        </button>' +
             '    </div>' +
             '    <div class="odswidget-timerange__to">' +
             '        <span class="odswidget-timerange__label" ng-bind="labelTo"></span>' +
-            '        <input type="text" placeholder="{{ placeholderTo }}" class="odswidget-timerange__input" aria-label="End date" translate="aria-label">' +
+            '        <input type="text" placeholder="{{ placeholderTo }}" class="odswidget-timerange__input" aria-label="{{\'End date\'|translate}}" title="{{\'End date\'|translate}}">' +
             '        <button type="reset" class="odswidget-timerange__reset" ng-show="to" ng-click="resetSearchTo()" aria-label="Reset search" translate="aria-label">' +
             '           <i class="fa fa-times-circle" aria-hidden="true"></i>' +
             '        </button>' +

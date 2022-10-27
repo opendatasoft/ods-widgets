@@ -1,9 +1,9 @@
-(function() {
+(function () {
     'use strict';
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsResultEnumerator', function() {
+    mod.directive('odsResultEnumerator', function () {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsResultEnumerator
@@ -56,20 +56,20 @@
                 showPagination: '@?'
             },
             template: '' +
-            '<div class="odswidget odswidget-result-enumerator">' +
-            '    <div ods-results="items" ods-results-context="context" ods-results-max="{{max}}" class="odswidget-result-enumerator__results">' +
-            '        <div ng-if="loading"><ods-spinner class="odswidget-spinner--large"></ods-spinner></div>' +
-            '        <div ng-if="!loading && !items.length" class="odswidget-result-enumerator__no-results-message" translate>No results</div>' +
-            '        <div ng-if="!loading && items.length && hitsCounter" class="odswidget-result-enumerator__results-count">{{context.nhits}} <span translate>results</span></div>' +
-            '        <div ng-repeat="item in items" inject class="odswidget-result-enumerator__item"></div>' +
-            '    </div>' +
-            '    <ods-pagination-block ng-if="pagination" context="context" per-page="{{max}}" container-identifier="{{localId}}"></ods-pagination-block>' +
-            '</div>',
-            link: function(scope, element) {
-                scope.localId = 'odsResultEnumerator-'+ODS.StringUtils.getRandomUUID();
+                '<div class="odswidget odswidget-result-enumerator">' +
+                '    <div ods-results="items" ods-results-context="context" ods-results-max="{{max}}" class="odswidget-result-enumerator__results">' +
+                '        <div ng-if="loading"><ods-spinner class="odswidget-spinner--large"></ods-spinner></div>' +
+                '        <div ng-if="!loading && !items.length" class="odswidget-result-enumerator__no-results-message" role="status" translate>No results</div>' +
+                '        <div ng-if="!loading && items.length && hitsCounter" class="odswidget-result-enumerator__results-count" role="status">{{context.nhits}} <span translate>results</span></div>' +
+                '        <div ng-repeat="item in items" inject class="odswidget-result-enumerator__item"></div>' +
+                '    </div>' +
+                '    <ods-pagination-block ng-if="pagination" context="context" per-page="{{max}}" container-identifier="{{localId}}"></ods-pagination-block>' +
+                '</div>',
+            link: function (scope, element) {
+                scope.localId = 'odsResultEnumerator-' + ODS.StringUtils.getRandomUUID();
                 element.children()[0].id = scope.localId;
             },
-            controller: ['$scope', function($scope) {
+            controller: ['$scope', function ($scope) {
                 $scope.hitsCounter = (angular.isString($scope.showHitsCounter) && $scope.showHitsCounter.toLowerCase() === 'true');
                 $scope.pagination = (angular.isString($scope.showPagination) && $scope.showPagination.toLowerCase() === 'true');
             }]

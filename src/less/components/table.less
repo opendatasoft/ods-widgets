@@ -16,6 +16,7 @@
 .odswidget-table__cell {
     padding: 1px;
 }
+
 .odswidget-table__cell:first-child {
     color: rgba(0,0,0,0.5);
     font-family: monospace;
@@ -35,6 +36,11 @@
     text-overflow: ellipsis;
     box-sizing: content-box;
     display: flex;
+}
+
+.odswidget-table__cell-container span {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .odswidget-table__label {
@@ -58,10 +64,6 @@
     display: block;
     padding: 0;
     line-height: normal;
-}
-
-.odswidget-table__cell-container__right-aligned {
-    .rtl-prop(text-align, right, left);
 }
 
 .odswidget-table__internal-table {

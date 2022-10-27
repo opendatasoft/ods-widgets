@@ -393,14 +393,13 @@
                     $scope._items = parseOptions($scope.options);
                     $scope.selectedValues = extractSelectedItemsValues($scope._selectedItems);
                     updateDisplayedItems();
-                    $scope.isLoading = !Object.keys($scope._items).length;
                 };
 
                 function parseOptions(options) {
                     return options.reduce(function(accumulator, option) {
                         var label = $scope.labelModifier ? $parse($scope.labelModifier)(option) : option;
                         var value = $scope.valueModifier ? $parse($scope.valueModifier)(option) : option;
-                        var isFullyDefined = !!label && !!value;
+                        var isFullyDefined = label !== undefined && label !== null && value !== undefined && value !== null;
                         var key = JSON.stringify(value); // Note that we use the stringified value as the key.
 
                         if (!isFullyDefined) {
@@ -528,7 +527,7 @@
 
                 $scope.$watch('options', function(newVal) {
                     if (angular.isDefined(newVal)) {
-                        $scope.isLoading = newVal.length > 500;
+                        $scope.isLoading = false;
                         $timeout(function() {
                             // Since we may need to display the loader first, this function is
                             // ... queued using $timeout, therefore it will run after the DOM has

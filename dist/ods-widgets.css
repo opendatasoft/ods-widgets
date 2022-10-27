@@ -343,210 +343,6 @@ html[dir=rtl] .odswidget-calendar__tooltip.odswidget-calendar__tooltip--increase
   display: -ms-flexbox;
   display: flex;
 }
-.odswidget-dataset-card,
-.odswidget-multidatasets-card {
-  padding: 0;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-.odswidget-dataset-card div.card-container,
-.odswidget-multidatasets-card div.card-container {
-  background-color: white;
-  box-shadow: 0 3px 12px 0 rgba(50, 50, 50, 0.75);
-  display: block;
-  box-sizing: border-box;
-  padding-left: 5px;
-  overflow: hidden;
-  z-index: 3000;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-}
-.odswidget-dataset-card div.card-container.bottom,
-.odswidget-multidatasets-card div.card-container.bottom {
-  top: auto;
-  bottom: 0;
-}
-.odswidget-dataset-card div.card-container.multidatasets:not(.expandable) h3.datasets-counter span.count-text,
-.odswidget-multidatasets-card div.card-container.multidatasets:not(.expandable) h3.datasets-counter span.count-text {
-  text-decoration: none;
-}
-.odswidget-dataset-card div.card-container.multidatasets:not(.expandable) div.datasets-expanded,
-.odswidget-multidatasets-card div.card-container.multidatasets:not(.expandable) div.datasets-expanded {
-  overflow-y: hidden;
-}
-.odswidget-dataset-card div.card-container.multidatasets h2,
-.odswidget-multidatasets-card div.card-container.multidatasets h2 {
-  width: 80%;
-  width: calc(100% - 100px);
-  text-overflow: ellipsis;
-  overflow: hidden;
-  word-wrap: break-word;
-  white-space: nowrap;
-  margin-bottom: 3px;
-  opacity: 0.9;
-}
-.odswidget-dataset-card div.card-container.multidatasets h3.datasets-counter,
-.odswidget-multidatasets-card div.card-container.multidatasets h3.datasets-counter {
-  margin-bottom: 4px;
-  cursor: pointer;
-}
-.odswidget-dataset-card div.card-container.multidatasets h3.datasets-counter span.count-text,
-.odswidget-multidatasets-card div.card-container.multidatasets h3.datasets-counter span.count-text {
-  text-decoration: underline;
-}
-.odswidget-dataset-card div.card-container.multidatasets h3.datasets-counter span.count-text:hover,
-.odswidget-multidatasets-card div.card-container.multidatasets h3.datasets-counter span.count-text:hover {
-  text-decoration: none;
-}
-.odswidget-dataset-card div.card-container.multidatasets div.datasets-expanded,
-.odswidget-multidatasets-card div.card-container.multidatasets div.datasets-expanded {
-  max-height: 200px;
-  overflow-y: auto;
-}
-.odswidget-dataset-card div.card-container.multidatasets div.datasets-expanded h2,
-.odswidget-multidatasets-card div.card-container.multidatasets div.datasets-expanded h2 {
-  white-space: inherit;
-}
-.odswidget-dataset-card div.card-container.multidatasets div.datasets-expanded ul.dataset-list,
-.odswidget-multidatasets-card div.card-container.multidatasets div.datasets-expanded ul.dataset-list {
-  margin-top: 5px;
-  margin-bottom: 5px;
-  padding-left: 5px;
-  width: calc(100% - 20px);
-  list-style: none;
-}
-.odswidget-dataset-card div.card-container.multidatasets div.datasets-expanded ul.dataset-list li:before,
-.odswidget-multidatasets-card div.card-container.multidatasets div.datasets-expanded ul.dataset-list li:before {
-  content: "•";
-  padding-right: 5px;
-}
-.odswidget-dataset-card div.card-container.multidatasets div.datasets-expanded ul.dataset-list li:first-child:last-child:before,
-.odswidget-multidatasets-card div.card-container.multidatasets div.datasets-expanded ul.dataset-list li:first-child:last-child:before {
-  content: normal;
-  padding-right: 0;
-}
-.odswidget-dataset-card div.card-container h2.dataset-title,
-.odswidget-multidatasets-card div.card-container h2.dataset-title {
-  width: 80%;
-  width: calc(100% - 100px);
-  word-wrap: break-word;
-}
-.odswidget-dataset-card div.card-container .expand-control,
-.odswidget-multidatasets-card div.card-container .expand-control {
-  position: absolute;
-  top: 5px;
-  right: 25px;
-  -webkit-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
-}
-.odswidget-dataset-card div.card-container .expand-control.expanded i.icon-chevron-down,
-.odswidget-multidatasets-card div.card-container .expand-control.expanded i.icon-chevron-down {
-  display: inline-block;
-  -ms-transform: rotate(180deg);
-      transform: rotate(180deg);
-}
-.odswidget-dataset-card div.card-container .dataset-expanded,
-.odswidget-multidatasets-card div.card-container .dataset-expanded {
-  max-height: 200px;
-  overflow-y: auto;
-}
-.odswidget-dataset-card div.card-container .dataset-expanded .dataset-description,
-.odswidget-multidatasets-card div.card-container .dataset-expanded .dataset-description {
-  word-wrap: break-word;
-  padding: 20px;
-}
-.odswidget-dataset-card div.card-container:not(.expanded) .dataset-title,
-.odswidget-multidatasets-card div.card-container:not(.expanded) .dataset-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.odswidget-dataset-card div.card-container:not(.expanded) .dataset-expanded,
-.odswidget-multidatasets-card div.card-container:not(.expanded) .dataset-expanded {
-  overflow-y: hidden;
-}
-.odswidget-dataset-card div.card-container:not(.expanded) .dataset-expanded p,
-.odswidget-multidatasets-card div.card-container:not(.expanded) .dataset-expanded p {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  word-wrap: break-word;
-  white-space: nowrap;
-  padding-right: 2px;
-}
-.odswidget-dataset-card div.card-container:not(.expanded) .dataset-expanded li.single-dataset,
-.odswidget-multidatasets-card div.card-container:not(.expanded) .dataset-expanded li.single-dataset {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-.odswidget-dataset-card div.card-container .dataset-infos,
-.odswidget-multidatasets-card div.card-container .dataset-infos {
-  padding: 5px 0;
-  font-size: 13px;
-  text-align: center;
-}
-.odswidget-dataset-card div.card-container .dataset-infos .dataset-infos-text,
-.odswidget-multidatasets-card div.card-container .dataset-infos .dataset-infos-text {
-  opacity: 0.7;
-}
-.odswidget-dataset-card div.card-container .dataset-infos a,
-.odswidget-multidatasets-card div.card-container .dataset-infos a {
-  text-decoration: underline;
-}
-.odswidget-dataset-card div.card-container.expandable h2.dataset-title,
-.odswidget-multidatasets-card div.card-container.expandable h2.dataset-title {
-  cursor: pointer;
-}
-.odswidget-dataset-card div.card-container.expandable div.expand-control,
-.odswidget-multidatasets-card div.card-container.expandable div.expand-control {
-  cursor: pointer;
-}
-.odswidget-dataset-card div.card-container:not(.expandable) h2,
-.odswidget-multidatasets-card div.card-container:not(.expandable) h2 {
-  cursor: default !important;
-}
-.odswidget-dataset-card div.card-container:not(.expandable) .expand-control,
-.odswidget-multidatasets-card div.card-container:not(.expandable) .expand-control {
-  display: none;
-  cursor: default;
-}
-.odswidget-dataset-card div.card-container:not(.expandable) .dataset-expanded,
-.odswidget-multidatasets-card div.card-container:not(.expandable) .dataset-expanded {
-  display: none;
-}
-.odswidget-dataset-card div.card-container:not(.expandable) .datasets-counter,
-.odswidget-multidatasets-card div.card-container:not(.expandable) .datasets-counter {
-  cursor: default !important;
-}
-.odswidget-dataset-card div.card-container:not(.expandable) .datasets-counter span.count-text,
-.odswidget-multidatasets-card div.card-container:not(.expandable) .datasets-counter span.count-text {
-  text-decoration: none;
-}
-.odswidget-dataset-card div.dataset-item,
-.odswidget-multidatasets-card div.dataset-item {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-}
-.odswidget-dataset-card div.dataset-item > .odswidget,
-.odswidget-multidatasets-card div.dataset-item > .odswidget,
-.odswidget-dataset-card div.dataset-item > ods-map .odswidget-map,
-.odswidget-multidatasets-card div.dataset-item > ods-map .odswidget-map {
-  position: relative;
-  height: 100%;
-}
-.odswidget-dataset-card div.dataset-item > ods-map,
-.odswidget-multidatasets-card div.dataset-item > ods-map {
-  display: block;
-}
 .odswidget-facet {
   margin: 1rem 0;
 }
@@ -1007,6 +803,7 @@ html[dir=rtl] .odswidget-last-datasets-feed__theme-picto {
   right: 0 !important;
   bottom: 0 !important;
   left: 0 !important;
+  height: 100% !important;
 }
 .odswidget-map__loading {
   position: absolute;
@@ -2507,6 +2304,10 @@ html[dir=rtl] .odswidget-table__cell:first-child {
   display: -ms-flexbox;
   display: flex;
 }
+.odswidget-table__cell-container span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .odswidget-table__label {
   -ms-flex: 1 1 auto;
       flex: 1 1 auto;
@@ -2528,12 +2329,6 @@ html[dir=rtl] .odswidget-table__cell:first-child {
   display: block;
   padding: 0;
   line-height: normal;
-}
-.odswidget-table__cell-container__right-aligned {
-  text-align: right;
-}
-html[dir=rtl] .odswidget-table__cell-container__right-aligned {
-  text-align: left;
 }
 .odswidget-table__internal-table {
   font-size: 0.85em;
@@ -3495,8 +3290,6 @@ html[dir=rtl] .odswidget-geo-navigation__choice {
   display: flex;
   -ms-flex-align: center;
       align-items: center;
-  -ms-flex-pack: right;
-      justify-content: right;
   position: relative;
   font-size: 0.8rem;
 }

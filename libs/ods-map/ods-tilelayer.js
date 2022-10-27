@@ -14,6 +14,17 @@ var ODSTileLayerMixin = {
             attribution += part;
         }
         return attribution;
+    },
+    _escapeAttributionPart: function(html) {
+        if (!html) {
+            return html;
+        }
+        return html
+            .replace(/&(?!#?\w+;)/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 };
 
@@ -51,19 +62,7 @@ L.ODSTileLayer = L.TileLayer.extend({
     _initLayer: function(basemap, disableAttribution, prependAttribution, appendAttribution) {
         var layerOptions = {};
         var attrib = this._addAttributionPart('', prependAttribution);
-        //if (basemap.provider === 'mapquest') {
-        //    // OSM MapQuest
-        //    attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="http://www.mapquest.com/" target="_blank">MapQuest</a> <img src="http://developer.mapquest.com/content/osm/mq_logo.png"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
-        //    attrib = this._addAttributionPart(attrib, appendAttribution);
-        //    L.TileLayer.prototype.initialize.call(this, 'http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png',
-        //        {
-        //            minZoom: 1,
-        //            maxNativeZoom: 17,
-        //            maxZoom: 18,
-        //            attribution: !disableAttribution ? attrib : '',
-        //            subdomains: "1234"
-        //        });
-        //} else
+
         if (basemap.provider === 'opencycle' || basemap.provider === 'osmtransport') {
             attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="http://www.thunderforest.com" target="_blank">Thunderforest</a> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
@@ -168,11 +167,11 @@ L.ODSTileLayer = L.TileLayer.extend({
 
             jawgUrl += '{z}/{x}/{y}';
             if (L.Browser.retina) {
-               jawgUrl += '@2x';
+                jawgUrl += '@2x';
             }
             jawgUrl += '.png';
             if (basemap.jawg_apikey) {
-               jawgUrl += '?api-key=' + basemap.jawg_apikey;
+                jawgUrl += '?api-key=' + basemap.jawg_apikey;
                 if (basemap.jawg_odsdomain) {
                     jawgUrl += '&odsdomain=' + basemap.jawg_odsdomain;
                 }
@@ -188,9 +187,55 @@ L.ODSTileLayer = L.TileLayer.extend({
             layerOptions = {
                 minZoom: 2,
                 maxZoom: 22,
-                attribution: !disableAttribution ? attrib : ''
+                attribution: !disableAttribution ? attrib : '',
             };
             L.TileLayer.prototype.initialize.call(this, jawgUrl, layerOptions);
+        } else if (basemap.provider.startsWith('ign.')) {
+            var ignMaps = {
+                'planv2': {
+                    ignLayer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
+                    service: 'pratique',
+                    minZoom: 1,
+                    maxZoom: 19
+                },
+                'orthophotos': {
+                    ignLayer: 'ORTHOIMAGERY.ORTHOPHOTOS',
+                    imageFormat: 'image/jpeg',
+                    service: 'pratique',
+                    minZoom: 1,
+                    maxZoom: 19
+                },
+                'parcellaire-express': {
+                    ignLayer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
+                    service: 'parcellaire',
+                    minZoom: 2,
+                    maxZoom: 19
+                },
+                'limites-admin-express': {
+                    ignLayer: 'LIMITES_ADMINISTRATIVES_EXPRESS.LATEST',
+                    service: 'administratif',
+                    minZoom: 6,
+                    maxZoom: 16
+                }
+            };
+
+            var basemapName = basemap.provider.substring(4);
+
+            attrib = this._addAttributionPart(attrib, 'Map data © <a href="https://geoservices.ign.fr/" target="_blank">IGN</a>');
+            attrib = this._addAttributionPart(attrib, appendAttribution);
+
+            layerOptions = {
+                imageFormat: 'image/png',
+                attribution: attrib
+            };
+
+            angular.extend(layerOptions, ignMaps[basemapName]);
+
+            var ignUrl = 'https://wxs.ign.fr/{service}/geoportail/wmts?&REQUEST=GetTile' +
+                '&SERVICE=WMTS&VERSION=1.0.0&TILEMATRIXSET=PM'+
+                '&LAYER={ignLayer}&STYLE=normal&FORMAT={imageFormat}'+
+                '&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}';
+            L.TileLayer.prototype.initialize.call(this, ignUrl, layerOptions);
         } else if (basemap.provider === 'custom') {
             if (basemap.subdomains) {
                 layerOptions.subdomains = basemap.subdomains;
@@ -203,7 +248,7 @@ L.ODSTileLayer = L.TileLayer.extend({
                 layerOptions.tms = true;
             }
 
-            attrib = this._addAttributionPart(attrib, basemap.attribution);
+            attrib = this._addAttributionPart(attrib, this._escapeAttributionPart(basemap.attribution));
             attrib = this._addAttributionPart(attrib, appendAttribution);
 
             layerOptions.attribution = !disableAttribution ? attrib : '';
@@ -239,7 +284,7 @@ L.ODSWMSTileLayer = L.TileLayer.WMS.extend({
             layerOptions.maxZoom = basemap.maxZoom;
         }
 
-        attrib = this._addAttributionPart(attrib, basemap.attribution);
+        attrib = this._addAttributionPart(attrib, this._escapeAttributionPart(basemap.attribution));
         attrib = this._addAttributionPart(attrib, appendAttribution);
 
         layerOptions.attribution = !disableAttribution ? attrib : '';

@@ -159,8 +159,13 @@
                         var latLng, yOffset;
 
                         if (angular.isDefined(e.target.getLatLng)) {
+                            // This is a Marker from a regular drawn point
                             latLng = e.target.getLatLng();
                             yOffset = service.getMarkerTooltipYOffset(e.target, layerConfig);
+                        } else if (e.layer && angular.isDefined(e.layer.getLatLng)) {
+                            // This is a Marker from a GeoJSON layer
+                            latLng = e.layer.getLatLng();
+                            yOffset = service.getMarkerTooltipYOffset(e.layer, layerConfig);
                         } else {
                             latLng = e.latlng;
                             yOffset = 0; // Displayed where the user clicked
@@ -460,7 +465,11 @@
                 };
 
                 // Is it a shape containing points?
-                var hasPoints = geoJSON.type === "GeometryCollection" && Boolean(geoJSON.geometries.filter(function(geometry) { return geometry.type === 'Point'}).length);
+                var hasPoints = (
+                        geoJSON.type === "GeometryCollection" &&
+                        Boolean(geoJSON.geometries.filter(function(geometry) { return geometry.type === 'Point'; }).length)
+                    ) ||
+                    geoJSON.type === 'MultiPoint';
 
                 if (hasPoints) {
                     // We have to wait until the SVG is ready to be rendered in the markers
