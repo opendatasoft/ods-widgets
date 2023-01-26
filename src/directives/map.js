@@ -1763,7 +1763,7 @@
                         field: scope.colorByField,
                         ranges: scope.colorNumericRanges
                     };
-                    if (scope.colorNumericRangeMin){
+                    if (scope.colorNumericRangeMin !== null){
                         color.minValue = scope.colorNumericRangeMin;
                     }
                     if (scope.colorUndefined) {

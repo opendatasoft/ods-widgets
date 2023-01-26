@@ -89,26 +89,64 @@
                 ascendingFilter: '=?'
             },
             link: function (scope, element, attrs) {
-                var mapContainer = element.find('div.odswidget-geo-navigation__map');
-                var mapReady = $q.defer();
-                ModuleLazyLoader('leaflet').then(function () {
-                    if (!scope.map) {
-                        scope.map = new L.ODSMap(mapContainer[0], {
-                            scrollWheelZoom: false,
-                            dragging: false,
-                            touchZoom: false,
-                            doubleClickZoom: false,
-                            boxZoom: false,
-                            keyboard: false,
-                            zoomControl: false,
-                            basemapsList: [ODSWidgetsConfig.neutralBasemap],
-                            maxBounds: [[-90, -180], [90, 180]],
-                            zoom: 13
-                        });
-                        scope.map.setView([0, 0], 0);
-                        mapReady.resolve(scope.map);
+                function visibilityObserverCallback(entries) {
+                    var isVisible = entries[0].isIntersecting;
+
+                    if (isVisible) {
+                        mountMap();
+                    } else {
+                        unmountMap();
                     }
-                });
+                }
+
+                var mapReady = $q.defer();
+                var mapContainer = element.find('div.odswidget-geo-navigation__map');
+
+                function mountMap() {
+                    // Initialize a new map in the page. This shouldonly happen when the container is visible in the
+                    // page, otherwise this brings issues with map viewport and tiles.
+                    ModuleLazyLoader('leaflet').then(function () {
+                        if (!scope.map) {
+                            scope.map = new L.ODSMap(mapContainer[0], {
+                                scrollWheelZoom: false,
+                                dragging: false,
+                                touchZoom: false,
+                                doubleClickZoom: false,
+                                boxZoom: false,
+                                keyboard: false,
+                                zoomControl: false,
+                                basemapsList: [ODSWidgetsConfig.neutralBasemap],
+                                maxBounds: [[-90, -180], [90, 180]],
+                                zoom: 13
+                            });
+                            scope.map.setView([0, 0], 0);
+
+                            mapReady.resolve(scope.map);
+
+                            if (lastUid) {
+                                scope.displayShape(lastUid);
+                            }
+                        }
+                    });
+                }
+
+                function unmountMap() {
+                    if (scope.map) {
+                        scope.map.remove();
+                        scope.map = null;
+                        mapReady = $q.defer();
+                    }
+                }
+
+                if (window.IntersectionObserver) {
+                    // Make sure we revalidate the map's display if we go from hidden to visible (typically
+                    // when in mobile view, where the filters are hidden by default)
+                    var observer = new IntersectionObserver(visibilityObserverCallback);
+                    observer.observe(mapContainer[0]);
+                } else {
+                    // Always mount once for browsers without IntersectionObserver support
+                    mountMap();
+                }
 
                 var getShapeStyle = function() {
                     var color = scope.isFilterEnabled ? shapeColor : disabledShapeColor;
@@ -121,8 +159,11 @@
                         weight: 1,
                         clickable: false,
                         dashArray: dashArray
-                    }
+                    };
                 };
+
+                // Last UID displayed in the map (currently if the map exists, or the last time the map was visible)
+                var lastUid = null;
 
                 scope.displayShape = function(uid) {
                     if (!uid || uid === 'world') {
@@ -132,6 +173,9 @@
                         }
                         return;
                     }
+
+                    // Keeping the last drawn UID to recover if we dismount & remount the map again later
+                    lastUid = uid;
 
                     GeographicReferenceService.getEntity(uid).then(function(entity) {
                         var shape = entity.geom;

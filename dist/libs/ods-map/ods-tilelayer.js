@@ -110,6 +110,12 @@ L.ODSTileLayer = L.TileLayer.extend({
                 tileSize: 512,
                 zoomOffset: -1
             };
+            if (basemap.minZoom) {
+                layerOptions.minZoom = basemap.minZoom;
+            }
+            if (basemap.maxZoom) {
+                layerOptions.maxZoom = basemap.maxZoom;
+            }
             L.TileLayer.prototype.initialize.call(this, this._mapboxStylesUrl(mapId, basemap.mapbox_access_token), layerOptions);
         } else if (basemap.provider === 'mapbox') {
             attrib = this._addAttributionPart(attrib, 'Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
