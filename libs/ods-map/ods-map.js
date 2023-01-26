@@ -20,6 +20,17 @@ L.ODSMap = L.Map.extend({
             );
         }
     },
+    _escapeHtmlLabel: function(html) {
+        if (!html) {
+            return html;
+        }
+        return html
+            .replace(/&(?!#?\w+;)/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
     _setTilesProvider: function(basemapsList, prependAttribution, appendAttribution, selectedBasemap, disableAttribution, attributionSeparator) {
         // OSM Free (don't use in production)
         //var tilesUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -69,7 +80,7 @@ L.ODSMap = L.Map.extend({
             });
             for (var j=0; j<layers.length; j++) {
                 layer = layers[j];
-                layersControl.addBaseLayer(layer, layer.basemapLabel);
+                layersControl.addBaseLayer(layer, this._escapeHtmlLabel(layer.basemapLabel));
             }
             this.addControl(layersControl);
         }

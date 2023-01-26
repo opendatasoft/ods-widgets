@@ -37,12 +37,12 @@
                 var html = '' +
                     '<a class="twitter-timeline" ' +
                     '   href="https://twitter.com/twitterapi" ' +
-                    '   data-widget-id="' + attrs.widgetId + '"';
+                    '   data-widget-id="' + ODS.StringUtils.escapeHTML(attrs.widgetId) + '"';
                 if (attrs.height) {
-                    html += '   height="' + attrs.height + '"';
+                    html += '   height="' + ODS.StringUtils.escapeHTML(attrs.height) + '"';
                 }
                 if (attrs.width) {
-                    html += '   width="' + attrs.width + '"';
+                    html += '   width="' + ODS.StringUtils.escapeHTML(attrs.width) + '"';
                 }
                 html +=
                     '   >Tweets</a>' +

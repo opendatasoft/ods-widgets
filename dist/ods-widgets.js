@@ -8919,15 +8919,37 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
+    function v1PolygonToWkt(v1Polygon) {
+        /*
+        Transforms a polygon written for a geofilter.polygon function in API V1, to a WKT polygon understable by
+        API V2.
+         */
+        // Example of a V1 polygon:
+        // (43.474249352607615,-0.164794921875),(44.18161305421135,-0.164794921875),(44.18161305421135,1.47491455078125),(43.474249352607615,1.47491455078125),(43.474249352607615,-0.164794921875)
+        var wkt = 'POLYGON((';
+        var points = v1Polygon.split('),(');
+        points.forEach(function(v1Point, index) {
+            if (index) {
+                wkt += ', ';
+            }
+            var cleanPoint = v1Point.replace(')', '').replace('(', '');
+            var coords = cleanPoint.split(',');
+            wkt += coords[1] + ' ' + coords[0];
+        });
+        wkt += '))';
+        return wkt;
+    }
+
     mod.service('APIParamsV1ToV2', function () {
-        return function(paramsV1) {
+        return function(paramsV1, fieldsV1) {
             var paramsV2 = {};
             if (!paramsV1) {
                 return paramsV2;
             }
 
-
             var qClauses = [];
+            var whereClauses = [];
+
             angular.forEach(paramsV1, function (paramValue, paramName) {
                 if (paramValue === null || typeof(paramValue) === "undefined") {
                     // Not a real value to translate
@@ -8954,7 +8976,7 @@ mod.directive('infiniteScroll', [
                         paramValue = [paramValue];
                     }
                     angular.forEach(paramValue, function(value) {
-                        paramsV2.refine.push(paramName.substring(7) + ':' + value);
+                        paramsV2.refine.push(paramName.substring(7) + ':"' + value + '"');
                     });
                 }
 
@@ -8964,7 +8986,7 @@ mod.directive('infiniteScroll', [
                         paramValue = [paramValue];
                     }
                     angular.forEach(paramValue, function(value) {
-                        paramsV2.exclude.push(paramName.substring(8) + ':' + value);
+                        paramsV2.exclude.push(paramName.substring(8) + ':"' + value + '"');
                     });
                 }
 
@@ -8985,10 +9007,36 @@ mod.directive('infiniteScroll', [
                     paramsV2.timezone = paramValue;
                 }
 
+                if (fieldsV1) {
+                    var geoPoint = fieldsV1.find(function(f) { return f.type === 'geo_point_2d'; });
+                    if (geoPoint) {
+                        if (paramName === 'geofilter.distance') {
+                            var distanceElements = paramValue.split(',');
+                            whereClauses.push("distance(`" + geoPoint.name + "`, geom'POINT(" + distanceElements[1] + " " + distanceElements[0] + ")', " + distanceElements[2] + "m)");
+                        }
+
+                        if (paramName === 'geofilter.polygon') {
+                            whereClauses.push("polygon(`" + geoPoint.name + "`, geom'"+v1PolygonToWkt(paramValue)+"')");
+                        }
+                    }
+                }
+
             });
 
             if (qClauses.length) {
                 paramsV2.qv1 = '(' + qClauses.join(') AND (') + ')';
+            }
+
+            if (whereClauses.length) {
+                paramsV2.where = whereClauses.reduce(function(previous, current) {
+                    var next = '';
+                    if (previous) {
+                        next += ' AND ';
+                    } else {
+                        next += '(' + current + ')';
+                    }
+                    return next;
+                }, null);
             }
 
             return paramsV2;
@@ -21567,26 +21615,64 @@ mod.directive('infiniteScroll', [
                 ascendingFilter: '=?'
             },
             link: function (scope, element, attrs) {
-                var mapContainer = element.find('div.odswidget-geo-navigation__map');
-                var mapReady = $q.defer();
-                ModuleLazyLoader('leaflet').then(function () {
-                    if (!scope.map) {
-                        scope.map = new L.ODSMap(mapContainer[0], {
-                            scrollWheelZoom: false,
-                            dragging: false,
-                            touchZoom: false,
-                            doubleClickZoom: false,
-                            boxZoom: false,
-                            keyboard: false,
-                            zoomControl: false,
-                            basemapsList: [ODSWidgetsConfig.neutralBasemap],
-                            maxBounds: [[-90, -180], [90, 180]],
-                            zoom: 13
-                        });
-                        scope.map.setView([0, 0], 0);
-                        mapReady.resolve(scope.map);
+                function visibilityObserverCallback(entries) {
+                    var isVisible = entries[0].isIntersecting;
+
+                    if (isVisible) {
+                        mountMap();
+                    } else {
+                        unmountMap();
                     }
-                });
+                }
+
+                var mapReady = $q.defer();
+                var mapContainer = element.find('div.odswidget-geo-navigation__map');
+
+                function mountMap() {
+                    // Initialize a new map in the page. This shouldonly happen when the container is visible in the
+                    // page, otherwise this brings issues with map viewport and tiles.
+                    ModuleLazyLoader('leaflet').then(function () {
+                        if (!scope.map) {
+                            scope.map = new L.ODSMap(mapContainer[0], {
+                                scrollWheelZoom: false,
+                                dragging: false,
+                                touchZoom: false,
+                                doubleClickZoom: false,
+                                boxZoom: false,
+                                keyboard: false,
+                                zoomControl: false,
+                                basemapsList: [ODSWidgetsConfig.neutralBasemap],
+                                maxBounds: [[-90, -180], [90, 180]],
+                                zoom: 13
+                            });
+                            scope.map.setView([0, 0], 0);
+
+                            mapReady.resolve(scope.map);
+
+                            if (lastUid) {
+                                scope.displayShape(lastUid);
+                            }
+                        }
+                    });
+                }
+
+                function unmountMap() {
+                    if (scope.map) {
+                        scope.map.remove();
+                        scope.map = null;
+                        mapReady = $q.defer();
+                    }
+                }
+
+                if (window.IntersectionObserver) {
+                    // Make sure we revalidate the map's display if we go from hidden to visible (typically
+                    // when in mobile view, where the filters are hidden by default)
+                    var observer = new IntersectionObserver(visibilityObserverCallback);
+                    observer.observe(mapContainer[0]);
+                } else {
+                    // Always mount once for browsers without IntersectionObserver support
+                    mountMap();
+                }
 
                 var getShapeStyle = function() {
                     var color = scope.isFilterEnabled ? shapeColor : disabledShapeColor;
@@ -21599,8 +21685,11 @@ mod.directive('infiniteScroll', [
                         weight: 1,
                         clickable: false,
                         dashArray: dashArray
-                    }
+                    };
                 };
+
+                // Last UID displayed in the map (currently if the map exists, or the last time the map was visible)
+                var lastUid = null;
 
                 scope.displayShape = function(uid) {
                     if (!uid || uid === 'world') {
@@ -21610,6 +21699,9 @@ mod.directive('infiniteScroll', [
                         }
                         return;
                     }
+
+                    // Keeping the last drawn UID to recover if we dismount & remount the map again later
+                    lastUid = uid;
 
                     GeographicReferenceService.getEntity(uid).then(function(entity) {
                         var shape = entity.geom;
@@ -27384,7 +27476,7 @@ mod.directive('infiniteScroll', [
                         '   <span ng-bind="getTitle(record) | shortSummary: 100"></span> ' +
                         '</h2>' +
                         '<dl class="odswidget-map-tooltip__record-values">' +
-                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields" ' +
+                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields|fieldsForLanguageDisplay:domain.current_language" ' +
                         '        ng-show="record.fields[field.name]|isDefined"' +
                         '        class="odswidget-map-tooltip__field-name">' +
                         '        {{ field.label }}' +
@@ -29263,7 +29355,7 @@ mod.directive('infiniteScroll', [
                         field: scope.colorByField,
                         ranges: scope.colorNumericRanges
                     };
-                    if (scope.colorNumericRangeMin){
+                    if (scope.colorNumericRangeMin !== null){
                         color.minValue = scope.colorNumericRangeMin;
                     }
                     if (scope.colorUndefined) {
@@ -34693,12 +34785,12 @@ mod.directive('infiniteScroll', [
                 var html = '' +
                     '<a class="twitter-timeline" ' +
                     '   href="https://twitter.com/twitterapi" ' +
-                    '   data-widget-id="' + attrs.widgetId + '"';
+                    '   data-widget-id="' + ODS.StringUtils.escapeHTML(attrs.widgetId) + '"';
                 if (attrs.height) {
-                    html += '   height="' + attrs.height + '"';
+                    html += '   height="' + ODS.StringUtils.escapeHTML(attrs.height) + '"';
                 }
                 if (attrs.width) {
-                    html += '   width="' + attrs.width + '"';
+                    html += '   width="' + ODS.StringUtils.escapeHTML(attrs.width) + '"';
                 }
                 html +=
                     '   >Tweets</a>' +

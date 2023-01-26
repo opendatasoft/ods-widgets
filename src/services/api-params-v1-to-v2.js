@@ -3,15 +3,37 @@
 
     var mod = angular.module('ods-widgets');
 
+    function v1PolygonToWkt(v1Polygon) {
+        /*
+        Transforms a polygon written for a geofilter.polygon function in API V1, to a WKT polygon understable by
+        API V2.
+         */
+        // Example of a V1 polygon:
+        // (43.474249352607615,-0.164794921875),(44.18161305421135,-0.164794921875),(44.18161305421135,1.47491455078125),(43.474249352607615,1.47491455078125),(43.474249352607615,-0.164794921875)
+        var wkt = 'POLYGON((';
+        var points = v1Polygon.split('),(');
+        points.forEach(function(v1Point, index) {
+            if (index) {
+                wkt += ', ';
+            }
+            var cleanPoint = v1Point.replace(')', '').replace('(', '');
+            var coords = cleanPoint.split(',');
+            wkt += coords[1] + ' ' + coords[0];
+        });
+        wkt += '))';
+        return wkt;
+    }
+
     mod.service('APIParamsV1ToV2', function () {
-        return function(paramsV1) {
+        return function(paramsV1, fieldsV1) {
             var paramsV2 = {};
             if (!paramsV1) {
                 return paramsV2;
             }
 
-
             var qClauses = [];
+            var whereClauses = [];
+
             angular.forEach(paramsV1, function (paramValue, paramName) {
                 if (paramValue === null || typeof(paramValue) === "undefined") {
                     // Not a real value to translate
@@ -38,7 +60,7 @@
                         paramValue = [paramValue];
                     }
                     angular.forEach(paramValue, function(value) {
-                        paramsV2.refine.push(paramName.substring(7) + ':' + value);
+                        paramsV2.refine.push(paramName.substring(7) + ':"' + value + '"');
                     });
                 }
 
@@ -48,7 +70,7 @@
                         paramValue = [paramValue];
                     }
                     angular.forEach(paramValue, function(value) {
-                        paramsV2.exclude.push(paramName.substring(8) + ':' + value);
+                        paramsV2.exclude.push(paramName.substring(8) + ':"' + value + '"');
                     });
                 }
 
@@ -69,10 +91,36 @@
                     paramsV2.timezone = paramValue;
                 }
 
+                if (fieldsV1) {
+                    var geoPoint = fieldsV1.find(function(f) { return f.type === 'geo_point_2d'; });
+                    if (geoPoint) {
+                        if (paramName === 'geofilter.distance') {
+                            var distanceElements = paramValue.split(',');
+                            whereClauses.push("distance(`" + geoPoint.name + "`, geom'POINT(" + distanceElements[1] + " " + distanceElements[0] + ")', " + distanceElements[2] + "m)");
+                        }
+
+                        if (paramName === 'geofilter.polygon') {
+                            whereClauses.push("polygon(`" + geoPoint.name + "`, geom'"+v1PolygonToWkt(paramValue)+"')");
+                        }
+                    }
+                }
+
             });
 
             if (qClauses.length) {
                 paramsV2.qv1 = '(' + qClauses.join(') AND (') + ')';
+            }
+
+            if (whereClauses.length) {
+                paramsV2.where = whereClauses.reduce(function(previous, current) {
+                    var next = '';
+                    if (previous) {
+                        next += ' AND ';
+                    } else {
+                        next += '(' + current + ')';
+                    }
+                    return next;
+                }, null);
             }
 
             return paramsV2;

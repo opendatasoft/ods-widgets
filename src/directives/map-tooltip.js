@@ -59,7 +59,7 @@
                         '   <span ng-bind="getTitle(record) | shortSummary: 100"></span> ' +
                         '</h2>' +
                         '<dl class="odswidget-map-tooltip__record-values">' +
-                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields" ' +
+                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields|fieldsForLanguageDisplay:domain.current_language" ' +
                         '        ng-show="record.fields[field.name]|isDefined"' +
                         '        class="odswidget-map-tooltip__field-name">' +
                         '        {{ field.label }}' +
