@@ -35,7 +35,7 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-catalog-context context="catalog"
-         *                               catalog-domain="https://widgets-examples.opendatasoft.com/">
+         *                               catalog-domain="documentation-resources">
          *              <label>Select a facet:</label>
          *              <select ng-model="userchoice">
          *                  <option ng-repeat="item in items"

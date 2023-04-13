@@ -19,7 +19,7 @@
          *
          * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
          *
-         *  @param {string} [apikey=none] API key to use in every API call for the context. For more information, see {@link https://help.opendatasoft.com/platform/en/managing_account/02_generating_api_key/generating_api_key.html#id1 Generating an API key}).
+         *  @param {string} [apikey=none] API key to use in every API call for the context. For more information, see {@link https://userguide.opendatasoft.com/l/en/article/n77v4gib7z-managing-api-keys#generating_an_api_key Generating an API key}).
          *  @param {object} [parameters=none] Object holding parameters to apply to the context when it is created
          *  @param {boolean} [urlSync=none] Enables synchronization of the parameters to the page's parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change as well. Note that if this parameter is enabled, `parameters` and `parametersFromContext` won't have any effect. There can also only be a single context with URL synchronization enabled, else the behavior will be unpredictable.
          *
@@ -54,14 +54,14 @@
          *      <file name="odsresultenumerator_with_catalog_context.html">
          *          <ods-catalog-context context="examples"
          *                               examples-domain="https://documentation-resources.opendatasoft.com/">
-         * 
+         *
          *              <ul>
          *                  <ods-result-enumerator context="examples">
          *                      <li>
          *                          <a ng-href="{{context.domainUrl + '/explore/dataset/' + item.datasetid + '/'}}" target="_blank">{{item.datasetid}}</a>
          *                      </li>
          *                  </ods-result-enumerator>
-         *              </ul> 
+         *              </ul>
          *          </ods-catalog-context>
          *      </file>
          *  </example>
@@ -118,8 +118,7 @@
                                             filter == 'geonav' ||
                                             filter == 'geonav-asc' ||
                                             filter.indexOf('refine.') === 0 ||
-                                            filter.match(queryPattern) ||
-                                            (filter == 'q.geographic_area' && that.parameters['q.geographic_area'] && that.parameters['q.geographic_area'].length > 0);
+                                            filter.match(queryPattern);
                                 }).filter(function(filter) {
                                     return excludes.indexOf(filter) === -1;
                                 });

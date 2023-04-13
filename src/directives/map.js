@@ -57,12 +57,12 @@
          * @param {boolean} [noRefit=false] By default, the map refits its view whenever the displayed data changes. When set to `true`, the map stays at the same location.
          * @param {boolean} [toolbarGeolocation=true] When set to `true`, the "geolocate" button is displayed in the map's toolbar.
          * @param {boolean} [autoGeolocation=false] When set to `true`, the geolocation, which centers and zooms the map on the user's location, is automatically done upon initialization. `autoGeolocation` is only available when there is no **location** parameter set for the widget.
-         * 
+         *
          * Caution: location sharing must be allowed priorly for Firefox users when multiple odsMap widget are set with `autoGeolocation=true` on the same page.
          * @param {boolean} [toolbarDrawing=true] When set to `false`, the drawing tools to draw filter areas are not displayed in the map's toolbar.
          * @param {boolean} [toolbarFullscreen=true] When set to `false`, the "fullscreen" button is not displayed in the map's toolbar.
          * @param {boolean} [displayControl=false] When set to `true`, displays a control to choose whether groups or single datasets outside groups should be displayed, using toggle buttons.
-         * 
+         *
          * Note: it shouldn't be combined with the usage of **showIf** on {@link ods-widgets.directive:odsMapLayer odsMapLayer}, as it will lead to inconsistencies in the user interface.
          * @param {boolean} [displayControlSingleLayer=false] When set to `true`, only one layer is displayed at a time using the control of groups and single datasets display.
          * @param {boolean} odsAutoResize For more information, see {@link ods-widgets.directive:odsAutoResize Auto Resize}.
@@ -1510,16 +1510,16 @@
        * - `color`: a color, as an hex code (#FF0F05) or a CSS color name (e.g., "red"). Available for any display mode.
        * - `colorScale`: the name of a {@link http://colorbrewer2.org/ ColorBrewer} scheme (e.g., "YlGnBu"). Available only for `aggregation`.
        * - `colorRanges`: a series of colors and ranges separated by a semicolon, to decide a color depending on a value. For example "red;20;orange;40;#00CE00" colors anything between 20 and 40 in orange, below 20 in red, and above 40 in a custom hex color.
-       * 
+       *
        * It can be combined with a decimal or integer field name in `colorByField` to configure which field will be used to decide on the color (for `raw`) or with `function` and `expression` to determine the calculation used for the color (for `aggregation`).
-       * 
+       *
        * Available for `raw` and `aggregation` display modes.
        *
        * An additional `colorFunction` property can contain the `log` value to use logarithmic scales (instead of the default linear scale) for generating the color scale.
-       * 
+       *
        * Available for `aggregation` and with `color` and `colorScale` display modes, or when none is specified.
        *
-       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://help.opendatasoft.com/platform/en/other_resources/pictograms_reference/pictograms_reference.html" target="_blank">Pictograms reference documentation</a>.
+       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://userguide.opendatasoft.com/l/en/article/ziiipqn1y2-pictograms-reference" target="_blank">Pictograms reference documentation</a>.
        *
        * When displaying shapes, `borderColor` and `opacity` can be used to configure the color of the shape border and the opacity of the shape's fill.
        *

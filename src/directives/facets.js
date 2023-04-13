@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsFacets', ['ODSWidgetsConfig', '$compile', 'translate', '$q', '$filter', function(ODSWidgetsConfig, $compile, translate, $q, $filter) {
+    mod.directive('odsFacets', ['ODSWidgetsConfig', '$compile', 'translate', '$q', '$filter', '$sce', function(ODSWidgetsConfig, $compile, translate, $q, $filter, $sce) {
         /**
          *  @ngdoc directive
          *  @name ods-widgets.directive:odsFacets
@@ -32,7 +32,7 @@
          *
          *  @param {boolean} [disjunctive=false] When set to `true`, the filter is in disjunctive mode, which means that other available values can also be selected after a first value is selected. All selected values are combined as "or". For example, after clicking "red", "green" and "blue" can also be clicked. The resulting values can be green, red, or blue.
          *
-         *  Note: this parameter is directly related to the schema of the dataset. For this parameter to work properly, the field must allow multiple selections in filters. For more information, see {@link https://help.opendatasoft.com/platform/en/publishing_data/05_processing_data/defining_a_dataset_schema.html#configuration-options-for-facets Defining a dataset schema}).
+         *  Note: this parameter is directly related to the schema of the dataset. For this parameter to work properly, the field must allow multiple selections in filters. For more information, see {@link https://userguide.opendatasoft.com/l/en/article/ssrgpuc0y6/preview#setting_up_fields_as_facets Defining a dataset schema}).
          *  @param {boolean} [timerangeFilter=false] When set to `true`, an option to filter using a time range is displayed above the categories. This parameter only works for date and datetime fields and must be used with a context (see **context** parameter).
          *  @param {string} [context=none] Name of the context to refine on. This parameter is mandatory for the **timerangeFilter** parameter.
          *  @param {string} [valueSearch=none] When set to `true`, a search box is displayed above the categories to search within the available categories. If `suggest`, the matching categories are not displayed until there is at least one character typed into the search box, effectively making it into a suggest-like search box.
@@ -141,17 +141,16 @@
 
             angular.forEach(facets, function(facet) {
                 html += '<ods-facet ' +
-                    'name="'+facet.name+'" ' +
-                    // We need to escape double quotes when building an attribute value (issue platform#3789)
-                    'title="'+(facet.title && facet.title.replace(/"/g, '&quot;') || facet.name)+'" ' +
-                    'sort="'+(facet.sort || '')+'" ' +
-                    'disjunctive="'+(facet.disjunctive || '')+'" ' +
-                    'timerange-filter="'+(facet.timerangeFilter || '')+'" ' +
+                    'name="'+ODS.StringUtils.escapeHTML(facet.name)+'" ' +
+                    'title="'+ODS.StringUtils.escapeHTML(facet.title || facet.name)+'" ' +
+                    'sort="'+ODS.StringUtils.escapeHTML(facet.sort)+'" ' +
+                    'disjunctive="'+ODS.StringUtils.escapeHTML(facet.disjunctive)+'" ' +
+                    'timerange-filter="'+ODS.StringUtils.escapeHTML(facet.timerangeFilter)+'" ' +
                     'hide-if-single-category="'+(facet.hideIfSingleCategory ? 'true' : 'false')+'" ' +
-                    'hide-category-if="'+(facet.hideCategoryIf || '')+'"' +
-                    'value-formatter="'+(facet.valueFormatter || '')+'"' +
+                    'hide-category-if="'+ODS.StringUtils.escapeHTML(facet.hideCategoryIf)+'"' +
+                    'value-formatter="'+ODS.StringUtils.escapeHTML(facet.valueFormatter)+'"' +
                     'context="'+(scope.context.name || '')+'"' +
-                    '>'+(facet.template || '')+'</ods-facet>';
+                    '>'+$sce.getTrustedHtml(facet.template)+'</ods-facet>';
             });
             html = html.replace(/{{(.*?)}}/g, "\\{\\{$1\\}\\}");
             var tags = angular.element(html);

@@ -198,7 +198,7 @@
                         return ODSWidgetsConfig.geonavigationLevels.world[0];
                     }
                 }
-                var country = tokens[1].substring(6);
+                var country = this.getCountryFromUID(tokens[1]);
                 var levels = this.getLevelsForCountry(country);
                 if (levels.length <= tokens.length - 1 + additionalDepth) {
                     return null;
@@ -210,9 +210,27 @@
                     return false;
                 }
                 var tokens = uidPath.split('/');
-                var country = tokens[1].substring(6);
+                var country = this.getCountryFromUID(tokens[1]);
                 var allLevels = this.getLevelsForCountry(country);
                 return tokens.length === allLevels.length;
+            },
+            getCountryFromUID: function(uid) {
+                // Two cases:
+                // - fr_60_12345
+                // - world_fr
+                if (uid.startsWith('world_')) {
+                    var countryCode = uid.substring(6);
+
+                    if (countryCode === 'gb') {
+                        // GB is a special situation: our reference data use "gb" for world level, but "uk" for local levels.
+                        // https://app.shortcut.com/opendatasoft/story/35331/apply-the-same-render-mechanism-for-classic-pages-preview-as-for-classic-pages-normal-rendering
+                        return 'uk';
+                    }
+
+                    return countryCode;
+                } else {
+                    return uid.substring(0, 2);
+                }
             }
         }
     }]);

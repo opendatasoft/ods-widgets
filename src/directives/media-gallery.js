@@ -224,6 +224,11 @@
                                             placeholder = false;
                                         }
 
+                                        // Get EXIF orientation tag if provided.
+                                        // If it is between 5 and 8, width and height need to be exchanged.
+                                        var exif_orientation = image.exif_orientation || 1;
+                                        var rotate90 = exif_orientation >= 5 && exif_orientation <= 8;
+
                                         $scope.images.push({
                                             'record': data.records[i],
                                             'fieldname': $scope.imageFields[j],
@@ -232,8 +237,8 @@
                                             'id': image.id,
                                             'index': $scope.images.length,
                                             'placeholder': placeholder,
-                                            'realwidth': image.width,
-                                            'realheight': image.height,
+                                            'realwidth': rotate90 ? image.height : image.width,
+                                            'realheight': rotate90 ? image.width : image.height,
                                             'allFieldsInitialized': false,
                                             'fetching': false
                                         });

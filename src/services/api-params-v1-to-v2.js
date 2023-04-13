@@ -92,16 +92,17 @@
                 }
 
                 if (fieldsV1) {
+                    var geoShape = fieldsV1.find(function(f) { return f.type === 'geo_shape'; });
                     var geoPoint = fieldsV1.find(function(f) { return f.type === 'geo_point_2d'; });
-                    if (geoPoint) {
-                        if (paramName === 'geofilter.distance') {
-                            var distanceElements = paramValue.split(',');
-                            whereClauses.push("distance(`" + geoPoint.name + "`, geom'POINT(" + distanceElements[1] + " " + distanceElements[0] + ")', " + distanceElements[2] + "m)");
-                        }
 
-                        if (paramName === 'geofilter.polygon') {
-                            whereClauses.push("polygon(`" + geoPoint.name + "`, geom'"+v1PolygonToWkt(paramValue)+"')");
-                        }
+                    if (geoPoint && paramName === 'geofilter.distance') {
+                        var distanceElements = paramValue.split(',');
+                        whereClauses.push("distance(`" + geoPoint.name + "`, geom'POINT(" + distanceElements[1] + " " + distanceElements[0] + ")', " + distanceElements[2] + "m)");
+                    }
+
+                    if ((geoPoint || geoShape) && paramName === 'geofilter.polygon') {
+                        // Use the best field available (geo_shape is more precise that geo_point_2d, for a shape dataset)
+                        whereClauses.push("geometry(`" + (geoShape || geoPoint).name + "`, geom'"+v1PolygonToWkt(paramValue)+"')");
                     }
                 }
 

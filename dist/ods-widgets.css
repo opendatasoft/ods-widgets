@@ -2627,10 +2627,6 @@ html[dir=rtl] .odswidget-text-search__reset {
 .odswidget-infinite-scroll-results__spinner {
   font-size: 3rem;
 }
-.odswidget-geo-search__map {
-  width: 100%;
-  height: 200px;
-}
 .odswidget-gauge {
   position: relative;
 }

@@ -10,11 +10,8 @@ L.VectorMarker = L.Marker.extend({
     initialize: function(latlng, options) {
         L.Util.setOptions(this, options);
         // Create divicon
-        if (Modernizr.inlinesvg) {
-            this.options.icon = this._getVectorIcon(this.options.color, this.options.icon, this.options.marker, this.options.opacity, this.options.extraClasses);
-        } else {
-            this.options.icon = new L.Icon.Default();
-        }
+        this.options.icon = this._getVectorIcon(this.options.color, this.options.icon, this.options.marker, this.options.opacity, this.options.extraClasses);
+
         L.Marker.prototype.initialize.call(this, latlng, this.options);
     },
     _isSVGIcon: function() {

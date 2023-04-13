@@ -1923,10 +1923,10 @@
          *    <pre>
          *        <ods-dataset-context context="trees"
          *                             trees-dataset="les-arbres-remarquables-de-paris"
-         *                             trees-domain="https://widgets-examples.opendatasoft.com/">
+         *                             trees-domain="documentation-resources">
          *            <ods-chart>
          *                <ods-chart-query context="trees" field-x="espece" maxpoints="10">
-         *                    <ods-chart-serie expression-y="circonference" chart-type="column" function-y="MAX" color="#66c2a5">
+         *                    <ods-chart-serie expression-y="circonference_en_cm" chart-type="column" function-y="MAX" color="#66c2a5">
          *                    </ods-chart-serie>
          *                </ods-chart-query>
          *            </ods-chart>
@@ -1937,12 +1937,12 @@
          *    <pre>
          *        <ods-dataset-context context="trees"
          *                             trees-dataset="les-arbres-remarquables-de-paris"
-         *                             trees-domain="https://widgets-examples.opendatasoft.com/">
+         *                             trees-domain="documentation-resources">
          *            <ods-chart>
          *                <ods-chart-query context="trees" field-x="espece" maxpoints="10">
-         *                    <ods-chart-serie expression-y="circonference" chart-type="column" function-y="AVG" color="#66c2a5">
+         *                    <ods-chart-serie expression-y="circonference_en_cm" chart-type="column" function-y="AVG" color="#66c2a5">
          *                    </ods-chart-serie>
-         *                    <ods-chart-serie expression-y="hauteur" chart-type="column" function-y="AVG" color="#fc8d62">
+         *                    <ods-chart-serie expression-y="hauteur_en_m" chart-type="column" function-y="AVG" color="#fc8d62">
          *                    </ods-chart-serie>
          *                </ods-chart-query>
          *            </ods-chart>

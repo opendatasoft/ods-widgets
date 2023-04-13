@@ -44,9 +44,6 @@
                 var svgContainer;
                 scope.$watch('[url, color, colorByAttribute]', function(nv) {
                     if (nv[0]) {
-                        if (Modernizr && !Modernizr.svg) {
-                            return;
-                        }
                         if (svgContainer) {
                             element.empty();
                         }

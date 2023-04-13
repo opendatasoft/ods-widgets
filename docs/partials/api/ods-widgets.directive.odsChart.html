@@ -12,10 +12,10 @@ a type of chart, and multiple parameters to fine-tune the chart&#39;s appearance
    <pre class="prettyprint linenums">
        &lt;ods-dataset-context context="trees"
                             trees-dataset="les-arbres-remarquables-de-paris"
-                            trees-domain="https://widgets-examples.opendatasoft.com/"&gt;
+                            trees-domain="documentation-resources"&gt;
            &lt;ods-chart&gt;
                &lt;ods-chart-query context="trees" field-x="espece" maxpoints="10"&gt;
-                   &lt;ods-chart-serie expression-y="circonference" chart-type="column" function-y="MAX" color="#66c2a5"&gt;
+                   &lt;ods-chart-serie expression-y="circonference_en_cm" chart-type="column" function-y="MAX" color="#66c2a5"&gt;
                    &lt;/ods-chart-serie&gt;
                &lt;/ods-chart-query&gt;
            &lt;/ods-chart&gt;
@@ -25,12 +25,12 @@ a type of chart, and multiple parameters to fine-tune the chart&#39;s appearance
    <pre class="prettyprint linenums">
        &lt;ods-dataset-context context="trees"
                             trees-dataset="les-arbres-remarquables-de-paris"
-                            trees-domain="https://widgets-examples.opendatasoft.com/"&gt;
+                            trees-domain="documentation-resources"&gt;
            &lt;ods-chart&gt;
                &lt;ods-chart-query context="trees" field-x="espece" maxpoints="10"&gt;
-                   &lt;ods-chart-serie expression-y="circonference" chart-type="column" function-y="AVG" color="#66c2a5"&gt;
+                   &lt;ods-chart-serie expression-y="circonference_en_cm" chart-type="column" function-y="AVG" color="#66c2a5"&gt;
                    &lt;/ods-chart-serie&gt;
-                   &lt;ods-chart-serie expression-y="hauteur" chart-type="column" function-y="AVG" color="#fc8d62"&gt;
+                   &lt;ods-chart-serie expression-y="hauteur_en_m" chart-type="column" function-y="AVG" color="#fc8d62"&gt;
                    &lt;/ods-chart-serie&gt;
                &lt;/ods-chart-query&gt;
            &lt;/ods-chart&gt;

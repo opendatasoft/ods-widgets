@@ -21,7 +21,7 @@
          *
          * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
          *
-         *  @param {string} [apikey=none] API key to use in every API call for the context (see {@link https://help.opendatasoft.com/platform/en/managing_account/02_generating_api_key/generating_api_key.html#id1 Generating an API key}).
+         *  @param {string} [apikey=none] API key to use in every API call for the context (see {@link https://userguide.opendatasoft.com/l/en/article/n77v4gib7z-managing-api-keys#generating_an_api_key Generating an API key}).
          *  @param {string} [sort=none] Sorts expression to apply by default to all widgets plugged to the declared context. The expression should be written using one of the following syntaxes:
          *
          *  - `field` for an ascending order,
