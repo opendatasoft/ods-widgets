@@ -584,7 +584,7 @@
         };
     });
 
-    mod.filter('shortSummary', [function() {
+    mod.filter('shortSummary', ['$sce', function($sce) {
         /**
          * @ngdoc filter
          * @name ods-widgets.filter:shortSummary
@@ -606,7 +606,7 @@
             // - Else, takes the text
             // Then takes up to x words
             var text = '';
-            var body = angular.element('<div>'+summary+'</div>');
+            var body = angular.element('<div>'+$sce.getTrustedHtml(summary)+'</div>');
             if (body.children().length === 0) {
                 // Regular text
                 summary = '' + summary; // make sure it is a string

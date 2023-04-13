@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.service('MapRenderingAggregation', ['ODSAPI', 'MapLayerHelper', 'AggregationHelper', '$q', function (ODSAPI, MapLayerHelper, AggregationHelper, $q) {
+    mod.service('MapRenderingAggregation', ['ODSAPI', 'MapLayerHelper', 'AggregationHelper', '$q', '$sce', function (ODSAPI, MapLayerHelper, AggregationHelper, $q, $sce) {
         return {
             render: function (layerConfig, map, layerGroup, timeout) {
                 var deferred = $q.defer();
@@ -127,7 +127,7 @@
                                 }
                                 datasetTitle = layerConfig.context.dataset.metas.title;
                                 //}
-                                htmlContent += '<div class="odswidget-map__legend-title">' + datasetTitle + '<br/>' + AggregationHelper.getFunctionLabel(layerConfig.func);
+                                htmlContent += '<div class="odswidget-map__legend-title">' + ODS.StringUtils.escapeHTML(datasetTitle) + '<br/>' + AggregationHelper.getFunctionLabel(layerConfig.func);
                                 if (layerConfig.func !== 'COUNT') {
                                     htmlContent += ' ' + fieldName;
                                 }

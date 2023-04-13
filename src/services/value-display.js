@@ -9,6 +9,16 @@
                 return $filter('isocode_to_language')(ODS.StringUtils.escapeHTML(value));
             },
             'visualization': function(value) {
+                var customViewIcon = 'tachometer';
+                var customViewTitle = 'Custom view';
+                if (ODSWidgetsConfig.defaultCustomViewConfig) {
+                    if (ODSWidgetsConfig.defaultCustomViewConfig.icon) {
+                        customViewIcon = ODSWidgetsConfig.defaultCustomViewConfig.icon;
+                    }
+                    if (ODSWidgetsConfig.defaultCustomViewConfig.title) {
+                        customViewTitle = ODS.StringUtils.escapeHTML(ODSWidgetsConfig.defaultCustomViewConfig.title);
+                    }
+                }
                 switch (value) {
                     case 'analyze':
                         return '<i class="odswidget-facet__value-icon fa fa-bar-chart" aria-hidden="true"></i> ' + translate('Analyze');
@@ -21,8 +31,7 @@
                     case 'api':
                         return '<i class="odswidget-facet__value-icon fa fa-cogs" aria-hidden="true"></i> ' + translate('API');
                     case 'custom_view':
-                        return '<i class="odswidget-facet__value-icon fa fa-' + ODSWidgetsConfig.defaultCustomViewConfig.icon
-                            + '" aria-hidden="true"></i> ' + ODS.StringUtils.escapeHTML(ODSWidgetsConfig.defaultCustomViewConfig.title);
+                        return '<i class="odswidget-facet__value-icon fa fa-' + customViewIcon + '" aria-hidden="true"></i> ' + customViewTitle;
                     default:
                         return ODS.StringUtils.escapeHTML(value);
                 }

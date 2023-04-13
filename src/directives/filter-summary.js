@@ -235,10 +235,6 @@
                                 }
                             });
 
-                            if (context.type === 'catalog' && isParameterActive(context, 'q.geographic_area')) {
-                                addRefinement(context, translate('Geographic area'), context.parameters['q.geographic_area'], 'q.geographic_area', translate('Drawn area on the map'));
-                            }
-
                             if (isParameterActive(context, 'q.timescale')) {
                                 var timescale = odsTimescaleParser(context.parameters['q.timescale']);
                                 addRefinement(context, context.dataset.getFieldLabel(timescale.field), context.parameters['q.timescale'], 'q.timescale', timescale.scaleLabel);

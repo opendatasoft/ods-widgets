@@ -382,7 +382,7 @@ angular.module('gettext').factory('gettextCatalog', ["gettextPlurals", "gettextF
  * <div translate>Hello {{name}}!</div>
  * ```
  */
-angular.module('gettext').directive('translate', ["gettextCatalog", "$parse", "$animate", "$compile", "$window", function (gettextCatalog, $parse, $animate, $compile, $window) {
+angular.module('gettext').directive('translate', ["gettextCatalog", "$parse", "$animate", "$compile", "$window", "$sce", function (gettextCatalog, $parse, $animate, $compile, $window, $sce) {
     // Trim polyfill for old browsers (instead of jQuery)
     // Based on AngularJS-v1.2.2 (angular.js#620)
     var trim = (function () {
@@ -434,7 +434,7 @@ angular.module('gettext').directive('translate', ["gettextCatalog", "$parse", "$
                 msgid = compact(element.html());
             }
 
-            var translatePlural = attrs.translatePlural;
+            var translatePlural = $sce.getTrustedHtml(attrs.translatePlural);
             var translateContext = attrs.translateContext;
 
             if (msie <= 8) {

@@ -8,7 +8,6 @@
             'q.timerange',
             'q.timescale',
             'q.calendar_bounds',
-            'q.geographic_area',
             'q.mapfilter',
             'q.to_date',
             'q.from_date',

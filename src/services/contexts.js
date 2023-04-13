@@ -6,7 +6,7 @@
     var schemaCache = {};
     var loadingSchemas = {};
 
-    mod.factory('ContextHelper', ['ODSAPI', '$q', 'QueryParameters', function (ODSAPI, $q, QueryParameters) {
+    mod.factory('ContextHelper', ['ODSAPI', '$q', 'QueryParameters', 'APIParamsV1ToV2',function (ODSAPI, $q, QueryParameters, APIParamsV1ToV2) {
         return {
             getDatasetContext: function(contextName, domainId, datasetId, contextParameters, source, apikey, schema) {
                 var deferred = $q.defer();
@@ -23,9 +23,24 @@
                         url += this.getQueryStringURL(parameters);
                         return url;
                     },
+                    'getV2DownloadURL': function(format, parameters) {
+                        if (!this.dataset || !this.dataset.datasetid) {
+                            return;
+                        }
+                        format = format || 'csv';
+                        var url = this.domainUrl + '/api/explore/v2.1/catalog/datasets/' + this.dataset.datasetid + '/exports/' + format + '?';
+                        url += this.getV2QueryStringURL(parameters);
+                        return url;
+                    },
                     'getQueryStringURL': function(parameters) {
                         parameters = parameters || {};
                         return '&' + ODS.URLUtils.getAPIQueryString(angular.extend({}, this.parameters, parameters));
+                    },
+                    'getV2QueryStringURL': function(v1parameters) {
+                        var fields = this.dataset && this.dataset.fields;
+                        v1parameters = v1parameters || {};
+                        var allParameters = angular.extend({}, this.parameters, v1parameters);
+                        return '&' + ODS.URLUtils.getAPIQueryString(APIParamsV1ToV2(allParameters, fields));
                     },
                     'toggleRefine': function(facetName, path, replace) {
                         ODS.Context.toggleRefine(this, facetName, path, replace);
