@@ -6,10 +6,10 @@
     mod.factory('MapLayerRenderer', [
         'ODSAPI', 'AggregationHelper', 'SVGInliner', 'PictoHelper', 'MapLayerHelper',
         'MapRenderingAggregation', 'MapRenderingClustered', 'MapRenderingHeatmap', 'MapRenderingRaw', 'MapRenderingShapePreview', 'MapRenderingChoroplethAggregation',
-        '$q', '$filter', '$rootScope', '$compile', '$timeout',
+        '$q',
         function(ODSAPI, AggregationHelper, SVGInliner, PictoHelper, MapLayerHelper,
                  MapRenderingAggregation, MapRenderingClustered, MapRenderingHeatmap, MapRenderingRaw, MapRenderingShapePreview, MapRenderingChoroplethAggregation,
-                 $q, $filter, $rootScope, $compile, $timeout) {
+                 $q) {
         // TODO: Query interruption when moving
         return {
             updateDataLayer: function (layerConfig, map, deferred) {

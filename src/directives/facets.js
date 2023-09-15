@@ -147,9 +147,9 @@
                     'disjunctive="'+ODS.StringUtils.escapeHTML(facet.disjunctive)+'" ' +
                     'timerange-filter="'+ODS.StringUtils.escapeHTML(facet.timerangeFilter)+'" ' +
                     'hide-if-single-category="'+(facet.hideIfSingleCategory ? 'true' : 'false')+'" ' +
-                    'hide-category-if="'+ODS.StringUtils.escapeHTML(facet.hideCategoryIf)+'"' +
-                    'value-formatter="'+ODS.StringUtils.escapeHTML(facet.valueFormatter)+'"' +
-                    'context="'+(scope.context.name || '')+'"' +
+                    'hide-category-if="'+ODS.StringUtils.escapeHTML(facet.hideCategoryIf)+'" ' +
+                    'value-formatter="'+ODS.StringUtils.escapeHTML(facet.valueFormatter)+'" ' +
+                    'context="'+ODS.StringUtils.escapeHTML(scope.context.name || '')+'"' +
                     '>'+$sce.getTrustedHtml(facet.template)+'</ods-facet>';
             });
             html = html.replace(/{{(.*?)}}/g, "\\{\\{$1\\}\\}");

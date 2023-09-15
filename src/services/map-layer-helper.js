@@ -28,6 +28,16 @@
                     // TODO
                 } else if (layerConfig.color.type === 'categories') {
                     value = record && record.fields && record.fields[layerConfig.color.field];
+                    var field = layerConfig.context.dataset && layerConfig.context.dataset.getField(layerConfig.color.field);
+                    if (field) {
+                        // If the field is multivalued, the color depends on the first value
+                        // https://app.shortcut.com/opendatasoft/story/33970
+                        var multivaluedAnnotation = layerConfig.context.dataset.getFieldAnnotation(field, 'multivalued');
+                        if (multivaluedAnnotation) {
+                            var mvSeparator = multivaluedAnnotation.args[0];
+                            value = value.split(mvSeparator)[0];
+                        }
+                    }
                     color = layerConfig.color.categories[value];
                     if (angular.isUndefined(color)) {
                         return layerConfig.color.otherCategories || '#000000';
@@ -272,7 +282,7 @@
                     minWidth: 250
                 };
                 var popupHeight = 330;
-                var tooltipTemplate = '<ods-map-tooltip tooltip-sort="'+(layerConfig.tooltipSort||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" geo-digest="'+(geoDigest||'')+'"></ods-map-tooltip>';
+                var tooltipTemplate = '<ods-map-tooltip tooltip-sort="'+(ODS.StringUtils.escapeHTML(layerConfig.tooltipSort)||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" geo-digest="'+(ODS.StringUtils.escapeHTML(geoDigest)||'')+'"></ods-map-tooltip>';
                 var compiledTemplate = $compile(tooltipTemplate)(newScope)[0];
 
                 service._handleTopOverflow(map, popupOptions, latLng, popupHeight);

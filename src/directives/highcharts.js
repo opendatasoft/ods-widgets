@@ -2311,7 +2311,7 @@
         };
     }]);
 
-    mod.directive('odsChartSerie', ["ODSAPI", 'ChartHelper', 'ODSWidgetsConfig', '$compile', '$parse', function(ODSAPI, ChartHelper, ODSWidgetsConfig, $compile, $parse) {
+    mod.directive('odsChartSerie', ["ODSAPI", 'ChartHelper', 'ODSWidgetsConfig', function(ODSAPI, ChartHelper, ODSWidgetsConfig) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsChartSerie

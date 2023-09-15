@@ -39,8 +39,20 @@
                     'getV2QueryStringURL': function(v1parameters) {
                         var fields = this.dataset && this.dataset.fields;
                         v1parameters = v1parameters || {};
+                        var query = '';
+                        if (v1parameters.fields){
+                            var select_clause = [];
+                            angular.forEach(v1parameters.fields.split(","), function(field) {
+                                var referenceField = fields.find(function(referenceField) { return referenceField.name === field; });
+                                if (referenceField) {
+                                    select_clause.push('`'+referenceField.name+'` as `'+referenceField.label+'`');
+                                }
+                            });
+                            query = "select=" + select_clause.join(",");
+                        }
                         var allParameters = angular.extend({}, this.parameters, v1parameters);
-                        return '&' + ODS.URLUtils.getAPIQueryString(APIParamsV1ToV2(allParameters, fields));
+                        query = query + "&use_labels=true&" + ODS.URLUtils.getAPIQueryString(APIParamsV1ToV2(allParameters, fields));
+                        return query;
                     },
                     'toggleRefine': function(facetName, path, replace) {
                         ODS.Context.toggleRefine(this, facetName, path, replace);

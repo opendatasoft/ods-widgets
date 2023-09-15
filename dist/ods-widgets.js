@@ -51,8 +51,8 @@ angular.module('gettext').constant('gettext', function (str) {
 });
 
 angular.module('gettext').service('translate', ["gettextCatalog", function (gettextCatalog) {
-    return function(input, additionalScope) {
-        return gettextCatalog.getString(input, additionalScope);
+    return function(input, additionalScope, additionalContext) {
+        return gettextCatalog.getString(input, additionalScope, additionalContext);
     }
 }]);
 
@@ -9745,8 +9745,10 @@ mod.directive('infiniteScroll', [
 
             var qClauses = [];
             var whereClauses = [];
+            var usedFacets = [];
 
-            angular.forEach(paramsV1, function (paramValue, paramName) {
+            // We also use computeCatalogFilterParams to compute the `geonav` parameter if it exists
+            angular.forEach(ODS.URLUtils.computeCatalogFilterParams(paramsV1), function (paramValue, paramName) {
                 if (paramValue === null || typeof(paramValue) === "undefined") {
                     // Not a real value to translate
                     return;
@@ -9774,6 +9776,7 @@ mod.directive('infiniteScroll', [
                     angular.forEach(paramValue, function(value) {
                         paramsV2.refine.push(paramName.substring(7) + ':"' + value + '"');
                     });
+                    usedFacets.push(paramName.substring(7));
                 }
 
                 if (paramName.startsWith('exclude.')) {
@@ -9784,19 +9787,7 @@ mod.directive('infiniteScroll', [
                     angular.forEach(paramValue, function(value) {
                         paramsV2.exclude.push(paramName.substring(8) + ':"' + value + '"');
                     });
-                }
-
-                // Note: At this point in time, we only need to support the disjunctive parameter of facets; facet sorts,
-                // hierarchical, separator and so on would only be used if we had a widget that displayed facets values
-                // from the API v2.
-                if (paramName.startsWith('disjunctive.')) {
-                    if (paramValue) {
-                        paramsV2.facet = paramsV2.facet || [];
-
-                        var facetName = paramName.substring(12);
-
-                        paramsV2.facet.push('facet(name="' + facetName + '", disjunctive=true)');
-                    }
+                    usedFacets.push(paramName.substring(8));
                 }
 
                 if (paramName === 'timezone' && paramValue) {
@@ -9817,7 +9808,20 @@ mod.directive('infiniteScroll', [
                         whereClauses.push("geometry(`" + (geoShape || geoPoint).name + "`, geom'"+v1PolygonToWkt(paramValue)+"')");
                     }
                 }
+            });
 
+            angular.forEach(ODS.URLUtils.computeCatalogFilterParams(paramsV1), function (paramValue, paramName) {
+                // Only include the explicit declaration of disjunctive if we need it, i.e. when we do a refine or
+                // an exclude. This prevents errors due to useless `disjunctive.xxx` URL parameters in Explore.
+                if (paramName.startsWith('disjunctive.') && usedFacets.includes(paramName.substring(12))) {
+                    if (paramValue) {
+                        paramsV2.facet = paramsV2.facet || [];
+
+                        var facetName = paramName.substring(12);
+
+                        paramsV2.facet.push('facet(name="' + facetName + '", disjunctive=true)');
+                    }
+                }
             });
 
             if (qClauses.length) {
@@ -9941,11 +9945,17 @@ mod.directive('infiniteScroll', [
             },
             datasets: {
                 records: function(context, parameters, timeout) {
-                    return request(context, '/api/v2/' + getCatalogRoot(context) + '/datasets/' + context.dataset.datasetid + '/records', parameters, timeout);
+                    return request(context, '/api/explore/v2.1/' + getCatalogRoot(context) + '/datasets/' + context.dataset.datasetid + '/records', parameters, timeout);
                 },
-                aggregates: function(context, parameters, timeout) {
-                    return request(context, '/api/v2/' + getCatalogRoot(context) + '/datasets/' + context.dataset.datasetid + '/aggregates', parameters, timeout);
-                }
+            },
+            catalog: {
+                facets: function(context, parameters, timeout) {
+                    return request(context, '/api/explore/v2.1/' + getCatalogRoot(context) + '/facets', parameters, timeout);
+                },
+                // Used by Explore
+                search: function(context, parameters, timeout) {
+                    return request(context, '/api/explore/v2.1/' + getCatalogRoot(context) + '/datasets', parameters, timeout);
+                },
             }
         };
     }]);
@@ -10080,7 +10090,11 @@ mod.directive('infiniteScroll', [
                     // Remove trailing slash
                     root = root.substr(0, root.length-1);
                 }
-
+                // Check if root is valid and safe url
+                if (root && !(/^(http:\/\/|https:\/\/|\/)/.test(root))) {
+                    console.error('Invalid domain context url provided');
+                    root = ODSWidgetsConfig.defaultDomain;
+                }
                 return root;
             },
             'datasets': {
@@ -11170,8 +11184,20 @@ mod.directive('infiniteScroll', [
                     'getV2QueryStringURL': function(v1parameters) {
                         var fields = this.dataset && this.dataset.fields;
                         v1parameters = v1parameters || {};
+                        var query = '';
+                        if (v1parameters.fields){
+                            var select_clause = [];
+                            angular.forEach(v1parameters.fields.split(","), function(field) {
+                                var referenceField = fields.find(function(referenceField) { return referenceField.name === field; });
+                                if (referenceField) {
+                                    select_clause.push('`'+referenceField.name+'` as `'+referenceField.label+'`');
+                                }
+                            });
+                            query = "select=" + select_clause.join(",");
+                        }
                         var allParameters = angular.extend({}, this.parameters, v1parameters);
-                        return '&' + ODS.URLUtils.getAPIQueryString(APIParamsV1ToV2(allParameters, fields));
+                        query = query + "&use_labels=true&" + ODS.URLUtils.getAPIQueryString(APIParamsV1ToV2(allParameters, fields));
+                        return query;
                     },
                     'toggleRefine': function(facetName, path, replace) {
                         ODS.Context.toggleRefine(this, facetName, path, replace);
@@ -12255,6 +12281,16 @@ mod.directive('infiniteScroll', [
                     // TODO
                 } else if (layerConfig.color.type === 'categories') {
                     value = record && record.fields && record.fields[layerConfig.color.field];
+                    var field = layerConfig.context.dataset && layerConfig.context.dataset.getField(layerConfig.color.field);
+                    if (field) {
+                        // If the field is multivalued, the color depends on the first value
+                        // https://app.shortcut.com/opendatasoft/story/33970
+                        var multivaluedAnnotation = layerConfig.context.dataset.getFieldAnnotation(field, 'multivalued');
+                        if (multivaluedAnnotation) {
+                            var mvSeparator = multivaluedAnnotation.args[0];
+                            value = value.split(mvSeparator)[0];
+                        }
+                    }
                     color = layerConfig.color.categories[value];
                     if (angular.isUndefined(color)) {
                         return layerConfig.color.otherCategories || '#000000';
@@ -12499,7 +12535,7 @@ mod.directive('infiniteScroll', [
                     minWidth: 250
                 };
                 var popupHeight = 330;
-                var tooltipTemplate = '<ods-map-tooltip tooltip-sort="'+(layerConfig.tooltipSort||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" geo-digest="'+(geoDigest||'')+'"></ods-map-tooltip>';
+                var tooltipTemplate = '<ods-map-tooltip tooltip-sort="'+(ODS.StringUtils.escapeHTML(layerConfig.tooltipSort)||'')+'" shape="shape" recordid="recordid" context="context" map="map" template="{{ template }}" geo-digest="'+(ODS.StringUtils.escapeHTML(geoDigest)||'')+'"></ods-map-tooltip>';
                 var compiledTemplate = $compile(tooltipTemplate)(newScope)[0];
 
                 service._handleTopOverflow(map, popupOptions, latLng, popupHeight);
@@ -12830,10 +12866,10 @@ mod.directive('infiniteScroll', [
     mod.factory('MapLayerRenderer', [
         'ODSAPI', 'AggregationHelper', 'SVGInliner', 'PictoHelper', 'MapLayerHelper',
         'MapRenderingAggregation', 'MapRenderingClustered', 'MapRenderingHeatmap', 'MapRenderingRaw', 'MapRenderingShapePreview', 'MapRenderingChoroplethAggregation',
-        '$q', '$filter', '$rootScope', '$compile', '$timeout',
+        '$q',
         function(ODSAPI, AggregationHelper, SVGInliner, PictoHelper, MapLayerHelper,
                  MapRenderingAggregation, MapRenderingClustered, MapRenderingHeatmap, MapRenderingRaw, MapRenderingShapePreview, MapRenderingChoroplethAggregation,
-                 $q, $filter, $rootScope, $compile, $timeout) {
+                 $q) {
         // TODO: Query interruption when moving
         return {
             updateDataLayer: function (layerConfig, map, deferred) {
@@ -13066,7 +13102,7 @@ mod.directive('infiniteScroll', [
                                 //}
                                 htmlContent += '<div class="odswidget-map__legend-title">' + ODS.StringUtils.escapeHTML(datasetTitle) + '<br/>' + AggregationHelper.getFunctionLabel(layerConfig.func);
                                 if (layerConfig.func !== 'COUNT') {
-                                    htmlContent += ' ' + fieldName;
+                                    htmlContent += ' ' + ODS.StringUtils.escapeHTML(fieldName);
                                 }
                                 htmlContent += '</div>';
                                 htmlContent += '<div class="odswidget-map__legend-colors">';
@@ -13177,8 +13213,7 @@ mod.directive('infiniteScroll', [
                                 if (layerConfig.joinContext && layerConfig.hoverField) {
                                     // Always show the value if it exists
                                     if (record.x[0].fields[layerConfig.hoverField]) {
-                                        // TODO: We may want to make the value prettier (e.g. format number if it is one)
-                                        shapeLayer.bindLabel(record.x[0].fields[layerConfig.hoverField]);
+                                        shapeLayer.bindLabel(ODS.StringUtils.escapeHTML(record.x[0].fields[layerConfig.hoverField]));
                                         if (layerConfig.refineOnClick) {
                                             MapLayerHelper.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest, record.x[0].fields[layerConfig.hoverField]);
                                         }
@@ -14066,11 +14101,11 @@ mod.directive('infiniteScroll', [
             'highcharts': {
                 'css': [],
                 'js': [
-                    ["https://code.highcharts.com/6.1.4/highcharts.js"],
-                    ["https://code.highcharts.com/6.1.4/modules/no-data-to-display.js"],
-                    ["https://code.highcharts.com/6.1.4/highcharts-more.js"],
-                    ["https://code.highcharts.com/6.1.4/modules/treemap.js"],
-                    ["https://code.highcharts.com/6.1.4/modules/funnel.js"]
+                    ["https://code.highcharts.com/11.1.0/highcharts.js"],
+                    ["https://code.highcharts.com/11.1.0/modules/no-data-to-display.js"],
+                    ["https://code.highcharts.com/11.1.0/highcharts-more.js"],
+                    ["https://code.highcharts.com/11.1.0/modules/treemap.js"],
+                    ["https://code.highcharts.com/11.1.0/modules/funnel.js"]
                 ]
             },
             'leaflet': {
@@ -14113,31 +14148,31 @@ mod.directive('infiniteScroll', [
                 ],
                 'language_specific': {
                     'ar': {
-                        'js': ['libs/fullcalendar/lang/ar.js']
+                        'js': ['libs/fullcalendar/locale/ar.js']
                     },
                     'ca': {
-                        'js': ['libs/fullcalendar/lang/ca.js']
+                        'js': ['libs/fullcalendar/locale/ca.js']
                     },
                     'de': {
-                        'js': ['libs/fullcalendar/lang/de.js']
+                        'js': ['libs/fullcalendar/locale/de.js']
                     },
                     'es': {
-                        'js': ['libs/fullcalendar/lang/es.js']
+                        'js': ['libs/fullcalendar/locale/es.js']
                     },
                     'eu': {
-                        'js': ['libs/fullcalendar/lang/eu.js']
+                        'js': ['libs/fullcalendar/locale/eu.js']
                     },
                     'fr': {
-                        'js': ['libs/fullcalendar/lang/fr.js']
+                        'js': ['libs/fullcalendar/locale/fr.js']
                     },
                     'it': {
-                        'js': ['libs/fullcalendar/lang/it.js']
+                        'js': ['libs/fullcalendar/locale/it.js']
                     },
                     'nl': {
-                        'js': ['libs/fullcalendar/lang/nl.js']
+                        'js': ['libs/fullcalendar/locale/nl.js']
                     },
                     'pt': {
-                        'js': ['libs/fullcalendar/lang/pt.js']
+                        'js': ['libs/fullcalendar/locale/pt.js']
                     }
                 }
             },
@@ -14150,17 +14185,6 @@ mod.directive('infiniteScroll', [
                 'js': [
                     'ss@https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.js'
                 ]
-            },
-            'vega': {
-                'js': [[
-                    'https://vega.github.io/vega/assets/promise.min.js',
-                    'https://vega.github.io/vega/assets/symbol.min.js',
-                    'https://vega.github.io/vega/assets/fetch.min.js',
-                ], [
-                    "vega@https://cdn.jsdelivr.net/npm/vega@4.3.0",
-                    "vl@https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc12",
-                    "vegaTooltip@https://cdn.jsdelivr.net/npm/vega-tooltip@0.13.0",
-                ]],
             },
             'ion.rangeSlider': {
                 'js': ['https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.0/js/ion.rangeSlider.min.js'],
@@ -15557,7 +15581,7 @@ mod.directive('infiniteScroll', [
             }
             // What we want is :
             // - If it starts with text, then this text (up to a potential \n)
-            // - Else, try to find a <p> and takes the content
+            // - Else, try to find any <p> with text and takes the content
             // - Else, takes the text
             // Then takes up to x words
             var text = '';
@@ -15572,19 +15596,29 @@ mod.directive('infiniteScroll', [
                 }
             } else {
                 var firstNode = body.contents()[0];
-                if (firstNode.nodeType == 3) {
+                if (firstNode.nodeType === 3) {
                     // Text node
                     text = firstNode.textContent;
                 } else {
-                    // It doesn't begin with text : is there a <p>?
+                    // It doesn't begin with text : is there any <p>?
                     if (body.find('p').length > 0) {
-                        var node = body.find('p')[0];
-                        if (angular.isDefined(node.textContent)) {
-                            text = node.textContent;
-                        } else {
-                            // Fallback for IE8, loses the \n's
-                            text = node.innerText;
-                        }
+                        // In case we have a tag with eventually no text in the first <p>
+                        // which it is with the current WYSIWYG if you set an img in the beginning.
+                        // Then we get no short summary at all.
+                        // So we compute all <p> nodes until we find something.
+                        body.find('p').each(function () {
+                            var localText = '';
+                            if (angular.isDefined(this.textContent)) {
+                                localText += this.textContent;
+                            } else {
+                                // Fallback for IE8, loses the \n's
+                                localText += this.innerText;
+                            }
+                            if (localText !== '') {
+                                text = localText;
+                                return false;
+                            }
+                        });
                     } else {
                         // Well, we take what we can get
                         text = body.text();
@@ -16646,6 +16680,7 @@ mod.directive('infiniteScroll', [
                 attachments: dataset.attachments,
                 alternative_exports: dataset.alternative_exports,
                 fields: dataset.fields,
+                basic_metas: dataset.basic_metas,
                 extra_metas: dataset.extra_metas,
                 interop_metas: dataset.interop_metas,
                 setFields: function(fields) {
@@ -17007,6 +17042,19 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
+    function getGroupNames(groupBy) {
+        // Compute the exact names of groups that will appear in the results
+        var groups = groupBy.split(',');
+
+        return groups.map(function(group) {
+            var name = group;
+            if (group.toLowerCase().includes(' as ')) {
+                name = group.replace(' AS ', ' as ').split(' as ')[1];
+            }
+            return name.trim();
+        });
+    }
+
     mod.directive('odsAdvAnalysis', ['ODSAPIv2', 'APIParamsV1ToV2', function (ODSAPIv2, APIParamsV1ToV2) {
         /**
          * @ngdoc directive
@@ -17023,7 +17071,7 @@ mod.directive('infiniteScroll', [
          *
          * @description
          * The odsAdvAnalysis widget exposes the results of an aggregation function over a context.
-         * It uses the ODS Explore API V2 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29), which offers greater flexibility than the v1.
+         * It uses the ODS Explore API V2.1 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29), which offers greater flexibility than the v1.
          *
          * The parameters for this widgets are dynamic, which implies two benefits:
          * - First, changes in context parameters will refresh the results of the widget.
@@ -17033,6 +17081,10 @@ mod.directive('infiniteScroll', [
          * - To create charts, `odsAdvAnalysis` is designed to be working specifically with `odsVegaLite` (examples are provided below).
          * - A table view is also available using `odsAdvTable` (examples are provided below).
          * - As the widget is creating an AngularJS variable, it can be displayed through a simple `{{myData.results[X]}}`. This usage is not documented here, as it regards HTML code and widgets already documented in [the introduction](https://help.opendatasoft.com/widgets/#/introduction/).
+         *
+         * For retro-compatibility purposes, similarly to API V2.0, if the `groupBy` is done on a field that contains null values, they will be removed. If you are
+         * using the `limit` parameter, this may cause the widget to return one less category as expected, because the null group was included. You can
+         * prevent this by using `where` to exclude null values from this field, using `IS NOT NULL` (e.g. `my_field IS NOT NULL`).
          *
          * <h2>Examples of requests to make</h2>
          *
@@ -17072,76 +17124,6 @@ mod.directive('infiniteScroll', [
          *     </ods-dataset-context>
          * </pre>
          *
-         * <h2>How to use odsAdvancedAnalysis with odsVegaLite</h2>
-         *
-         * The output of <b>odsAdvancedAnalysis</b> is named in `ods-adv-analysis`. This name is then to be used as an attribute in the parameter `values-adva` of <b>odsVegaLite</b>.
-         * But to display the right values, it needs the field names contained in this AngularJS variable.
-         * The field names are given when the API request is made through <b>odsAdvancedAnalysis</b>.
-         * The easiest way to match the requirements is to set a specific name to each field in the `ods-adv-analysis-select` and `ods-adv-analysis-group-by` parameters.
-         * These names will then be used in the <b>odsVegaLite</b> configuration file.
-         *
-         * <b>✅ Here is an example of what would work:</b>
-         *
-         * - <b>Step 1:</b> in <b>odsAdvancedAnalysis</b>, the name `height` is given to the `select` attribute, and the `group-by` attribute name is set to `tree_species` instead of `espece`.
-         * - <b>Step 2:</b> in <b>odsVegaLite</b>, `tree_species` becomes the chart's x-axis, and `height` becomes the y-axis.
-         * <pre>
-         *     <ods-dataset-context
-         *         context="ctx"
-         *         ctx-domain="https://documentation-resources.opendatasoft.com/"
-         *         ctx-dataset="les-arbres-remarquables-de-paris">
-         *         <div ods-adv-analysis="myData"
-         *             ods-adv-analysis-context="ctx"
-         *             ods-adv-analysis-select="(sum(hauteur_en_m)/count(objectid)) as height"
-         *             ods-adv-analysis-where="arrondissement LIKE 'paris'"
-         *             ods-adv-analysis-group-by="espece as tree_species">
-         *             <ods-vega-lite-chart spec='{
-         *                 "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-         *                 "data": {"name": "adva"},
-         *                 "mark": "bar",
-         *                 "encoding": {
-         *                     "x": {"field": "tree_species", "type": "nominal", "title":"arrondissements", "labelLimit":50, "sort":{"op": "sum", "field":"y", "order":"descending"}},
-         *                     "y": {"field": "height", "type": "quantitative", "title": "hauteur moyenne"},
-         *                 },
-         *             }'
-         *             values-adva="myData">
-         *             </ods-vega-lite-chart>
-         *         </div>
-         *     </ods-dataset-context>
-         * </pre>
-         *
-         * Although optional, this is a crucial configuration to make. If the field names are different, the outcome will be a blank chart.
-         *
-         * <b>❌ Here is an example of what would NOT work:</b>
-         *
-         * In <b>odsVegaLite</b>, the x-axis is set with `espece`, which is also the name in <b>odsAdvancedAnalysis</b> and will therefore work. But the y-axis takes the field called `height` (which is what the widget is computing).
-         * But since no name was specifically given in the select attribute, <b>odsAdvancedAnalysis</b> named the results differently (in this case : `(sum(hauteur_en_m)/count(objectid)`).
-         * In conclusion, <b>odsVegaLite</b> won't recognize `height` and won't display any results.
-         * The solution here is to change `ods-adv-analysis-select="(sum(hauteur_en_m)/count(objectid))"` for `ods-adv-analysis-select="(sum(hauteur_en_m)/count(objectid)) as height"`
-         * <pre>
-         *     <ods-dataset-context
-         *         context="ctx"
-         *         ctx-domain="https://documentation-resources.opendatasoft.com/"
-         *         ctx-dataset="les-arbres-remarquables-de-paris">
-         *         <div ods-adv-analysis="myData"
-         *             ods-adv-analysis-context="ctx"
-         *             ods-adv-analysis-select="(sum(hauteur_en_m)/count(objectid))"
-         *             ods-adv-analysis-where="arrondissement LIKE 'paris'"
-         *             ods-adv-analysis-group-by="espece">
-         *             <ods-vega-lite-chart spec='{
-         *                 "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-         *                 "data": {"name": "adva"},
-         *                 "mark": "bar",
-         *                 "encoding": {
-         *                     "x": {"field": "espece", "type": "nominal", "title":"arrondissements", "labelLimit":50, "sort":{"op": "sum", "field":"y", "order":"descending"}},
-         *                     "y": {"field": "height", "type": "quantitative", "title": "hauteur moyenne"},
-         *                 },
-         *             }'
-         *             values-adva="myData">
-         *             </ods-vega-lite-chart>
-         *         </div>
-         *     </ods-dataset-context>
-         * </pre>
-         *
          * <h2>How to use odsAdvancedAnalysis with odsAdvTable</h2>
          *
          * <b>odsAdvancedTable</b> was designed to accept the JSON created by <b>odsAdvancedAnalysis</b>.
@@ -17174,21 +17156,43 @@ mod.directive('infiniteScroll', [
             restrict: 'A',
             scope: true,
             controller: ['$scope', '$attrs', function($scope, $attrs) {
-                var dataCall = ODSAPIv2.uniqueCall(ODSAPIv2.datasets.aggregates);
+                var dataCall = ODSAPIv2.uniqueCall(ODSAPIv2.datasets.records);
 
                 var runQuery = function(variableName, context, select, where, limit, groupBy, orderBy) {
-                    var params = APIParamsV1ToV2(context.parameters);
+                    var params = APIParamsV1ToV2(context.parameters, context.dataset.fields);
+                    var combinedWhere;
+                    if (where && params.where) {
+                        // Two clauses coming from both the context and the parameters, we combine them
+                        combinedWhere = '(' + where +') AND (' + params.where + ')';
+                    } else {
+                        // Keep the one that is used
+                        combinedWhere = where || params.where;
+                    }
+                    var groups;
+                    if (!groupBy) {
+                        // Retro-compatibility: in the V2.0 version of the widget, we used aggregates endpoint, which
+                        // returned only one entry if there was no group_by.
+                        limit = limit || 1;
+                    } else {
+                        groups = getGroupNames(groupBy);
+                    }
                     params = angular.extend(params, {
                         select: select,
-                        where: where,
+                        where: combinedWhere,
                         limit: limit,
                         group_by: groupBy,
                         order_by: orderBy
                     });
                     dataCall(context, params)
                         .then(function(response) {
-                            var result = response.data;
-                            $scope[variableName] = result.aggregations;
+                            var results = response.data.results;
+                            // Retro-compatibility: Remove empty groups to keep the behavior from API V2.0
+                            if (groups) {
+                                results = results.filter(function(result) {
+                                    return !groups.find(function(group) { return result[group] === null; });
+                                });
+                            }
+                            $scope[variableName] = results;
                         }, function(response) {
                             var error = response.data;
                             console.error('odsAdvAnalysis: API error\n\n', error.message);
@@ -17235,17 +17239,25 @@ mod.directive('infiniteScroll', [
                 var dataCall = ODSAPIv2.uniqueCall(ODSAPIv2.datasets.records);
 
                 var runQuery = function(variableName, context, select, where, orderBy, rows) {
-                    var params = APIParamsV1ToV2(context.parameters);
+                    var params = APIParamsV1ToV2(context.parameters, context.dataset.fields);
+                    var combinedWhere;
+                    if (where && params.where) {
+                        // Two clauses coming from both the context and the parameters, we combine them
+                        combinedWhere = '(' + where +') AND (' + params.where + ')';
+                    } else {
+                        // Keep the one that is used
+                        combinedWhere = where || params.where;
+                    }
                     params = angular.extend(params, {
                         select: select,
-                        where: where,
+                        where: combinedWhere,
                         order_by: orderBy,
                         rows: rows || undefined
                     });
                     dataCall(context, params)
                         .then(function(response) {
                             var result = response.data;
-                            $scope[variableName] = result.records.map(function(entry) { return entry.record.fields; });
+                            $scope[variableName] = result.results;
                         }, function(response) {
                             var error = response.data;
                             console.error('odsAdvResults: API error\n\n', error.message);
@@ -19236,6 +19248,7 @@ mod.directive('infiniteScroll', [
                         };
 
                         var content;
+                        // FIXME: https://app.shortcut.com/opendatasoft/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
                         if (scope.context.dataset.extra_metas.visualization.calendar_tooltip_html_enabled && scope.context.dataset.extra_metas.visualization.calendar_tooltip_html) {
                             content = $compile('<div>' + scope.context.dataset.extra_metas.visualization.calendar_tooltip_html + '</div>')(newScope);
                         } else {
@@ -19272,7 +19285,14 @@ mod.directive('infiniteScroll', [
                     scope.context.wait().then(function() {
                         setupCalendar();
                         // refresh data when context search parameters change
-                        scope.$watch('context.parameters', function(nv, ov) {
+                        scope.$watch(function() {
+                            // We don't want to include calendarview in the comparison, because when it changes,
+                            // it already triggers a refresh via FullCalendar built-in mechanisms.
+                            // We do an extend to do a shallow copy, to avoid a deep copy on every digest.
+                            var params = angular.extend({}, scope.context.parameters);
+                            delete params.calendarview;
+                            return params;
+                        }, function(nv, ov) {
                             if (nv !== ov) {
                                 updateCalendar();
                             }
@@ -20322,7 +20342,7 @@ mod.directive('infiniteScroll', [
          *  @param {number} [refreshDelay=none] Number of milliseconds to wait before the context is automatically refreshed. If this parameter is not set, the context will not automatically refresh. The minimum delay is 10000ms.
          *  @param {string} [parametersFromContext=none] Name of another declared context to replicate the parameters and queries from. Any modification on the parameters of this context or the original one will be applied to both.
          *  @param {boolean} [urlSync=none] Enables the synchronization of the parameters to the page's parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change.
-         * 
+         *
          * Note: if this parameter is enabled, `parameters` and `parametersFromContext` won't have any effect. There can only be a single context with URL synchronization enabled. Else the behavior will be unpredictable.
          *
          *  @description
@@ -20344,6 +20364,8 @@ mod.directive('infiniteScroll', [
          *  * `dataset`: dataset object for the context
          *  * `getDownloadURL(format[, dict options])`: method that returns a URL to download the data, including currently active filters (e.g. refinements, queries etc.). By default the URL will allow downloading a CSV export, but another format can be passed, such as "geojson" or "json". Two optional parameters are also available: `{'use_labels_for_header': '<true/false>', 'fields': '<list of comma separated field name>'}`
          *  * `getQueryStringURL([dict options])`: method that builds the URL suffix (`?key1=value1&key2=value2&...`) based on context parameters (active filters, refinement, sort, query, etc.). The optional dictionary parameter allows building the URL with additional key/value parameters.
+         *  * `getV2DownloadURL(format[, dict options])`: method that returns an Explore API V2.1 URL to download the data, including currently active filters. It can be used to export Explore API V2.1 specific formats such as "xlsx". An optional parameter is available: `{'fields': '<list of comma separated field name>'}`
+         *  * `getV2QueryStringURL([dict options])`: method that builds the URL suffix (`?key1=value1&key2=value2&...`) based on context parameters, intended for an Explore API V2.1 URL. The optional dictionary parameter allows building the URL with additional key/value parameters.
          *
          *  @example
          *
@@ -21431,9 +21453,9 @@ mod.directive('infiniteScroll', [
                     'disjunctive="'+ODS.StringUtils.escapeHTML(facet.disjunctive)+'" ' +
                     'timerange-filter="'+ODS.StringUtils.escapeHTML(facet.timerangeFilter)+'" ' +
                     'hide-if-single-category="'+(facet.hideIfSingleCategory ? 'true' : 'false')+'" ' +
-                    'hide-category-if="'+ODS.StringUtils.escapeHTML(facet.hideCategoryIf)+'"' +
-                    'value-formatter="'+ODS.StringUtils.escapeHTML(facet.valueFormatter)+'"' +
-                    'context="'+(scope.context.name || '')+'"' +
+                    'hide-category-if="'+ODS.StringUtils.escapeHTML(facet.hideCategoryIf)+'" ' +
+                    'value-formatter="'+ODS.StringUtils.escapeHTML(facet.valueFormatter)+'" ' +
+                    'context="'+ODS.StringUtils.escapeHTML(scope.context.name || '')+'"' +
                     '>'+$sce.getTrustedHtml(facet.template)+'</ods-facet>';
             });
             html = html.replace(/{{(.*?)}}/g, "\\{\\{$1\\}\\}");
@@ -22364,7 +22386,7 @@ mod.directive('infiniteScroll', [
     var shapeColor = "#00C7B1";
     var disabledShapeColor = "#565656";
 
-    mod.directive('odsGeoNavigation', ['ModuleLazyLoader', 'ODSWidgetsConfig', 'ODSAPI', 'GeographicReferenceService', '$q', '$filter', function (ModuleLazyLoader, ODSWidgetsConfig, ODSAPI, GeographicReferenceService, $q, $filter) {
+    mod.directive('odsGeoNavigation', ['ModuleLazyLoader', 'ODSWidgetsConfig', 'ODSAPIv2', 'APIParamsV1ToV2', 'GeographicReferenceService', '$q', '$filter', function (ModuleLazyLoader, ODSWidgetsConfig, ODSAPIv2, APIParamsV1ToV2, GeographicReferenceService, $q, $filter) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsGeoNavigation
@@ -22421,7 +22443,7 @@ mod.directive('infiniteScroll', [
                 '                <i class="fa fa-search odswidget-geo-navigation__level-search-box-icon" aria-hidden="true"></i>' +
                 '            </div>' +
                 '            <hr ng-show="!showSearchbox && (parentFilterLabel || canBeSkipped && skipToLevelLabel) && choices.length" class="odswidget-geo-navigation__navigation-separator" />' +
-                '            <div ng-repeat="choice in choices|filter:searchValue(searchInLevel)" ng-show="isVisible($index)" ng-click="selectChoice(choice.path)" class="odswidget-geo-navigation__choice">' +
+                '            <div ng-repeat="choice in choices|filter:searchValue(searchInLevel)" ng-show="isVisible($index)" ng-click="selectChoice(choice.value)" class="odswidget-geo-navigation__choice">' +
                 '                <div class="odswidget-geo-navigation__choice-label">{{choice.name}}</div>' +
                 '                <div class="odswidget-geo-navigation__choice-count" ng-hide="ascendingFilter">{{choice.count}}</div>' +
                 '            </div>' +
@@ -22639,19 +22661,23 @@ mod.directive('infiniteScroll', [
                                     labelPath += '/*';
                                 }
 
-                                var params = {
-                                    rows: 0,
-                                    geonav: '' // Make sure the previous choice doesn't apply in the navigation
-                                };
+                                var apiParameters = APIParamsV1ToV2(angular.extend(
+                                    {},
+                                    $scope.context.parameters,
+                                    {
+                                        geonav: '' // Make sure the previous choice doesn't apply in the navigation
+                                    }
+                                ));
+
+                                apiParameters.facet = 'facet(name="explore.geographic_reference_path_labels", sort="alphanum", hierarchical=true)';
+
                                 if (labelPath) {
-                                    params['refine.explore.geographic_reference_path_labels'] = labelPath;
-                                } else {
-                                    params['facet'] = 'explore.geographic_reference_path_labels';
+                                    apiParameters.refine = 'explore.geographic_reference_path_labels:"'+labelPath+'"';
                                 }
-                                params['facetsort.explore.geographic_reference_path_labels'] = 'alphanum';
-                                ODSAPI.datasets.search($scope.context, params).then(function(response) {
+
+                                ODSAPIv2.catalog.facets($scope.context, apiParameters).then(function(response) {
                                     var data = response.data;
-                                    if (!data.facet_groups || !data.facet_groups.length) {
+                                    if (!data.facets || !data.facets.length) {
                                         // There is no facet group, which can happen if there are exactly 0 results
                                         $scope.choices = [];
                                         $scope.showSearchbox = false;
@@ -22660,17 +22686,17 @@ mod.directive('infiniteScroll', [
                                         return;
                                     }
 
-                                    var current = data.facet_groups.filter(function (facetGroup) {
+                                    var current = data.facets.find(function (facetGroup) {
                                         return facetGroup.name === 'explore.geographic_reference_path_labels';
-                                    })[0];
+                                    });
 
                                     // Travel down the nodes until we reach the current situation.
                                     if (labelPath) {
-                                        while (current.path !== labelPath) {
+                                        while (current.value !== labelPath) {
                                             current = current.facets.filter(function (facet) {
                                                 // Two-part condition because a simple startswith without the / could confuse two places
                                                 // that start the same ("Boulogne" / "Boulogne-sur-Mer")
-                                                return labelPath.startsWith(facet.path + '/') || labelPath === facet.path;
+                                                return labelPath.startsWith(facet.value + '/') || labelPath === facet.value;
                                             })[0];
                                         }
                                     }
@@ -25479,7 +25505,7 @@ mod.directive('infiniteScroll', [
         };
     }]);
 
-    mod.directive('odsChartSerie', ["ODSAPI", 'ChartHelper', 'ODSWidgetsConfig', '$compile', '$parse', function(ODSAPI, ChartHelper, ODSWidgetsConfig, $compile, $parse) {
+    mod.directive('odsChartSerie', ["ODSAPI", 'ChartHelper', 'ODSWidgetsConfig', function(ODSAPI, ChartHelper, ODSWidgetsConfig) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsChartSerie
@@ -28139,7 +28165,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsMapTooltip', ['$compile', '$templateCache', function($compile, $templateCache) {
+    mod.directive('odsMapTooltip', ['$templateCache', function($templateCache) {
         return {
             restrict: 'E',
             transclude: true,
@@ -28188,6 +28214,7 @@ mod.directive('infiniteScroll', [
                     jQuery('.ng-leaflet-tooltip-cloak', element).removeClass('ng-leaflet-tooltip-cloak');
                 };
                 if (attrs.template && attrs.template !== '') {
+                    // FIXME: https://app.shortcut.com/opendatasoft/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
                     $templateCache.put('custom-tooltip-' + scope.context.dataset.datasetid, attrs.template);
                 } else {
                     $templateCache.put('default-tooltip', '<div class="infoPaneLayout">' +
@@ -29429,10 +29456,17 @@ mod.directive('infiniteScroll', [
                         'groups': []
                     };
                 } else {
-                    // Apply default values for existing configs (useful for migration of old configs)
                     $scope.mapConfig.groups.forEach(function(group) {
                         group.layers.forEach(function(layer) {
+                            // tooltipTemplate must not be passed directly via a mapConfig object, as it would bypass
+                            // sanitization entirely.
+                            // https://app.shortcut.com/opendatasoft/story/40124/xss-passing-tooltiptemplate-in-mapbuilder-payload
+                            if (angular.isDefined(layer.tooltipTemplate)) {
+                                delete layer.tooltipTemplate;
+                            }
+
                             layer.context.wait().then(function() {
+                                // Apply default values for existing configs (useful for migration of old configs)
                                 MapHelper.MapConfiguration.setLayerDisplaySettingsFromDefault(layer);
                             });
                         });
@@ -30019,7 +30053,7 @@ mod.directive('infiniteScroll', [
                 }
                 // Yes, it seems highly weird, but unfortunately it sems to be the only option as we want to get the
                 // original content BEFORE compile, and pass it to the link function.
-                return '<div tooltiptemplate="'+tpl.replace(/"/g, '&quot;')+'"></div>';
+                return '<div tooltiptemplate="'+ODS.StringUtils.escapeHTML(tpl)+'"></div>';
             },
             require: ['?^odsMapLayerGroup', '^odsMap'],
             link: function(scope, element, attrs, controllers) {
@@ -30478,6 +30512,7 @@ mod.directive('infiniteScroll', [
                     if ($scope.context.dataset.extra_metas.visualization &&
                         $scope.context.dataset.extra_metas.visualization.image_tooltip_html_enabled &&
                         $scope.context.dataset.extra_metas.visualization.image_tooltip_html) {
+                        // FIXME: https://app.shortcut.com/opendatasoft/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
                         detailsTemplate = '<div>' + $scope.context.dataset.extra_metas.visualization.image_tooltip_html + '</div>';
                     } else {
                         detailsTemplate = defaultDetailsTemplate;
@@ -33717,11 +33752,12 @@ mod.directive('infiniteScroll', [
 
                             if (field && field.type === 'geo_point_2d') {
                                 newScope.fieldValue = fieldValue;
-                                node = $compile('<ods-geotooltip width="300" height="300" coords="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
+                                // check fieldValue
+                                node = $compile('<ods-geotooltip width="300" height="300" coords="recordFields">' + ODS.StringUtils.escapeHTML(fieldValue) + '</ods-geotooltip>')(newScope)[0];
                                 node.dir = 'ltr';
                             } else if (field && field.type === 'geo_shape') {
                                 newScope.fieldValue = $filter('truncate')(fieldValue);
-                                node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
+                                node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + ODS.StringUtils.escapeHTML(fieldValue) + '</ods-geotooltip>')(newScope)[0];
                                 node.dir = 'ltr';
                             } else if (field && field.type === 'file') {
                                 var html = $filter('nofollow')($filter('prettyText')(fieldValue)).toString();
@@ -33736,6 +33772,7 @@ mod.directive('infiniteScroll', [
                             } else {
                                 node = document.createElement('span');
                                 node.title = fieldValue;
+                                // Safe: escaped by prettyText
                                 node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
                                 try {
                                     node.dir = 'auto';
@@ -33950,28 +33987,9 @@ mod.directive('infiniteScroll', [
 
                 // synchronize scroll between header and body
 
-                var isRtl = ($element.css('direction') === 'rtl');
-                var rtlScrollType = jQuery.support.rtlScrollType;
-
-                var synchronizeHeaderPosition;
-                if (!isRtl) {
-                    synchronizeHeaderPosition = function () {
-                        recordsHeader.css({left: -recordsArea.scrollLeft()});
-                    };
-                } else if (rtlScrollType === 'reverse') {
-                    synchronizeHeaderPosition = function () {
-                        recordsHeader.css({left: recordsArea.scrollLeft()});
-                    };
-                } else if (rtlScrollType === 'default') {
-                    synchronizeHeaderPosition = function () {
-                        var maxScrollLeft = recordsArea[0].scrollWidth - recordsArea[0].clientWidth;
-                        recordsHeader.css({left: maxScrollLeft - recordsArea.scrollLeft()});
-                    };
-                } else if (rtlScrollType === 'negative') {
-                    synchronizeHeaderPosition = function () {
-                        recordsHeader.css({left: -recordsArea.scrollLeft()});
-                    };
-                }
+                var synchronizeHeaderPosition = function () {
+                    recordsHeader.css({right: recordsArea[0].scrollLeft});
+                };
 
                 var lastScrollLeft;
                 var rememberScrollLeft = function () {
@@ -33979,7 +33997,7 @@ mod.directive('infiniteScroll', [
                     if (!endIndex) {
                         return;
                     }
-                    lastScrollLeft = recordsArea.scrollLeft();
+                    lastScrollLeft = recordsArea[0].scrollLeft;
                 };
                 var restoreScrollLeft = function () {
                     if (!lastScrollLeft) {
@@ -34035,7 +34053,7 @@ mod.directive('infiniteScroll', [
                         } else {
                             elementHeight = $element.height();
                         }
-                        var bodyOffset = $element.find('.table-timezone-caption').height() + 5;
+                        var bodyOffset = ($element.find('.table-timezone-caption').height() || 0) + 5;
                         if ($scope.displayDatasetFeedback) {
                             bodyOffset += $element.find('.table-feedback-new').height() + 5;
                         }
@@ -34222,7 +34240,7 @@ mod.directive('infiniteScroll', [
                     catalog_search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
 
                 $scope.refine = function (tagName) {
-                    if ($scope.redirectTo) {
+                    if ($scope.redirectTo && /^(http:\/\/|https:\/\/|\/)/.test($scope.redirectTo)) {
                         var refine_param = 'refine.' + $scope.facetName + '=' + tagName;
                         var join = $scope.redirectTo.indexOf('?') > -1 ? '&' : '?';
                         window.location = $scope.redirectTo + join + refine_param;
@@ -34984,7 +35002,7 @@ mod.directive('infiniteScroll', [
 
                 });
             },
-            controller: ['$scope', '$attrs', '$q', '$compile', '$rootScope', '$parse', function($scope, $attrs, $q, $compile, $rootScope, $parse) {
+            controller: ['$scope', '$attrs', '$q', '$rootScope', '$parse', function($scope, $attrs, $q, $rootScope, $parse) {
                 var contexts = [],
                     conf = {};
 
@@ -35576,279 +35594,7 @@ mod.directive('infiniteScroll', [
             }
         };
     });
-}());;(function () {
-    'use strict';
-    var mod = angular.module('ods-widgets');
-
-    var getSerieNames = function (spec) {
-        // TODO: this only checks for data at the root of the spec object or directly beneath vconcat/hconcat.
-        // However hconcat and vconcat can be nested. We should have a recursive method here.
-        var i,
-            serieNames = [];
-
-        if (spec.hasOwnProperty('data')) {
-            // single view or faceted view
-            if (spec.data.name) {
-                serieNames.push(spec.data.name);
-            }
-        } else if (spec.hasOwnProperty('vconcat')) {
-            for (i = 0; i < spec.vconcat.length; i++) {
-                if (spec.vconcat[i].data.name) {
-                    serieNames.push(spec.vconcat[i].data.name);
-                }
-            }
-        } else if (spec.hasOwnProperty('hconcat')) {
-            for (i = 0; i < spec.hconcat.length; i++) {
-                if (spec.hconcat[i].data.name) {
-                    serieNames.push(spec.hconcat[i].data.name);
-                }
-            }
-        } else {
-            serieNames = ['_serie'];
-        }
-        return serieNames;
-    };
-
-    var getSerieAttrName = function (serieName) {
-        if (serieName === '_serie') {
-            return 'values';
-        }
-        return 'values' + ODS.StringUtils.capitalize(serieName);
-    };
-
-    var getSerieValues = function (scope, attrs, serieName) {
-        return scope.$parent.$eval(attrs[getSerieAttrName(serieName)]);
-    };
-
-    mod.directive('odsVegaLiteChart', ['ModuleLazyLoader', function (ModuleLazyLoader) {
-        /**
-         * @ngdoc directive
-         * @name ods-widgets.directive:odsVegaLiteChart
-         * @restrict E
-         * @scope
-         * @param {string} [spec] A JSON string representation of a Vega-Lite chart specification object
-         * @param {array} [values{DataSourceName}] An array of data points
-         *
-         * @description
-         * The odsVegaLiteChart widget builds a vega-lite chart according to the given specifications.
-         * For more information about vega-lite configuration, see the  [Vega-Lite documentation](https://vega.github.io/vega-lite/docs/).
-         *
-         * The data sources must be declared in the Vega-Lite specification like this:
-         * ```
-         * "data": {"name": "mydatasource"},
-         * ```
-         * You can then specify an attribute on the widget called `values-mydatasource` that will receive the array
-         * of values to be used in the chart.
-         *
-         * The dimensions of the chart can be controlled using two different methods:
-         * - Use the width and height attributes in the vega specification. In this case, the chart dimensions will be fixed to these values.
-         * - Do not specify the width and height in the vega specification. In this case, the chart will fill its container. You can control the container dimensions by applying CSS rules to `odswidget-vega-lite-chart`.
-         *
-         * The [tooltip](https://vega.github.io/vega-lite/docs/tooltip.html) plugin for vega is installed.
-         *
-         * Note: The widget currently uses Vega-Lite 3.0.0.
-         *
-         * @example
-         *  <example module="ods-widgets">
-         *      <file name="index.html">
-         *          <ods-dataset-context context="commute,tree,demographics"
-         *                               commute-dataset="average-commute-time-by-county"
-         *                               commute-parameters="{'fields': 'county,commuting_time'}"
-         *                               commute-domain="https://documentation-resources.opendatasoft.com/"
-         *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                               tree-domain="https://documentation-resources.opendatasoft.com/"
-         *                               demographics-dataset="us-cities-demographics"
-         *                               demographics-domain="https://documentation-resources.opendatasoft.com/">
-         *
-         *              <!-- data from ods-results -->
-         *
-         *              <div ods-results="res"
-         *                   ods-results-context="commute">
-         *                  <ods-vega-lite-chart spec='{
-         *                                          "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-         *                                          "data": {"name": "counties"},
-         *                                          "mark": "bar",
-         *                                          "encoding": {
-         *                                              "x": {"field": "fields.county", "type": "nominal"},
-         *                                              "y": {"field": "fields.commuting_time", "type": "quantitative"}
-         *                                          }
-         *                                        }'
-         *                                        values-counties="res"></ods-vega-lite-chart>
-         *              </div>
-         *
-         *              <!-- data from ods-analysis -->
-         *
-         *              <div ods-analysis="analysis"
-         *                    ods-analysis-context="tree"
-         *                    ods-analysis-max="10"
-         *                    ods-analysis-x="espece"
-         *                    ods-analysis-sort="circonference_en_cm"
-         *                    ods-analysis-serie-hauteur="AVG(hauteur_en_m)"
-         *                    ods-analysis-serie-hauteur-cumulative="false"
-         *                    ods-analysis-serie-circonference="AVG(circonference_en_cm)">
-         *                  <ods-vega-lite-chart spec='{
-         *                                          "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-         *                                          "data": {"name": "trees"},
-         *                                          "mark": "bar",
-         *                                          "encoding": {
-         *                                              "x": {"field": "x", "type": "nominal"},
-         *                                              "y": {"field": "hauteur", "type": "quantitative"}
-         *                                          }
-         *                                       }'
-         *                                       values-trees="analysis.results"></ods-vega-lite-chart>
-         *              </div>
-         *          </ods-dataset-context>
-         *      </file>
-         *  </example>
-         */
-        return {
-            restrict: 'E',
-            replace: true,
-            template: '' +
-                '<div class="odswidget odswidget-vega-lite-chart">' +
-                '   <div class="vega-chart"></div>' +
-                '</div>',
-            scope: {
-                spec: '='
-            },
-            link: function (scope, element, attrs) {
-                var vegaView;
-                var serieNames = getSerieNames(scope.spec);
-                var resizeTimeout;
-                var autoWidth = false;
-                var autoHeight = false;
-
-                var setDimensions = function() {
-                    var dimensions = element.get(0).getBoundingClientRect();
-                    if (autoWidth) {
-                        vegaView.width(dimensions.width);
-                    }
-                    if (autoHeight) {
-                        vegaView.height(dimensions.height);
-                    }
-                };
-
-                var _resizeHandler = function() {
-                    setDimensions();
-                    return vegaView.resize().runAsync();
-                };
-
-                var resizeHandler = function() {
-                    if (resizeTimeout) {
-                        clearTimeout(resizeTimeout);
-                        resizeTimeout = undefined;
-                    }
-                    resizeTimeout = setTimeout(_resizeHandler, 200);
-                };
-
-                var initView = function () {
-                    // build runtime from specs
-                    var spec = scope.spec;
-                    var specAutosize;
-                    var multiLayerViz = spec.hasOwnProperty('vconcat') ||
-                        spec.hasOwnProperty('hconcat') ||
-                        spec.hasOwnProperty('repeat') ||
-                        spec.hasOwnProperty('facet');
-
-                    // insert dummy data in the case the user didn't specify a named 'values' prop
-                    if (!spec.data && angular.equals(serieNames, ['_serie'])) {
-                        spec.data = {name: '_serie', values: []};
-                    }
-
-                    if (!multiLayerViz) {
-                        if (!spec.width) {
-                            // if spec has no width, autosize to container width
-                            autoWidth = true;
-                            spec.width = 1;
-                        }
-
-                        if (!spec.height) {
-                            autoHeight = true;
-                            spec.height = 1;
-                        }
-
-                        // except if otherwise specified in the spec, force vega autosize to fit padding
-                        if (typeof spec.autosize === "string") {
-                            specAutosize = {
-                                type: spec.autosize,
-                            };
-                        } else {
-                            specAutosize = spec.autosize || {};
-                        }
-
-                        spec.autosize = {};
-
-                        Object.assign(spec.autosize, {
-                            "type": "fit",
-                            "contains": "padding"
-                        }, specAutosize);
-                    }
-                    spec = vl.compile(spec).spec;
-                    var runtime = vega.parse(spec);
-
-                    // use vega-tooltip for html tooltips
-                    var tooltipHandler = new vegaTooltip.Handler();
-
-                    // create vega view
-                    vegaView = new vega.View(runtime)
-                        .renderer('canvas')
-                        .tooltip(tooltipHandler.call)
-                        .initialize(element.find('.vega-chart')[0])
-                        .hover();
-
-                    if (autoWidth || autoHeight) {
-                        setDimensions();
-                        window.addEventListener('resize', resizeHandler);
-                    }
-                };
-
-                var watchData = function () {
-                    angular.forEach(serieNames, function (serieName) {
-                        scope.$watch(function () {
-                            var data = getSerieValues(scope, attrs, serieName);
-                            return data;
-                        }, function (nv, ov) {
-                            if (typeof nv !== "undefined") {
-                                updateSerieValues(serieName, angular.copy(nv) || []);
-                            }
-                        }, true);
-                    });
-                };
-
-                var updateSerieValues = function (name, values) {
-                    var changeSet = vega.changeset()
-                        .remove(function (d) { return true; })
-                        .insert(values);
-                    vegaView
-                        .change(name, changeSet)
-                        .resize()
-                        .runAsync();
-                };
-
-                scope.$on("$destroy", function () {
-                    if (vegaView) {
-                        vegaView.finalize();
-                    }
-                    window.removeEventListener('resize', resizeHandler);
-                });
-
-                // init
-
-                ModuleLazyLoader('vega').then(function () {
-                    // init Vega
-                    var unwatch = scope.$watch('spec', function (spec) {
-                        if (spec) {
-                            unwatch();
-                            initView();
-                            watchData();
-                        }
-                    });
-                });
-            },
-        };
-    }]);
-}());
-;(function() {
+}());;(function() {
     'use strict';
 
     var mod = angular.module('ods-widgets');

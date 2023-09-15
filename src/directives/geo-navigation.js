@@ -5,7 +5,7 @@
     var shapeColor = "#00C7B1";
     var disabledShapeColor = "#565656";
 
-    mod.directive('odsGeoNavigation', ['ModuleLazyLoader', 'ODSWidgetsConfig', 'ODSAPI', 'GeographicReferenceService', '$q', '$filter', function (ModuleLazyLoader, ODSWidgetsConfig, ODSAPI, GeographicReferenceService, $q, $filter) {
+    mod.directive('odsGeoNavigation', ['ModuleLazyLoader', 'ODSWidgetsConfig', 'ODSAPIv2', 'APIParamsV1ToV2', 'GeographicReferenceService', '$q', '$filter', function (ModuleLazyLoader, ODSWidgetsConfig, ODSAPIv2, APIParamsV1ToV2, GeographicReferenceService, $q, $filter) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsGeoNavigation
@@ -62,7 +62,7 @@
                 '                <i class="fa fa-search odswidget-geo-navigation__level-search-box-icon" aria-hidden="true"></i>' +
                 '            </div>' +
                 '            <hr ng-show="!showSearchbox && (parentFilterLabel || canBeSkipped && skipToLevelLabel) && choices.length" class="odswidget-geo-navigation__navigation-separator" />' +
-                '            <div ng-repeat="choice in choices|filter:searchValue(searchInLevel)" ng-show="isVisible($index)" ng-click="selectChoice(choice.path)" class="odswidget-geo-navigation__choice">' +
+                '            <div ng-repeat="choice in choices|filter:searchValue(searchInLevel)" ng-show="isVisible($index)" ng-click="selectChoice(choice.value)" class="odswidget-geo-navigation__choice">' +
                 '                <div class="odswidget-geo-navigation__choice-label">{{choice.name}}</div>' +
                 '                <div class="odswidget-geo-navigation__choice-count" ng-hide="ascendingFilter">{{choice.count}}</div>' +
                 '            </div>' +
@@ -280,19 +280,23 @@
                                     labelPath += '/*';
                                 }
 
-                                var params = {
-                                    rows: 0,
-                                    geonav: '' // Make sure the previous choice doesn't apply in the navigation
-                                };
+                                var apiParameters = APIParamsV1ToV2(angular.extend(
+                                    {},
+                                    $scope.context.parameters,
+                                    {
+                                        geonav: '' // Make sure the previous choice doesn't apply in the navigation
+                                    }
+                                ));
+
+                                apiParameters.facet = 'facet(name="explore.geographic_reference_path_labels", sort="alphanum", hierarchical=true)';
+
                                 if (labelPath) {
-                                    params['refine.explore.geographic_reference_path_labels'] = labelPath;
-                                } else {
-                                    params['facet'] = 'explore.geographic_reference_path_labels';
+                                    apiParameters.refine = 'explore.geographic_reference_path_labels:"'+labelPath+'"';
                                 }
-                                params['facetsort.explore.geographic_reference_path_labels'] = 'alphanum';
-                                ODSAPI.datasets.search($scope.context, params).then(function(response) {
+
+                                ODSAPIv2.catalog.facets($scope.context, apiParameters).then(function(response) {
                                     var data = response.data;
-                                    if (!data.facet_groups || !data.facet_groups.length) {
+                                    if (!data.facets || !data.facets.length) {
                                         // There is no facet group, which can happen if there are exactly 0 results
                                         $scope.choices = [];
                                         $scope.showSearchbox = false;
@@ -301,17 +305,17 @@
                                         return;
                                     }
 
-                                    var current = data.facet_groups.filter(function (facetGroup) {
+                                    var current = data.facets.find(function (facetGroup) {
                                         return facetGroup.name === 'explore.geographic_reference_path_labels';
-                                    })[0];
+                                    });
 
                                     // Travel down the nodes until we reach the current situation.
                                     if (labelPath) {
-                                        while (current.path !== labelPath) {
+                                        while (current.value !== labelPath) {
                                             current = current.facets.filter(function (facet) {
                                                 // Two-part condition because a simple startswith without the / could confuse two places
                                                 // that start the same ("Boulogne" / "Boulogne-sur-Mer")
-                                                return labelPath.startsWith(facet.path + '/') || labelPath === facet.path;
+                                                return labelPath.startsWith(facet.value + '/') || labelPath === facet.value;
                                             })[0];
                                         }
                                     }

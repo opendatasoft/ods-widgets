@@ -99,11 +99,17 @@
             },
             datasets: {
                 records: function(context, parameters, timeout) {
-                    return request(context, '/api/v2/' + getCatalogRoot(context) + '/datasets/' + context.dataset.datasetid + '/records', parameters, timeout);
+                    return request(context, '/api/explore/v2.1/' + getCatalogRoot(context) + '/datasets/' + context.dataset.datasetid + '/records', parameters, timeout);
                 },
-                aggregates: function(context, parameters, timeout) {
-                    return request(context, '/api/v2/' + getCatalogRoot(context) + '/datasets/' + context.dataset.datasetid + '/aggregates', parameters, timeout);
-                }
+            },
+            catalog: {
+                facets: function(context, parameters, timeout) {
+                    return request(context, '/api/explore/v2.1/' + getCatalogRoot(context) + '/facets', parameters, timeout);
+                },
+                // Used by Explore
+                search: function(context, parameters, timeout) {
+                    return request(context, '/api/explore/v2.1/' + getCatalogRoot(context) + '/datasets', parameters, timeout);
+                },
             }
         };
     }]);

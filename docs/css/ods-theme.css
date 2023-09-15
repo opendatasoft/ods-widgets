@@ -215,7 +215,7 @@ button {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 a {
-  color: #0086D6;
+  color: #0F79D0;
 }
 ul {
   margin-bottom: 26px;
@@ -239,7 +239,7 @@ textarea {
 }
 a:hover {
   text-decoration: underline;
-  color: #0086D6;
+  color: #0F79D0;
 }
 .ods-container {
   margin: 80px 13px 0 13px;
@@ -304,7 +304,7 @@ a:hover {
 }
 .form-search .search-query:focus {
   box-shadow: none;
-  border: 1px solid #0086D6;
+  border: 1px solid #0F79D0;
 }
 .form-search .well .nav-header {
   font-weight: normal;
@@ -368,7 +368,7 @@ a:hover {
 }
 .nav-items-link:hover {
   background-color: white;
-  color: #0086D6;
+  color: #0F79D0;
   text-decoration: none;
 }
 .nav-items-link:focus,
@@ -377,7 +377,7 @@ a:hover {
 }
 .nav-items-link-active {
   background-color: white;
-  color: #0086D6 !important;
+  color: #0F79D0 !important;
 }
 .nav-list {
   padding-left: 26px;
@@ -398,26 +398,26 @@ a:hover {
 }
 .nav-list > li > a:hover {
   background-color: white;
-  color: #0086D6 !important;
+  color: #0F79D0 !important;
 }
 .nav-list > .active > a,
 .nav-list > .active > a:hover,
 .nav-list > .active > a:focus {
-  color: #0086D6;
+  color: #0F79D0;
   background-color: white;
   text-shadow: none;
 }
 .nav-list > .active > a > [class^="icon-"] {
-  color: #0086D6 !important;
+  color: #0F79D0 !important;
 }
 .nav > li > a:focus {
   background-color: #FFFFFF;
 }
 .api-list-item:hover .pull-right {
-  color: #0086D6 !important;
+  color: #0F79D0 !important;
 }
 .api-list-item:hover .pull-right .icon-cog {
-  color: #0086D6 !important;
+  color: #0F79D0 !important;
   text-shadow: none;
 }
 .icon-cog {
@@ -634,8 +634,8 @@ pre.prettyprint {
 .ods-prerequisite,
 .ods-note,
 .ods-link {
-  background-color: #e6f3fb;
-  border: 1px solid #80c3eb;
+  background-color: #e7f2fa;
+  border: 1px solid #87bce8;
 }
 .ods-zoom .note-title {
   font-size: 1.1em;

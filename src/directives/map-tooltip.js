@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsMapTooltip', ['$compile', '$templateCache', function($compile, $templateCache) {
+    mod.directive('odsMapTooltip', ['$templateCache', function($templateCache) {
         return {
             restrict: 'E',
             transclude: true,
@@ -52,6 +52,7 @@
                     jQuery('.ng-leaflet-tooltip-cloak', element).removeClass('ng-leaflet-tooltip-cloak');
                 };
                 if (attrs.template && attrs.template !== '') {
+                    // FIXME: https://app.shortcut.com/opendatasoft/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
                     $templateCache.put('custom-tooltip-' + scope.context.dataset.datasetid, attrs.template);
                 } else {
                     $templateCache.put('default-tooltip', '<div class="infoPaneLayout">' +

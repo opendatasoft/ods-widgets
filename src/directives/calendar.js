@@ -258,6 +258,7 @@
                         };
 
                         var content;
+                        // FIXME: https://app.shortcut.com/opendatasoft/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
                         if (scope.context.dataset.extra_metas.visualization.calendar_tooltip_html_enabled && scope.context.dataset.extra_metas.visualization.calendar_tooltip_html) {
                             content = $compile('<div>' + scope.context.dataset.extra_metas.visualization.calendar_tooltip_html + '</div>')(newScope);
                         } else {
@@ -294,7 +295,14 @@
                     scope.context.wait().then(function() {
                         setupCalendar();
                         // refresh data when context search parameters change
-                        scope.$watch('context.parameters', function(nv, ov) {
+                        scope.$watch(function() {
+                            // We don't want to include calendarview in the comparison, because when it changes,
+                            // it already triggers a refresh via FullCalendar built-in mechanisms.
+                            // We do an extend to do a shallow copy, to avoid a deep copy on every digest.
+                            var params = angular.extend({}, scope.context.parameters);
+                            delete params.calendarview;
+                            return params;
+                        }, function(nv, ov) {
                             if (nv !== ov) {
                                 updateCalendar();
                             }

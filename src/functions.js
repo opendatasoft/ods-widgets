@@ -581,6 +581,7 @@
                 attachments: dataset.attachments,
                 alternative_exports: dataset.alternative_exports,
                 fields: dataset.fields,
+                basic_metas: dataset.basic_metas,
                 extra_metas: dataset.extra_metas,
                 interop_metas: dataset.interop_metas,
                 setFields: function(fields) {

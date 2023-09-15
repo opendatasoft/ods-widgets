@@ -273,6 +273,7 @@
                     if ($scope.context.dataset.extra_metas.visualization &&
                         $scope.context.dataset.extra_metas.visualization.image_tooltip_html_enabled &&
                         $scope.context.dataset.extra_metas.visualization.image_tooltip_html) {
+                        // FIXME: https://app.shortcut.com/opendatasoft/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
                         detailsTemplate = '<div>' + $scope.context.dataset.extra_metas.visualization.image_tooltip_html + '</div>';
                     } else {
                         detailsTemplate = defaultDetailsTemplate;

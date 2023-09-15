@@ -340,7 +340,7 @@
 		},
 
 		geocode: function(query, cb, context) {
-			L.Control.Geocoder.jsonp(this.options.serviceUrl + 'search/', L.extend({
+			L.Control.Geocoder.jsonp(this.options.serviceUrl + 'search', L.extend({
 				q: query,
 				limit: 5,
 				format: 'json',

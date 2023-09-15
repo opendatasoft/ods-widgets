@@ -12,11 +12,11 @@
             'highcharts': {
                 'css': [],
                 'js': [
-                    ["https://code.highcharts.com/6.1.4/highcharts.js"],
-                    ["https://code.highcharts.com/6.1.4/modules/no-data-to-display.js"],
-                    ["https://code.highcharts.com/6.1.4/highcharts-more.js"],
-                    ["https://code.highcharts.com/6.1.4/modules/treemap.js"],
-                    ["https://code.highcharts.com/6.1.4/modules/funnel.js"]
+                    ["https://code.highcharts.com/11.1.0/highcharts.js"],
+                    ["https://code.highcharts.com/11.1.0/modules/no-data-to-display.js"],
+                    ["https://code.highcharts.com/11.1.0/highcharts-more.js"],
+                    ["https://code.highcharts.com/11.1.0/modules/treemap.js"],
+                    ["https://code.highcharts.com/11.1.0/modules/funnel.js"]
                 ]
             },
             'leaflet': {
@@ -59,31 +59,31 @@
                 ],
                 'language_specific': {
                     'ar': {
-                        'js': ['libs/fullcalendar/lang/ar.js']
+                        'js': ['libs/fullcalendar/locale/ar.js']
                     },
                     'ca': {
-                        'js': ['libs/fullcalendar/lang/ca.js']
+                        'js': ['libs/fullcalendar/locale/ca.js']
                     },
                     'de': {
-                        'js': ['libs/fullcalendar/lang/de.js']
+                        'js': ['libs/fullcalendar/locale/de.js']
                     },
                     'es': {
-                        'js': ['libs/fullcalendar/lang/es.js']
+                        'js': ['libs/fullcalendar/locale/es.js']
                     },
                     'eu': {
-                        'js': ['libs/fullcalendar/lang/eu.js']
+                        'js': ['libs/fullcalendar/locale/eu.js']
                     },
                     'fr': {
-                        'js': ['libs/fullcalendar/lang/fr.js']
+                        'js': ['libs/fullcalendar/locale/fr.js']
                     },
                     'it': {
-                        'js': ['libs/fullcalendar/lang/it.js']
+                        'js': ['libs/fullcalendar/locale/it.js']
                     },
                     'nl': {
-                        'js': ['libs/fullcalendar/lang/nl.js']
+                        'js': ['libs/fullcalendar/locale/nl.js']
                     },
                     'pt': {
-                        'js': ['libs/fullcalendar/lang/pt.js']
+                        'js': ['libs/fullcalendar/locale/pt.js']
                     }
                 }
             },
@@ -96,17 +96,6 @@
                 'js': [
                     'ss@https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.1/simple_statistics.js'
                 ]
-            },
-            'vega': {
-                'js': [[
-                    'https://vega.github.io/vega/assets/promise.min.js',
-                    'https://vega.github.io/vega/assets/symbol.min.js',
-                    'https://vega.github.io/vega/assets/fetch.min.js',
-                ], [
-                    "vega@https://cdn.jsdelivr.net/npm/vega@4.3.0",
-                    "vl@https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc12",
-                    "vegaTooltip@https://cdn.jsdelivr.net/npm/vega-tooltip@0.13.0",
-                ]],
             },
             'ion.rangeSlider': {
                 'js': ['https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.0/js/ion.rangeSlider.min.js'],
