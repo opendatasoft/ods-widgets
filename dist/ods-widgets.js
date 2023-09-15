@@ -17061,7 +17061,7 @@ mod.directive('infiniteScroll', [
          * @name ods-widgets.directive:odsAdvAnalysis
          * @scope
          * @restrict A
-         * @param {string} odsAdvAnalysis This name can be used as the `data` attribute of the display widgets that support it (`odsAdvTable`, `odsVegaLiteChart`).
+         * @param {string} odsAdvAnalysis This name can be used as the `data` attribute of the display widgets that support it (e.g. `odsAdvTable`).
          * @param {string} odsAdvAnalysisContext Insert here the name of the context to use.
          * @param {string} [odsAdvAnalysisSelect] Type here the query to make. More use cases are available below. The documentation about the ODSQL select clause is available here. This clause will contain the values (i.e., the y-axis in case of a chart).
          * @param {string} [odsAdvAnalysisWhere] This parameter allows to filter rows with a combination of expressions. The documentation about the ODSQL `where` clause is available [here](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Where-clause).
@@ -17078,7 +17078,7 @@ mod.directive('infiniteScroll', [
          * - Second, AngularJS variables are accepted as attributes.
          *
          * The results can then be displayed in three different ways:
-         * - To create charts, `odsAdvAnalysis` is designed to be working specifically with `odsVegaLite` (examples are provided below).
+         * - To create specific visualizations, using custom-made HTML and CSS
          * - A table view is also available using `odsAdvTable` (examples are provided below).
          * - As the widget is creating an AngularJS variable, it can be displayed through a simple `{{myData.results[X]}}`. This usage is not documented here, as it regards HTML code and widgets already documented in [the introduction](https://help.opendatasoft.com/widgets/#/introduction/).
          *
