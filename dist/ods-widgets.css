@@ -3026,10 +3026,6 @@ html[dir=rtl] .odswidget-dataset-schema__field-properties-key {
   vertical-align: top;
   padding: 0 0.5em 0.2em 0.5em;
 }
-.odswidget-vega-lite-chart {
-  width: 100%;
-  height: 400px;
-}
 .ods-pop-in {
   position: fixed;
   top: 0;

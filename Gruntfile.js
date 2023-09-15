@@ -150,7 +150,7 @@ module.exports = function(grunt) {
 			options: {
 				dest: 'docs',
                 scripts: [
-                    'https://code.jquery.com/jquery-2.2.4.min.js',
+                    'https://code.jquery.com/jquery-3.7.0.min.js',
                     'https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular.js',
                     'https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular-animate.js',
                     'https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular-sanitize.js',

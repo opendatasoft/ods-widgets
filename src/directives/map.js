@@ -1118,10 +1118,17 @@
                         'groups': []
                     };
                 } else {
-                    // Apply default values for existing configs (useful for migration of old configs)
                     $scope.mapConfig.groups.forEach(function(group) {
                         group.layers.forEach(function(layer) {
+                            // tooltipTemplate must not be passed directly via a mapConfig object, as it would bypass
+                            // sanitization entirely.
+                            // https://app.shortcut.com/opendatasoft/story/40124/xss-passing-tooltiptemplate-in-mapbuilder-payload
+                            if (angular.isDefined(layer.tooltipTemplate)) {
+                                delete layer.tooltipTemplate;
+                            }
+
                             layer.context.wait().then(function() {
+                                // Apply default values for existing configs (useful for migration of old configs)
                                 MapHelper.MapConfiguration.setLayerDisplaySettingsFromDefault(layer);
                             });
                         });
@@ -1708,7 +1715,7 @@
                 }
                 // Yes, it seems highly weird, but unfortunately it sems to be the only option as we want to get the
                 // original content BEFORE compile, and pass it to the link function.
-                return '<div tooltiptemplate="'+tpl.replace(/"/g, '&quot;')+'"></div>';
+                return '<div tooltiptemplate="'+ODS.StringUtils.escapeHTML(tpl)+'"></div>';
             },
             require: ['?^odsMapLayerGroup', '^odsMap'],
             link: function(scope, element, attrs, controllers) {

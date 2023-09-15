@@ -31,7 +31,7 @@
          *  @param {number} [refreshDelay=none] Number of milliseconds to wait before the context is automatically refreshed. If this parameter is not set, the context will not automatically refresh. The minimum delay is 10000ms.
          *  @param {string} [parametersFromContext=none] Name of another declared context to replicate the parameters and queries from. Any modification on the parameters of this context or the original one will be applied to both.
          *  @param {boolean} [urlSync=none] Enables the synchronization of the parameters to the page's parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change.
-         * 
+         *
          * Note: if this parameter is enabled, `parameters` and `parametersFromContext` won't have any effect. There can only be a single context with URL synchronization enabled. Else the behavior will be unpredictable.
          *
          *  @description
@@ -53,6 +53,8 @@
          *  * `dataset`: dataset object for the context
          *  * `getDownloadURL(format[, dict options])`: method that returns a URL to download the data, including currently active filters (e.g. refinements, queries etc.). By default the URL will allow downloading a CSV export, but another format can be passed, such as "geojson" or "json". Two optional parameters are also available: `{'use_labels_for_header': '<true/false>', 'fields': '<list of comma separated field name>'}`
          *  * `getQueryStringURL([dict options])`: method that builds the URL suffix (`?key1=value1&key2=value2&...`) based on context parameters (active filters, refinement, sort, query, etc.). The optional dictionary parameter allows building the URL with additional key/value parameters.
+         *  * `getV2DownloadURL(format[, dict options])`: method that returns an Explore API V2.1 URL to download the data, including currently active filters. It can be used to export Explore API V2.1 specific formats such as "xlsx". An optional parameter is available: `{'fields': '<list of comma separated field name>'}`
+         *  * `getV2QueryStringURL([dict options])`: method that builds the URL suffix (`?key1=value1&key2=value2&...`) based on context parameters, intended for an Explore API V2.1 URL. The optional dictionary parameter allows building the URL with additional key/value parameters.
          *
          *  @example
          *

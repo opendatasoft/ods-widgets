@@ -129,7 +129,7 @@
                                 //}
                                 htmlContent += '<div class="odswidget-map__legend-title">' + ODS.StringUtils.escapeHTML(datasetTitle) + '<br/>' + AggregationHelper.getFunctionLabel(layerConfig.func);
                                 if (layerConfig.func !== 'COUNT') {
-                                    htmlContent += ' ' + fieldName;
+                                    htmlContent += ' ' + ODS.StringUtils.escapeHTML(fieldName);
                                 }
                                 htmlContent += '</div>';
                                 htmlContent += '<div class="odswidget-map__legend-colors">';
@@ -240,8 +240,7 @@
                                 if (layerConfig.joinContext && layerConfig.hoverField) {
                                     // Always show the value if it exists
                                     if (record.x[0].fields[layerConfig.hoverField]) {
-                                        // TODO: We may want to make the value prettier (e.g. format number if it is one)
-                                        shapeLayer.bindLabel(record.x[0].fields[layerConfig.hoverField]);
+                                        shapeLayer.bindLabel(ODS.StringUtils.escapeHTML(record.x[0].fields[layerConfig.hoverField]));
                                         if (layerConfig.refineOnClick) {
                                             MapLayerHelper.bindTooltip(map, shapeLayer, layerConfig, shape, null, record.geo_digest, record.x[0].fields[layerConfig.hoverField]);
                                         }

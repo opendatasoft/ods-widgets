@@ -602,7 +602,7 @@
             }
             // What we want is :
             // - If it starts with text, then this text (up to a potential \n)
-            // - Else, try to find a <p> and takes the content
+            // - Else, try to find any <p> with text and takes the content
             // - Else, takes the text
             // Then takes up to x words
             var text = '';
@@ -617,19 +617,29 @@
                 }
             } else {
                 var firstNode = body.contents()[0];
-                if (firstNode.nodeType == 3) {
+                if (firstNode.nodeType === 3) {
                     // Text node
                     text = firstNode.textContent;
                 } else {
-                    // It doesn't begin with text : is there a <p>?
+                    // It doesn't begin with text : is there any <p>?
                     if (body.find('p').length > 0) {
-                        var node = body.find('p')[0];
-                        if (angular.isDefined(node.textContent)) {
-                            text = node.textContent;
-                        } else {
-                            // Fallback for IE8, loses the \n's
-                            text = node.innerText;
-                        }
+                        // In case we have a tag with eventually no text in the first <p>
+                        // which it is with the current WYSIWYG if you set an img in the beginning.
+                        // Then we get no short summary at all.
+                        // So we compute all <p> nodes until we find something.
+                        body.find('p').each(function () {
+                            var localText = '';
+                            if (angular.isDefined(this.textContent)) {
+                                localText += this.textContent;
+                            } else {
+                                // Fallback for IE8, loses the \n's
+                                localText += this.innerText;
+                            }
+                            if (localText !== '') {
+                                text = localText;
+                                return false;
+                            }
+                        });
                     } else {
                         // Well, we take what we can get
                         text = body.text();

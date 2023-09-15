@@ -51,8 +51,8 @@ angular.module('gettext').constant('gettext', function (str) {
 });
 
 angular.module('gettext').service('translate', ["gettextCatalog", function (gettextCatalog) {
-    return function(input, additionalScope) {
-        return gettextCatalog.getString(input, additionalScope);
+    return function(input, additionalScope, additionalContext) {
+        return gettextCatalog.getString(input, additionalScope, additionalContext);
     }
 }]);
 

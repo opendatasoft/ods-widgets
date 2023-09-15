@@ -16,6 +16,8 @@
 <li><code>dataset</code>: dataset object for the context</li>
 <li><code>getDownloadURL(format[, dict options])</code>: method that returns a URL to download the data, including currently active filters (e.g. refinements, queries etc.). By default the URL will allow downloading a CSV export, but another format can be passed, such as &quot;geojson&quot; or &quot;json&quot;. Two optional parameters are also available: <code>{&#39;use_labels_for_header&#39;: &#39;&lt;true/false&gt;&#39;, &#39;fields&#39;: &#39;&lt;list of comma separated field name&gt;&#39;}</code></li>
 <li><code>getQueryStringURL([dict options])</code>: method that builds the URL suffix (<code>?key1=value1&amp;key2=value2&amp;...</code>) based on context parameters (active filters, refinement, sort, query, etc.). The optional dictionary parameter allows building the URL with additional key/value parameters.</li>
+<li><code>getV2DownloadURL(format[, dict options])</code>: method that returns an Explore API V2.1 URL to download the data, including currently active filters. It can be used to export Explore API V2.1 specific formats such as &quot;xlsx&quot;. An optional parameter is available: <code>{&#39;fields&#39;: &#39;&lt;list of comma separated field name&gt;&#39;}</code></li>
+<li><code>getV2QueryStringURL([dict options])</code>: method that builds the URL suffix (<code>?key1=value1&amp;key2=value2&amp;...</code>) based on context parameters, intended for an Explore API V2.1 URL. The optional dictionary parameter allows building the URL with additional key/value parameters.</li>
 </ul>
 </div></div>
 <h2 id="usage">Usage</h2>

@@ -123,7 +123,7 @@
                     catalog_search = ODSAPI.uniqueCall(ODSAPI.datasets.search);
 
                 $scope.refine = function (tagName) {
-                    if ($scope.redirectTo) {
+                    if ($scope.redirectTo && /^(http:\/\/|https:\/\/|\/)/.test($scope.redirectTo)) {
                         var refine_param = 'refine.' + $scope.facetName + '=' + tagName;
                         var join = $scope.redirectTo.indexOf('?') > -1 ? '&' : '?';
                         window.location = $scope.redirectTo + join + refine_param;

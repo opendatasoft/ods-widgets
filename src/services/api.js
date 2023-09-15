@@ -127,7 +127,11 @@
                     // Remove trailing slash
                     root = root.substr(0, root.length-1);
                 }
-
+                // Check if root is valid and safe url
+                if (root && !(/^(http:\/\/|https:\/\/|\/)/.test(root))) {
+                    console.error('Invalid domain context url provided');
+                    root = ODSWidgetsConfig.defaultDomain;
+                }
                 return root;
             },
             'datasets': {

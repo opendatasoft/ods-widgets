@@ -372,11 +372,12 @@
 
                             if (field && field.type === 'geo_point_2d') {
                                 newScope.fieldValue = fieldValue;
-                                node = $compile('<ods-geotooltip width="300" height="300" coords="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
+                                // check fieldValue
+                                node = $compile('<ods-geotooltip width="300" height="300" coords="recordFields">' + ODS.StringUtils.escapeHTML(fieldValue) + '</ods-geotooltip>')(newScope)[0];
                                 node.dir = 'ltr';
                             } else if (field && field.type === 'geo_shape') {
                                 newScope.fieldValue = $filter('truncate')(fieldValue);
-                                node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + fieldValue + '</ods-geotooltip>')(newScope)[0];
+                                node = $compile('<ods-geotooltip width="300" height="300" geojson="recordFields">' + ODS.StringUtils.escapeHTML(fieldValue) + '</ods-geotooltip>')(newScope)[0];
                                 node.dir = 'ltr';
                             } else if (field && field.type === 'file') {
                                 var html = $filter('nofollow')($filter('prettyText')(fieldValue)).toString();
@@ -391,6 +392,7 @@
                             } else {
                                 node = document.createElement('span');
                                 node.title = fieldValue;
+                                // Safe: escaped by prettyText
                                 node.innerHTML = $filter('nofollow')($filter('prettyText')(fieldValue));
                                 try {
                                     node.dir = 'auto';
@@ -605,28 +607,9 @@
 
                 // synchronize scroll between header and body
 
-                var isRtl = ($element.css('direction') === 'rtl');
-                var rtlScrollType = jQuery.support.rtlScrollType;
-
-                var synchronizeHeaderPosition;
-                if (!isRtl) {
-                    synchronizeHeaderPosition = function () {
-                        recordsHeader.css({left: -recordsArea.scrollLeft()});
-                    };
-                } else if (rtlScrollType === 'reverse') {
-                    synchronizeHeaderPosition = function () {
-                        recordsHeader.css({left: recordsArea.scrollLeft()});
-                    };
-                } else if (rtlScrollType === 'default') {
-                    synchronizeHeaderPosition = function () {
-                        var maxScrollLeft = recordsArea[0].scrollWidth - recordsArea[0].clientWidth;
-                        recordsHeader.css({left: maxScrollLeft - recordsArea.scrollLeft()});
-                    };
-                } else if (rtlScrollType === 'negative') {
-                    synchronizeHeaderPosition = function () {
-                        recordsHeader.css({left: -recordsArea.scrollLeft()});
-                    };
-                }
+                var synchronizeHeaderPosition = function () {
+                    recordsHeader.css({right: recordsArea[0].scrollLeft});
+                };
 
                 var lastScrollLeft;
                 var rememberScrollLeft = function () {
@@ -634,7 +617,7 @@
                     if (!endIndex) {
                         return;
                     }
-                    lastScrollLeft = recordsArea.scrollLeft();
+                    lastScrollLeft = recordsArea[0].scrollLeft;
                 };
                 var restoreScrollLeft = function () {
                     if (!lastScrollLeft) {
@@ -690,7 +673,7 @@
                         } else {
                             elementHeight = $element.height();
                         }
-                        var bodyOffset = $element.find('.table-timezone-caption').height() + 5;
+                        var bodyOffset = ($element.find('.table-timezone-caption').height() || 0) + 5;
                         if ($scope.displayDatasetFeedback) {
                             bodyOffset += $element.find('.table-feedback-new').height() + 5;
                         }

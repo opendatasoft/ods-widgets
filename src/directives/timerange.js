@@ -292,7 +292,7 @@
 
                 });
             },
-            controller: ['$scope', '$attrs', '$q', '$compile', '$rootScope', '$parse', function($scope, $attrs, $q, $compile, $rootScope, $parse) {
+            controller: ['$scope', '$attrs', '$q', '$rootScope', '$parse', function($scope, $attrs, $q, $rootScope, $parse) {
                 var contexts = [],
                     conf = {};
 

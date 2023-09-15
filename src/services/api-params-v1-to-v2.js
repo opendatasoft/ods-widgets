@@ -33,8 +33,10 @@
 
             var qClauses = [];
             var whereClauses = [];
+            var usedFacets = [];
 
-            angular.forEach(paramsV1, function (paramValue, paramName) {
+            // We also use computeCatalogFilterParams to compute the `geonav` parameter if it exists
+            angular.forEach(ODS.URLUtils.computeCatalogFilterParams(paramsV1), function (paramValue, paramName) {
                 if (paramValue === null || typeof(paramValue) === "undefined") {
                     // Not a real value to translate
                     return;
@@ -62,6 +64,7 @@
                     angular.forEach(paramValue, function(value) {
                         paramsV2.refine.push(paramName.substring(7) + ':"' + value + '"');
                     });
+                    usedFacets.push(paramName.substring(7));
                 }
 
                 if (paramName.startsWith('exclude.')) {
@@ -72,19 +75,7 @@
                     angular.forEach(paramValue, function(value) {
                         paramsV2.exclude.push(paramName.substring(8) + ':"' + value + '"');
                     });
-                }
-
-                // Note: At this point in time, we only need to support the disjunctive parameter of facets; facet sorts,
-                // hierarchical, separator and so on would only be used if we had a widget that displayed facets values
-                // from the API v2.
-                if (paramName.startsWith('disjunctive.')) {
-                    if (paramValue) {
-                        paramsV2.facet = paramsV2.facet || [];
-
-                        var facetName = paramName.substring(12);
-
-                        paramsV2.facet.push('facet(name="' + facetName + '", disjunctive=true)');
-                    }
+                    usedFacets.push(paramName.substring(8));
                 }
 
                 if (paramName === 'timezone' && paramValue) {
@@ -105,7 +96,20 @@
                         whereClauses.push("geometry(`" + (geoShape || geoPoint).name + "`, geom'"+v1PolygonToWkt(paramValue)+"')");
                     }
                 }
+            });
 
+            angular.forEach(ODS.URLUtils.computeCatalogFilterParams(paramsV1), function (paramValue, paramName) {
+                // Only include the explicit declaration of disjunctive if we need it, i.e. when we do a refine or
+                // an exclude. This prevents errors due to useless `disjunctive.xxx` URL parameters in Explore.
+                if (paramName.startsWith('disjunctive.') && usedFacets.includes(paramName.substring(12))) {
+                    if (paramValue) {
+                        paramsV2.facet = paramsV2.facet || [];
+
+                        var facetName = paramName.substring(12);
+
+                        paramsV2.facet.push('facet(name="' + facetName + '", disjunctive=true)');
+                    }
+                }
             });
 
             if (qClauses.length) {

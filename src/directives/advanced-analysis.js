@@ -3,6 +3,19 @@
 
     var mod = angular.module('ods-widgets');
 
+    function getGroupNames(groupBy) {
+        // Compute the exact names of groups that will appear in the results
+        var groups = groupBy.split(',');
+
+        return groups.map(function(group) {
+            var name = group;
+            if (group.toLowerCase().includes(' as ')) {
+                name = group.replace(' AS ', ' as ').split(' as ')[1];
+            }
+            return name.trim();
+        });
+    }
+
     mod.directive('odsAdvAnalysis', ['ODSAPIv2', 'APIParamsV1ToV2', function (ODSAPIv2, APIParamsV1ToV2) {
         /**
          * @ngdoc directive
@@ -19,7 +32,7 @@
          *
          * @description
          * The odsAdvAnalysis widget exposes the results of an aggregation function over a context.
-         * It uses the ODS Explore API V2 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29), which offers greater flexibility than the v1.
+         * It uses the ODS Explore API V2.1 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29), which offers greater flexibility than the v1.
          *
          * The parameters for this widgets are dynamic, which implies two benefits:
          * - First, changes in context parameters will refresh the results of the widget.
@@ -29,6 +42,10 @@
          * - To create charts, `odsAdvAnalysis` is designed to be working specifically with `odsVegaLite` (examples are provided below).
          * - A table view is also available using `odsAdvTable` (examples are provided below).
          * - As the widget is creating an AngularJS variable, it can be displayed through a simple `{{myData.results[X]}}`. This usage is not documented here, as it regards HTML code and widgets already documented in [the introduction](https://help.opendatasoft.com/widgets/#/introduction/).
+         *
+         * For retro-compatibility purposes, similarly to API V2.0, if the `groupBy` is done on a field that contains null values, they will be removed. If you are
+         * using the `limit` parameter, this may cause the widget to return one less category as expected, because the null group was included. You can
+         * prevent this by using `where` to exclude null values from this field, using `IS NOT NULL` (e.g. `my_field IS NOT NULL`).
          *
          * <h2>Examples of requests to make</h2>
          *
@@ -68,76 +85,6 @@
          *     </ods-dataset-context>
          * </pre>
          *
-         * <h2>How to use odsAdvancedAnalysis with odsVegaLite</h2>
-         *
-         * The output of <b>odsAdvancedAnalysis</b> is named in `ods-adv-analysis`. This name is then to be used as an attribute in the parameter `values-adva` of <b>odsVegaLite</b>.
-         * But to display the right values, it needs the field names contained in this AngularJS variable.
-         * The field names are given when the API request is made through <b>odsAdvancedAnalysis</b>.
-         * The easiest way to match the requirements is to set a specific name to each field in the `ods-adv-analysis-select` and `ods-adv-analysis-group-by` parameters.
-         * These names will then be used in the <b>odsVegaLite</b> configuration file.
-         *
-         * <b>✅ Here is an example of what would work:</b>
-         *
-         * - <b>Step 1:</b> in <b>odsAdvancedAnalysis</b>, the name `height` is given to the `select` attribute, and the `group-by` attribute name is set to `tree_species` instead of `espece`.
-         * - <b>Step 2:</b> in <b>odsVegaLite</b>, `tree_species` becomes the chart's x-axis, and `height` becomes the y-axis.
-         * <pre>
-         *     <ods-dataset-context
-         *         context="ctx"
-         *         ctx-domain="https://documentation-resources.opendatasoft.com/"
-         *         ctx-dataset="les-arbres-remarquables-de-paris">
-         *         <div ods-adv-analysis="myData"
-         *             ods-adv-analysis-context="ctx"
-         *             ods-adv-analysis-select="(sum(hauteur_en_m)/count(objectid)) as height"
-         *             ods-adv-analysis-where="arrondissement LIKE 'paris'"
-         *             ods-adv-analysis-group-by="espece as tree_species">
-         *             <ods-vega-lite-chart spec='{
-         *                 "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-         *                 "data": {"name": "adva"},
-         *                 "mark": "bar",
-         *                 "encoding": {
-         *                     "x": {"field": "tree_species", "type": "nominal", "title":"arrondissements", "labelLimit":50, "sort":{"op": "sum", "field":"y", "order":"descending"}},
-         *                     "y": {"field": "height", "type": "quantitative", "title": "hauteur moyenne"},
-         *                 },
-         *             }'
-         *             values-adva="myData">
-         *             </ods-vega-lite-chart>
-         *         </div>
-         *     </ods-dataset-context>
-         * </pre>
-         *
-         * Although optional, this is a crucial configuration to make. If the field names are different, the outcome will be a blank chart.
-         *
-         * <b>❌ Here is an example of what would NOT work:</b>
-         *
-         * In <b>odsVegaLite</b>, the x-axis is set with `espece`, which is also the name in <b>odsAdvancedAnalysis</b> and will therefore work. But the y-axis takes the field called `height` (which is what the widget is computing).
-         * But since no name was specifically given in the select attribute, <b>odsAdvancedAnalysis</b> named the results differently (in this case : `(sum(hauteur_en_m)/count(objectid)`).
-         * In conclusion, <b>odsVegaLite</b> won't recognize `height` and won't display any results.
-         * The solution here is to change `ods-adv-analysis-select="(sum(hauteur_en_m)/count(objectid))"` for `ods-adv-analysis-select="(sum(hauteur_en_m)/count(objectid)) as height"`
-         * <pre>
-         *     <ods-dataset-context
-         *         context="ctx"
-         *         ctx-domain="https://documentation-resources.opendatasoft.com/"
-         *         ctx-dataset="les-arbres-remarquables-de-paris">
-         *         <div ods-adv-analysis="myData"
-         *             ods-adv-analysis-context="ctx"
-         *             ods-adv-analysis-select="(sum(hauteur_en_m)/count(objectid))"
-         *             ods-adv-analysis-where="arrondissement LIKE 'paris'"
-         *             ods-adv-analysis-group-by="espece">
-         *             <ods-vega-lite-chart spec='{
-         *                 "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
-         *                 "data": {"name": "adva"},
-         *                 "mark": "bar",
-         *                 "encoding": {
-         *                     "x": {"field": "espece", "type": "nominal", "title":"arrondissements", "labelLimit":50, "sort":{"op": "sum", "field":"y", "order":"descending"}},
-         *                     "y": {"field": "height", "type": "quantitative", "title": "hauteur moyenne"},
-         *                 },
-         *             }'
-         *             values-adva="myData">
-         *             </ods-vega-lite-chart>
-         *         </div>
-         *     </ods-dataset-context>
-         * </pre>
-         *
          * <h2>How to use odsAdvancedAnalysis with odsAdvTable</h2>
          *
          * <b>odsAdvancedTable</b> was designed to accept the JSON created by <b>odsAdvancedAnalysis</b>.
@@ -170,21 +117,43 @@
             restrict: 'A',
             scope: true,
             controller: ['$scope', '$attrs', function($scope, $attrs) {
-                var dataCall = ODSAPIv2.uniqueCall(ODSAPIv2.datasets.aggregates);
+                var dataCall = ODSAPIv2.uniqueCall(ODSAPIv2.datasets.records);
 
                 var runQuery = function(variableName, context, select, where, limit, groupBy, orderBy) {
-                    var params = APIParamsV1ToV2(context.parameters);
+                    var params = APIParamsV1ToV2(context.parameters, context.dataset.fields);
+                    var combinedWhere;
+                    if (where && params.where) {
+                        // Two clauses coming from both the context and the parameters, we combine them
+                        combinedWhere = '(' + where +') AND (' + params.where + ')';
+                    } else {
+                        // Keep the one that is used
+                        combinedWhere = where || params.where;
+                    }
+                    var groups;
+                    if (!groupBy) {
+                        // Retro-compatibility: in the V2.0 version of the widget, we used aggregates endpoint, which
+                        // returned only one entry if there was no group_by.
+                        limit = limit || 1;
+                    } else {
+                        groups = getGroupNames(groupBy);
+                    }
                     params = angular.extend(params, {
                         select: select,
-                        where: where,
+                        where: combinedWhere,
                         limit: limit,
                         group_by: groupBy,
                         order_by: orderBy
                     });
                     dataCall(context, params)
                         .then(function(response) {
-                            var result = response.data;
-                            $scope[variableName] = result.aggregations;
+                            var results = response.data.results;
+                            // Retro-compatibility: Remove empty groups to keep the behavior from API V2.0
+                            if (groups) {
+                                results = results.filter(function(result) {
+                                    return !groups.find(function(group) { return result[group] === null; });
+                                });
+                            }
+                            $scope[variableName] = results;
                         }, function(response) {
                             var error = response.data;
                             console.error('odsAdvAnalysis: API error\n\n', error.message);
