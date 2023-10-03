@@ -3,6 +3,20 @@ All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
 
+## 2.1.0 - 2023-10-03
+This version notably adds the support of jQuery 3, while keeping compatibility with jQuery 2 as well.
+
+### Fixed
+- `odsMap` now supports multivalued fields when coloring by category (the color is based on the first value).
+- `odsMap` now properly displays all the points in a `MultiPoint` geometry with their intended color and style.
+
+### Changed
+- `odsAdvAnalysis` and `odsAdvResults` now rely on Explore API v2.1.
+
+### Removed
+- `odsVegaLiteChart` has been removed due to major security issues.
+- `odsMap` location search no longer supports Algolia Places (the service is no longer available).
+
 ## 2.0.1 - 2021-04-14
 This version includes a large update of the documentation, with many parameters having their default behavior more
 explicitly defined, and improved examples.
