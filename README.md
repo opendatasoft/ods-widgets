@@ -51,11 +51,10 @@ details of the library.
 
 ### Compatibility
 Known to work on: (may not be exhaustive)
-- Internet Explorer 11
 - Edge (last versions)
 - Safari (last versions)
 - Chrome (last versions)
-- Firefox (last versions)
+- Firefox (last versions, and current ESR version)
 
 ### Download
 You can [download the latest ODS Widgets release here](https://github.com/opendatasoft/ods-widgets/releases/latest). This is a ZIP file of a folder that you can then
@@ -63,7 +62,7 @@ copy into your project.
 
 ### Setup
 The following libraries are required as dependencies in your pages for ODS-Widgets to work:
-- **jQuery** 2.1+ (versions 3+ has known incompatibilities)
+- **jQuery** 2.1+ (compatible with jQuery 3)
 - **AngularJS** 1.8.0 and the **angular-sanitize** module (note: AngularJS 1.4 and above should be working as well,
 with known incompatibility on `ods-range-input` and `ods-gist`)
 - Some widgets are using icons from **[FontAwesome 4.4.0](http://fontawesome.io/icons/)**
@@ -106,7 +105,7 @@ The bare minimum for an HTML page is this template:
 
         </div>
 
-        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.2/angular.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/angular-sanitize/1.8.2/angular-sanitize.min.js"></script>
         <script type="text/javascript" src="//static.opendatasoft.com/ods-widgets/latest-v2/ods-widgets.min.js"></script>
