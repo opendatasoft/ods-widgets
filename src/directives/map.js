@@ -836,6 +836,12 @@
                                 angular.forEach(renderedLayers, function(layerConfig) {
                                     if (layerConfig._incomplete) {
                                         var layerTitle = layerConfig.title || layerConfig.context.dataset.metas.title;
+                                        // Escape HTML
+                                        layerTitle = ODS.StringUtils.escapeHTML(layerTitle);
+                                        // Escape AngularJS expressions
+                                        layerTitle = layerTitle
+                                            .replace(/{/g, "\\{")
+                                            .replace(/}/g, "\\}");
                                         var maxTitleLength = 50;
                                         // Trim the title if it's extremely long
                                         if (layerTitle.length > maxTitleLength) {

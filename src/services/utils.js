@@ -342,15 +342,19 @@
             '    <rect style="opacity: 0" x="0" y="0" width="19" height="19"></rect>' +
             '</svg>';
 
+
         var colorSVGElements = function(node, color) {
             node.css('fill', color);
             node.find('path, polygon, circle, rect, text, ellipse').css('fill', color); // Needed for our legacy SVGs of various quality...
         };
 
-        var loadImageInline = function(element, code, color, colorByAttributeMapping) {
-            var svg = angular.element(code);
+        var loadImageInline = function(element, svg, color, colorByAttributeMapping) {
+            // `svg` can be an element, or HTML code as a string
+            if (typeof svg === "string") {
+                svg = angular.element(svg);
+            }
             if (color) {
-                colorSVGElements(svg, color)
+                colorSVGElements(svg, color);
             }
 
             if (colorByAttributeMapping) {
@@ -417,12 +421,40 @@
                 }
             };
 
+            var copyLocalElement = function(localId, color, colorByAttributeMapping) {
+                var element = angular.element('<div class="ods-svginliner__svg-container"></div>');
+
+                var originalSvg = document.getElementById(localId);
+                if (!originalSvg) {
+                    console.error('odsPicto: Element with ID "'+localId+'" doesn\'t exist.');
+                    return null;
+                }
+                if (originalSvg.tagName.toLowerCase() !== 'svg') {
+                    console.error('odsPicto: Element with ID "'+localId+'" is not a svg element.');
+                    return null;
+                }
+                var newSvg = originalSvg.cloneNode(true);
+
+                // Remove the ID before duplication
+                newSvg.removeAttribute('id');
+
+                // Make it visible
+                newSvg.style.removeProperty('display');
+
+                loadImageInline(element, angular.element(newSvg), color, colorByAttributeMapping);
+
+                return element;
+            };
+
             return {
                 getElement: function(url, color, colorByAttributeMapping) {
                     return retrieve(url, color, colorByAttributeMapping);
                 },
                 getPromise: function(url, color, colorByAttributeMapping) {
                     return retrieve(url, color, colorByAttributeMapping, true);
+                },
+                getLocalElement: function(elementId, color, colorByAttributeMapping) {
+                    return copyLocalElement(elementId, color, colorByAttributeMapping);
                 }
             };
 

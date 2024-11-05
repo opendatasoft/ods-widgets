@@ -66,6 +66,20 @@ L.ClusterMarker = L.FeatureGroup.extend({
     getClusterShape: function() {
         return this._clusterShape;
     },
+    _escapeHtmlValue: function(html) {
+        if (!html) {
+            return html;
+        }
+        if (typeof html !== 'string') {
+            return html;
+        }
+        return html
+            .replace(/&(?!#?\w+;)/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
     _getMarkerIcon: function(color,
                              opacity,
                              count,
@@ -133,15 +147,17 @@ L.ClusterMarker = L.FeatureGroup.extend({
         var sizeStyle = size + 'px';
         return L.divIcon({
             html: '<div class="cluster-marker-circle" ' +
-                  '     style="width: ' + sizeStyle + '; ' +
-                  '            height: ' + sizeStyle + '; ' +
-                  '            background-color: ' + bgcolor.css() + '; ' +
-                  '            border: solid ' + borderSize + 'px '+ realBorderColor.css('rgba') +'; ' +
-                  '            top: calc(-'+sizeStyle+'/2); ' +
-                  '            left: calc(-'+sizeStyle+'/2); ' +
-                  '            opacity: ' + opacity + '; ' +
-                  '            font-size: '+textSize+'px;">' +
-                  '<span style="color: ' + textcolor.css() + '; line-height: ' + sizeStyle + ';">' + displayedNumber + '</span>' +
+                  '     style="width: ' + this._escapeHtmlValue(sizeStyle) + '; ' +
+                  '            height: ' + this._escapeHtmlValue(sizeStyle) + '; ' +
+                  '            background-color: ' + this._escapeHtmlValue(bgcolor.css()) + '; ' +
+                  '            border: solid ' + this._escapeHtmlValue(borderSize) + 'px '+ this._escapeHtmlValue(realBorderColor.css('rgba')) +'; ' +
+                  '            top: calc(-'+this._escapeHtmlValue(sizeStyle)+'/2); ' +
+                  '            left: calc(-'+this._escapeHtmlValue(sizeStyle)+'/2); ' +
+                  '            opacity: ' + this._escapeHtmlValue(opacity) + '; ' +
+                  '            font-size: '+this._escapeHtmlValue(textSize)+'px;">' +
+                  '    <span style="color: ' + this._escapeHtmlValue(textcolor.css()) + '; line-height: ' + this._escapeHtmlValue(sizeStyle) + ';">' +
+                           this._escapeHtmlValue(displayedNumber) +
+                  '    </span>' +
                   '</div>',
             className: 'cluster-marker'
         });

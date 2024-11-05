@@ -64,7 +64,7 @@ L.ODSTileLayer = L.TileLayer.extend({
         var attrib = this._addAttributionPart('', prependAttribution);
 
         if (basemap.provider === 'opencycle' || basemap.provider === 'osmtransport') {
-            attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="http://www.thunderforest.com" target="_blank">Thunderforest</a> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
+            attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="http://www.thunderforest.com" target="_blank">Thunderforest</a> - Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
             var thunderforestUrl = 'http://{s}.tile.thunderforest.com/' + (basemap.provider === 'osmtransport' ? 'transport' : 'cycle') + '/{z}/{x}/{y}.png';
             if (basemap.thunderforest_api_key) {
@@ -100,7 +100,7 @@ L.ODSTileLayer = L.TileLayer.extend({
                 mapId = basemap.mapid
             }
 
-            attrib = this._addAttributionPart(attrib, 'Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
+            attrib = this._addAttributionPart(attrib, 'Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
             layerOptions = {
                 minZoom: 2,
@@ -118,7 +118,7 @@ L.ODSTileLayer = L.TileLayer.extend({
             }
             L.TileLayer.prototype.initialize.call(this, this._mapboxStylesUrl(mapId, basemap.mapbox_access_token), layerOptions);
         } else if (basemap.provider === 'mapbox') {
-            attrib = this._addAttributionPart(attrib, 'Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
+            attrib = this._addAttributionPart(attrib, 'Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors');
             attrib = this._addAttributionPart(attrib, appendAttribution);
             layerOptions = {
                 minZoom: 2,
@@ -133,24 +133,6 @@ L.ODSTileLayer = L.TileLayer.extend({
                 layerOptions.maxZoom = basemap.maxZoom;
             }
             L.TileLayer.prototype.initialize.call(this, this._mapboxTilesetUrl(basemap.mapid, basemap.mapbox_access_token), layerOptions);
-        } else if (basemap.provider.indexOf('stamen.') === 0) {
-            var stamenMap = basemap.provider.substring(7);
-            var stamenUrl = '//stamen-tiles-{s}.a.ssl.fastly.net/' + stamenMap + '/{z}/{x}/{y}.png';
-
-            if (stamenMap === 'toner') {
-                attrib = this._addAttributionPart(attrib, 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.');
-            } else {
-                attrib = this._addAttributionPart(attrib, 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.');
-            }
-            attrib = this._addAttributionPart(attrib, appendAttribution);
-            layerOptions = {
-                minZoom: 2,
-                maxNativeZoom: 18,
-                maxZoom: 19,
-                attribution: !disableAttribution ? attrib : '',
-                subdomains: "abcd"
-            };
-            L.TileLayer.prototype.initialize.call(this, stamenUrl, layerOptions);
         } else if (basemap.provider.startsWith('jawg.') || basemap.provider === 'mapquest') {
             var jawgMaps = {
                 'streets': '71ba5a33-9529-48cb-8dbe-b6b9c33a3391',
@@ -184,9 +166,9 @@ L.ODSTileLayer = L.TileLayer.extend({
             }
 
             if (basemap.shortAttribution) {
-                attrib = this._addAttributionPart(attrib, '<a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/images/favicon.png" width="16" height="16" alt="Jawg"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a>');
+                attrib = this._addAttributionPart(attrib, '<a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/images/favicon.png" width="16" height="16" alt="Jawg"> - Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>');
             } else {
-                attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/images/favicon.png" width="16" height="16" alt="Jawg"> - Map data © <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors');
+                attrib = this._addAttributionPart(attrib, 'Tiles Courtesy of <a href="https://www.jawg.io" target="_blank">jawg</a> <img src="https://www.jawg.io/images/favicon.png" width="16" height="16" alt="Jawg"> - Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors');
             }
             attrib = this._addAttributionPart(attrib, appendAttribution);
 
@@ -200,26 +182,22 @@ L.ODSTileLayer = L.TileLayer.extend({
             var ignMaps = {
                 'planv2': {
                     ignLayer: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2',
-                    service: 'pratique',
                     minZoom: 1,
                     maxZoom: 19
                 },
                 'orthophotos': {
                     ignLayer: 'ORTHOIMAGERY.ORTHOPHOTOS',
                     imageFormat: 'image/jpeg',
-                    service: 'pratique',
                     minZoom: 1,
                     maxZoom: 19
                 },
                 'parcellaire-express': {
                     ignLayer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
-                    service: 'parcellaire',
                     minZoom: 2,
                     maxZoom: 19
                 },
                 'limites-admin-express': {
                     ignLayer: 'LIMITES_ADMINISTRATIVES_EXPRESS.LATEST',
-                    service: 'administratif',
                     minZoom: 6,
                     maxZoom: 16
                 }
@@ -237,7 +215,7 @@ L.ODSTileLayer = L.TileLayer.extend({
 
             angular.extend(layerOptions, ignMaps[basemapName]);
 
-            var ignUrl = 'https://wxs.ign.fr/{service}/geoportail/wmts?&REQUEST=GetTile' +
+            var ignUrl = 'https://data.geopf.fr/wmts?&REQUEST=GetTile' +
                 '&SERVICE=WMTS&VERSION=1.0.0&TILEMATRIXSET=PM'+
                 '&LAYER={ignLayer}&STYLE=normal&FORMAT={imageFormat}'+
                 '&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}';

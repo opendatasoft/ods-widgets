@@ -320,7 +320,7 @@
             template: '' +
             '<h2 class="odswidget-calendar__tooltip-title">{{ record.fields[titleField] }}</h2>' +
             '<dl class="odswidget-calendar__tooltip-fields">' +
-            '    <dt ng-repeat-start="field in dataset.fields|fieldsForVisualization:\'calendar\'|fieldsFilter:tooltipFields"' +
+            '    <dt ng-repeat-start="field in dataset.fields|fieldsForVisualization:\'calendar\'|fieldsFilter:tooltipFields|fieldsForLanguageDisplay:domain.current_language"' +
             '        ng-show="record.fields[field.name]|isDefined"' +
             '        class="odswidget-calendar__tooltip-field-name">' +
             '        {{ field.label }}' +

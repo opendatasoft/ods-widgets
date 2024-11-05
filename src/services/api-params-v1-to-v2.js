@@ -25,7 +25,7 @@
     }
 
     mod.service('APIParamsV1ToV2', function () {
-        return function(paramsV1, fieldsV1) {
+        return function(paramsV1, fieldsV1, dropFacetsConfiguration) {
             var paramsV2 = {};
             if (!paramsV1) {
                 return paramsV2;
@@ -98,19 +98,23 @@
                 }
             });
 
-            angular.forEach(ODS.URLUtils.computeCatalogFilterParams(paramsV1), function (paramValue, paramName) {
-                // Only include the explicit declaration of disjunctive if we need it, i.e. when we do a refine or
-                // an exclude. This prevents errors due to useless `disjunctive.xxx` URL parameters in Explore.
-                if (paramName.startsWith('disjunctive.') && usedFacets.includes(paramName.substring(12))) {
-                    if (paramValue) {
-                        paramsV2.facet = paramsV2.facet || [];
+            if (!dropFacetsConfiguration) {
+                // In some situations (e.g. catalog) we don't want to include a facet parameter, so that the default
+                // configuration in the backend is used.
+                angular.forEach(ODS.URLUtils.computeCatalogFilterParams(paramsV1), function (paramValue, paramName) {
+                    // Only include the explicit declaration of disjunctive if we need it, i.e. when we do a refine or
+                    // an exclude. This prevents errors due to useless `disjunctive.xxx` URL parameters in Explore.
+                    if (paramName.startsWith('disjunctive.') && usedFacets.includes(paramName.substring(12))) {
+                        if (paramValue) {
+                            paramsV2.facet = paramsV2.facet || [];
 
-                        var facetName = paramName.substring(12);
+                            var facetName = paramName.substring(12);
 
-                        paramsV2.facet.push('facet(name="' + facetName + '", disjunctive=true)');
+                            paramsV2.facet.push('facet(name="' + facetName + '", disjunctive=true)');
+                        }
                     }
-                }
-            });
+                });
+            }
 
             if (qClauses.length) {
                 paramsV2.qv1 = '(' + qClauses.join(') AND (') + ')';

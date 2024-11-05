@@ -9549,7 +9549,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by Opendatasoft
     //  License: MIT
-    var version = '2.1.0';
+    var version = '2.1.1';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -9596,13 +9596,6 @@ mod.directive('infiniteScroll', [
          *     }
          * </pre>
          *
-         * - **Stamen**: [Stamen](http://maps.stamen.com/) provides free maps with very specific designs, which can be suited for some visualizations. Available providers are `stamen.watercolor` and `stamen.toner`.
-         * <pre>
-         *     {
-         *          "label": "Stamen",
-         *          "provider": "stamen.toner"
-         *     }
-         * </pre>
          *
          * - **OpenStreetMap**: The OpenStreetMap service provides two free maps for very specific uses (`osmtransport` for a transport map, `opencycle` for a cycle map).
          * These maps are not suitable for very heavy traffic; in doubt, please contact [OpenStreetMap](http://www.openstreetmap.org/) to ask them about your usage.
@@ -9649,6 +9642,7 @@ mod.directive('infiniteScroll', [
             basePath: null,
             websiteName: null,
             themes: {},
+            allowExternalPictoUrls: true,
             defaultMapLocation: "12,48.85218,2.36996" // Paris
         };
 
@@ -9737,7 +9731,7 @@ mod.directive('infiniteScroll', [
     }
 
     mod.service('APIParamsV1ToV2', function () {
-        return function(paramsV1, fieldsV1) {
+        return function(paramsV1, fieldsV1, dropFacetsConfiguration) {
             var paramsV2 = {};
             if (!paramsV1) {
                 return paramsV2;
@@ -9810,19 +9804,23 @@ mod.directive('infiniteScroll', [
                 }
             });
 
-            angular.forEach(ODS.URLUtils.computeCatalogFilterParams(paramsV1), function (paramValue, paramName) {
-                // Only include the explicit declaration of disjunctive if we need it, i.e. when we do a refine or
-                // an exclude. This prevents errors due to useless `disjunctive.xxx` URL parameters in Explore.
-                if (paramName.startsWith('disjunctive.') && usedFacets.includes(paramName.substring(12))) {
-                    if (paramValue) {
-                        paramsV2.facet = paramsV2.facet || [];
+            if (!dropFacetsConfiguration) {
+                // In some situations (e.g. catalog) we don't want to include a facet parameter, so that the default
+                // configuration in the backend is used.
+                angular.forEach(ODS.URLUtils.computeCatalogFilterParams(paramsV1), function (paramValue, paramName) {
+                    // Only include the explicit declaration of disjunctive if we need it, i.e. when we do a refine or
+                    // an exclude. This prevents errors due to useless `disjunctive.xxx` URL parameters in Explore.
+                    if (paramName.startsWith('disjunctive.') && usedFacets.includes(paramName.substring(12))) {
+                        if (paramValue) {
+                            paramsV2.facet = paramsV2.facet || [];
 
-                        var facetName = paramName.substring(12);
+                            var facetName = paramName.substring(12);
 
-                        paramsV2.facet.push('facet(name="' + facetName + '", disjunctive=true)');
+                            paramsV2.facet.push('facet(name="' + facetName + '", disjunctive=true)');
+                        }
                     }
-                }
-            });
+                });
+            }
 
             if (qClauses.length) {
                 paramsV2.qv1 = '(' + qClauses.join(') AND (') + ')';
@@ -11283,6 +11281,7 @@ mod.directive('infiniteScroll', [
                             ODSAPI.datasets.get(context, datasetId, {
                                 extrametas: true,
                                 interopmetas: true,
+                                assetmetas: true,
                                 source: sourceParameter
                             });
                         loadingSchemas[cacheKey].then(function (response) {
@@ -14431,15 +14430,19 @@ mod.directive('infiniteScroll', [
             '    <rect style="opacity: 0" x="0" y="0" width="19" height="19"></rect>' +
             '</svg>';
 
+
         var colorSVGElements = function(node, color) {
             node.css('fill', color);
             node.find('path, polygon, circle, rect, text, ellipse').css('fill', color); // Needed for our legacy SVGs of various quality...
         };
 
-        var loadImageInline = function(element, code, color, colorByAttributeMapping) {
-            var svg = angular.element(code);
+        var loadImageInline = function(element, svg, color, colorByAttributeMapping) {
+            // `svg` can be an element, or HTML code as a string
+            if (typeof svg === "string") {
+                svg = angular.element(svg);
+            }
             if (color) {
-                colorSVGElements(svg, color)
+                colorSVGElements(svg, color);
             }
 
             if (colorByAttributeMapping) {
@@ -14506,12 +14509,40 @@ mod.directive('infiniteScroll', [
                 }
             };
 
+            var copyLocalElement = function(localId, color, colorByAttributeMapping) {
+                var element = angular.element('<div class="ods-svginliner__svg-container"></div>');
+
+                var originalSvg = document.getElementById(localId);
+                if (!originalSvg) {
+                    console.error('odsPicto: Element with ID "'+localId+'" doesn\'t exist.');
+                    return null;
+                }
+                if (originalSvg.tagName.toLowerCase() !== 'svg') {
+                    console.error('odsPicto: Element with ID "'+localId+'" is not a svg element.');
+                    return null;
+                }
+                var newSvg = originalSvg.cloneNode(true);
+
+                // Remove the ID before duplication
+                newSvg.removeAttribute('id');
+
+                // Make it visible
+                newSvg.style.removeProperty('display');
+
+                loadImageInline(element, angular.element(newSvg), color, colorByAttributeMapping);
+
+                return element;
+            };
+
             return {
                 getElement: function(url, color, colorByAttributeMapping) {
                     return retrieve(url, color, colorByAttributeMapping);
                 },
                 getPromise: function(url, color, colorByAttributeMapping) {
                     return retrieve(url, color, colorByAttributeMapping, true);
+                },
+                getLocalElement: function(elementId, color, colorByAttributeMapping) {
+                    return copyLocalElement(elementId, color, colorByAttributeMapping);
                 }
             };
 
@@ -15579,6 +15610,7 @@ mod.directive('infiniteScroll', [
             if (!summary) {
                 return '';
             }
+            summary = summary.trim();
             // What we want is :
             // - If it starts with text, then this text (up to a potential \n)
             // - Else, try to find any <p> with text and takes the content
@@ -16614,25 +16646,18 @@ mod.directive('infiniteScroll', [
                 });
 
                 return parts.join('&');
+            },
+            isODSPicto: function(url) {
+                /**
+                 * Returns true if the given URL is the URL of a built-in ODS picto.
+                 */
+                return url && url.startsWith('/static/pictos/img/');
             }
         },
         DatasetUtils: {
             isFieldSortable: function(field) {
                 // This is in a separate function because it can be used independently from the dataset
-                var supportedSortTypes = ['int', 'double', 'date', 'datetime'];
-                if (supportedSortTypes.indexOf(field.type) >= 0) {
-                    // These types are always sortable
-                    return true;
-                }
-                if (field.type === 'text' && field.annotations) {
-                    for (var a=0; a<field.annotations.length; a++) {
-                        var anno = field.annotations[a];
-                        if (anno.name === 'sortable') {
-                            return true;
-                        }
-                    }
-                }
-                return false;
+                return ['int', 'double', 'date', 'datetime', 'text'].includes(field.type);
             }
         },
         Dataset: function(dataset) {
@@ -19310,7 +19335,7 @@ mod.directive('infiniteScroll', [
             template: '' +
             '<h2 class="odswidget-calendar__tooltip-title">{{ record.fields[titleField] }}</h2>' +
             '<dl class="odswidget-calendar__tooltip-fields">' +
-            '    <dt ng-repeat-start="field in dataset.fields|fieldsForVisualization:\'calendar\'|fieldsFilter:tooltipFields"' +
+            '    <dt ng-repeat-start="field in dataset.fields|fieldsForVisualization:\'calendar\'|fieldsFilter:tooltipFields|fieldsForLanguageDisplay:domain.current_language"' +
             '        ng-show="record.fields[field.name]|isDefined"' +
             '        class="odswidget-calendar__tooltip-field-name">' +
             '        {{ field.label }}' +
@@ -29174,6 +29199,12 @@ mod.directive('infiniteScroll', [
                                 angular.forEach(renderedLayers, function(layerConfig) {
                                     if (layerConfig._incomplete) {
                                         var layerTitle = layerConfig.title || layerConfig.context.dataset.metas.title;
+                                        // Escape HTML
+                                        layerTitle = ODS.StringUtils.escapeHTML(layerTitle);
+                                        // Escape AngularJS expressions
+                                        layerTitle = layerTitle
+                                            .replace(/{/g, "\\{")
+                                            .replace(/}/g, "\\}");
                                         var maxTitleLength = 50;
                                         // Trim the title if it's extremely long
                                         if (layerTitle.length > maxTitleLength) {
@@ -31153,23 +31184,37 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.directive('odsPicto', ['SVGInliner', '$http', '$document', function(SVGInliner, $http, $document) {
+    // This symbol is only available inside this module, and is used as a token to indicate to odsPicto that it is being
+    // instantiated by odsThemePicto. This is used as a temporary measure so that we can apply rigorous restrictions to
+    // odsPicto URLs when used in user content, but not when used via odsThemePicto, until odsThemePicto doesn't use
+    // odsPicto anymore (https://app.shortcut.com/opendatasoft/story/49785/odsthemepicto-and-themepicto-should-load-svg-files-using-an-img-tag)
+    var originThemePicto = Symbol('ods-theme-picto');
+
+    mod.directive('odsPicto', ['SVGInliner', 'ODSWidgetsConfig', '$http', '$document', function(SVGInliner, ODSWidgetsConfig, $http, $document) {
         /**
          * @ngdoc directive
          * @name ods-widgets.directive:odsPicto
          * @scope
          * @restrict E
          * @param {string} url The URL of the SVG or image to display
+         * @param {string} localId The ID of the SVG to use in the current page
          * @param {string} color The color to use to fill the SVG
          * @param {Object} colorByAttribute An object containing a mapping between elements within the SVG, and colors.
          * The elements within the SVG with a matching `data-fill-id` attribute take the corresponding color.
          * @param {string} classes The classes to directly apply to the SVG element
          * @description
-         * The odsPicto widget displays a pictogram specified by a URL and forces a fill color on it.
+         * The odsPicto widget displays a pictogram specified by a URL or the ID of a SVG to duplicate from the same page,
+         * and forces a fill color on it.
          * This element can be styled (height, width, etc.), especially if the pictogram is vectorial (SVG).
          *
+         * Either the `url` or `localId` attributes have to be used.
+         *
+         * In the case of `localId`, the recommended use is to include the code of the SVG inside your HTML document,
+         * with a `display: none` style attribute at the root, on the `svg` node. This inlined SVG will be duplicated,
+         * the `display: none` removed, and this new duplicated and colored SVG will be inserted in place of the odsPicto
+         * element.
+         *
          * All parameters expect javascript variables or literals. If you want to provide hardcoded strings, you'll have to wrap them in quotes, as shown in the following example.
-         * @todo implement defs and use in svg
          *
          * @example
          *  <example module="ods-widgets">
@@ -31184,20 +31229,51 @@ mod.directive('infiniteScroll', [
             replace: true,
             scope: {
                 url: '=',
+                localId: '=',
                 color: '=',
                 colorByAttribute: '=',
-                classes: '='
+                classes: '=',
+                origin: '=',
             },
 
             template: '<div class="odswidget odswidget-picto {{ classes }}"></div>',
             link: function(scope, element) {
                 var svgContainer;
-                scope.$watch('[url, color, colorByAttribute]', function(nv) {
-                    if (nv[0]) {
+                scope.$watch('[url, localId, color, colorByAttribute]', function(nv) {
+                    var url = nv[0],
+                        localId = nv[1];
+
+                    if (url || localId) {
                         if (svgContainer) {
                             element.empty();
                         }
-                        svgContainer = SVGInliner.getElement(scope.url, scope.color, scope.colorByAttribute);
+                        if (localId) {
+                            svgContainer = SVGInliner.getLocalElement(scope.localId, scope.color, scope.colorByAttribute);
+                        } else {
+                            if (!ODSWidgetsConfig.allowExternalPictoUrls && scope.origin !== originThemePicto) {
+                                // Enforce ODS pictos only
+                                // We only allow SVG URLs maintained by ODS, so that we can guarantee that inlining them
+                                // doesn't cause any potential security issue.
+                                if (
+                                    // Default picto and fallback
+                                    url !== '/static/ods/img/themes/odslogo.svg' &&
+                                    // set-v2 and set-v3 built-in pictos
+                                    !url.startsWith('/static/pictos/img/') &&
+                                    // Georefs for static choropleths (https://codelibrary.opendatasoft.com/widget-tricks/svg-maps/)
+                                    !url.startsWith('https://static.opendatasoft.com/georef/svg/') &&
+                                    // Built-in pictos on other ODS domains
+                                    !/^https:\/\/[a-z0-9-]*\.opendatasoft\.com\/static\/pictos\/img\//.test(url)
+                                ) {
+                                    console.warn('External URLs are not supported by ods-picto. ('+url+')');
+                                    return;
+                                }
+                            }
+
+                            svgContainer = SVGInliner.getElement(scope.url, scope.color, scope.colorByAttribute);
+                        }
+                        if (!svgContainer) {
+                            return;
+                        }
                         if (!scope.color) {
                             svgContainer.addClass('ods-svginliner__svg-container--colorless');
                         }
@@ -31228,15 +31304,46 @@ mod.directive('infiniteScroll', [
             },
             template: '',
             link: function(scope, element) {
+                var isNewRender = Boolean(new URL(window.location.href).searchParams.get('newthemes'));
+
                 scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
-                var template = '<ods-picto url="themeConfig.url" aria-label="Theme of this dataset: {{ theme|firstValue }}" translate="aria-label" color="themeConfig.color" classes="originalClasses + \' odswidget-theme-picto theme-\' + (getTheme()|themeSlug) "></ods-picto>';
+
+                var template;
+                if (isNewRender) {
+                    template = '' +
+                        '<div class="odswidget odswidget-picto odswidget-theme-picto {{ originalClasses }} theme-{{getTheme()|themeSlug}}">' +
+                        // Make sure non-square images are vertically aligned in the center
+                        '   <div class="odswidget-theme-picto__container">' +
+                        '       <img ng-src="{{ themeConfig.url }}" aria-label="Theme of this dataset: {{ theme|firstValue }}" translate="aria-label">' +
+                        '   </div>' +
+                        '</div>';
+                } else {
+                    scope.origin = originThemePicto;
+                    template = '<ods-picto origin="origin" url="themeConfig.url" aria-label="Theme of this dataset: {{ theme|firstValue }}" translate="aria-label" color="themeConfig.color" classes="originalClasses + \' odswidget-theme-picto theme-\' + (getTheme()|themeSlug) "></ods-picto>';
+                }
                 var defaultPicto = false;
                 if (ODSWidgetsConfig.themes[scope.theme] && ODSWidgetsConfig.themes[scope.theme].url) {
                     scope.themeConfig = ODSWidgetsConfig.themes[scope.theme];
                 } else {
-                    scope.themeConfig = ODSWidgetsConfig.themes['default'];
+                    // No matching theme
+                    scope.themeConfig = ODSWidgetsConfig.themes['default'] || {};
                     defaultPicto = true;
                 }
+
+                if (!ODS.URLUtils.isODSPicto(scope.themeConfig.url)) {
+                    // Custom SVG should not be colorized or applied any color rule
+                    // https://app.shortcut.com/opendatasoft/story/49783/remove-coloring-for-custom-svg-theme-pictos
+                    scope.themeConfig.color = null;
+                }
+
+                if (isNewRender && ODS.URLUtils.isODSPicto(scope.themeConfig.url)) {
+                    // Use backend-based coloring
+                    var urlTokens = scope.themeConfig.url.split('/');
+                    var pictoSet = urlTokens[4].replace('set-', ''),
+                        pictoName = urlTokens[urlTokens.length-1];
+                    scope.themeConfig.url = '/picto/' + pictoSet + ':' + pictoName + '/?color=' + encodeURIComponent(scope.themeConfig.color);
+                }
+
                 scope.getTheme = function() {
                     if (defaultPicto) {
                         return 'default';
@@ -33237,9 +33344,18 @@ mod.directive('infiniteScroll', [
             '           class="odswidget-social-buttons__button"' +
             '           ng-click="openPopup(button)"' +
             '           aria-label="{{ button.aria }}">' +
-            '       <i class="fa" ' +
+            '       <i ng-if="name !== \'twitter\'" class="fa" ' +
             '          ng-class="button.icon" ' +
             '          aria-hidden="true"></i>' +
+            '       <span ' +
+            '           class="fa odswidget-social-buttons__button__fa-x-twitter"' +
+            '           aria-hidden="true"' +
+            '           ng-if="name === \'twitter\'">' +
+            '           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">' +
+            '               <!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->' +
+            '               <path fill="currentColor" d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/>' +
+            '           </svg>' +
+            '       </span>' +
             '   </button>' +
             '   <a ng-repeat-end' +
             '      ng-show="name === \'email\'"' +
@@ -33268,7 +33384,7 @@ mod.directive('infiniteScroll', [
                     twitter: {
                         aria: translate('Share on Twitter'),
                         hrefTemplate: 'https://twitter.com/intent/tweet?text={title}&url={url}',
-                        icon: 'fa-twitter',
+                        icon: 'fa-x-twitter',
                         popupWidth: 600,
                         popupHeight: 250
 
@@ -33422,8 +33538,8 @@ mod.directive('infiniteScroll', [
                        '     <table class="odswidget-table__internal-table">' +
                        '         <thead class="odswidget-table__internal-header-table-header">' +
                        '         <tr>' +
-                       '             <th class="odswidget-table__header-cell odswidget-table__header-cell--spinner"><div class="odswidget-table__cell-container"><ods-spinner ng-show="fetching" class="odswidget-spinner--large"></ods-spinner></div></th>' +
-                       '             <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage"' +
+                       '             <th role="columnheader" class="odswidget-table__header-cell odswidget-table__header-cell--spinner"><div class="odswidget-table__cell-container"><ods-spinner ng-show="fetching" class="odswidget-spinner--large"></ods-spinner></div></th>' +
+                       '             <th role="columnheader" class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage"' +
                        '                 title="{{ field.description || field.label }}"' +
                        '                 ng-click="toggleSort(field)"' +
                        '                 >' +
