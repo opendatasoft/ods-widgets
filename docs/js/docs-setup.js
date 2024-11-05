@@ -481,8 +481,8 @@ NG_DOCS={
       "shortName": "odsPicto",
       "type": "directive",
       "moduleName": "ods-widgets",
-      "shortDescription": "The odsPicto widget displays a pictogram specified by a URL and forces a fill color on it.",
-      "keywords": "api apply assets attribute classes color colorbyattribute colors corresponding data-fill-id defs directive directly display displays element elements example expect fill forces hardcoded height html image implement javascript literals ll mapping matching module object ods-widgets odspicto parameters pictogram provide quotes strings style styled svg url variables vectorial widget width wrap",
+      "shortDescription": "The odsPicto widget displays a pictogram specified by a URL or the ID of a SVG to duplicate from the same page,",
+      "keywords": "api apply assets attribute attributes case classes code color colorbyattribute colored colors corresponding current data-fill-id directive directly display displays document duplicate duplicated element elements example expect fill forces hardcoded height html image include inlined inserted inside javascript literals ll localid mapping matching module node object ods-widgets odspicto parameters pictogram place provide quotes recommended removed root strings style styled svg url variables vectorial widget width wrap",
       "isDeprecated": false
     },
     {
@@ -1062,7 +1062,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "ods-widgets",
       "shortDescription": "Use ODSWidgetsConfigProvider to set configuration values used by various directives.",
-      "keywords": "access account allow angular api app array basemap basemaps calls catalog chart chartcolors charts classic color colors config configuration configuring contact contexts create currently customconfig customer cycle dark dataset default defaultdomain defaults demos depending designs development directive directives disqusshortname documentation domain doubt existing free heavy higher io jawg jawg_apikey key label left light limited limits list local low making map mapbox mapbox_access_token maps method module number object objects ods-widgets odswidgetsconfigprovider opencycle openstreetmap org osmtransport override overriding parameter picto production provider providers rate reached real second service set setconfig sets settings shortname specific stamen start streets string suitable suited support themes token toner traffic transport untouched usage values var visualizations watercolor widget widgets world",
+      "keywords": "access account allow angular api app array basemap basemaps calls catalog chart chartcolors charts classic color colors config configuration configuring contact contexts create currently customconfig customer cycle dark dataset default defaultdomain defaults demos depending development directive directives disqusshortname documentation domain doubt existing free heavy higher io jawg jawg_apikey key label left light limited limits list local low making map mapbox mapbox_access_token maps method module number object objects ods-widgets odswidgetsconfigprovider opencycle openstreetmap org osmtransport override overriding parameter picto production provider providers rate reached real second service set setconfig sets settings shortname specific start streets string suitable suited support themes token traffic transport untouched usage values var widget widgets world",
       "isDeprecated": false
     }
   ],

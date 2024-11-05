@@ -4,13 +4,20 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>The odsPicto widget displays a pictogram specified by a URL and forces a fill color on it.
+<div class="description"><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>The odsPicto widget displays a pictogram specified by a URL or the ID of a SVG to duplicate from the same page,
+and forces a fill color on it.
 This element can be styled (height, width, etc.), especially if the pictogram is vectorial (SVG).</p>
+<p>Either the <code>url</code> or <code>localId</code> attributes have to be used.</p>
+<p>In the case of <code>localId</code>, the recommended use is to include the code of the SVG inside your HTML document,
+with a <code>display: none</code> style attribute at the root, on the <code>svg</code> node. This inlined SVG will be duplicated,
+the <code>display: none</code> removed, and this new duplicated and colored SVG will be inserted in place of the odsPicto
+element.</p>
 <p>All parameters expect javascript variables or literals. If you want to provide hardcoded strings, you&#39;ll have to wrap them in quotes, as shown in the following example.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage">as element:<pre class="prettyprint linenums">&lt;ods-picto
        url="{string}"
+       local-id="{string}"
        color="{string}"
        color-by-attribute="{Object}"
        classes="{string}"&gt;
@@ -20,6 +27,7 @@ This element can be styled (height, width, etc.), especially if the pictogram is
 </ul>
 </div>
 <h4 id="usage_directive-info_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>url</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>The URL of the SVG or image to display</p>
+</div></td></tr><tr><td>localId</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>The ID of the SVG to use in the current page</p>
 </div></td></tr><tr><td>color</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>The color to use to fill the SVG</p>
 </div></td></tr><tr><td>colorByAttribute</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odspicto-page"><p>An object containing a mapping between elements within the SVG, and colors.
 The elements within the SVG with a matching <code>data-fill-id</code> attribute take the corresponding color.</p>

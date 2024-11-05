@@ -600,6 +600,7 @@
             if (!summary) {
                 return '';
             }
+            summary = summary.trim();
             // What we want is :
             // - If it starts with text, then this text (up to a potential \n)
             // - Else, try to find any <p> with text and takes the content

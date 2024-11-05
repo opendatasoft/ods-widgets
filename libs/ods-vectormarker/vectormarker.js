@@ -22,8 +22,22 @@ L.VectorMarker = L.Marker.extend({
             return '';
         } else {
 
-            return ' style="'+styles.join('; ')+'"';
+            return ' style="'+this._escapeHtmlValue(styles.join('; '))+'"';
         }
+    },
+    _escapeHtmlValue: function(html) {
+        if (!html) {
+            return html;
+        }
+        if (typeof html !== 'string') {
+            return html;
+        }
+        return html
+            .replace(/&(?!#?\w+;)/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     },
     _getVectorIcon: function(color, icon, marker, opacity, extraClasses) {
         var sizeMultiplier = this.options.size + 1;
@@ -63,8 +77,8 @@ L.VectorMarker = L.Marker.extend({
 
             html = '<svg id="svg-vectormarker-marker" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 32 56">' +
                         '<g id="svg-vectormarker" fill-rule="nonzero" fill="none">' +
-                            '<path id="svg_2" fill="'+ fillColor +'" fill-rule="evenodd" d="M16 0C7.222 0 0 7.217 0 16.157c0 4.86 1.03 8.446 2.66 12.027L16 56l13.34-27.816c1.63-3.58 2.66-7.167 2.66-12.027C32 7.217 24.778 0 16 0z"/>' +
-                            '<path stroke="' + borderColor + '" d="M16 54.844l12.886-26.868c1.79-3.933 2.614-7.42 2.614-11.82C31.5 7.52 24.527.5 16 .5 7.473.5.5 7.52.5 16.157c0 4.4.824 7.886 2.61 11.81L16 54.844z"/>' +
+                            '<path id="svg_2" fill="'+ this._escapeHtmlValue(fillColor) +'" fill-rule="evenodd" d="M16 0C7.222 0 0 7.217 0 16.157c0 4.86 1.03 8.446 2.66 12.027L16 56l13.34-27.816c1.63-3.58 2.66-7.167 2.66-12.027C32 7.217 24.778 0 16 0z"/>' +
+                            '<path stroke="' + this._escapeHtmlValue(borderColor) + '" d="M16 54.844l12.886-26.868c1.79-3.933 2.614-7.42 2.614-11.82C31.5 7.52 24.527.5 16 .5 7.473.5.5 7.52.5 16.157c0 4.4.824 7.886 2.61 11.81L16 54.844z"/>' +
                         '</g>' +
                     '</svg>';
             if (icon) {

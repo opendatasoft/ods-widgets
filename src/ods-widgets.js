@@ -4,7 +4,7 @@
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by Opendatasoft
     //  License: MIT
-    var version = '2.1.0';
+    var version = '2.1.1';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -51,13 +51,6 @@
          *     }
          * </pre>
          *
-         * - **Stamen**: [Stamen](http://maps.stamen.com/) provides free maps with very specific designs, which can be suited for some visualizations. Available providers are `stamen.watercolor` and `stamen.toner`.
-         * <pre>
-         *     {
-         *          "label": "Stamen",
-         *          "provider": "stamen.toner"
-         *     }
-         * </pre>
          *
          * - **OpenStreetMap**: The OpenStreetMap service provides two free maps for very specific uses (`osmtransport` for a transport map, `opencycle` for a cycle map).
          * These maps are not suitable for very heavy traffic; in doubt, please contact [OpenStreetMap](http://www.openstreetmap.org/) to ask them about your usage.
@@ -104,6 +97,7 @@
             basePath: null,
             websiteName: null,
             themes: {},
+            allowExternalPictoUrls: true,
             defaultMapLocation: "12,48.85218,2.36996" // Paris
         };
 

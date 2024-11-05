@@ -2070,6 +2070,11 @@ html[dir=rtl] .odswidget-reuses__reuse-thumbnail-image--no-thumbnail {
   text-decoration: none;
   background-color: #ec643c;
 }
+.odswidget-social-buttons__button__fa-x-twitter {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
 .odswidget-spinner__backdrop {
   position: absolute;
   top: 0;
@@ -2479,6 +2484,16 @@ html[dir=rtl] .odswidget-text-search__reset {
 .odswidget-theme-picto .ods-svginliner__svg-container {
   height: 100%;
 }
+.odswidget-theme-picto .odswidget-theme-picto__container {
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -ms-flex-align: center;
+      align-items: center;
+  height: 100%;
+}
+.odswidget-theme-picto .odswidget-theme-picto__container img {
+  object-fit: contain;
+}
 /* ==========================================================================
    Timerange Widget
 
@@ -2752,10 +2767,6 @@ html[dir=rtl] .odswidget-text-search__reset {
 }
 .ods-slideshow:focus {
   outline: none;
-}
-.ods-slideshow:-webkit-full-screen {
-  width: 100% !important;
-  height: 100% !important;
 }
 .ods-slideshow:-ms-fullscreen {
   width: 100% !important;

@@ -138,6 +138,7 @@
                             ODSAPI.datasets.get(context, datasetId, {
                                 extrametas: true,
                                 interopmetas: true,
+                                assetmetas: true,
                                 source: sourceParameter
                             });
                         loadingSchemas[cacheKey].then(function (response) {

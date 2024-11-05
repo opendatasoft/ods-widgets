@@ -2,3 +2,15 @@
     // Fix for Internet Explorer (it goes up to 11, like in Spinal Tap) which didn't apply the right size for the SVG
     height: 100%;
 }
+
+.odswidget-theme-picto .odswidget-theme-picto__container {
+    // Display inline to make it more similar to the previous integration of SVG pictos inside Code Editor pages
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+
+    img {
+        // Make sure images can fit their container but keep their ratio
+        object-fit: contain;
+    }
+}

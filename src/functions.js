@@ -515,25 +515,18 @@
                 });
 
                 return parts.join('&');
+            },
+            isODSPicto: function(url) {
+                /**
+                 * Returns true if the given URL is the URL of a built-in ODS picto.
+                 */
+                return url && url.startsWith('/static/pictos/img/');
             }
         },
         DatasetUtils: {
             isFieldSortable: function(field) {
                 // This is in a separate function because it can be used independently from the dataset
-                var supportedSortTypes = ['int', 'double', 'date', 'datetime'];
-                if (supportedSortTypes.indexOf(field.type) >= 0) {
-                    // These types are always sortable
-                    return true;
-                }
-                if (field.type === 'text' && field.annotations) {
-                    for (var a=0; a<field.annotations.length; a++) {
-                        var anno = field.annotations[a];
-                        if (anno.name === 'sortable') {
-                            return true;
-                        }
-                    }
-                }
-                return false;
+                return ['int', 'double', 'date', 'datetime', 'text'].includes(field.type);
             }
         },
         Dataset: function(dataset) {
