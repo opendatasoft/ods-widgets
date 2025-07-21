@@ -19,7 +19,7 @@
          *
          * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
          *
-         *  @param {string} [apikey=none] API key to use in every API call for the context. For more information, see {@link https://userguide.opendatasoft.com/l/en/article/n77v4gib7z-managing-api-keys#generating_an_api_key Generating an API key}).
+         *  @param {string} [apikey=none] API key to use in every API call for the context. For more information, see {@link https://user-guide.opendatasoft.com/en/articles/2044226 Generating an API key}).
          *  @param {object} [parameters=none] Object holding parameters to apply to the context when it is created
          *  @param {boolean} [urlSync=none] Enables synchronization of the parameters to the page's parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change as well. Note that if this parameter is enabled, `parameters` and `parametersFromContext` won't have any effect. There can also only be a single context with URL synchronization enabled, else the behavior will be unpredictable.
          *

@@ -718,6 +718,12 @@
                         $document.bind('click', clickOutsideHandlerCallback);
                         focusInput();
                     }
+
+                    // Reset filter search when opening
+                    if (!elem.hasClass('open')) {
+                        scope._inputTextFilter = '';
+                    }
+
                     if($buttonAriaStatus === 'false') {
                         $button.setAttribute('aria-expanded', 'true');
                     } else {

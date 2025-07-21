@@ -7,6 +7,7 @@
 .rd-container {
   display: inline-block;
   border: 1px solid #333;
+  color: #333;
   background-color: #fff;
   padding: 10px;
   text-align: center;

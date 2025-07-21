@@ -79,6 +79,12 @@
                 };
                 var setupCalendar = function () {
                     // check directive params and fallback to metas if they are not set
+                    scope.fieldsDisplayedInSpecificLanguages = (
+                        scope.context.dataset &&
+                        scope.context.dataset.extra_metas &&
+                        scope.context.dataset.extra_metas.asset_content_configuration &&
+                        scope.context.dataset.extra_metas.asset_content_configuration.fields_displayed_in_specific_languages
+                    ) || {};
                     var visualization_metas = {};
                     if (scope.context.dataset &&
                         scope.context.dataset.extra_metas &&
@@ -320,7 +326,7 @@
             template: '' +
             '<h2 class="odswidget-calendar__tooltip-title">{{ record.fields[titleField] }}</h2>' +
             '<dl class="odswidget-calendar__tooltip-fields">' +
-            '    <dt ng-repeat-start="field in dataset.fields|fieldsForVisualization:\'calendar\'|fieldsFilter:tooltipFields|fieldsForLanguageDisplay:domain.current_language"' +
+            '    <dt ng-repeat-start="field in dataset.fields|fieldsForVisualization:\'calendar\'|fieldsFilter:tooltipFields|fieldsForLanguageDisplay:domain.current_language:fieldsDisplayedInSpecificLanguages"' +
             '        ng-show="record.fields[field.name]|isDefined"' +
             '        class="odswidget-calendar__tooltip-field-name">' +
             '        {{ field.label }}' +

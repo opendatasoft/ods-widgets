@@ -285,14 +285,26 @@
                     } else if (field.type == 'double' || field.type == 'int') {
                         numericalXs.push(field);
                     } else {
-                        // Find out if this is a facet
+                        // Find out if it has the analyse annotation
                         if (field.annotations) {
-                            for (var a=0; a<field.annotations.length; a++) {
+                            for (var a = 0; a < field.annotations.length; a++) {
                                 var anno = field.annotations[a];
-                                if (anno.name === 'facet' || anno.name === 'analyse') {
+                                if (anno.name === 'analyse') {
                                     availableX.push(field);
                                 }
                             }
+                        }
+
+                        // Find out if this is a facet
+                        var facets = (
+                            context.dataset.extra_metas &&
+                            context.dataset.extra_metas.asset_content_configuration &&
+                            context.dataset.extra_metas.asset_content_configuration.facets
+                        ) || [];
+                        if (facets.filter(function(facet) {
+                            return facet.field_name === field.name;
+                        }).length > 0) {
+                            availableX.push(field);
                         }
                     }
                 }

@@ -548,14 +548,29 @@
             };
 
             var iterateFields = function(fields) {
+                var facets = angular.copy((
+                    dataset &&
+                    dataset.extra_metas &&
+                    dataset.extra_metas.asset_content_configuration &&
+                    dataset.extra_metas.asset_content_configuration.facets
+                )) || [];
+                var facets_configuration = facets.reduce(function(acc, facet) {
+                    acc[facet.field_name] = facet;
+                    return acc;
+                }, {});
                 filtersDescription = {'facets': []};
                 types = [];
                 facetsCount = 0;
                 for (var j=0; j< fields.length; j++) {
                     var field = fields[j];
-                    if (isFieldAnnotated(field, 'facet')) {
+                    if (field.name in facets_configuration) {
                         facetsCount++;
-                        filtersDescription.facets.push(field);
+                        var facet = facets_configuration[field.name];
+                        delete facet.field_name;
+                        facet.name = field.name;
+                        facet.label = field.label;
+                        facet.type = field.type;
+                        filtersDescription.facets.push(facet);
                     }
                     if (!types[field.type]) {
                         types[field.type] = 1;
@@ -563,8 +578,17 @@
                         types[field.type] += 1;
                     }
                 }
+                // sort filter description according to facets
+                filtersDescription.facets.sort(function(facet1, facet2) {
+                    var index1 = facets.findIndex(function(facet) {
+                        return facet.name === facet1.name;
+                    });
+                    var index2 = facets.findIndex(function(facet) {
+                        return facet.name === facet2.name;
+                    });
+                    return index1 - index2;
+                });
             };
-
             return {
                 datasetid: dataset.datasetid || "preview", // "preview" is here as a trick in publish as the dataset has no id
                 has_records: dataset.has_records,
@@ -640,6 +664,17 @@
                 },
                 setMetas: function(metas) {
                     this.metas = metas;
+                },
+                setExtraMetas: function(metas, metadataTemplates) {
+                    var activeExtraTemplates = metadataTemplates.filter(function(template) {
+                        return template.is_active && template.type === 'extra';
+                    });
+                    var extra_metas = {};
+                    activeExtraTemplates.forEach(function(template) {
+                        var templateName = template.name;
+                        extra_metas[templateName] = metas[templateName] || {};
+                    });
+                    this.extra_metas = extra_metas;
                 },
                 getField: function(fieldName) {
                     for (var i=0; i<this.fields.length; i++) {

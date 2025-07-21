@@ -3,7 +3,7 @@
 
     var mod = angular.module('ods-widgets');
 
-    mod.service('MapRenderingClustered', ['ODSAPI', 'MapLayerHelper', 'SVGInliner', 'PictoHelper', '$q', function (ODSAPI, MapLayerHelper, SVGInliner, PictoHelper, $q) {
+    mod.service('MapRenderingClustered', ['ODSAPI', 'MapLayerHelper', 'PictoHelper', '$q', function (ODSAPI, MapLayerHelper, PictoHelper, $q) {
         return {
             render: function (layerConfig, map, layerGroup, timeout, showPolygons) {
                 var deferred = $q.defer();

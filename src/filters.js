@@ -239,25 +239,14 @@
     });
 
     mod.filter('fieldsForLanguageDisplay', function() {
-        return function(fields, language) {
-            if (angular.isUndefined(fields)) { return fields; }
-            if (!language) { return fields; }
-
+        return function(fields, language, fieldsDisplayedInSpecificLanguagesMeta) {
+            if (angular.isUndefined(fields) || !language || !(fieldsDisplayedInSpecificLanguagesMeta)) { return fields; }
             return fields.filter(function(field) {
-                if (!field.annotations) {
+                var fieldDisplayedInLangs = fieldsDisplayedInSpecificLanguagesMeta[field.name];
+                if (!fieldDisplayedInLangs) {
                     return true;
                 }
-                var annotations = field.annotations.filter(function(anno) { return anno.name === 'display_languages'});
-                if (!annotations.length) {
-                    // The annotation isn't there
-                    return true;
-                }
-                var displayLanguagesAnnotation = annotations[0];
-                if (displayLanguagesAnnotation.args.length && displayLanguagesAnnotation.args.indexOf(language) === -1) {
-                    // We don't want to display that field in that language
-                    return false;
-                }
-                return true;
+                return !fieldDisplayedInLangs.length || fieldDisplayedInLangs.indexOf(language) !== -1;
             });
         };
     });
@@ -334,7 +323,7 @@
                 }
 
                 return $filter('moment')(value, 'LLL');
-            } else if (field.type === 'file') { // it's 'file' type really
+            }  else if (field.type === 'file') { // it's 'file' type really
                 if (angular.isObject(value)) {
                     var datasetID,
                         domainURL = '';
@@ -365,6 +354,8 @@
                 } else {
                     return ''+value;
                 }
+            } else if (field.type === 'json_blob') {
+                return JSON.stringify(value);
             } else {
                 return $filter('limitTo')(''+value, 1000);
             }

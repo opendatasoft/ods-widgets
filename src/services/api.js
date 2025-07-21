@@ -127,11 +127,50 @@
                     // Remove trailing slash
                     root = root.substr(0, root.length-1);
                 }
+
                 // Check if root is valid and safe url
                 if (root && !(/^(http:\/\/|https:\/\/|\/)/.test(root))) {
                     console.error('Invalid domain context url provided');
                     root = ODSWidgetsConfig.defaultDomain;
                 }
+
+                if (ODSWidgetsConfig.secureContextDomain) {
+                    // Only allow cases that ensure the data comes from a sanitized source, which is
+                    // a real dataset schema. For that, we need to make sure the `domain` is the root
+                    // of an ODS platform.
+                    // This prevents attacks that would fetch the schema for example from a dataset attachment,
+                    // which can be anything because it is not sanitized, and therefore could contain custom
+                    // tooltips with offensive code etc.
+                    // This is done after all the URL building code to make sure we catch all cases
+
+                    // We want to make sure the source is the root of a legitimate ODS platform.
+                    if (!root) {
+                        // Local domain
+                    } else {
+                        var url;
+                        try {
+                            url = new URL(root);
+                        }
+                        catch(e) {
+                            console.error('Invalid context domain URL ('+root+')');
+                            root = '';
+                        }
+                        if (url) {
+                            if (url.pathname && url.pathname !== '/') {
+                                // We don't allow anything else than the root
+                                root = '';
+                                console.error('Invalid context domain URL: paths are not allowed (' + url.pathname + ')');
+                            }
+                            if (!url.host.endsWith('.opendatasoft.com') && url.host !== window.location.host) {
+                                // We don't allow external URLs that are not ODS URLs, except if it's the current host
+                                // in the browser
+                                root = '';
+                                console.error('Invalid context domain URL: forbidden host (' + url.host + '), only the current host or an opendatasoft.com URL is allowed');
+                            }
+                        }
+                    }
+                }
+
                 return root;
             },
             'datasets': {

@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 This log tries to follow the good principles of [Keep a CHANGELOG](http://keepachangelog.com/).
 
+## 2.1.2 - 2025-07-21
+
+### Changed
+- `odsSelect`: Closing and opening the select now resets the value filter, if it was used before closing.
+- Inside the widgets' documentation, links to the Opendatasoft user guide have been updated to follow the doc migration.
+- Inside the Opendatasoft platform, some field settings have been updated to be stored in dataset metadata, such as
+  the list of filters, their settings, and the definition of which fields are displayed for each language. This was
+  previously stored in field annotations. Many widgets have been updated accordingly to fetch these settings from their
+  dataset metadata.
 
 ## 2.1.1 - 2024-11-05
 
