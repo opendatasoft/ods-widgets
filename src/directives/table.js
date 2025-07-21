@@ -43,7 +43,7 @@
                        '         <thead class="odswidget-table__internal-header-table-header">' +
                        '         <tr>' +
                        '             <th role="columnheader" class="odswidget-table__header-cell odswidget-table__header-cell--spinner"><div class="odswidget-table__cell-container"><ods-spinner ng-show="fetching" class="odswidget-spinner--large"></ods-spinner></div></th>' +
-                       '             <th role="columnheader" class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage"' +
+                       '             <th role="columnheader" class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage:fieldsDisplayedInSpecificLanguages"' +
                        '                 title="{{ field.description || field.label }}"' +
                        '                 ng-click="toggleSort(field)"' +
                        '                 >' +
@@ -68,7 +68,7 @@
                        '         <thead class="odswidget-table__internal-table-header">' +
                        '             <tr>' +
                        '                 <th class="odswidget-table__header-cell odswidget-table__header-cell--spinner"><div class="odswidget-table__cell-container"><ods-spinner ng-show="fetching" class="odswidget-spinner--large"></ods-spinner></div></th>' +
-                       '                 <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage"' +
+                       '                 <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage:fieldsDisplayedInSpecificLanguages"' +
                        '                     title="{{ field.name }}">' +
                        '                     <div class="odswidget-table__cell-container">' +
                        '                         <span ng-bind="field.label"></span>' +
@@ -98,6 +98,7 @@
                     '</div>',
             controller: ['$scope', '$element', '$timeout', 'ODSAPI', 'ODSWidgetsConfig', '$filter', '$compile', '$transclude', '$q', function($scope, $element, $timeout, ODSAPI, ODSWidgetsConfig, $filter, $compile, $transclude, $q) {
                 $scope.displayedFieldsArray = null;
+                $scope.fieldsDisplayedInSpecificLanguages = {};
                 $scope.displayLanguage = ODSWidgetsConfig.language;
 
                 $scope.displayDatasetFeedback = false;
@@ -583,7 +584,13 @@
                     // Keep the fields that were explicitely asked for
                     datasetFields = $filter('fieldsFilter')(fieldsForVisualization, $scope.displayedFieldsArray);
                     // Discards fields that shouldn't appear in the current language
-                    datasetFields = $filter('fieldsForLanguageDisplay')(datasetFields, $scope.displayLanguage);
+                    $scope.fieldsDisplayedInSpecificLanguages = (
+                        $scope.context.dataset &&
+                        $scope.context.dataset.extra_metas &&
+                        $scope.context.dataset.extra_metas.asset_content_configuration &&
+                        $scope.context.dataset.extra_metas.asset_content_configuration.fields_displayed_in_specific_languages
+                    ) || {};
+                    datasetFields = $filter('fieldsForLanguageDisplay')(datasetFields, $scope.displayLanguage, $scope.fieldsDisplayedInSpecificLanguages);
 
                     refreshRecords(true);
 

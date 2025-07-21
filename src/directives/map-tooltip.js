@@ -60,7 +60,7 @@
                         '   <span ng-bind="getTitle(record) | shortSummary: 100"></span> ' +
                         '</h2>' +
                         '<dl class="odswidget-map-tooltip__record-values">' +
-                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields|fieldsForLanguageDisplay:domain.current_language" ' +
+                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields|fieldsForLanguageDisplay:fieldsDisplayedInSpecificLanguages" ' +
                         '        ng-show="record.fields[field.name]|isDefined"' +
                         '        class="odswidget-map-tooltip__field-name">' +
                         '        {{ field.label }}' +
@@ -170,6 +170,12 @@
                     return null;
                 };
                 $scope.fields = angular.copy($scope.context.dataset.fields);
+                $scope.fieldsDisplayedInSpecificLanguages = (
+                    $scope.context.dataset &&
+                    $scope.context.dataset.extra_metas &&
+                    $scope.context.dataset.extra_metas.asset_content_configuration &&
+                    $scope.context.dataset.extra_metas.asset_content_configuration.fields_displayed_in_specific_languages
+                ) || {};
             }]
         };
     }]);

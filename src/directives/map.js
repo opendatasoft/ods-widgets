@@ -1532,7 +1532,7 @@
        *
        * Available for `aggregation` and with `color` and `colorScale` display modes, or when none is specified.
        *
-       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://userguide.opendatasoft.com/l/en/article/ziiipqn1y2-pictograms-reference" target="_blank">Pictograms reference documentation</a>.
+       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://user-guide.opendatasoft.com/en/articles/2042498" target="_blank">Pictograms reference documentation</a>.
        *
        * When displaying shapes, `borderColor` and `opacity` can be used to configure the color of the shape border and the opacity of the shape's fill.
        *

@@ -4,10 +4,10 @@
     var mod = angular.module('ods-widgets');
 
     mod.factory('MapLayerRenderer', [
-        'ODSAPI', 'AggregationHelper', 'SVGInliner', 'PictoHelper', 'MapLayerHelper',
+        'ODSAPI', 'AggregationHelper', 'PictoHelper', 'MapLayerHelper',
         'MapRenderingAggregation', 'MapRenderingClustered', 'MapRenderingHeatmap', 'MapRenderingRaw', 'MapRenderingShapePreview', 'MapRenderingChoroplethAggregation',
         '$q',
-        function(ODSAPI, AggregationHelper, SVGInliner, PictoHelper, MapLayerHelper,
+        function(ODSAPI, AggregationHelper, PictoHelper, MapLayerHelper,
                  MapRenderingAggregation, MapRenderingClustered, MapRenderingHeatmap, MapRenderingRaw, MapRenderingShapePreview, MapRenderingChoroplethAggregation,
                  $q) {
         // TODO: Query interruption when moving

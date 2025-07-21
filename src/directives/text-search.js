@@ -60,6 +60,7 @@
             '       <input class="odswidget-text-search__search-box" name="q" type="text" id="{{id}}"' +
             '               ng-model="searchExpression" ' +
             '               aria-label="{{ translatedPlaceholder || \'Search\'|translate }}" ' +
+            '               title="{{ translatedPlaceholder || \'Search\'|translate }}" ' +
             '               placeholder="{{ translatedPlaceholder }}"> ' +
             '       <button type="reset" class="odswidget-text-search__reset" ng-show="searchExpression" ng-click="resetSearch()" aria-label="Reset search" translate="aria-label">' +
             '           <span class="ods-aria-instructions" translate>Reset</span>' +

@@ -9549,7 +9549,7 @@ mod.directive('infiniteScroll', [
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
     // by Opendatasoft
     //  License: MIT
-    var version = '2.1.1';
+    var version = '2.1.2';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
 
     var mod = angular.module('ods-widgets', ['infinite-scroll', 'ngSanitize', 'gettext']);
@@ -9643,7 +9643,10 @@ mod.directive('infiniteScroll', [
             websiteName: null,
             themes: {},
             allowExternalPictoUrls: true,
-            defaultMapLocation: "12,48.85218,2.36996" // Paris
+            allowThemeSvgInlining: true,
+            isMultiAssets: false,
+            defaultMapLocation: "12,48.85218,2.36996", // Paris
+            secureContextDomain: false
         };
 
         this.customConfig = {};
@@ -10088,11 +10091,50 @@ mod.directive('infiniteScroll', [
                     // Remove trailing slash
                     root = root.substr(0, root.length-1);
                 }
+
                 // Check if root is valid and safe url
                 if (root && !(/^(http:\/\/|https:\/\/|\/)/.test(root))) {
                     console.error('Invalid domain context url provided');
                     root = ODSWidgetsConfig.defaultDomain;
                 }
+
+                if (ODSWidgetsConfig.secureContextDomain) {
+                    // Only allow cases that ensure the data comes from a sanitized source, which is
+                    // a real dataset schema. For that, we need to make sure the `domain` is the root
+                    // of an ODS platform.
+                    // This prevents attacks that would fetch the schema for example from a dataset attachment,
+                    // which can be anything because it is not sanitized, and therefore could contain custom
+                    // tooltips with offensive code etc.
+                    // This is done after all the URL building code to make sure we catch all cases
+
+                    // We want to make sure the source is the root of a legitimate ODS platform.
+                    if (!root) {
+                        // Local domain
+                    } else {
+                        var url;
+                        try {
+                            url = new URL(root);
+                        }
+                        catch(e) {
+                            console.error('Invalid context domain URL ('+root+')');
+                            root = '';
+                        }
+                        if (url) {
+                            if (url.pathname && url.pathname !== '/') {
+                                // We don't allow anything else than the root
+                                root = '';
+                                console.error('Invalid context domain URL: paths are not allowed (' + url.pathname + ')');
+                            }
+                            if (!url.host.endsWith('.opendatasoft.com') && url.host !== window.location.host) {
+                                // We don't allow external URLs that are not ODS URLs, except if it's the current host
+                                // in the browser
+                                root = '';
+                                console.error('Invalid context domain URL: forbidden host (' + url.host + '), only the current host or an opendatasoft.com URL is allowed');
+                            }
+                        }
+                    }
+                }
+
                 return root;
             },
             'datasets': {
@@ -10440,14 +10482,26 @@ mod.directive('infiniteScroll', [
                     } else if (field.type == 'double' || field.type == 'int') {
                         numericalXs.push(field);
                     } else {
-                        // Find out if this is a facet
+                        // Find out if it has the analyse annotation
                         if (field.annotations) {
-                            for (var a=0; a<field.annotations.length; a++) {
+                            for (var a = 0; a < field.annotations.length; a++) {
                                 var anno = field.annotations[a];
-                                if (anno.name === 'facet' || anno.name === 'analyse') {
+                                if (anno.name === 'analyse') {
                                     availableX.push(field);
                                 }
                             }
+                        }
+
+                        // Find out if this is a facet
+                        var facets = (
+                            context.dataset.extra_metas &&
+                            context.dataset.extra_metas.asset_content_configuration &&
+                            context.dataset.extra_metas.asset_content_configuration.facets
+                        ) || [];
+                        if (facets.filter(function(facet) {
+                            return facet.field_name === field.name;
+                        }).length > 0) {
+                            availableX.push(field);
                         }
                     }
                 }
@@ -12863,10 +12917,10 @@ mod.directive('infiniteScroll', [
     var mod = angular.module('ods-widgets');
 
     mod.factory('MapLayerRenderer', [
-        'ODSAPI', 'AggregationHelper', 'SVGInliner', 'PictoHelper', 'MapLayerHelper',
+        'ODSAPI', 'AggregationHelper', 'PictoHelper', 'MapLayerHelper',
         'MapRenderingAggregation', 'MapRenderingClustered', 'MapRenderingHeatmap', 'MapRenderingRaw', 'MapRenderingShapePreview', 'MapRenderingChoroplethAggregation',
         '$q',
-        function(ODSAPI, AggregationHelper, SVGInliner, PictoHelper, MapLayerHelper,
+        function(ODSAPI, AggregationHelper, PictoHelper, MapLayerHelper,
                  MapRenderingAggregation, MapRenderingClustered, MapRenderingHeatmap, MapRenderingRaw, MapRenderingShapePreview, MapRenderingChoroplethAggregation,
                  $q) {
         // TODO: Query interruption when moving
@@ -13304,7 +13358,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.service('MapRenderingClustered', ['ODSAPI', 'MapLayerHelper', 'SVGInliner', 'PictoHelper', '$q', function (ODSAPI, MapLayerHelper, SVGInliner, PictoHelper, $q) {
+    mod.service('MapRenderingClustered', ['ODSAPI', 'MapLayerHelper', 'PictoHelper', '$q', function (ODSAPI, MapLayerHelper, PictoHelper, $q) {
         return {
             render: function (layerConfig, map, layerGroup, timeout, showPolygons) {
                 var deferred = $q.defer();
@@ -13440,7 +13494,7 @@ mod.directive('infiniteScroll', [
 
     var mod = angular.module('ods-widgets');
 
-    mod.service('MapRenderingRaw', ['ODSAPI', 'MapLayerHelper', 'SVGInliner', 'PictoHelper', '$q', function (ODSAPI, MapLayerHelper, SVGInliner, PictoHelper, $q) {
+    mod.service('MapRenderingRaw', ['ODSAPI', 'MapLayerHelper', '$q', function (ODSAPI, MapLayerHelper, $q) {
         return {
             render: function (layerConfig, map, layerGroup, timeout) {
                 var deferred = $q.defer();
@@ -14440,6 +14494,7 @@ mod.directive('infiniteScroll', [
             // `svg` can be an element, or HTML code as a string
             if (typeof svg === "string") {
                 svg = angular.element(svg);
+                svg.attr('aria-hidden', 'true');
             }
             if (color) {
                 colorSVGElements(svg, color);
@@ -14465,7 +14520,7 @@ mod.directive('infiniteScroll', [
                     if (getPromise) { deferred.resolve(element); }
                 } else if (url.indexOf('.svg') === -1) {
                     // Normal image
-                    element.append(angular.element('<img src="' + encodeURI(decodeURI(url)) + '"/>'));
+                    element.append(angular.element('<img alt="" src="' + encodeURI(decodeURI(url)) + '"/>'));
                     if (getPromise) { deferred.resolve(element); }
                 } else {
                     // SVG
@@ -15249,25 +15304,14 @@ mod.directive('infiniteScroll', [
     });
 
     mod.filter('fieldsForLanguageDisplay', function() {
-        return function(fields, language) {
-            if (angular.isUndefined(fields)) { return fields; }
-            if (!language) { return fields; }
-
+        return function(fields, language, fieldsDisplayedInSpecificLanguagesMeta) {
+            if (angular.isUndefined(fields) || !language || !(fieldsDisplayedInSpecificLanguagesMeta)) { return fields; }
             return fields.filter(function(field) {
-                if (!field.annotations) {
+                var fieldDisplayedInLangs = fieldsDisplayedInSpecificLanguagesMeta[field.name];
+                if (!fieldDisplayedInLangs) {
                     return true;
                 }
-                var annotations = field.annotations.filter(function(anno) { return anno.name === 'display_languages'});
-                if (!annotations.length) {
-                    // The annotation isn't there
-                    return true;
-                }
-                var displayLanguagesAnnotation = annotations[0];
-                if (displayLanguagesAnnotation.args.length && displayLanguagesAnnotation.args.indexOf(language) === -1) {
-                    // We don't want to display that field in that language
-                    return false;
-                }
-                return true;
+                return !fieldDisplayedInLangs.length || fieldDisplayedInLangs.indexOf(language) !== -1;
             });
         };
     });
@@ -15344,7 +15388,7 @@ mod.directive('infiniteScroll', [
                 }
 
                 return $filter('moment')(value, 'LLL');
-            } else if (field.type === 'file') { // it's 'file' type really
+            }  else if (field.type === 'file') { // it's 'file' type really
                 if (angular.isObject(value)) {
                     var datasetID,
                         domainURL = '';
@@ -15375,6 +15419,8 @@ mod.directive('infiniteScroll', [
                 } else {
                     return ''+value;
                 }
+            } else if (field.type === 'json_blob') {
+                return JSON.stringify(value);
             } else {
                 return $filter('limitTo')(''+value, 1000);
             }
@@ -16679,14 +16725,29 @@ mod.directive('infiniteScroll', [
             };
 
             var iterateFields = function(fields) {
+                var facets = angular.copy((
+                    dataset &&
+                    dataset.extra_metas &&
+                    dataset.extra_metas.asset_content_configuration &&
+                    dataset.extra_metas.asset_content_configuration.facets
+                )) || [];
+                var facets_configuration = facets.reduce(function(acc, facet) {
+                    acc[facet.field_name] = facet;
+                    return acc;
+                }, {});
                 filtersDescription = {'facets': []};
                 types = [];
                 facetsCount = 0;
                 for (var j=0; j< fields.length; j++) {
                     var field = fields[j];
-                    if (isFieldAnnotated(field, 'facet')) {
+                    if (field.name in facets_configuration) {
                         facetsCount++;
-                        filtersDescription.facets.push(field);
+                        var facet = facets_configuration[field.name];
+                        delete facet.field_name;
+                        facet.name = field.name;
+                        facet.label = field.label;
+                        facet.type = field.type;
+                        filtersDescription.facets.push(facet);
                     }
                     if (!types[field.type]) {
                         types[field.type] = 1;
@@ -16694,8 +16755,17 @@ mod.directive('infiniteScroll', [
                         types[field.type] += 1;
                     }
                 }
+                // sort filter description according to facets
+                filtersDescription.facets.sort(function(facet1, facet2) {
+                    var index1 = facets.findIndex(function(facet) {
+                        return facet.name === facet1.name;
+                    });
+                    var index2 = facets.findIndex(function(facet) {
+                        return facet.name === facet2.name;
+                    });
+                    return index1 - index2;
+                });
             };
-
             return {
                 datasetid: dataset.datasetid || "preview", // "preview" is here as a trick in publish as the dataset has no id
                 has_records: dataset.has_records,
@@ -16771,6 +16841,17 @@ mod.directive('infiniteScroll', [
                 },
                 setMetas: function(metas) {
                     this.metas = metas;
+                },
+                setExtraMetas: function(metas, metadataTemplates) {
+                    var activeExtraTemplates = metadataTemplates.filter(function(template) {
+                        return template.is_active && template.type === 'extra';
+                    });
+                    var extra_metas = {};
+                    activeExtraTemplates.forEach(function(template) {
+                        var templateName = template.name;
+                        extra_metas[templateName] = metas[templateName] || {};
+                    });
+                    this.extra_metas = extra_metas;
                 },
                 getField: function(fieldName) {
                     for (var i=0; i<this.fields.length; i++) {
@@ -19094,6 +19175,12 @@ mod.directive('infiniteScroll', [
                 };
                 var setupCalendar = function () {
                     // check directive params and fallback to metas if they are not set
+                    scope.fieldsDisplayedInSpecificLanguages = (
+                        scope.context.dataset &&
+                        scope.context.dataset.extra_metas &&
+                        scope.context.dataset.extra_metas.asset_content_configuration &&
+                        scope.context.dataset.extra_metas.asset_content_configuration.fields_displayed_in_specific_languages
+                    ) || {};
                     var visualization_metas = {};
                     if (scope.context.dataset &&
                         scope.context.dataset.extra_metas &&
@@ -19335,7 +19422,7 @@ mod.directive('infiniteScroll', [
             template: '' +
             '<h2 class="odswidget-calendar__tooltip-title">{{ record.fields[titleField] }}</h2>' +
             '<dl class="odswidget-calendar__tooltip-fields">' +
-            '    <dt ng-repeat-start="field in dataset.fields|fieldsForVisualization:\'calendar\'|fieldsFilter:tooltipFields|fieldsForLanguageDisplay:domain.current_language"' +
+            '    <dt ng-repeat-start="field in dataset.fields|fieldsForVisualization:\'calendar\'|fieldsFilter:tooltipFields|fieldsForLanguageDisplay:domain.current_language:fieldsDisplayedInSpecificLanguages"' +
             '        ng-show="record.fields[field.name]|isDefined"' +
             '        class="odswidget-calendar__tooltip-field-name">' +
             '        {{ field.label }}' +
@@ -19389,7 +19476,7 @@ mod.directive('infiniteScroll', [
          *
          * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
          *
-         *  @param {string} [apikey=none] API key to use in every API call for the context. For more information, see {@link https://userguide.opendatasoft.com/l/en/article/n77v4gib7z-managing-api-keys#generating_an_api_key Generating an API key}).
+         *  @param {string} [apikey=none] API key to use in every API call for the context. For more information, see {@link https://user-guide.opendatasoft.com/en/articles/2044226 Generating an API key}).
          *  @param {object} [parameters=none] Object holding parameters to apply to the context when it is created
          *  @param {boolean} [urlSync=none] Enables synchronization of the parameters to the page's parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change as well. Note that if this parameter is enabled, `parameters` and `parametersFromContext` won't have any effect. There can also only be a single context with URL synchronization enabled, else the behavior will be unpredictable.
          *
@@ -20357,7 +20444,7 @@ mod.directive('infiniteScroll', [
          *
          * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
          *
-         *  @param {string} [apikey=none] API key to use in every API call for the context (see {@link https://userguide.opendatasoft.com/l/en/article/n77v4gib7z-managing-api-keys#generating_an_api_key Generating an API key}).
+         *  @param {string} [apikey=none] API key to use in every API call for the context (see {@link https://user-guide.opendatasoft.com/en/articles/2044226 Generating an API key}).
          *  @param {string} [sort=none] Sorts expression to apply by default to all widgets plugged to the declared context. The expression should be written using one of the following syntaxes:
          *
          *  - `field` for an ascending order,
@@ -20496,6 +20583,10 @@ mod.directive('infiniteScroll', [
 
                     if ($attrs[contextName+'Dataset']) {
                         datasetID = $interpolate($attrs[contextName + 'Dataset'])($scope);
+                        if (/[^a-z0-9@_-]/.test(datasetID)) {
+                            console.error('Invalid dataset ID: ' + datasetID);
+                            datasetID = '';
+                        }
                     } else {
                         datasetID = '';
                     }
@@ -21363,7 +21454,7 @@ mod.directive('infiniteScroll', [
          *
          *  @param {boolean} [disjunctive=false] When set to `true`, the filter is in disjunctive mode, which means that other available values can also be selected after a first value is selected. All selected values are combined as "or". For example, after clicking "red", "green" and "blue" can also be clicked. The resulting values can be green, red, or blue.
          *
-         *  Note: this parameter is directly related to the schema of the dataset. For this parameter to work properly, the field must allow multiple selections in filters. For more information, see {@link https://userguide.opendatasoft.com/l/en/article/ssrgpuc0y6/preview#setting_up_fields_as_facets Defining a dataset schema}).
+         *  Note: this parameter is directly related to the schema of the dataset. For this parameter to work properly, the field must allow multiple selections in filters. For more information, see {@link https://user-guide.opendatasoft.com/en/articles/2044866 Defining a dataset schema}).
          *  @param {boolean} [timerangeFilter=false] When set to `true`, an option to filter using a time range is displayed above the categories. This parameter only works for date and datetime fields and must be used with a context (see **context** parameter).
          *  @param {string} [context=none] Name of the context to refine on. This parameter is mandatory for the **timerangeFilter** parameter.
          *  @param {string} [valueSearch=none] When set to `true`, a search box is displayed above the categories to search within the available categories. If `suggest`, the matching categories are not displayed until there is at least one character typed into the search box, effectively making it into a suggest-like search box.
@@ -21536,21 +21627,19 @@ mod.directive('infiniteScroll', [
                                     scope.init();
                                 } else {
                                     scope.context.wait().then(function(){
-                                        facets = $filter('fieldsForLanguageDisplay')(angular.copy(scope.context.dataset.getFacets()), ODSWidgetsConfig.language);
+                                        var fieldsDisplayedInSpecificLanguages = (
+                                            scope.context.dataset &&
+                                            scope.context.dataset.extra_metas &&
+                                            scope.context.dataset.extra_metas.asset_content_configuration &&
+                                            scope.context.dataset.extra_metas.asset_content_configuration.fields_displayed_in_specific_languages
+                                        ) || {};
+                                        facets = $filter('fieldsForLanguageDisplay')(angular.copy(scope.context.dataset.getFacets()), ODSWidgetsConfig.language, fieldsDisplayedInSpecificLanguages);
                                         angular.forEach(facets, function(f) {
                                             f.title = f.label;
                                             delete f.label;
-                                            angular.forEach(f.annotations, function(annotation) {
-                                                if (annotation.name === 'facetsort' && annotation.args.length > 0) {
-                                                    f.sort = annotation.args[0];
-                                                }
-                                                if (annotation.name === 'disjunctive') {
-                                                    f.disjunctive = true;
-                                                }
-                                                if (annotation.name === 'timerangeFilter') {
-                                                    f.timerangeFilter = true;
-                                                }
-                                            });
+                                            if (f.facetsort) {
+                                                f.sort = f.facetsort;
+                                            }
                                             if (f.type == 'datetime' || f.type == 'date') {
                                                 f.valueFormatter = 'date';
                                             }
@@ -28247,7 +28336,7 @@ mod.directive('infiniteScroll', [
                         '   <span ng-bind="getTitle(record) | shortSummary: 100"></span> ' +
                         '</h2>' +
                         '<dl class="odswidget-map-tooltip__record-values">' +
-                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields|fieldsForLanguageDisplay:domain.current_language" ' +
+                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields|fieldsForLanguageDisplay:fieldsDisplayedInSpecificLanguages" ' +
                         '        ng-show="record.fields[field.name]|isDefined"' +
                         '        class="odswidget-map-tooltip__field-name">' +
                         '        {{ field.label }}' +
@@ -28357,6 +28446,12 @@ mod.directive('infiniteScroll', [
                     return null;
                 };
                 $scope.fields = angular.copy($scope.context.dataset.fields);
+                $scope.fieldsDisplayedInSpecificLanguages = (
+                    $scope.context.dataset &&
+                    $scope.context.dataset.extra_metas &&
+                    $scope.context.dataset.extra_metas.asset_content_configuration &&
+                    $scope.context.dataset.extra_metas.asset_content_configuration.fields_displayed_in_specific_languages
+                ) || {};
             }]
         };
     }]);
@@ -29895,7 +29990,7 @@ mod.directive('infiniteScroll', [
        *
        * Available for `aggregation` and with `color` and `colorScale` display modes, or when none is specified.
        *
-       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://userguide.opendatasoft.com/l/en/article/ziiipqn1y2-pictograms-reference" target="_blank">Pictograms reference documentation</a>.
+       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://user-guide.opendatasoft.com/en/articles/2042498" target="_blank">Pictograms reference documentation</a>.
        *
        * When displaying shapes, `borderColor` and `opacity` can be used to configure the color of the shape border and the opacity of the shape's fill.
        *
@@ -31250,10 +31345,21 @@ mod.directive('infiniteScroll', [
                         if (localId) {
                             svgContainer = SVGInliner.getLocalElement(scope.localId, scope.color, scope.colorByAttribute);
                         } else {
+                            var imgTagLoad = false;
+                            /*
+                            Three cases:
+                            - if there is "allow_insecure_ods_picto" flag enabled, call SVGInliner
+                                - will disappear once the "allow_insecure_ods_picto" feature flag is deleted
+                            - if the widget is called from odsThemePicto, call SVGInliner
+                                - will disappear once the "allow_insecure_svg_inlining" feature flag is deleted
+                            - if the URL is part of ODS-owned sources, call SVGInliner (e.g. case of choropleth maps)
+                            - else (general case): embed the URL with an img tag.
+                             */
                             if (!ODSWidgetsConfig.allowExternalPictoUrls && scope.origin !== originThemePicto) {
                                 // Enforce ODS pictos only
                                 // We only allow SVG URLs maintained by ODS, so that we can guarantee that inlining them
                                 // doesn't cause any potential security issue.
+                                // In any other case, we just load as <img> tags, losing the custom color in the process.
                                 if (
                                     // Default picto and fallback
                                     url !== '/static/ods/img/themes/odslogo.svg' &&
@@ -31264,12 +31370,21 @@ mod.directive('infiniteScroll', [
                                     // Built-in pictos on other ODS domains
                                     !/^https:\/\/[a-z0-9-]*\.opendatasoft\.com\/static\/pictos\/img\//.test(url)
                                 ) {
-                                    console.warn('External URLs are not supported by ods-picto. ('+url+')');
-                                    return;
+                                    imgTagLoad = true;
+                                    svgContainer = angular.element('<div class="ods-svginliner__svg-container"></div>');
+                                    svgContainer.append(angular.element('<img alt="" src="' + encodeURI(decodeURI(url)) + '"/>'));
+
+                                    if (url.indexOf('.svg') > -1) {
+                                        // PNGs were already loaded as images so no change, but SVGs were probably
+                                        // intended to be inlined originally.
+                                        console.warn('External URLs to SVG images are no longer inlined in the page,' +
+                                            ' and are now loaded as regular images. ('+url+')');
+                                    }
                                 }
                             }
-
-                            svgContainer = SVGInliner.getElement(scope.url, scope.color, scope.colorByAttribute);
+                            if (!imgTagLoad) {
+                                svgContainer = SVGInliner.getElement(scope.url, scope.color, scope.colorByAttribute);
+                            }
                         }
                         if (!svgContainer) {
                             return;
@@ -31304,17 +31419,20 @@ mod.directive('infiniteScroll', [
             },
             template: '',
             link: function(scope, element) {
-                var isNewRender = Boolean(new URL(window.location.href).searchParams.get('newthemes'));
+                // SVG inlining opens up XSS attack vectors and should not be used if avoidable
+                var isInsecureRender = ODSWidgetsConfig.allowThemeSvgInlining;
+                // Use new render even if `isInsecureRender` is true (usually for testing purposes)
+                var forceNewRender = Boolean(new URL(window.location.href).searchParams.get('newthemes'));
 
                 scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
 
                 var template;
-                if (isNewRender) {
+                if (!isInsecureRender || forceNewRender) {
                     template = '' +
                         '<div class="odswidget odswidget-picto odswidget-theme-picto {{ originalClasses }} theme-{{getTheme()|themeSlug}}">' +
                         // Make sure non-square images are vertically aligned in the center
                         '   <div class="odswidget-theme-picto__container">' +
-                        '       <img ng-src="{{ themeConfig.url }}" aria-label="Theme of this dataset: {{ theme|firstValue }}" translate="aria-label">' +
+                        '       <img alt="" ng-src="{{ themeConfig.url }}" aria-label="Theme of this dataset: {{ theme|firstValue }}" translate="aria-label">' +
                         '   </div>' +
                         '</div>';
                 } else {
@@ -31336,7 +31454,7 @@ mod.directive('infiniteScroll', [
                     scope.themeConfig.color = null;
                 }
 
-                if (isNewRender && ODS.URLUtils.isODSPicto(scope.themeConfig.url)) {
+                if (!isInsecureRender && ODS.URLUtils.isODSPicto(scope.themeConfig.url)) {
                     // Use backend-based coloring
                     var urlTokens = scope.themeConfig.url.split('/');
                     var pictoSet = urlTokens[4].replace('set-', ''),
@@ -32033,8 +32151,8 @@ mod.directive('infiniteScroll', [
             template: '' +
             '<div class="odswidget odswidget-searchbox">' +
                 '<form method="GET" action="{{ actionUrl }}" ng-show="actionUrl" ng-attr-id="{{formId}}">' +
-                    '<input class="odswidget-searchbox__box" name="q" type="text" placeholder="{{placeholder|translate}}" aria-label="Search" translate="aria-label">' +
-                    '<input ng-if="sort" name="sort" value="{{ sort }}" type="hidden">' +
+                    '<input class="odswidget-searchbox__box" name="{{ queryParamName }}" type="text" placeholder="{{placeholder|translate}}" aria-label="Search" translate="aria-label">' +
+                    '<input ng-if="applySort && sort" name="sort" value="{{ sort }}" type="hidden">' +
                     '<button type="submit" class="ods-aria-instructions" translate>Submit</button>' +
                 '</form>' +
             '</div>',
@@ -32049,8 +32167,10 @@ mod.directive('infiniteScroll', [
                     jQuery(element).find('input').focus();
                 }
             },
-            controller: ['$scope', '$sce', function($scope, $sce) {
+            controller: ['$scope', '$sce', 'ODSWidgetsConfig', function($scope, $sce, ODSWidgetsConfig) {
                 $scope.actionUrl = '/explore/';
+                $scope.applySort = !ODSWidgetsConfig.isMultiAssets;
+                $scope.queryParamName = ODSWidgetsConfig.isMultiAssets ? 'search' : 'q';
 
                 var unwatch = $scope.$watch('context', function(nv) {
                     if (nv) {
@@ -32783,6 +32903,12 @@ mod.directive('infiniteScroll', [
                         $document.bind('click', clickOutsideHandlerCallback);
                         focusInput();
                     }
+
+                    // Reset filter search when opening
+                    if (!elem.hasClass('open')) {
+                        scope._inputTextFilter = '';
+                    }
+
                     if($buttonAriaStatus === 'false') {
                         $button.setAttribute('aria-expanded', 'true');
                     } else {
@@ -33539,7 +33665,7 @@ mod.directive('infiniteScroll', [
                        '         <thead class="odswidget-table__internal-header-table-header">' +
                        '         <tr>' +
                        '             <th role="columnheader" class="odswidget-table__header-cell odswidget-table__header-cell--spinner"><div class="odswidget-table__cell-container"><ods-spinner ng-show="fetching" class="odswidget-spinner--large"></ods-spinner></div></th>' +
-                       '             <th role="columnheader" class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage"' +
+                       '             <th role="columnheader" class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage:fieldsDisplayedInSpecificLanguages"' +
                        '                 title="{{ field.description || field.label }}"' +
                        '                 ng-click="toggleSort(field)"' +
                        '                 >' +
@@ -33564,7 +33690,7 @@ mod.directive('infiniteScroll', [
                        '         <thead class="odswidget-table__internal-table-header">' +
                        '             <tr>' +
                        '                 <th class="odswidget-table__header-cell odswidget-table__header-cell--spinner"><div class="odswidget-table__cell-container"><ods-spinner ng-show="fetching" class="odswidget-spinner--large"></ods-spinner></div></th>' +
-                       '                 <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage"' +
+                       '                 <th class="odswidget-table__header-cell" ng-repeat="field in context.dataset.fields|fieldsForVisualization:\'table\'|fieldsFilter:displayedFieldsArray|fieldsForLanguageDisplay:displayLanguage:fieldsDisplayedInSpecificLanguages"' +
                        '                     title="{{ field.name }}">' +
                        '                     <div class="odswidget-table__cell-container">' +
                        '                         <span ng-bind="field.label"></span>' +
@@ -33594,6 +33720,7 @@ mod.directive('infiniteScroll', [
                     '</div>',
             controller: ['$scope', '$element', '$timeout', 'ODSAPI', 'ODSWidgetsConfig', '$filter', '$compile', '$transclude', '$q', function($scope, $element, $timeout, ODSAPI, ODSWidgetsConfig, $filter, $compile, $transclude, $q) {
                 $scope.displayedFieldsArray = null;
+                $scope.fieldsDisplayedInSpecificLanguages = {};
                 $scope.displayLanguage = ODSWidgetsConfig.language;
 
                 $scope.displayDatasetFeedback = false;
@@ -34079,7 +34206,13 @@ mod.directive('infiniteScroll', [
                     // Keep the fields that were explicitely asked for
                     datasetFields = $filter('fieldsFilter')(fieldsForVisualization, $scope.displayedFieldsArray);
                     // Discards fields that shouldn't appear in the current language
-                    datasetFields = $filter('fieldsForLanguageDisplay')(datasetFields, $scope.displayLanguage);
+                    $scope.fieldsDisplayedInSpecificLanguages = (
+                        $scope.context.dataset &&
+                        $scope.context.dataset.extra_metas &&
+                        $scope.context.dataset.extra_metas.asset_content_configuration &&
+                        $scope.context.dataset.extra_metas.asset_content_configuration.fields_displayed_in_specific_languages
+                    ) || {};
+                    datasetFields = $filter('fieldsForLanguageDisplay')(datasetFields, $scope.displayLanguage, $scope.fieldsDisplayedInSpecificLanguages);
 
                     refreshRecords(true);
 
@@ -34472,6 +34605,7 @@ mod.directive('infiniteScroll', [
             '       <input class="odswidget-text-search__search-box" name="q" type="text" id="{{id}}"' +
             '               ng-model="searchExpression" ' +
             '               aria-label="{{ translatedPlaceholder || \'Search\'|translate }}" ' +
+            '               title="{{ translatedPlaceholder || \'Search\'|translate }}" ' +
             '               placeholder="{{ translatedPlaceholder }}"> ' +
             '       <button type="reset" class="odswidget-text-search__reset" ng-show="searchExpression" ng-click="resetSearch()" aria-label="Reset search" translate="aria-label">' +
             '           <span class="ods-aria-instructions" translate>Reset</span>' +

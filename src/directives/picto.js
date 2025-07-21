@@ -69,10 +69,21 @@
                         if (localId) {
                             svgContainer = SVGInliner.getLocalElement(scope.localId, scope.color, scope.colorByAttribute);
                         } else {
+                            var imgTagLoad = false;
+                            /*
+                            Three cases:
+                            - if there is "allow_insecure_ods_picto" flag enabled, call SVGInliner
+                                - will disappear once the "allow_insecure_ods_picto" feature flag is deleted
+                            - if the widget is called from odsThemePicto, call SVGInliner
+                                - will disappear once the "allow_insecure_svg_inlining" feature flag is deleted
+                            - if the URL is part of ODS-owned sources, call SVGInliner (e.g. case of choropleth maps)
+                            - else (general case): embed the URL with an img tag.
+                             */
                             if (!ODSWidgetsConfig.allowExternalPictoUrls && scope.origin !== originThemePicto) {
                                 // Enforce ODS pictos only
                                 // We only allow SVG URLs maintained by ODS, so that we can guarantee that inlining them
                                 // doesn't cause any potential security issue.
+                                // In any other case, we just load as <img> tags, losing the custom color in the process.
                                 if (
                                     // Default picto and fallback
                                     url !== '/static/ods/img/themes/odslogo.svg' &&
@@ -83,12 +94,21 @@
                                     // Built-in pictos on other ODS domains
                                     !/^https:\/\/[a-z0-9-]*\.opendatasoft\.com\/static\/pictos\/img\//.test(url)
                                 ) {
-                                    console.warn('External URLs are not supported by ods-picto. ('+url+')');
-                                    return;
+                                    imgTagLoad = true;
+                                    svgContainer = angular.element('<div class="ods-svginliner__svg-container"></div>');
+                                    svgContainer.append(angular.element('<img alt="" src="' + encodeURI(decodeURI(url)) + '"/>'));
+
+                                    if (url.indexOf('.svg') > -1) {
+                                        // PNGs were already loaded as images so no change, but SVGs were probably
+                                        // intended to be inlined originally.
+                                        console.warn('External URLs to SVG images are no longer inlined in the page,' +
+                                            ' and are now loaded as regular images. ('+url+')');
+                                    }
                                 }
                             }
-
-                            svgContainer = SVGInliner.getElement(scope.url, scope.color, scope.colorByAttribute);
+                            if (!imgTagLoad) {
+                                svgContainer = SVGInliner.getElement(scope.url, scope.color, scope.colorByAttribute);
+                            }
                         }
                         if (!svgContainer) {
                             return;
@@ -123,17 +143,20 @@
             },
             template: '',
             link: function(scope, element) {
-                var isNewRender = Boolean(new URL(window.location.href).searchParams.get('newthemes'));
+                // SVG inlining opens up XSS attack vectors and should not be used if avoidable
+                var isInsecureRender = ODSWidgetsConfig.allowThemeSvgInlining;
+                // Use new render even if `isInsecureRender` is true (usually for testing purposes)
+                var forceNewRender = Boolean(new URL(window.location.href).searchParams.get('newthemes'));
 
                 scope.originalClasses = element.attr('class').replace('ng-isolate-scope', '').trim();
 
                 var template;
-                if (isNewRender) {
+                if (!isInsecureRender || forceNewRender) {
                     template = '' +
                         '<div class="odswidget odswidget-picto odswidget-theme-picto {{ originalClasses }} theme-{{getTheme()|themeSlug}}">' +
                         // Make sure non-square images are vertically aligned in the center
                         '   <div class="odswidget-theme-picto__container">' +
-                        '       <img ng-src="{{ themeConfig.url }}" aria-label="Theme of this dataset: {{ theme|firstValue }}" translate="aria-label">' +
+                        '       <img alt="" ng-src="{{ themeConfig.url }}" aria-label="Theme of this dataset: {{ theme|firstValue }}" translate="aria-label">' +
                         '   </div>' +
                         '</div>';
                 } else {
@@ -155,7 +178,7 @@
                     scope.themeConfig.color = null;
                 }
 
-                if (isNewRender && ODS.URLUtils.isODSPicto(scope.themeConfig.url)) {
+                if (!isInsecureRender && ODS.URLUtils.isODSPicto(scope.themeConfig.url)) {
                     // Use backend-based coloring
                     var urlTokens = scope.themeConfig.url.split('/');
                     var pictoSet = urlTokens[4].replace('set-', ''),

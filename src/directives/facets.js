@@ -32,7 +32,7 @@
          *
          *  @param {boolean} [disjunctive=false] When set to `true`, the filter is in disjunctive mode, which means that other available values can also be selected after a first value is selected. All selected values are combined as "or". For example, after clicking "red", "green" and "blue" can also be clicked. The resulting values can be green, red, or blue.
          *
-         *  Note: this parameter is directly related to the schema of the dataset. For this parameter to work properly, the field must allow multiple selections in filters. For more information, see {@link https://userguide.opendatasoft.com/l/en/article/ssrgpuc0y6/preview#setting_up_fields_as_facets Defining a dataset schema}).
+         *  Note: this parameter is directly related to the schema of the dataset. For this parameter to work properly, the field must allow multiple selections in filters. For more information, see {@link https://user-guide.opendatasoft.com/en/articles/2044866 Defining a dataset schema}).
          *  @param {boolean} [timerangeFilter=false] When set to `true`, an option to filter using a time range is displayed above the categories. This parameter only works for date and datetime fields and must be used with a context (see **context** parameter).
          *  @param {string} [context=none] Name of the context to refine on. This parameter is mandatory for the **timerangeFilter** parameter.
          *  @param {string} [valueSearch=none] When set to `true`, a search box is displayed above the categories to search within the available categories. If `suggest`, the matching categories are not displayed until there is at least one character typed into the search box, effectively making it into a suggest-like search box.
@@ -205,21 +205,19 @@
                                     scope.init();
                                 } else {
                                     scope.context.wait().then(function(){
-                                        facets = $filter('fieldsForLanguageDisplay')(angular.copy(scope.context.dataset.getFacets()), ODSWidgetsConfig.language);
+                                        var fieldsDisplayedInSpecificLanguages = (
+                                            scope.context.dataset &&
+                                            scope.context.dataset.extra_metas &&
+                                            scope.context.dataset.extra_metas.asset_content_configuration &&
+                                            scope.context.dataset.extra_metas.asset_content_configuration.fields_displayed_in_specific_languages
+                                        ) || {};
+                                        facets = $filter('fieldsForLanguageDisplay')(angular.copy(scope.context.dataset.getFacets()), ODSWidgetsConfig.language, fieldsDisplayedInSpecificLanguages);
                                         angular.forEach(facets, function(f) {
                                             f.title = f.label;
                                             delete f.label;
-                                            angular.forEach(f.annotations, function(annotation) {
-                                                if (annotation.name === 'facetsort' && annotation.args.length > 0) {
-                                                    f.sort = annotation.args[0];
-                                                }
-                                                if (annotation.name === 'disjunctive') {
-                                                    f.disjunctive = true;
-                                                }
-                                                if (annotation.name === 'timerangeFilter') {
-                                                    f.timerangeFilter = true;
-                                                }
-                                            });
+                                            if (f.facetsort) {
+                                                f.sort = f.facetsort;
+                                            }
                                             if (f.type == 'datetime' || f.type == 'date') {
                                                 f.valueFormatter = 'date';
                                             }

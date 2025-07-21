@@ -2276,6 +2276,7 @@ html[dir=rtl] .odswidget-reuses__reuse-thumbnail-image--no-thumbnail {
   position: relative;
   overflow: hidden;
   height: 400px;
+  color: #333333;
 }
 .odswidget-table__header {
   position: relative;
@@ -2728,6 +2729,7 @@ html[dir=rtl] .odswidget-text-search__reset {
 }
 .ods-cross-table__row:nth-child(odd) {
   background-color: #f4f4f4;
+  color: #333333;
 }
 .ods-cross-table__cell {
   padding: 0;
@@ -3490,6 +3492,7 @@ html[dir=rtl] .odswidget-geo-navigation__choice {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  color: #666666;
 }
 .odswidget-select-dropdown-label.checkbox {
   padding: 6px 0 6px 26px;
@@ -3549,6 +3552,7 @@ html[dir=rtl] .odswidget-geo-navigation__choice {
   padding: 13px;
   border-top: 1px solid #cccccc;
   display: none;
+  color: #666666;
 }
 .odswidget-select-dropdown-button {
   border: none;
