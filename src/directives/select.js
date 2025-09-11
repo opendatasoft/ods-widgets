@@ -372,7 +372,15 @@
                 $scope._displaySelectedItemsOnly = false;
 
                 // Default attributes values
-                $scope.multiple = !!$scope.multiple;
+                // Handle HTML5 multiple attribute: presence of attribute means true, but also support explicit false
+                if ($attrs.multiple === undefined) {
+                    $scope.multiple = false;
+                } else if ($attrs.multiple === 'false') {
+                    $scope.multiple = false;
+                } else {
+                    // Attribute is present and not explicitly "false", so it's true
+                    $scope.multiple = true;
+                }
 
                 if (typeof $scope.selectedValues === 'undefined' || $scope.selectedValues === null || $scope.selectedValues === '') {
                     $scope.selectedValues = [];
