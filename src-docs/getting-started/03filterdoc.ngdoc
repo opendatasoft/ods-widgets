@@ -4,7 +4,7 @@
 
 <h1>Learning how to use widget filters</h1>
 
-<p>At this point, you have learned enough information to build great data-based projects with Opendatasoft widgets. There is however one more thing that could come in handy when using some widgets: widget filters! Let's see how and when you could use these filters.</p>
+<p>At this point, you have learned enough information to build great data-based projects with Huwise widgets. There is however one more thing that could come in handy when using some widgets: widget filters! Let's see how and when you could use these filters.</p>
 
 <p>For some widgets, especially those that are used for calculations and statistics, the only way to see their results is to call variables which content should be displayed. And it is precisely on these variables that widgets filters can be used.</p>
 
@@ -16,11 +16,11 @@
 
 <p>Widget filters must be added after the name of the variable, and separated from it with a pipe sign ``|``.</p>
 
-<div class="example-text">In the example below, <a href="https://help.opendatasoft.com/widgets/#/api/ods-widgets.directive:odsAggregation" target="_blank">odsAggregation</a> is used for the calculation, whose result is called and displayed using the <code>{{tickets}}</code> variable. However, our calculation result has too many decimals. Let's see how using the <code>math</code> filter along with its <code>round</code> parameter fixes the problem and makes the result easier to read and understand! Add <code>math:"round"</code> in the variable (don't forget the pipe sign!), and check the result!</div>
+<div class="example-text">In the example below, <a href="https://help.huwise.com/widgets/#/api/ods-widgets.directive:odsAggregation" target="_blank">odsAggregation</a> is used for the calculation, whose result is called and displayed using the <code>{{tickets}}</code> variable. However, our calculation result has too many decimals. Let's see how using the <code>math</code> filter along with its <code>round</code> parameter fixes the problem and makes the result easier to read and understand! Add <code>math:"round"</code> in the variable (don't forget the pipe sign!), and check the result!</div>
 
-<p class="codepen" data-height="500" data-theme-id="dark" data-default-tab="html" data-user="opendatasoft" data-slug-hash="wvagOXe" data-editable="true" style="height: 500px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="Example 3 (Widgets Getting Started)">
-  <span>See the Pen <a href="https://codepen.io/opendatasoft/pen/wvagOXe">
-  Example 3 (Widgets Getting Started)</a> by Agatha MacData (<a href="https://codepen.io/opendatasoft">@opendatasoft</a>)
+<p class="codepen" data-height="500" data-theme-id="dark" data-default-tab="html" data-user="huwise" data-slug-hash="wvagOXe" data-editable="true" style="height: 500px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;" data-pen-title="Example 3 (Widgets Getting Started)">
+  <span>See the Pen <a href="https://codepen.io/huwise/pen/wvagOXe">
+  Example 3 (Widgets Getting Started)</a> by Huwise (<a href="https://codepen.io/huwise">@Huwise</a>)
   on <a href="https://codepen.io">CodePen</a>.</span>
 </p>
 
@@ -49,5 +49,5 @@
 
 
 <div class="ods-link">
-<i class="fa fa-external-link"></i> Since Opendatasoft widgets are based on AngularJS, it is possible to use the Angular widget filters instead of the Opendatasoft ones. <a href="https://code.angularjs.org/1.4.7/docs/api/ng/filter" target="_blank">Click here to be redirected to the Angular filters list and documentation</a>!
+<i class="fa fa-external-link"></i> Since Huwise widgets are based on AngularJS, it is possible to use the Angular widget filters instead of the Huwise ones. <a href="https://code.angularjs.org/1.4.7/docs/api/ng/filter" target="_blank">Click here to be redirected to the Angular filters list and documentation</a>!
 </div>

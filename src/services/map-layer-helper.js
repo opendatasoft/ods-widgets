@@ -31,7 +31,7 @@
                     var field = layerConfig.context.dataset && layerConfig.context.dataset.getField(layerConfig.color.field);
                     if (field) {
                         // If the field is multivalued, the color depends on the first value
-                        // https://app.shortcut.com/opendatasoft/story/33970
+                        // https://app.shortcut.com/Huwise/story/33970
                         var multivaluedAnnotation = layerConfig.context.dataset.getFieldAnnotation(field, 'multivalued');
                         if (multivaluedAnnotation) {
                             var mvSeparator = multivaluedAnnotation.args[0];

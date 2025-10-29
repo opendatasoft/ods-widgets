@@ -14,14 +14,14 @@
          *  @param {string} dataset <i>(mandatory)</i> Identifier of the dataset(s) on which the context is based.
          *  @param {string} [domain=ODSWidgetsConfig.defaultDomain] Domain where the dataset(s) can be found. Since the domain value is used to construct a URL to an API root, it can be:
          *
-         *  - an alphanumeric string (e.g., *mydomain*): it will assume that it is an Opendatasoft domain (e.g., *mydomain.opendatasoft.com*)
+         *  - an alphanumeric string (e.g., *mydomain*): it will assume that it is a Huwise domain (e.g., *mydomain.huwise.com*)
          *  - a hostname (e.g., *data.mydomain.com*)
          *  - a relative path (e.g., _/monitoring_): it will be relative to the hostname of the current page
          *  - a hostname and a path (e.g., *data.mydomain.com/monitoring*)
          *
          * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
          *
-         *  @param {string} [apikey=none] API key to use in every API call for the context (see {@link https://user-guide.opendatasoft.com/en/articles/2044226 Generating an API key}).
+         *  @param {string} [apikey=none] API key to use in every API call for the context (see {@link https://userguide.huwise.com/en/articles/2044226 Generating an API key}).
          *  @param {string} [sort=none] Sorts expression to apply by default to all widgets plugged to the declared context. The expression should be written using one of the following syntaxes:
          *
          *  - `field` for an ascending order,
@@ -62,9 +62,9 @@
          *      <file name="visualizations_based_on_dataset_context.html">
          *          <ods-dataset-context context="trees,events"
          *                               trees-dataset="les-arbres-remarquables-de-paris"
-         *                               trees-domain="https://documentation-resources.opendatasoft.com/"
+         *                               trees-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/">
+         *                               events-domain="https://documentation-resources.huwise.com/">
          *               <!-- Shows a list of the trees -->
          *               <ods-table context="trees"></ods-table>
          *               <!-- Shows a map of events -->
@@ -77,7 +77,7 @@
          *      <file name="dataset_context_with_parameters.html">
          *          <ods-dataset-context context="demographics"
          *                               demographics-dataset="us-cities-demographics"
-         *                               demographics-domain="https://documentation-resources.opendatasoft.com/"
+         *                               demographics-domain="https://documentation-resources.huwise.com/"
          *                               demographics-parameters="{'q': 'Santa', 'refine.state': 'California'}">
          *                <!-- Demographics for all cities in California that have 'Santa' in their name -->
          *                <ods-table context="demographics"></ods-table>

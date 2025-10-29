@@ -3400,7 +3400,7 @@ html[dir=rtl] .odswidget-geo-navigation__choice {
   padding: 6px 9px;
   width: 100%;
   min-height: 32px;
-  background: linear-gradient(to bottom, #ffffff, #F6F8FB);
+  background: linear-gradient(to bottom, #ffffff, #F6F6F6);
   border: 1px solid #cccccc;
   border-radius: 4px;
   font-size: small;
@@ -3481,7 +3481,7 @@ html[dir=rtl] .odswidget-geo-navigation__choice {
   position: relative;
 }
 .odswidget-select-dropdown-menu-item:hover {
-  background-color: #F6F8FB;
+  background-color: #F6F6F6;
 }
 .odswidget-select-dropdown-menu-item:hover i.fa-square-o {
   color: #00C7B1;
@@ -3661,7 +3661,7 @@ div.odswidget-adv-table__container table tr th {
 }
 div.odswidget-adv-table__container table tr th {
   padding: 7px 10px;
-  background-color: #F6F8FB;
+  background-color: #F6F6F6;
   color: #0088cc;
   font-weight: normal;
 }

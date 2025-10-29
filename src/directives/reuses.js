@@ -72,14 +72,42 @@
 
                 $scope.reuses = [];
 
+                // Convert HTML to text for description
+                // If no html is found, return the text content
+                var htmlToText = function (html) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var elements = doc.querySelectorAll('p, li');
+                    if (!elements.length) {
+                        return doc.body.textContent || '';
+                    }
+                    return Array.from(elements)
+                        .map(function(el) {
+                            return { text: el.textContent && el.textContent.trim(), tag: el.tagName };
+                        })
+                        .filter(function(c) { return c && c.text; })
+                        .reduce(function(acc, c) {
+                            return c.tag === 'P' ? acc + c.text + '\n' : acc + '  • ' + c.text + '\n';
+                        }, '');
+                };
+
+                // Extracts reuses from the response and formats them
+                var extractReuses = function(response) {
+                    var data = response.data;
+                    return data.reuses.map(function(reuse) {
+                        reuse.description = htmlToText(reuse.description);
+                        return reuse;
+                    });
+                };
+
                 $scope.loadMore = function() {
                     if ($scope.reuses.length && !done && !fetching) {
                         fetching = true;
                         var start = page * resultsPerPage;
                         reuses($scope.context, {'rows': resultsPerPage, 'start': start}).
                             then(function(response) {
-                                var data = response.data;
-                                $scope.reuses = $scope.reuses.concat(data.reuses);
+                                var dataReusesText = extractReuses(response);
+                                $scope.reuses = $scope.reuses.concat(dataReusesText);
                                 done = (page + 1) * resultsPerPage >= numberReuses;
                                 page++;
                                 fetching = false;
@@ -93,10 +121,9 @@
                     fetching = true;
                     reuses($scope.context, {'rows': resultsPerPage}).
                         then(function(response) {
-                            var data = response.data;
-                            $scope.reuses = data.reuses;
-                            done = resultsPerPage >= data.nhits;
-                            numberReuses = data.nhits;
+                            $scope.reuses = extractReuses(response);
+                            done = resultsPerPage >= response.data.nhits;
+                            numberReuses = response.data.nhits;
                             fetching = false;
                         }, function() {
                             fetching = false;

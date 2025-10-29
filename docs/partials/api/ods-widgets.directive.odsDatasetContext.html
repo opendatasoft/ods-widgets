@@ -52,13 +52,13 @@ as attribute<pre class="prettyprint linenums">&lt;ANY ods-dataset-context
 </div></td></tr><tr><td>dataset</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatasetcontext-page"><p><i>(mandatory)</i> Identifier of the dataset(s) on which the context is based.</p>
 </div></td></tr><tr><td>domain</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatasetcontext-page"><p>Domain where the dataset(s) can be found. Since the domain value is used to construct a URL to an API root, it can be:</p>
 <ul>
-<li>an alphanumeric string (e.g., <em>mydomain</em>): it will assume that it is an Opendatasoft domain (e.g., <em>mydomain.opendatasoft.com</em>)</li>
+<li>an alphanumeric string (e.g., <em>mydomain</em>): it will assume that it is a Huwise domain (e.g., <em>mydomain.huwise.com</em>)</li>
 <li>a hostname (e.g., <em>data.mydomain.com</em>)</li>
 <li>a relative path (e.g., <em>/monitoring</em>): it will be relative to the hostname of the current page</li>
 <li>a hostname and a path (e.g., <em>data.mydomain.com/monitoring</em>)</li>
 </ul>
 <p>By default, if the domain parameter is not set, <a href="#/api/ods-widgets.ODSWidgetsConfigProvider">ODSWidgetsConfig.defaultDomain</a> is used.</p>
-</div> <p><em>(default: ODSWidgetsConfig.defaultDomain)</em></p></td></tr><tr><td>apikey</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatasetcontext-page"><p>API key to use in every API call for the context (see <a href="https://user-guide.opendatasoft.com/en/articles/2044226">Generating an API key</a>).</p>
+</div> <p><em>(default: ODSWidgetsConfig.defaultDomain)</em></p></td></tr><tr><td>apikey</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatasetcontext-page"><p>API key to use in every API call for the context (see <a href="https://userguide.huwise.com/en/articles/2044226">Generating an API key</a>).</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>sort</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsdatasetcontext-page"><p>Sorts expression to apply by default to all widgets plugged to the declared context. The expression should be written using one of the following syntaxes:</p>
 <ul>
 <li><code>field</code> for an ascending order,</li>
@@ -78,9 +78,9 @@ as attribute<pre class="prettyprint linenums">&lt;ANY ods-dataset-context
 <script type="text/ng-template" id="visualizations_based_on_dataset_context.html">
     <ods-dataset-context context="trees,events"
                          trees-dataset="les-arbres-remarquables-de-paris"
-                         trees-domain="https://documentation-resources.opendatasoft.com/"
+                         trees-domain="https://documentation-resources.huwise.com/"
                          events-dataset="evenements-publics-openagenda-extract"
-                         events-domain="https://documentation-resources.opendatasoft.com/">
+                         events-domain="https://documentation-resources.huwise.com/">
          <!-- Shows a list of the trees -->
          <ods-table context="trees"></ods-table>
          <!-- Shows a map of events -->
@@ -97,7 +97,7 @@ as attribute<pre class="prettyprint linenums">&lt;ANY ods-dataset-context
 <script type="text/ng-template" id="dataset_context_with_parameters.html">
     <ods-dataset-context context="demographics"
                          demographics-dataset="us-cities-demographics"
-                         demographics-domain="https://documentation-resources.opendatasoft.com/"
+                         demographics-domain="https://documentation-resources.huwise.com/"
                          demographics-parameters="{'q': 'Santa', 'refine.state': 'California'}">
           <!-- Demographics for all cities in California that have 'Santa' in their name -->
           <ods-table context="demographics"></ods-table>

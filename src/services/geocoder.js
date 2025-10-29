@@ -18,7 +18,7 @@
 
     mod.service('Geocoder', ['$http', 'ODSWidgetsConfig', '$q', function($http, ODSWidgetsConfig, $q) {
         // https://www.jawg.io/docs/apidocs/places/autocomplete/#layers
-        // Regarding configuration: https://app.clubhouse.io/opendatasoft/story/17461/experiment-alternative-geocoding-api-as-a-backend-for-geosearch#activity-19300
+        // Regarding configuration: https://app.shortcut.com/huwise/story/17461/experiment-alternative-geocoding-api-as-a-backend-for-geosearch
         var includedLayers = [
             'address',
             // 'venue',

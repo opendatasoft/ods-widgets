@@ -13,7 +13,7 @@ L.ClusterMarker = L.FeatureGroup.extend({
        L.FeatureGroup.prototype.initialize.call(this, []);
         var ratio = ODS.CalculationUtils.getValueOnScale(options.value, options.min, options.max, options.sizeFunction);
         // FIXME: A ratio should only be between 1 and 0. Right now, the calculations go very wrong with negative numbers.
-        // -> https://opendatasoft.clubhouse.io/story/370
+        // -> sc-370
         //if (options.total === 0) {
         //    ratio = 1;
         //} else {

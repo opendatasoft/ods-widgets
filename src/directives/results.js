@@ -22,7 +22,7 @@
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                               tree-domain="https://documentation-resources.opendatasoft.com/"
+         *                               tree-domain="https://documentation-resources.huwise.com/"
          *                               tree-parameters="{'sort': '-objectid'}">
          *              <table class="table table-bordered table-condensed table-striped">
          *                  <thead>
@@ -50,7 +50,7 @@
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                                   tree-domain="https://documentation-resources.opendatasoft.com/">
+         *                                   tree-domain="https://documentation-resources.huwise.com/">
          *              <p ods-results="items" ods-results-context="tree" ods-results-max="10">
          *                  Total number of trees : {{ tree.nhits }}
          *              </p>

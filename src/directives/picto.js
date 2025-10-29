@@ -38,7 +38,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-picto url="'assets/opendatasoft-logo.svg'"
+         *          <ods-picto url="'assets/huwise-logo-hc.svg'"
          *                     color="'#33629C'" style="width: 64px; height: 64px"></ods-picto>
          *      </file>
          *  </example>
@@ -80,19 +80,21 @@
                             - else (general case): embed the URL with an img tag.
                              */
                             if (!ODSWidgetsConfig.allowExternalPictoUrls && scope.origin !== originThemePicto) {
-                                // Enforce ODS pictos only
-                                // We only allow SVG URLs maintained by ODS, so that we can guarantee that inlining them
+                                // Enforce Huwise pictos only
+                                // We only allow SVG URLs maintained by Huwise, so that we can guarantee that inlining them
                                 // doesn't cause any potential security issue.
                                 // In any other case, we just load as <img> tags, losing the custom color in the process.
                                 if (
                                     // Default picto and fallback
-                                    url !== '/static/ods/img/themes/odslogo.svg' &&
+                                    url !== '/static/ods/img/themes/logo.svg' &&
                                     // set-v2 and set-v3 built-in pictos
                                     !url.startsWith('/static/pictos/img/') &&
-                                    // Georefs for static choropleths (https://codelibrary.opendatasoft.com/widget-tricks/svg-maps/)
-                                    !url.startsWith('https://static.opendatasoft.com/georef/svg/') &&
+                                    // Georefs for static choropleths (https://codelibrary.huwise.com/widget-tricks/svg-maps/)
+                                    !url.startsWith('https://static.huwise.com/georef/svg/') &&
+                                    !url.startsWith('https://static.huwise.com/georef/svg/') &&
                                     // Built-in pictos on other ODS domains
-                                    !/^https:\/\/[a-z0-9-]*\.opendatasoft\.com\/static\/pictos\/img\//.test(url)
+                                    !/^https:\/\/[a-z0-9-]*\.opendatasoft\.com\/static\/pictos\/img\//.test(url) &&
+                                    !/^https:\/\/[a-z0-9-]*\.huwise\.com\/static\/pictos\/img\//.test(url)
                                 ) {
                                     imgTagLoad = true;
                                     svgContainer = angular.element('<div class="ods-svginliner__svg-container"></div>');

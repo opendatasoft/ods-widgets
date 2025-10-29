@@ -2,7 +2,7 @@
     'use strict';
 
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
-    // by Opendatasoft
+    // by Huwise
     //  License: MIT
     var version = '2.1.2';
     //  Homepage: https://github.com/opendatasoft/ods-widgets

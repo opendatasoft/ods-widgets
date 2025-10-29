@@ -1702,7 +1702,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="hurricanes" hurricanes-domain="public.opendatasoft.com" hurricanes-dataset="hurricane-tracks-1851-2007">
+         *          <ods-dataset-context context="hurricanes" hurricanes-domain="hub.huwise.com" hurricanes-dataset="hurricane-tracks-1851-2007">
          *              <ods-highcharts context="hurricanes" field-x="track_date" chart-type="line" timescale="year" function-y="COUNT"></ods-highcharts>
          *          </ods-dataset-context>
          *      </file>
@@ -1839,7 +1839,7 @@
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @param {string|Object} [chartConfig=none] A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.
          * @description
-         * This widget can display a multiple chart generated using the "Charts" interface of Opendatasoft.
+         * This widget can display a multiple chart generated using the "Charts" interface of Huwise.
          *
          */
         return {
@@ -1913,7 +1913,7 @@
          * @param {integer} [labelsXLength=12] Sets the maximum number of characters displayed for the X-axis labels.
          *
          * @description
-         * The odsChart widget is the base widget allowing to display charts from Opendatasoft datasets.
+         * The odsChart widget is the base widget allowing to display charts from Huwise datasets.
          * A Chart is defined by one or more series that get their data from form one or more datasets represented by a {@link ods-widgets.directive:odsDatasetContext Dataset Context},
          * a type of chart, and multiple parameters to fine-tune the chart's appearance.
          *
@@ -1953,9 +1953,9 @@
          *    <pre>
          *        <ods-dataset-context context="commute,demographics"
          *                             commute-dataset="commute-time-us-counties"
-         *                             commute-domain="https://documentation-resources.opendatasoft.com/"
+         *                             commute-domain="https://documentation-resources.huwise.com/"
          *                             demographics-dataset="us-cities-demographics"
-         *                             demographics-domain="https://documentation-resources.opendatasoft.com/">
+         *                             demographics-domain="https://documentation-resources.huwise.com/">
          *            <ods-chart align-month="true">
          *                <ods-chart-query context="commute" field-x="state" maxpoints="20">
          *                    <ods-chart-serie expression-y="mean_commuting_time" chart-type="column" function-y="AVG" color="#66c2a5" scientific-display="true">

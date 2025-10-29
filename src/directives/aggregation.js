@@ -37,7 +37,7 @@
          *      <file name="simple_aggregation.html">
          *  <ods-dataset-context context="tree"
          *                       tree-dataset="les-arbres-remarquables-de-paris"
-         *                       tree-domain="https://documentation-resources.opendatasoft.com/">
+         *                       tree-domain="https://documentation-resources.huwise.com/">
          *      <div ods-aggregation="height"
          *           ods-aggregation-context="tree"
          *           ods-aggregation-expression="hauteur_en_m"
@@ -52,9 +52,9 @@
          *      <file name="multiple_aggregations.html">
          *  <ods-dataset-context context="commute,demographics"
          *                       commute-dataset="average-commute-time-by-county"
-         *                       commute-domain="https://documentation-resources.opendatasoft.com/"
+         *                       commute-domain="https://documentation-resources.huwise.com/"
          *                       demographics-dataset="us-cities-demographics"
-         *                       demographics-domain="https://documentation-resources.opendatasoft.com/">
+         *                       demographics-domain="https://documentation-resources.huwise.com/">
          *      <div ods-aggregation="people, time"
          *           ods-aggregation-people-context="demographics"
          *           ods-aggregation-people-function="SUM"
@@ -72,7 +72,7 @@
          *      <file name="multiple_aggregations_same_context.html">
          *  <ods-dataset-context context="tree"
          *                       tree-dataset="les-arbres-remarquables-de-paris"
-         *                       tree-domain="https://documentation-resources.opendatasoft.com/">
+         *                       tree-domain="https://documentation-resources.huwise.com/">
          *      <div ods-aggregation="total, mingirth, maxgirth"
          *           ods-aggregation-context="tree"
          *           ods-aggregation-total-function="COUNT"

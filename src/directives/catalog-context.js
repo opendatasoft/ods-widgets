@@ -12,14 +12,14 @@
          *  @param {string} context <i>(mandatory)</i> Name, or list of names separated by commas, of context(s) to declare. Context names must be in lowercase, can only contain alphanumerical characters, and cannot begin with a number, "data", or "x".
          *  @param {string} [domain=ODSWidgetsConfig.defaultDomain] Domain where the dataset(s) can be found. Since the domain value is used to construct an URL to an API root, it can be:
          *
-         *  - an alphanumeric string (e.g., *mydomain*): it will assume that it is an Opendatasoft domain (e.g., *mydomain.opendatasoft.com*)
+         *  - an alphanumeric string (e.g., *mydomain*): it will assume that it is a Huwise domain (e.g., *mydomain.huwise.com*)
          *  - a hostname (e.g., *data.mydomain.com*)
          *  - a relative path (e.g., _/monitoring_): it will be relative to the hostname of the current page
          *  - a hostname and a path (e.g., *data.mydomain.com/monitoring*)
          *
          * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
          *
-         *  @param {string} [apikey=none] API key to use in every API call for the context. For more information, see {@link https://user-guide.opendatasoft.com/en/articles/2044226 Generating an API key}).
+         *  @param {string} [apikey=none] API key to use in every API call for the context. For more information, see {@link https://userguide.huwise.com/en/articles/2044226 Generating an API key}).
          *  @param {object} [parameters=none] Object holding parameters to apply to the context when it is created
          *  @param {boolean} [urlSync=none] Enables synchronization of the parameters to the page's parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change as well. Note that if this parameter is enabled, `parameters` and `parametersFromContext` won't have any effect. There can also only be a single context with URL synchronization enabled, else the behavior will be unpredictable.
          *
@@ -44,7 +44,7 @@
          *  <example module="ods-widgets">
          *      <file name="simple_example.html">
          *          <ods-catalog-context context="examples"
-         *                               examples-domain="https://documentation-resources.opendatasoft.com/">
+         *                               examples-domain="https://documentation-resources.huwise.com/">
          *              <ods-most-popular-datasets context="examples"></ods-most-popular-datasets>
          *          </ods-catalog-context>
          *      </file>
@@ -53,7 +53,7 @@
          *  <example module="ods-widgets">
          *      <file name="odsresultenumerator_with_catalog_context.html">
          *          <ods-catalog-context context="examples"
-         *                               examples-domain="https://documentation-resources.opendatasoft.com/">
+         *                               examples-domain="https://documentation-resources.huwise.com/">
          *
          *              <ul>
          *                  <ods-result-enumerator context="examples">

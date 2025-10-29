@@ -30,7 +30,7 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *              <ods-dataset-context context="events"
-         *                                   events-domain="https://documentation-resources.opendatasoft.com/"
+         *                                   events-domain="https://documentation-resources.huwise.com/"
          *                                   events-dataset="evenements-publics-openagenda-extract">
          *                  <ods-calendar context="events"
          *                                start-field="date_debut"
@@ -264,7 +264,7 @@
                         };
 
                         var content;
-                        // FIXME: https://app.shortcut.com/opendatasoft/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
+                        // FIXME: https://app.shortcut.com/Huwise/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
                         if (scope.context.dataset.extra_metas.visualization.calendar_tooltip_html_enabled && scope.context.dataset.extra_metas.visualization.calendar_tooltip_html) {
                             content = $compile('<div>' + scope.context.dataset.extra_metas.visualization.calendar_tooltip_html + '</div>')(newScope);
                         } else {

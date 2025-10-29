@@ -5,7 +5,7 @@
 
     mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'odsHttpErrorMessages', '$q', function($http, ODSWidgetsConfig, odsNotificationService, odsHttpErrorMessages, $q) {
         /**
-         * This service exposes Opendatasoft APIs.
+         * This service exposes Huwise APIs.
          *
          * Each method take a context, and specific parameters to append to this request (without modifying the context).
          * A context is an object usually created by a directive such as dataset-context or catalog-context.
@@ -114,6 +114,7 @@
                     root = ODSWidgetsConfig.defaultDomain;
                 } else {
                     if (domain.substr(0, 1) !== '/' && domain.indexOf('.') === -1) {
+                        // root = domain+'.huwise.com'; // Commented until huwise.com is available for every new domain
                         root = domain+'.opendatasoft.com';
                     } else {
                         root = domain;
@@ -161,11 +162,11 @@
                                 root = '';
                                 console.error('Invalid context domain URL: paths are not allowed (' + url.pathname + ')');
                             }
-                            if (!url.host.endsWith('.opendatasoft.com') && url.host !== window.location.host) {
-                                // We don't allow external URLs that are not ODS URLs, except if it's the current host
+                            if (!url.host.endsWith('.huwise.com') && !url.host.endsWith('.opendatasoft.com') && url.host !== window.location.host) {
+                                // We don't allow external URLs that are not Huwise or ODS URLs, except if it's the current host
                                 // in the browser
                                 root = '';
-                                console.error('Invalid context domain URL: forbidden host (' + url.host + '), only the current host or an opendatasoft.com URL is allowed');
+                                console.error('Invalid context domain URL: forbidden host (' + url.host + '), only the current host, a huwise.com or an opendatasoft.com URL is allowed');
                             }
                         }
                     }

@@ -38,7 +38,7 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-catalog-context context="examples"
-         *                               examples-domain="https://documentation-resources.opendatasoft.com/"
+         *                               examples-domain="https://documentation-resources.huwise.com/"
          *                               ods-domain-statistics>
          *              <p>Our portal has {{examples.stats.dataset}} datasets, described by {{examples.stats.theme}} themes
          *              and {{examples.stats.keyword}} keywords.</p>

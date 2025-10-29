@@ -117,10 +117,10 @@ module.exports = function(grunt) {
                 expand: true,
                 cwd: 'assets/',
                 src: [
-                    'ods-logo-noir.svg',
+                    'huwise-logo-hc.svg',
                     'menu-fill.svg',
                     'apps-custo.svg',
-                    'ods-favicon.ico',
+                    'favicon.ico',
                     'widget_doc_schema.png'
                 ],
                 dest: 'docs/assets'
@@ -164,7 +164,7 @@ module.exports = function(grunt) {
                 ],
                 template: 'src-docs/templates/index.tmpl',
                 html5Mode: false,
-                image: 'assets/ods-logo-noir.svg',
+                image: 'assets/huwise-logo-hc.svg',
 				title: "ODS-Widgets",
 				bestMatch: false,
                 startPage: '/introduction/'
