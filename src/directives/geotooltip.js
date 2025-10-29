@@ -31,7 +31,7 @@
              *          </p>
              *
              *          <ods-dataset-context context="events"
-             *                               events-domain="https://documentation-resources.opendatasoft.com/"
+             *                               events-domain="https://documentation-resources.huwise.com/"
              *                               events-dataset="evenements-publics-openagenda-extract">
              *              <!-- Display values from records -->
              *              <ods-result-enumerator context="events" max="1">

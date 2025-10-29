@@ -9547,7 +9547,7 @@ mod.directive('infiniteScroll', [
     'use strict';
 
     // ODS-Widgets, a library of web components to build interactive visualizations from APIs
-    // by Opendatasoft
+    // by Huwise
     //  License: MIT
     var version = '2.1.2';
     //  Homepage: https://github.com/opendatasoft/ods-widgets
@@ -9852,7 +9852,7 @@ mod.directive('infiniteScroll', [
 
     mod.service('ODSAPIv2', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'odsHttpErrorMessages', '$q', function($http, ODSWidgetsConfig, odsNotificationService, odsHttpErrorMessages, $q) {
         /**
-         * This service exposes Opendatasoft APIs.
+         * This service exposes Huwise APIs.
          *
          * Each method take a context, and specific parameters to append to this request (without modifying the context).
          * A context is an object usually created by a directive such as dataset-context or catalog-context.
@@ -9969,7 +9969,7 @@ mod.directive('infiniteScroll', [
 
     mod.service('ODSAPI', ['$http', 'ODSWidgetsConfig', 'odsNotificationService', 'odsHttpErrorMessages', '$q', function($http, ODSWidgetsConfig, odsNotificationService, odsHttpErrorMessages, $q) {
         /**
-         * This service exposes Opendatasoft APIs.
+         * This service exposes Huwise APIs.
          *
          * Each method take a context, and specific parameters to append to this request (without modifying the context).
          * A context is an object usually created by a directive such as dataset-context or catalog-context.
@@ -10078,6 +10078,7 @@ mod.directive('infiniteScroll', [
                     root = ODSWidgetsConfig.defaultDomain;
                 } else {
                     if (domain.substr(0, 1) !== '/' && domain.indexOf('.') === -1) {
+                        // root = domain+'.huwise.com'; // Commented until huwise.com is available for every new domain
                         root = domain+'.opendatasoft.com';
                     } else {
                         root = domain;
@@ -10125,11 +10126,11 @@ mod.directive('infiniteScroll', [
                                 root = '';
                                 console.error('Invalid context domain URL: paths are not allowed (' + url.pathname + ')');
                             }
-                            if (!url.host.endsWith('.opendatasoft.com') && url.host !== window.location.host) {
-                                // We don't allow external URLs that are not ODS URLs, except if it's the current host
+                            if (!url.host.endsWith('.huwise.com') && !url.host.endsWith('.opendatasoft.com') && url.host !== window.location.host) {
+                                // We don't allow external URLs that are not Huwise or ODS URLs, except if it's the current host
                                 // in the browser
                                 root = '';
-                                console.error('Invalid context domain URL: forbidden host (' + url.host + '), only the current host or an opendatasoft.com URL is allowed');
+                                console.error('Invalid context domain URL: forbidden host (' + url.host + '), only the current host, a huwise.com or an opendatasoft.com URL is allowed');
                             }
                         }
                     }
@@ -11496,7 +11497,7 @@ mod.directive('infiniteScroll', [
 
     mod.service('Geocoder', ['$http', 'ODSWidgetsConfig', '$q', function($http, ODSWidgetsConfig, $q) {
         // https://www.jawg.io/docs/apidocs/places/autocomplete/#layers
-        // Regarding configuration: https://app.clubhouse.io/opendatasoft/story/17461/experiment-alternative-geocoding-api-as-a-backend-for-geosearch#activity-19300
+        // Regarding configuration: https://app.shortcut.com/huwise/story/17461/experiment-alternative-geocoding-api-as-a-backend-for-geosearch
         var includedLayers = [
             'address',
             // 'venue',
@@ -11873,7 +11874,7 @@ mod.directive('infiniteScroll', [
 
                     if (countryCode === 'gb') {
                         // GB is a special situation: our reference data use "gb" for world level, but "uk" for local levels.
-                        // https://app.shortcut.com/opendatasoft/story/35331/apply-the-same-render-mechanism-for-classic-pages-preview-as-for-classic-pages-normal-rendering
+                        // https://app.shortcut.com/Huwise/story/35331/apply-the-same-render-mechanism-for-classic-pages-preview-as-for-classic-pages-normal-rendering
                         return 'uk';
                     }
 
@@ -12337,7 +12338,7 @@ mod.directive('infiniteScroll', [
                     var field = layerConfig.context.dataset && layerConfig.context.dataset.getField(layerConfig.color.field);
                     if (field) {
                         // If the field is multivalued, the color depends on the first value
-                        // https://app.shortcut.com/opendatasoft/story/33970
+                        // https://app.shortcut.com/Huwise/story/33970
                         var multivaluedAnnotation = layerConfig.context.dataset.getFieldAnnotation(field, 'multivalued');
                         if (multivaluedAnnotation) {
                             var mvSeparator = multivaluedAnnotation.args[0];
@@ -17170,14 +17171,14 @@ mod.directive('infiniteScroll', [
          * @param {string} odsAdvAnalysis This name can be used as the `data` attribute of the display widgets that support it (e.g. `odsAdvTable`).
          * @param {string} odsAdvAnalysisContext Insert here the name of the context to use.
          * @param {string} [odsAdvAnalysisSelect] Type here the query to make. More use cases are available below. The documentation about the ODSQL select clause is available here. This clause will contain the values (i.e., the y-axis in case of a chart).
-         * @param {string} [odsAdvAnalysisWhere] This parameter allows to filter rows with a combination of expressions. The documentation about the ODSQL `where` clause is available [here](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Where-clause).
-         * @param {string} [odsAdvAnalysisGroupBy] This parameter helps regroup the calculation according to specific criteria. The `group-by` in this clause can become either y-axis or series in a chart. The documentation about the ODSQL `GROUP BY` clause is available [here](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Group-by-clause).
-         * @param {string} [odsAdvAnalysisOrderBy] This parameter is used to sort the results of an aggregation using the `ASC` and `DESC` keywords (e.g., `myField ASC` or ). The documentation about the ODSQL `ORDER BY` clause is available [here](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Order-by-clause).
+         * @param {string} [odsAdvAnalysisWhere] This parameter allows to filter rows with a combination of expressions. The documentation about the ODSQL `where` clause is available [here](https://help.huwise.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Where-clause).
+         * @param {string} [odsAdvAnalysisGroupBy] This parameter helps regroup the calculation according to specific criteria. The `group-by` in this clause can become either y-axis or series in a chart. The documentation about the ODSQL `GROUP BY` clause is available [here](https://help.huwise.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Group-by-clause).
+         * @param {string} [odsAdvAnalysisOrderBy] This parameter is used to sort the results of an aggregation using the `ASC` and `DESC` keywords (e.g., `myField ASC` or ). The documentation about the ODSQL `ORDER BY` clause is available [here](https://help.huwise.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Order-by-clause).
          * @param {string} [odsAdvAnalysisLimit] Limits the number of items to return.
          *
          * @description
          * The odsAdvAnalysis widget exposes the results of an aggregation function over a context.
-         * It uses the ODS Explore API V2.1 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29), which offers greater flexibility than the v1.
+         * It uses the ODS Explore API V2.1 and its [ODSQL language](https://help.huwise.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29), which offers greater flexibility than the v1.
          *
          * The parameters for this widgets are dynamic, which implies two benefits:
          * - First, changes in context parameters will refresh the results of the widget.
@@ -17186,7 +17187,7 @@ mod.directive('infiniteScroll', [
          * The results can then be displayed in three different ways:
          * - To create specific visualizations, using custom-made HTML and CSS
          * - A table view is also available using `odsAdvTable` (examples are provided below).
-         * - As the widget is creating an AngularJS variable, it can be displayed through a simple `{{myData.results[X]}}`. This usage is not documented here, as it regards HTML code and widgets already documented in [the introduction](https://help.opendatasoft.com/widgets/#/introduction/).
+         * - As the widget is creating an AngularJS variable, it can be displayed through a simple `{{myData.results[X]}}`. This usage is not documented here, as it regards HTML code and widgets already documented in [the introduction](https://help.huwise.com/widgets/#/introduction/).
          *
          * For retro-compatibility purposes, similarly to API V2.0, if the `groupBy` is done on a field that contains null values, they will be removed. If you are
          * using the `limit` parameter, this may cause the widget to return one less category as expected, because the null group was included. You can
@@ -17200,7 +17201,7 @@ mod.directive('infiniteScroll', [
          * <pre>
          *     <ods-dataset-context
          *         context="ctx"
-         *         ctx-domain="https://documentation-resources.opendatasoft.com/"
+         *         ctx-domain="https://documentation-resources.huwise.com/"
          *         ctx-dataset="les-arbres-remarquables-de-paris">
          *         <div ods-adv-analysis="myData"
          *             ods-adv-analysis-context="ctx"
@@ -17218,7 +17219,7 @@ mod.directive('infiniteScroll', [
          * <pre>
          *     <ods-dataset-context
          *         context="ctx"
-         *         ctx-domain="https://documentation-resources.opendatasoft.com/"
+         *         ctx-domain="https://documentation-resources.huwise.com/"
          *         ctx-dataset="gold-prices">
          *         <div ods-adv-analysis="myData"
          *             ods-adv-analysis-context="ctx"
@@ -17239,7 +17240,7 @@ mod.directive('infiniteScroll', [
          * <pre>
          *     <ods-dataset-context
          *         context="ctx"
-         *         ctx-domain="https://documentation-resources.opendatasoft.com/"
+         *         ctx-domain="https://documentation-resources.huwise.com/"
          *         ctx-dataset="les-arbres-remarquables-de-paris">
          *         <div ods-adv-analysis="myData"
          *             ods-adv-analysis-context="ctx"
@@ -17463,7 +17464,7 @@ mod.directive('infiniteScroll', [
          *    <file name="an_example_using_odsAdvAnalysis.html">
          *        <ods-dataset-context
          *            context="ctx"
-         *            ctx-domain="https://documentation-resources.opendatasoft.com/"
+         *            ctx-domain="https://documentation-resources.huwise.com/"
          *            ctx-dataset="les-arbres-remarquables-de-paris">
          *            <div ods-adv-analysis="data"
          *                ods-adv-analysis-context="ctx"
@@ -18134,7 +18135,7 @@ mod.directive('infiniteScroll', [
          *      <file name="simple_aggregation.html">
          *  <ods-dataset-context context="tree"
          *                       tree-dataset="les-arbres-remarquables-de-paris"
-         *                       tree-domain="https://documentation-resources.opendatasoft.com/">
+         *                       tree-domain="https://documentation-resources.huwise.com/">
          *      <div ods-aggregation="height"
          *           ods-aggregation-context="tree"
          *           ods-aggregation-expression="hauteur_en_m"
@@ -18149,9 +18150,9 @@ mod.directive('infiniteScroll', [
          *      <file name="multiple_aggregations.html">
          *  <ods-dataset-context context="commute,demographics"
          *                       commute-dataset="average-commute-time-by-county"
-         *                       commute-domain="https://documentation-resources.opendatasoft.com/"
+         *                       commute-domain="https://documentation-resources.huwise.com/"
          *                       demographics-dataset="us-cities-demographics"
-         *                       demographics-domain="https://documentation-resources.opendatasoft.com/">
+         *                       demographics-domain="https://documentation-resources.huwise.com/">
          *      <div ods-aggregation="people, time"
          *           ods-aggregation-people-context="demographics"
          *           ods-aggregation-people-function="SUM"
@@ -18169,7 +18170,7 @@ mod.directive('infiniteScroll', [
          *      <file name="multiple_aggregations_same_context.html">
          *  <ods-dataset-context context="tree"
          *                       tree-dataset="les-arbres-remarquables-de-paris"
-         *                       tree-domain="https://documentation-resources.opendatasoft.com/">
+         *                       tree-domain="https://documentation-resources.huwise.com/">
          *      <div ods-aggregation="total, mingirth, maxgirth"
          *           ods-aggregation-context="tree"
          *           ods-aggregation-total-function="COUNT"
@@ -18326,7 +18327,7 @@ mod.directive('infiniteScroll', [
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                               tree-domain="https://documentation-resources.opendatasoft.com/">
+         *                               tree-domain="https://documentation-resources.huwise.com/">
          *              <table class="table table-bordered table-condensed table-striped">
          *                  <thead>
          *                      <tr>
@@ -18473,11 +18474,11 @@ mod.directive('infiniteScroll', [
          *      <file name="logarithmic-scale.html">
          *          <ods-dataset-context context="regions,population"
          *                               regions-dataset="regions-et-collectivites-doutre-mer-france"
-         *                               regions-domain="https://documentation-resources.opendatasoft.com/"
+         *                               regions-domain="https://documentation-resources.huwise.com/"
          *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)', 'disjunctive.reg_name':true}"
          *                               population-dataset="populations-legales-communes-et-arrondissements-municipaux-france"
          *                               population-parameters="{'disjunctive.reg_name':true}"
-         *                               population-domain="https://documentation-resources.opendatasoft.com/">
+         *                               population-domain="https://documentation-resources.huwise.com/">
          *
          *              <div ods-color-gradient="colorgradient"
          *                   ods-color-gradient-context="population"
@@ -18700,7 +18701,7 @@ mod.directive('infiniteScroll', [
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://documentation-resources.opendatasoft.com/">
+         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://documentation-resources.huwise.com/">
          *              <div
          *                      ods-analysis="analysis"
          *                      ods-analysis-context="tree"
@@ -18729,7 +18730,7 @@ mod.directive('infiniteScroll', [
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                               tree-domain="https://documentation-resources.opendatasoft.com/">
+         *                               tree-domain="https://documentation-resources.huwise.com/">
          *              <div ods-analysis="analysis"
          *                   ods-analysis-context="tree"
          *                   ods-analysis-max="10"
@@ -18859,7 +18860,7 @@ mod.directive('infiniteScroll', [
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://documentation-resources.opendatasoft.com/">
+         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://documentation-resources.huwise.com/">
          *              <div
          *                  ods-analysis="analysis"
          *                  ods-analysis-context="tree"
@@ -19126,7 +19127,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *              <ods-dataset-context context="events"
-         *                                   events-domain="https://documentation-resources.opendatasoft.com/"
+         *                                   events-domain="https://documentation-resources.huwise.com/"
          *                                   events-dataset="evenements-publics-openagenda-extract">
          *                  <ods-calendar context="events"
          *                                start-field="date_debut"
@@ -19360,7 +19361,7 @@ mod.directive('infiniteScroll', [
                         };
 
                         var content;
-                        // FIXME: https://app.shortcut.com/opendatasoft/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
+                        // FIXME: https://app.shortcut.com/Huwise/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
                         if (scope.context.dataset.extra_metas.visualization.calendar_tooltip_html_enabled && scope.context.dataset.extra_metas.visualization.calendar_tooltip_html) {
                             content = $compile('<div>' + scope.context.dataset.extra_metas.visualization.calendar_tooltip_html + '</div>')(newScope);
                         } else {
@@ -19469,14 +19470,14 @@ mod.directive('infiniteScroll', [
          *  @param {string} context <i>(mandatory)</i> Name, or list of names separated by commas, of context(s) to declare. Context names must be in lowercase, can only contain alphanumerical characters, and cannot begin with a number, "data", or "x".
          *  @param {string} [domain=ODSWidgetsConfig.defaultDomain] Domain where the dataset(s) can be found. Since the domain value is used to construct an URL to an API root, it can be:
          *
-         *  - an alphanumeric string (e.g., *mydomain*): it will assume that it is an Opendatasoft domain (e.g., *mydomain.opendatasoft.com*)
+         *  - an alphanumeric string (e.g., *mydomain*): it will assume that it is a Huwise domain (e.g., *mydomain.huwise.com*)
          *  - a hostname (e.g., *data.mydomain.com*)
          *  - a relative path (e.g., _/monitoring_): it will be relative to the hostname of the current page
          *  - a hostname and a path (e.g., *data.mydomain.com/monitoring*)
          *
          * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
          *
-         *  @param {string} [apikey=none] API key to use in every API call for the context. For more information, see {@link https://user-guide.opendatasoft.com/en/articles/2044226 Generating an API key}).
+         *  @param {string} [apikey=none] API key to use in every API call for the context. For more information, see {@link https://userguide.huwise.com/en/articles/2044226 Generating an API key}).
          *  @param {object} [parameters=none] Object holding parameters to apply to the context when it is created
          *  @param {boolean} [urlSync=none] Enables synchronization of the parameters to the page's parameters (query string). When sharing the page with parameters in the URL, the context will use them; and if the context parameters change, the URL parameters will change as well. Note that if this parameter is enabled, `parameters` and `parametersFromContext` won't have any effect. There can also only be a single context with URL synchronization enabled, else the behavior will be unpredictable.
          *
@@ -19501,7 +19502,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="simple_example.html">
          *          <ods-catalog-context context="examples"
-         *                               examples-domain="https://documentation-resources.opendatasoft.com/">
+         *                               examples-domain="https://documentation-resources.huwise.com/">
          *              <ods-most-popular-datasets context="examples"></ods-most-popular-datasets>
          *          </ods-catalog-context>
          *      </file>
@@ -19510,7 +19511,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="odsresultenumerator_with_catalog_context.html">
          *          <ods-catalog-context context="examples"
-         *                               examples-domain="https://documentation-resources.opendatasoft.com/">
+         *                               examples-domain="https://documentation-resources.huwise.com/">
          *
          *              <ul>
          *                  <ods-result-enumerator context="examples">
@@ -19689,7 +19690,7 @@ mod.directive('infiniteScroll', [
          *      <file name="index.html">
          *         <ods-dataset-context context="trees"
          *                              trees-dataset="les-arbres-remarquables-de-paris"
-         *                              trees-domain="https://documentation-resources.opendatasoft.com/">
+         *                              trees-domain="https://documentation-resources.huwise.com/">
          *              <ods-cross-table context="trees"
          *                               rows="arrondissement"
          *                               column="espece"
@@ -20437,14 +20438,14 @@ mod.directive('infiniteScroll', [
          *  @param {string} dataset <i>(mandatory)</i> Identifier of the dataset(s) on which the context is based.
          *  @param {string} [domain=ODSWidgetsConfig.defaultDomain] Domain where the dataset(s) can be found. Since the domain value is used to construct a URL to an API root, it can be:
          *
-         *  - an alphanumeric string (e.g., *mydomain*): it will assume that it is an Opendatasoft domain (e.g., *mydomain.opendatasoft.com*)
+         *  - an alphanumeric string (e.g., *mydomain*): it will assume that it is a Huwise domain (e.g., *mydomain.huwise.com*)
          *  - a hostname (e.g., *data.mydomain.com*)
          *  - a relative path (e.g., _/monitoring_): it will be relative to the hostname of the current page
          *  - a hostname and a path (e.g., *data.mydomain.com/monitoring*)
          *
          * By default, if the domain parameter is not set, {@link ods-widgets.ODSWidgetsConfigProvider ODSWidgetsConfig.defaultDomain} is used.
          *
-         *  @param {string} [apikey=none] API key to use in every API call for the context (see {@link https://user-guide.opendatasoft.com/en/articles/2044226 Generating an API key}).
+         *  @param {string} [apikey=none] API key to use in every API call for the context (see {@link https://userguide.huwise.com/en/articles/2044226 Generating an API key}).
          *  @param {string} [sort=none] Sorts expression to apply by default to all widgets plugged to the declared context. The expression should be written using one of the following syntaxes:
          *
          *  - `field` for an ascending order,
@@ -20485,9 +20486,9 @@ mod.directive('infiniteScroll', [
          *      <file name="visualizations_based_on_dataset_context.html">
          *          <ods-dataset-context context="trees,events"
          *                               trees-dataset="les-arbres-remarquables-de-paris"
-         *                               trees-domain="https://documentation-resources.opendatasoft.com/"
+         *                               trees-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/">
+         *                               events-domain="https://documentation-resources.huwise.com/">
          *               <!-- Shows a list of the trees -->
          *               <ods-table context="trees"></ods-table>
          *               <!-- Shows a map of events -->
@@ -20500,7 +20501,7 @@ mod.directive('infiniteScroll', [
          *      <file name="dataset_context_with_parameters.html">
          *          <ods-dataset-context context="demographics"
          *                               demographics-dataset="us-cities-demographics"
-         *                               demographics-domain="https://documentation-resources.opendatasoft.com/"
+         *                               demographics-domain="https://documentation-resources.huwise.com/"
          *                               demographics-parameters="{'q': 'Santa', 'refine.state': 'California'}">
          *                <!-- Demographics for all cities in California that have 'Santa' in their name -->
          *                <ods-table context="demographics"></ods-table>
@@ -20670,7 +20671,7 @@ mod.directive('infiniteScroll', [
          *     <file name="index.html">
          *         <ods-dataset-context context="tree"
          *                              tree-dataset="les-arbres-remarquables-de-paris"
-         *                              tree-domain="https://documentation-resources.opendatasoft.com/">
+         *                              tree-domain="https://documentation-resources.huwise.com/">
          *             <ods-dataset-schema context="tree"></ods-dataset-schema>
          *         </ods-dataset-context>
          *    </file>
@@ -21275,7 +21276,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-catalog-context context="examples"
-         *                               examples-domain="https://documentation-resources.opendatasoft.com/"
+         *                               examples-domain="https://documentation-resources.huwise.com/"
          *                               ods-domain-statistics>
          *              <p>Our portal has {{examples.stats.dataset}} datasets, described by {{examples.stats.theme}} themes
          *              and {{examples.stats.keyword}} keywords.</p>
@@ -21454,7 +21455,7 @@ mod.directive('infiniteScroll', [
          *
          *  @param {boolean} [disjunctive=false] When set to `true`, the filter is in disjunctive mode, which means that other available values can also be selected after a first value is selected. All selected values are combined as "or". For example, after clicking "red", "green" and "blue" can also be clicked. The resulting values can be green, red, or blue.
          *
-         *  Note: this parameter is directly related to the schema of the dataset. For this parameter to work properly, the field must allow multiple selections in filters. For more information, see {@link https://user-guide.opendatasoft.com/en/articles/2044866 Defining a dataset schema}).
+         *  Note: this parameter is directly related to the schema of the dataset. For this parameter to work properly, the field must allow multiple selections in filters. For more information, see {@link https://userguide.huwise.com/en/articles/2044866 Defining a dataset schema}).
          *  @param {boolean} [timerangeFilter=false] When set to `true`, an option to filter using a time range is displayed above the categories. This parameter only works for date and datetime fields and must be used with a context (see **context** parameter).
          *  @param {string} [context=none] Name of the context to refine on. This parameter is mandatory for the **timerangeFilter** parameter.
          *  @param {string} [valueSearch=none] When set to `true`, a search box is displayed above the categories to search within the available categories. If `suggest`, the matching categories are not displayed until there is at least one character typed into the search box, effectively making it into a suggest-like search box.
@@ -21519,7 +21520,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="odsFacets_with_odsFacet.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <div class="row-fluid">
          *                  <div class="span4">
@@ -21545,9 +21546,9 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="refineAlso_parameter.html">
          *          <ods-dataset-context context="geonamescities, countries"
-         *                               geonamescities-domain="https://documentation-resources.opendatasoft.com/"
+         *                               geonamescities-domain="https://documentation-resources.huwise.com/"
          *                               geonamescities-dataset="doc-geonames-cities-5000"
-         *                               countries-domain="https://documentation-resources.opendatasoft.com/"
+         *                               countries-domain="https://documentation-resources.huwise.com/"
          *                               countries-dataset="natural-earth-countries-110m">
          *              <ods-facets context="geonamescities">
          *                    <ods-facet name="country_code"
@@ -21669,7 +21670,7 @@ mod.directive('infiniteScroll', [
                     //     return;
                     // }
                     $scope.$watch(function() {
-                        // FIXME: Generalize this and use a whitelist https://github.com/opendatasoft/ods-widgets/issues/13
+                        // FIXME: Generalize this and use a whitelist https://github.com/Opendatasoft/ods-widgets/issues/13
                         var params = angular.copy($scope.context.parameters);
                         if (params.sort) {
                             delete params.sort;
@@ -22966,7 +22967,7 @@ mod.directive('infiniteScroll', [
              *          </p>
              *
              *          <ods-dataset-context context="events"
-             *                               events-domain="https://documentation-resources.opendatasoft.com/"
+             *                               events-domain="https://documentation-resources.huwise.com/"
              *                               events-dataset="evenements-publics-openagenda-extract">
              *              <!-- Display values from records -->
              *              <ods-result-enumerator context="events" max="1">
@@ -25010,7 +25011,7 @@ mod.directive('infiniteScroll', [
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="hurricanes" hurricanes-domain="public.opendatasoft.com" hurricanes-dataset="hurricane-tracks-1851-2007">
+         *          <ods-dataset-context context="hurricanes" hurricanes-domain="hub.huwise.com" hurricanes-dataset="hurricane-tracks-1851-2007">
          *              <ods-highcharts context="hurricanes" field-x="track_date" chart-type="line" timescale="year" function-y="COUNT"></ods-highcharts>
          *          </ods-dataset-context>
          *      </file>
@@ -25147,7 +25148,7 @@ mod.directive('infiniteScroll', [
          * @param {CatalogContext} context {@link ods-widgets.directive:odsCatalogContext Catalog Context} to use
          * @param {string|Object} [chartConfig=none] A complete configuration, as a object or as a base64 string. The parameter directly expects an angular expression, so a base64 string needs to be quoted.
          * @description
-         * This widget can display a multiple chart generated using the "Charts" interface of Opendatasoft.
+         * This widget can display a multiple chart generated using the "Charts" interface of Huwise.
          *
          */
         return {
@@ -25221,7 +25222,7 @@ mod.directive('infiniteScroll', [
          * @param {integer} [labelsXLength=12] Sets the maximum number of characters displayed for the X-axis labels.
          *
          * @description
-         * The odsChart widget is the base widget allowing to display charts from Opendatasoft datasets.
+         * The odsChart widget is the base widget allowing to display charts from Huwise datasets.
          * A Chart is defined by one or more series that get their data from form one or more datasets represented by a {@link ods-widgets.directive:odsDatasetContext Dataset Context},
          * a type of chart, and multiple parameters to fine-tune the chart's appearance.
          *
@@ -25261,9 +25262,9 @@ mod.directive('infiniteScroll', [
          *    <pre>
          *        <ods-dataset-context context="commute,demographics"
          *                             commute-dataset="commute-time-us-counties"
-         *                             commute-domain="https://documentation-resources.opendatasoft.com/"
+         *                             commute-domain="https://documentation-resources.huwise.com/"
          *                             demographics-dataset="us-cities-demographics"
-         *                             demographics-domain="https://documentation-resources.opendatasoft.com/">
+         *                             demographics-domain="https://documentation-resources.huwise.com/">
          *            <ods-chart align-month="true">
          *                <ods-chart-query context="commute" field-x="state" maxpoints="20">
          *                    <ods-chart-serie expression-y="mean_commuting_time" chart-type="column" function-y="AVG" color="#66c2a5" scientific-display="true">
@@ -25875,7 +25876,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-catalog-context context="example"
-         *                               example-domain="https://data.opendatasoft.com/">
+         *                               example-domain="https://hub.huwise.com/">
          *              <ul>
          *                  <ods-infinite-scroll-results context="example">
          *                      <li>
@@ -26020,7 +26021,7 @@ mod.directive('infiniteScroll', [
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="example" example-domain="data.opendatasoft.com">
+         *          <ods-catalog-context context="example" example-domain="hub.huwise.com">
          *              <ods-last-datasets-feed context="example"></ods-last-datasets-feed>
          *          </ods-catalog-context>
          *      </file>
@@ -26095,7 +26096,7 @@ mod.directive('infiniteScroll', [
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="public" public-domain="https://public.opendatasoft.com">
+         *          <ods-catalog-context context="public" public-domain="https://hub.huwise.com">
          *              <ods-last-reuses-feed context="public"></ods-last-reuses-feed>
          *          </ods-catalog-context>
          *      </file>
@@ -26183,12 +26184,12 @@ mod.directive('infiniteScroll', [
          *      <file name="legend.html">
          *          <ods-dataset-context context="regions,population"
          *                               regions-dataset="regions-et-collectivites-doutre-mer-france"
-         *                               regions-domain="https://documentation-resources.opendatasoft.com/"
+         *                               regions-domain="https://documentation-resources.huwise.com/"
          *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)',
          *                                                   'disjunctive.reg_name':true}"
          *                               population-dataset="populations-legales-communes-et-arrondissements-municipaux-france"
          *                               population-parameters="{'disjunctive.reg_name':true}"
-         *                               population-domain="https://documentation-resources.opendatasoft.com/">
+         *                               population-domain="https://documentation-resources.huwise.com/">
          *
          *              <div ods-color-gradient="colorgradient"
          *                   ods-color-gradient-context="population"
@@ -26877,7 +26878,7 @@ mod.directive('infiniteScroll', [
                                                     // the searchOptions already contains a geofilter
 
                                                     // FIXME: This is a workaround until we know we can safely do polygon requests for the clusters.
-                                                    // See https://github.com/opendatasoft/platform/issues/2116
+                                                    // See https://github.com/Opendatasoft/platform/issues/2116
     //                                                var polygonParameter = ODS.GeoFilter.getGeoJSONPolygonAsPolygonParameter(cluster.cluster); // This is the normal good one
                                                     var polygonParameter = ODS.GeoFilter.getBoundsAsPolygonParameter(L.geoJson(cluster.cluster).getBounds()); // This is the workaround
 
@@ -28328,7 +28329,7 @@ mod.directive('infiniteScroll', [
                     jQuery('.ng-leaflet-tooltip-cloak', element).removeClass('ng-leaflet-tooltip-cloak');
                 };
                 if (attrs.template && attrs.template !== '') {
-                    // FIXME: https://app.shortcut.com/opendatasoft/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
+                    // FIXME: https://app.shortcut.com/Huwise/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
                     $templateCache.put('custom-tooltip-' + scope.context.dataset.datasetid, attrs.template);
                 } else {
                     $templateCache.put('default-tooltip', '<div class="infoPaneLayout">' +
@@ -28336,7 +28337,7 @@ mod.directive('infiniteScroll', [
                         '   <span ng-bind="getTitle(record) | shortSummary: 100"></span> ' +
                         '</h2>' +
                         '<dl class="odswidget-map-tooltip__record-values">' +
-                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields|fieldsForLanguageDisplay:fieldsDisplayedInSpecificLanguages" ' +
+                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields|fieldsForLanguageDisplay:displayLanguage:fieldsDisplayedInSpecificLanguages" ' +
                         '        ng-show="record.fields[field.name]|isDefined"' +
                         '        class="odswidget-map-tooltip__field-name">' +
                         '        {{ field.label }}' +
@@ -28446,6 +28447,7 @@ mod.directive('infiniteScroll', [
                     return null;
                 };
                 $scope.fields = angular.copy($scope.context.dataset.fields);
+                $scope.displayLanguage = ODSWidgetsConfig.language;
                 $scope.fieldsDisplayedInSpecificLanguages = (
                     $scope.context.dataset &&
                     $scope.context.dataset.extra_metas &&
@@ -28566,7 +28568,7 @@ mod.directive('infiniteScroll', [
          *      <file name="odsMap_used_alone.html">
          *  <ods-dataset-context context="countries"
          *                       countries-dataset="natural-earth-countries-110m"
-         *                       countries-domain="https://documentation-resources.opendatasoft.com/">
+         *                       countries-domain="https://documentation-resources.huwise.com/">
          *      <ods-map context="countries"
          *               location="2,41.88759,0.90273"
          *               basemap="jawg.light"></ods-map>
@@ -29586,7 +29588,7 @@ mod.directive('infiniteScroll', [
                         group.layers.forEach(function(layer) {
                             // tooltipTemplate must not be passed directly via a mapConfig object, as it would bypass
                             // sanitization entirely.
-                            // https://app.shortcut.com/opendatasoft/story/40124/xss-passing-tooltiptemplate-in-mapbuilder-payload
+                            // https://app.shortcut.com/Huwise/story/40124/xss-passing-tooltiptemplate-in-mapbuilder-payload
                             if (angular.isDefined(layer.tooltipTemplate)) {
                                 delete layer.tooltipTemplate;
                             }
@@ -29736,13 +29738,13 @@ mod.directive('infiniteScroll', [
          *  <ods-dataset-context context="under100000,under500000,greaterthan500000"
          *                 under100000-dataset="doc-geonames-cities-5000"
          *                 under100000-parameters="{'q.population':' population > 0 AND population < 100000'}"
-         *                 under100000-domain="https://documentation-resources.opendatasoft.com/"
+         *                 under100000-domain="https://documentation-resources.huwise.com/"
          *                 under500000-dataset="doc-geonames-cities-5000"
          *                 under500000-parameters="{'q.population':' population >= 100000 AND population < 500000'}"
-         *                 under500000-domain="https://documentation-resources.opendatasoft.com/"
+         *                 under500000-domain="https://documentation-resources.huwise.com/"
          *                 greaterthan500000-dataset="doc-geonames-cities-5000"
          *                 greaterthan500000-parameters="{'q.population':'population >= 500000'}"
-         *                 greaterthan500000-domain="https://documentation-resources.opendatasoft.com/">
+         *                 greaterthan500000-domain="https://documentation-resources.huwise.com/">
          *<ods-map no-refit="true"
          *         scroll-wheel-zoom="false"
          *         display-control="true"
@@ -29990,7 +29992,7 @@ mod.directive('infiniteScroll', [
        *
        * Available for `aggregation` and with `color` and `colorScale` display modes, or when none is specified.
        *
-       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://user-guide.opendatasoft.com/en/articles/2042498" target="_blank">Pictograms reference documentation</a>.
+       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://userguide.huwise.com/en/articles/2042498" target="_blank">Pictograms reference documentation</a>.
        *
        * When displaying shapes, `borderColor` and `opacity` can be used to configure the color of the shape border and the opacity of the shape's fill.
        *
@@ -30083,7 +30085,7 @@ mod.directive('infiniteScroll', [
        *      <file name="odsMap_with_odsMapLayer.html">
        *  <ods-dataset-context context="genderequalityineurope"
        *                       genderequalityineurope-dataset="gender-equality-in-europe"
-       *                       genderequalityineurope-domain="https://documentation-resources.opendatasoft.com/">
+       *                       genderequalityineurope-domain="https://documentation-resources.huwise.com/">
        *      <ods-map no-refit="true"
        *               scroll-wheel-zoom="false"
        *               display-control="false"
@@ -30389,7 +30391,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="affiches"
-         *                               affiches-domain="https://documentation-resources.opendatasoft.com/"
+         *                               affiches-domain="https://documentation-resources.huwise.com/"
          *                               affiches-dataset="affiches-anciennes">
          *              <ods-media-gallery context="affiches" ods-auto-resize ods-widget-tooltip>
          *                  <h3>My custom tooltip</h3>
@@ -30638,7 +30640,7 @@ mod.directive('infiniteScroll', [
                     if ($scope.context.dataset.extra_metas.visualization &&
                         $scope.context.dataset.extra_metas.visualization.image_tooltip_html_enabled &&
                         $scope.context.dataset.extra_metas.visualization.image_tooltip_html) {
-                        // FIXME: https://app.shortcut.com/opendatasoft/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
+                        // FIXME: https://app.shortcut.com/Huwise/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
                         detailsTemplate = '<div>' + $scope.context.dataset.extra_metas.visualization.image_tooltip_html + '</div>';
                     } else {
                         detailsTemplate = defaultDetailsTemplate;
@@ -30954,7 +30956,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-catalog-context context="example"
-         *                               example-domain="data.opendatasoft.com">
+         *                               example-domain="data.huwise.com">
          *              <ods-most-popular-datasets context="example"></ods-most-popular-datasets>
          *          </ods-catalog-context>
          *      </file>
@@ -31031,7 +31033,7 @@ mod.directive('infiniteScroll', [
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="example" example-domain="data.opendatasoft.com">
+         *          <ods-catalog-context context="example" example-domain="data.huwise.com">
          *              <ods-most-used-themes context="example"></ods-most-used-themes>
          *          </ods-catalog-context>
          *      </file>
@@ -31314,7 +31316,7 @@ mod.directive('infiniteScroll', [
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-picto url="'assets/opendatasoft-logo.svg'"
+         *          <ods-picto url="'assets/huwise-logo-hc.svg'"
          *                     color="'#33629C'" style="width: 64px; height: 64px"></ods-picto>
          *      </file>
          *  </example>
@@ -31356,19 +31358,21 @@ mod.directive('infiniteScroll', [
                             - else (general case): embed the URL with an img tag.
                              */
                             if (!ODSWidgetsConfig.allowExternalPictoUrls && scope.origin !== originThemePicto) {
-                                // Enforce ODS pictos only
-                                // We only allow SVG URLs maintained by ODS, so that we can guarantee that inlining them
+                                // Enforce Huwise pictos only
+                                // We only allow SVG URLs maintained by Huwise, so that we can guarantee that inlining them
                                 // doesn't cause any potential security issue.
                                 // In any other case, we just load as <img> tags, losing the custom color in the process.
                                 if (
                                     // Default picto and fallback
-                                    url !== '/static/ods/img/themes/odslogo.svg' &&
+                                    url !== '/static/ods/img/themes/logo.svg' &&
                                     // set-v2 and set-v3 built-in pictos
                                     !url.startsWith('/static/pictos/img/') &&
-                                    // Georefs for static choropleths (https://codelibrary.opendatasoft.com/widget-tricks/svg-maps/)
-                                    !url.startsWith('https://static.opendatasoft.com/georef/svg/') &&
+                                    // Georefs for static choropleths (https://codelibrary.huwise.com/widget-tricks/svg-maps/)
+                                    !url.startsWith('https://static.huwise.com/georef/svg/') &&
+                                    !url.startsWith('https://static.huwise.com/georef/svg/') &&
                                     // Built-in pictos on other ODS domains
-                                    !/^https:\/\/[a-z0-9-]*\.opendatasoft\.com\/static\/pictos\/img\//.test(url)
+                                    !/^https:\/\/[a-z0-9-]*\.opendatasoft\.com\/static\/pictos\/img\//.test(url) &&
+                                    !/^https:\/\/[a-z0-9-]*\.huwise\.com\/static\/pictos\/img\//.test(url)
                                 ) {
                                     imgTagLoad = true;
                                     svgContainer = angular.element('<div class="ods-svginliner__svg-container"></div>');
@@ -31846,7 +31850,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-catalog-context context="example"
-         *                               example-domain="https://data.opendatasoft.com">
+         *                               example-domain="https://data.huwise.com">
          *              <ul>
          *                  <ods-result-enumerator context="example">
          *                      <li>
@@ -31916,7 +31920,7 @@ mod.directive('infiniteScroll', [
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                               tree-domain="https://documentation-resources.opendatasoft.com/"
+         *                               tree-domain="https://documentation-resources.huwise.com/"
          *                               tree-parameters="{'sort': '-objectid'}">
          *              <table class="table table-bordered table-condensed table-striped">
          *                  <thead>
@@ -31944,7 +31948,7 @@ mod.directive('infiniteScroll', [
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                                   tree-domain="https://documentation-resources.opendatasoft.com/">
+         *                                   tree-domain="https://documentation-resources.huwise.com/">
          *              <p ods-results="items" ods-results-context="tree" ods-results-max="10">
          *                  Total number of trees : {{ tree.nhits }}
          *              </p>
@@ -32086,14 +32090,42 @@ mod.directive('infiniteScroll', [
 
                 $scope.reuses = [];
 
+                // Convert HTML to text for description
+                // If no html is found, return the text content
+                var htmlToText = function (html) {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var elements = doc.querySelectorAll('p, li');
+                    if (!elements.length) {
+                        return doc.body.textContent || '';
+                    }
+                    return Array.from(elements)
+                        .map(function(el) {
+                            return { text: el.textContent && el.textContent.trim(), tag: el.tagName };
+                        })
+                        .filter(function(c) { return c && c.text; })
+                        .reduce(function(acc, c) {
+                            return c.tag === 'P' ? acc + c.text + '\n' : acc + '  • ' + c.text + '\n';
+                        }, '');
+                };
+
+                // Extracts reuses from the response and formats them
+                var extractReuses = function(response) {
+                    var data = response.data;
+                    return data.reuses.map(function(reuse) {
+                        reuse.description = htmlToText(reuse.description);
+                        return reuse;
+                    });
+                };
+
                 $scope.loadMore = function() {
                     if ($scope.reuses.length && !done && !fetching) {
                         fetching = true;
                         var start = page * resultsPerPage;
                         reuses($scope.context, {'rows': resultsPerPage, 'start': start}).
                             then(function(response) {
-                                var data = response.data;
-                                $scope.reuses = $scope.reuses.concat(data.reuses);
+                                var dataReusesText = extractReuses(response);
+                                $scope.reuses = $scope.reuses.concat(dataReusesText);
                                 done = (page + 1) * resultsPerPage >= numberReuses;
                                 page++;
                                 fetching = false;
@@ -32107,10 +32139,9 @@ mod.directive('infiniteScroll', [
                     fetching = true;
                     reuses($scope.context, {'rows': resultsPerPage}).
                         then(function(response) {
-                            var data = response.data;
-                            $scope.reuses = data.reuses;
-                            done = resultsPerPage >= data.nhits;
-                            numberReuses = data.nhits;
+                            $scope.reuses = extractReuses(response);
+                            done = resultsPerPage >= response.data.nhits;
+                            numberReuses = response.data.nhits;
                             fetching = false;
                         }, function() {
                             fetching = false;
@@ -32355,7 +32386,7 @@ mod.directive('infiniteScroll', [
          *     <file name="first_example.html">
          *         <ods-dataset-context
          *             context="ctx"
-         *             ctx-domain="https://documentation-resources.opendatasoft.com/"
+         *             ctx-domain="https://documentation-resources.huwise.com/"
          *             ctx-dataset="les-arbres-remarquables-de-paris">
          *             <div ods-results="items" ods-results-context="ctx" ods-results-max="10">
          *                 <ods-select
@@ -32374,7 +32405,7 @@ mod.directive('infiniteScroll', [
          *     <file name="second_example.html">
          *         <ods-dataset-context
          *             context="ctx"
-         *             ctx-domain="https://documentation-resources.opendatasoft.com/"
+         *             ctx-domain="https://documentation-resources.huwise.com/"
          *             ctx-dataset="les-arbres-remarquables-de-paris"
          *             ctx-parameters="{ 'disjunctive.arrondissement': true, 'disjunctive.libellefrancais': true }">
          *             <div ods-facet-results="facetsArrondissement"
@@ -33113,7 +33144,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="affiches"
-         *                               affiches-domain="https://documentation-resources.opendatasoft.com/"
+         *                               affiches-domain="https://documentation-resources.huwise.com/"
          *                               affiches-dataset="affiches-anciennes">
          *              <ods-slideshow context="affiches"
          *                             image-field="image"
@@ -33641,7 +33672,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="commute"
-         *                               commute-domain="https://documentation-resources.opendatasoft.com/"
+         *                               commute-domain="https://documentation-resources.huwise.com/"
          *                               commute-dataset="average-commute-time-by-county">
          *              <ods-table context="commute"></ods-table>
          *          </ods-dataset-context>
@@ -34393,7 +34424,7 @@ mod.directive('infiniteScroll', [
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="catalog" catalog-domain="data.opendatasoft.com">
+         *          <ods-catalog-context context="catalog" catalog-domain="data.huwise.com">
          *              <ods-tag-cloud context="catalog" facet-name="keyword"></ods-tag-cloud>
          *          </ods-catalog-context>
          *      </file>
@@ -34568,7 +34599,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="simple_text_search.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <ods-text-search context="events" field="titre"></ods-text-search>
          *              <ods-table context="events"></ods-table>
@@ -34579,9 +34610,9 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="text_search_with_multiple_contexts.html">
          *          <ods-dataset-context context="events,trees"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract"
-         *                               trees-domain="https://documentation-resources.opendatasoft.com/"
+         *                               trees-domain="https://documentation-resources.huwise.com/"
          *                               trees-dataset="les-arbres-remarquables-de-paris">
          *              <ods-text-search context="[events,trees]"
          *                               events-field="titre"
@@ -34855,7 +34886,7 @@ mod.directive('infiniteScroll', [
          * <example module="ods-widgets">
          *     <file name="index.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <div ng-init="values = {'from':undefined,'to':undefined}">
          *                  <ods-timerange context="events"
@@ -34992,7 +35023,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <ods-timerange context="events"
          *                             default-from="yesterday"
@@ -35002,7 +35033,7 @@ mod.directive('infiniteScroll', [
          *          </ods-dataset-context>
          *
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <ods-timerange context="events"
          *                             date-format="DD/MM/YYYY"
@@ -35012,7 +35043,7 @@ mod.directive('infiniteScroll', [
          *          </ods-dataset-context>
          *
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <div ods-datetime="datenow">
          *                  <ods-timerange context="events"
@@ -35415,7 +35446,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <ods-timescale context="events" default-value="everything"></ods-timescale>
          *              <ods-map context="events"></ods-map>
@@ -35547,7 +35578,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-catalog-context context="catalog"
-         *                               catalog-domain="https://data.opendatasoft.com"
+         *                               catalog-domain="https://hub.huwise.com"
          *                               catalog-parameters="{'disjunctive.publisher':true}">
          *              <label><input type="checkbox" ods-toggle-model="catalog.parameters" ods-toggle-key="refine.publisher" ods-toggle-value="OpenStreetMap"> OpenStreetMap</label>
          *              <label><input type="checkbox" ods-toggle-model="catalog.parameters" ods-toggle-key="refine.publisher" ods-toggle-value="Eurostat"> Eurostat</label>
@@ -35687,7 +35718,7 @@ mod.directive('infiniteScroll', [
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="example" example-domain="data.opendatasoft.com">
+         *          <ods-catalog-context context="example" example-domain="data.huwise.com">
          *              <ods-top-publishers context="example"></ods-top-publishers>
          *          </ods-catalog-context>
          *      </file>
@@ -35867,7 +35898,7 @@ mod.directive('infiniteScroll', [
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="affiches"
-         *                               affiches-domain="https://documentation-resources.opendatasoft.com/"
+         *                               affiches-domain="https://documentation-resources.huwise.com/"
          *                               affiches-dataset="affiches-anciennes">
          *              <ods-media-gallery context="affiches" ods-auto-resize ods-widget-tooltip>
          *                  <h3>My custom tooltip</h3>

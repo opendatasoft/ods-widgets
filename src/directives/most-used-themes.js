@@ -16,7 +16,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="example" example-domain="data.opendatasoft.com">
+         *          <ods-catalog-context context="example" example-domain="data.huwise.com">
          *              <ods-most-used-themes context="example"></ods-most-used-themes>
          *          </ods-catalog-context>
          *      </file>

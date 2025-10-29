@@ -20,7 +20,7 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-catalog-context context="example"
-         *                               example-domain="data.opendatasoft.com">
+         *                               example-domain="data.huwise.com">
          *              <ods-most-popular-datasets context="example"></ods-most-popular-datasets>
          *          </ods-catalog-context>
          *      </file>

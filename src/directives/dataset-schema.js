@@ -19,7 +19,7 @@
          *     <file name="index.html">
          *         <ods-dataset-context context="tree"
          *                              tree-dataset="les-arbres-remarquables-de-paris"
-         *                              tree-domain="https://documentation-resources.opendatasoft.com/">
+         *                              tree-domain="https://documentation-resources.huwise.com/">
          *             <ods-dataset-schema context="tree"></ods-dataset-schema>
          *         </ods-dataset-context>
          *    </file>

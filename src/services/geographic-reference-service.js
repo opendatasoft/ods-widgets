@@ -223,7 +223,7 @@
 
                     if (countryCode === 'gb') {
                         // GB is a special situation: our reference data use "gb" for world level, but "uk" for local levels.
-                        // https://app.shortcut.com/opendatasoft/story/35331/apply-the-same-render-mechanism-for-classic-pages-preview-as-for-classic-pages-normal-rendering
+                        // https://app.shortcut.com/Huwise/story/35331/apply-the-same-render-mechanism-for-classic-pages-preview-as-for-classic-pages-normal-rendering
                         return 'uk';
                     }
 

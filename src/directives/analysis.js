@@ -92,7 +92,7 @@
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                               tree-domain="https://documentation-resources.opendatasoft.com/">
+         *                               tree-domain="https://documentation-resources.huwise.com/">
          *              <table class="table table-bordered table-condensed table-striped">
          *                  <thead>
          *                      <tr>
@@ -239,11 +239,11 @@
          *      <file name="logarithmic-scale.html">
          *          <ods-dataset-context context="regions,population"
          *                               regions-dataset="regions-et-collectivites-doutre-mer-france"
-         *                               regions-domain="https://documentation-resources.opendatasoft.com/"
+         *                               regions-domain="https://documentation-resources.huwise.com/"
          *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)', 'disjunctive.reg_name':true}"
          *                               population-dataset="populations-legales-communes-et-arrondissements-municipaux-france"
          *                               population-parameters="{'disjunctive.reg_name':true}"
-         *                               population-domain="https://documentation-resources.opendatasoft.com/">
+         *                               population-domain="https://documentation-resources.huwise.com/">
          *
          *              <div ods-color-gradient="colorgradient"
          *                   ods-color-gradient-context="population"
@@ -466,7 +466,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://documentation-resources.opendatasoft.com/">
+         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://documentation-resources.huwise.com/">
          *              <div
          *                      ods-analysis="analysis"
          *                      ods-analysis-context="tree"
@@ -495,7 +495,7 @@
          *      <file name="index.html">
          *          <ods-dataset-context context="tree"
          *                               tree-dataset="les-arbres-remarquables-de-paris"
-         *                               tree-domain="https://documentation-resources.opendatasoft.com/">
+         *                               tree-domain="https://documentation-resources.huwise.com/">
          *              <div ods-analysis="analysis"
          *                   ods-analysis-context="tree"
          *                   ods-analysis-max="10"
@@ -625,7 +625,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://documentation-resources.opendatasoft.com/">
+         *          <ods-dataset-context context="tree" tree-dataset="les-arbres-remarquables-de-paris" tree-domain="https://documentation-resources.huwise.com/">
          *              <div
          *                  ods-analysis="analysis"
          *                  ods-analysis-context="tree"

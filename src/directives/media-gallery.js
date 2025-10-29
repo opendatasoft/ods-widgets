@@ -24,7 +24,7 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="affiches"
-         *                               affiches-domain="https://documentation-resources.opendatasoft.com/"
+         *                               affiches-domain="https://documentation-resources.huwise.com/"
          *                               affiches-dataset="affiches-anciennes">
          *              <ods-media-gallery context="affiches" ods-auto-resize ods-widget-tooltip>
          *                  <h3>My custom tooltip</h3>
@@ -273,7 +273,7 @@
                     if ($scope.context.dataset.extra_metas.visualization &&
                         $scope.context.dataset.extra_metas.visualization.image_tooltip_html_enabled &&
                         $scope.context.dataset.extra_metas.visualization.image_tooltip_html) {
-                        // FIXME: https://app.shortcut.com/opendatasoft/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
+                        // FIXME: https://app.shortcut.com/Huwise/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
                         detailsTemplate = '<div>' + $scope.context.dataset.extra_metas.visualization.image_tooltip_html + '</div>';
                     } else {
                         detailsTemplate = defaultDetailsTemplate;

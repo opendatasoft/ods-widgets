@@ -6,8 +6,8 @@ This log tries to follow the good principles of [Keep a CHANGELOG](http://keepac
 
 ### Changed
 - `odsSelect`: Closing and opening the select now resets the value filter, if it was used before closing.
-- Inside the widgets' documentation, links to the Opendatasoft user guide have been updated to follow the doc migration.
-- Inside the Opendatasoft platform, some field settings have been updated to be stored in dataset metadata, such as
+- Inside the widgets' documentation, links to the Huwise user guide have been updated to follow the doc migration.
+- Inside the Huwise platform, some field settings have been updated to be stored in dataset metadata, such as
   the list of filters, their settings, and the definition of which fields are displayed for each language. This was
   previously stored in field annotations. Many widgets have been updated accordingly to fetch these settings from their
   dataset metadata.
@@ -56,7 +56,7 @@ explicitly defined, and improved examples.
 - `odsTimerange`: Fixed timezone calculation issues when used on `date` fields
 
 ### Removed
-- `odsDatasetJsonSchema` has been removed from ODS-Widgets (it doesn't work outside of the Opendatasoft platform)
+- `odsDatasetJsonSchema` has been removed from ODS-Widgets (it doesn't work outside of the Huwise platform)
 
 ## 2.0.0 - 2020-10-30
 This version is the first one based on AngularJS 1.8.0, which is the last major version that will be released, and is
@@ -74,7 +74,7 @@ with two known exceptions: `ods-range-input` and `ods-gist`.
 ## 1.4.12 - 2020-10-23
 ### Added
 - `odsAdvAnalysis`: A new widget that can be used to query an
-[API v2 `aggregates` endpoint](https://help.opendatasoft.com/apis/ods-search-v2/#aggregating-records) and expose the
+[API v2 `aggregates` endpoint](https://help.huwise.com/apis/ods-search-v2/#aggregating-records) and expose the
 results in a variable, which can then be used by other widgets.
 - `odsAdvTable`: A new widget to display as a table the content of a variable (typically taken from the `odsAdvAnalysis`
 variable).
@@ -101,7 +101,7 @@ parameter, to provide the ability to generate a logarithmic scale (value below 1
 ## 1.4.10 - 2020-07-21
 ### Fixed
 - `odsMap`: Fixed an issue where pictos wouldn't load in the legend and the display control, when used outside an
-Opendatasoft platform.
+Huwise platform.
 - `odsMap`: Fixed an issue where a map wouldn't properly initialize due to a race condition in very rare situations.
 - `odsMap`, `odsVegaLite`: Fixed an issue in third-party dependency loading, which would prevent the widgets from
 running properly more than once in complex dashboards.
@@ -207,7 +207,7 @@ of values.
 - `odsMap`: pan map so that tooltip fits in
 
 ### Removed
-- `odsRedirectIfNotLoggedIn` having no use outside of dashboards hosted on Opendatasoft, it's been moved out of this library
+- `odsRedirectIfNotLoggedIn` having no use outside of dashboards hosted on Huwise, it's been moved out of this library
 
 ## 1.1.0 - 2018-02-23
 ### Added
@@ -427,9 +427,9 @@ But unfortunately, this means that any current customization is likely to be ent
 - New `odsPlumeAirQuality`: displays the status of the air quality in a specific city
 - New `odsClearAllFilters`: a simple link to reset all filters on a context.
 - New `odsDatetime`: can be used to inject the current date/time as a variable in the page.
-- New `odsRedirectIfNotLoggedIn` (Opendatasoft customers): redirects the users to the login page if they are not logged in.
+- New `odsRedirectIfNotLoggedIn` (Huwise customers): redirects the users to the login page if they are not logged in.
 Can be used on a public page that uses private datasets, to ensure the user doesn't stop at an empty dashboard. Only works
-on the Opendatasoft platform.
+on the Huwise platform.
 - New `availableCalendarViews` parameter on `odsCalendar`, allowing you to restrict the available views in the calendar.
 - New `minZoom` and `maxZoom` parameters on `odsMap`, to restrict the available zoom levels.
 - New `scrollWheelZoom` parameter on `odsMap` to prevent the mousewheel to zoom/unzoom. Can be useful on a scrollable

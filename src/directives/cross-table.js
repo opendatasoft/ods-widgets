@@ -33,7 +33,7 @@
          *      <file name="index.html">
          *         <ods-dataset-context context="trees"
          *                              trees-dataset="les-arbres-remarquables-de-paris"
-         *                              trees-domain="https://documentation-resources.opendatasoft.com/">
+         *                              trees-domain="https://documentation-resources.huwise.com/">
          *              <ods-cross-table context="trees"
          *                               rows="arrondissement"
          *                               column="espece"

@@ -32,7 +32,7 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <ods-timerange context="events"
          *                             default-from="yesterday"
@@ -42,7 +42,7 @@
          *          </ods-dataset-context>
          *
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <ods-timerange context="events"
          *                             date-format="DD/MM/YYYY"
@@ -52,7 +52,7 @@
          *          </ods-dataset-context>
          *
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <div ods-datetime="datenow">
          *                  <ods-timerange context="events"

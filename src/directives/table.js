@@ -19,7 +19,7 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="commute"
-         *                               commute-domain="https://documentation-resources.opendatasoft.com/"
+         *                               commute-domain="https://documentation-resources.huwise.com/"
          *                               commute-dataset="average-commute-time-by-county">
          *              <ods-table context="commute"></ods-table>
          *          </ods-dataset-context>

@@ -7,9 +7,9 @@
   outline: none;
 }
 .ods-header-logo img {
-  height: 26px;
-  width: 140px;
-  vertical-align: middle;
+  height: 30px;
+  width: auto;
+  margin-right: 60px;
 }
 .ods-header__brandname {
   min-width: 130px;
@@ -628,7 +628,7 @@ pre.prettyprint {
   margin-bottom: 26px;
 }
 .ods-zoom {
-  background-color: #fcfdfe;
+  background-color: #fcfcfc;
   border: 1px solid #DEE5EF;
 }
 .ods-prerequisite,

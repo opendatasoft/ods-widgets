@@ -29,12 +29,12 @@
          *      <file name="legend.html">
          *          <ods-dataset-context context="regions,population"
          *                               regions-dataset="regions-et-collectivites-doutre-mer-france"
-         *                               regions-domain="https://documentation-resources.opendatasoft.com/"
+         *                               regions-domain="https://documentation-resources.huwise.com/"
          *                               regions-parameters="{'q':'NOT (guadeloupe OR mayotte OR guyane OR martinique OR reunion)',
          *                                                   'disjunctive.reg_name':true}"
          *                               population-dataset="populations-legales-communes-et-arrondissements-municipaux-france"
          *                               population-parameters="{'disjunctive.reg_name':true}"
-         *                               population-domain="https://documentation-resources.opendatasoft.com/">
+         *                               population-domain="https://documentation-resources.huwise.com/">
          *
          *              <div ods-color-gradient="colorgradient"
          *                   ods-color-gradient-context="population"

@@ -25,14 +25,14 @@
          * @param {string} odsAdvAnalysis This name can be used as the `data` attribute of the display widgets that support it (e.g. `odsAdvTable`).
          * @param {string} odsAdvAnalysisContext Insert here the name of the context to use.
          * @param {string} [odsAdvAnalysisSelect] Type here the query to make. More use cases are available below. The documentation about the ODSQL select clause is available here. This clause will contain the values (i.e., the y-axis in case of a chart).
-         * @param {string} [odsAdvAnalysisWhere] This parameter allows to filter rows with a combination of expressions. The documentation about the ODSQL `where` clause is available [here](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Where-clause).
-         * @param {string} [odsAdvAnalysisGroupBy] This parameter helps regroup the calculation according to specific criteria. The `group-by` in this clause can become either y-axis or series in a chart. The documentation about the ODSQL `GROUP BY` clause is available [here](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Group-by-clause).
-         * @param {string} [odsAdvAnalysisOrderBy] This parameter is used to sort the results of an aggregation using the `ASC` and `DESC` keywords (e.g., `myField ASC` or ). The documentation about the ODSQL `ORDER BY` clause is available [here](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Order-by-clause).
+         * @param {string} [odsAdvAnalysisWhere] This parameter allows to filter rows with a combination of expressions. The documentation about the ODSQL `where` clause is available [here](https://help.huwise.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Where-clause).
+         * @param {string} [odsAdvAnalysisGroupBy] This parameter helps regroup the calculation according to specific criteria. The `group-by` in this clause can become either y-axis or series in a chart. The documentation about the ODSQL `GROUP BY` clause is available [here](https://help.huwise.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Group-by-clause).
+         * @param {string} [odsAdvAnalysisOrderBy] This parameter is used to sort the results of an aggregation using the `ASC` and `DESC` keywords (e.g., `myField ASC` or ). The documentation about the ODSQL `ORDER BY` clause is available [here](https://help.huwise.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29/Order-by-clause).
          * @param {string} [odsAdvAnalysisLimit] Limits the number of items to return.
          *
          * @description
          * The odsAdvAnalysis widget exposes the results of an aggregation function over a context.
-         * It uses the ODS Explore API V2.1 and its [ODSQL language](https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29), which offers greater flexibility than the v1.
+         * It uses the ODS Explore API V2.1 and its [ODSQL language](https://help.huwise.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-%28ODSQL%29), which offers greater flexibility than the v1.
          *
          * The parameters for this widgets are dynamic, which implies two benefits:
          * - First, changes in context parameters will refresh the results of the widget.
@@ -41,7 +41,7 @@
          * The results can then be displayed in three different ways:
          * - To create specific visualizations, using custom-made HTML and CSS
          * - A table view is also available using `odsAdvTable` (examples are provided below).
-         * - As the widget is creating an AngularJS variable, it can be displayed through a simple `{{myData.results[X]}}`. This usage is not documented here, as it regards HTML code and widgets already documented in [the introduction](https://help.opendatasoft.com/widgets/#/introduction/).
+         * - As the widget is creating an AngularJS variable, it can be displayed through a simple `{{myData.results[X]}}`. This usage is not documented here, as it regards HTML code and widgets already documented in [the introduction](https://help.huwise.com/widgets/#/introduction/).
          *
          * For retro-compatibility purposes, similarly to API V2.0, if the `groupBy` is done on a field that contains null values, they will be removed. If you are
          * using the `limit` parameter, this may cause the widget to return one less category as expected, because the null group was included. You can
@@ -55,7 +55,7 @@
          * <pre>
          *     <ods-dataset-context
          *         context="ctx"
-         *         ctx-domain="https://documentation-resources.opendatasoft.com/"
+         *         ctx-domain="https://documentation-resources.huwise.com/"
          *         ctx-dataset="les-arbres-remarquables-de-paris">
          *         <div ods-adv-analysis="myData"
          *             ods-adv-analysis-context="ctx"
@@ -73,7 +73,7 @@
          * <pre>
          *     <ods-dataset-context
          *         context="ctx"
-         *         ctx-domain="https://documentation-resources.opendatasoft.com/"
+         *         ctx-domain="https://documentation-resources.huwise.com/"
          *         ctx-dataset="gold-prices">
          *         <div ods-adv-analysis="myData"
          *             ods-adv-analysis-context="ctx"
@@ -94,7 +94,7 @@
          * <pre>
          *     <ods-dataset-context
          *         context="ctx"
-         *         ctx-domain="https://documentation-resources.opendatasoft.com/"
+         *         ctx-domain="https://documentation-resources.huwise.com/"
          *         ctx-dataset="les-arbres-remarquables-de-paris">
          *         <div ods-adv-analysis="myData"
          *             ods-adv-analysis-context="ctx"

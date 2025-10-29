@@ -52,7 +52,7 @@
                     jQuery('.ng-leaflet-tooltip-cloak', element).removeClass('ng-leaflet-tooltip-cloak');
                 };
                 if (attrs.template && attrs.template !== '') {
-                    // FIXME: https://app.shortcut.com/opendatasoft/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
+                    // FIXME: https://app.shortcut.com/Huwise/story/40502/xss-in-widgets-that-allow-custom-tooltips-maps-images-calendar
                     $templateCache.put('custom-tooltip-' + scope.context.dataset.datasetid, attrs.template);
                 } else {
                     $templateCache.put('default-tooltip', '<div class="infoPaneLayout">' +
@@ -60,7 +60,7 @@
                         '   <span ng-bind="getTitle(record) | shortSummary: 100"></span> ' +
                         '</h2>' +
                         '<dl class="odswidget-map-tooltip__record-values">' +
-                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields|fieldsForLanguageDisplay:fieldsDisplayedInSpecificLanguages" ' +
+                        '    <dt ng-repeat-start="field in context.dataset.fields|fieldsForVisualization:\'map\'|fieldsFilter:context.dataset.extra_metas.visualization.map_tooltip_fields|fieldsForLanguageDisplay:displayLanguage:fieldsDisplayedInSpecificLanguages" ' +
                         '        ng-show="record.fields[field.name]|isDefined"' +
                         '        class="odswidget-map-tooltip__field-name">' +
                         '        {{ field.label }}' +
@@ -170,6 +170,7 @@
                     return null;
                 };
                 $scope.fields = angular.copy($scope.context.dataset.fields);
+                $scope.displayLanguage = ODSWidgetsConfig.language;
                 $scope.fieldsDisplayedInSpecificLanguages = (
                     $scope.context.dataset &&
                     $scope.context.dataset.extra_metas &&

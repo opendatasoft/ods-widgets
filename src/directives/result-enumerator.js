@@ -31,7 +31,7 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-catalog-context context="example"
-         *                               example-domain="https://data.opendatasoft.com">
+         *                               example-domain="https://data.huwise.com">
          *              <ul>
          *                  <ods-result-enumerator context="example">
          *                      <li>

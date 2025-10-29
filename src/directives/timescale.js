@@ -26,7 +26,7 @@
          *  <example module="ods-widgets">
          *      <file name="index.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <ods-timescale context="events" default-value="everything"></ods-timescale>
          *              <ods-map context="events"></ods-map>

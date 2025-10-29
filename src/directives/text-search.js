@@ -23,7 +23,7 @@
          *  <example module="ods-widgets">
          *      <file name="simple_text_search.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <ods-text-search context="events" field="titre"></ods-text-search>
          *              <ods-table context="events"></ods-table>
@@ -34,9 +34,9 @@
          *  <example module="ods-widgets">
          *      <file name="text_search_with_multiple_contexts.html">
          *          <ods-dataset-context context="events,trees"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract"
-         *                               trees-domain="https://documentation-resources.opendatasoft.com/"
+         *                               trees-domain="https://documentation-resources.huwise.com/"
          *                               trees-dataset="les-arbres-remarquables-de-paris">
          *              <ods-text-search context="[events,trees]"
          *                               events-field="titre"

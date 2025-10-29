@@ -61,7 +61,7 @@
          *    <file name="an_example_using_odsAdvAnalysis.html">
          *        <ods-dataset-context
          *            context="ctx"
-         *            ctx-domain="https://documentation-resources.opendatasoft.com/"
+         *            ctx-domain="https://documentation-resources.huwise.com/"
          *            ctx-dataset="les-arbres-remarquables-de-paris">
          *            <div ods-adv-analysis="data"
          *                ods-adv-analysis-context="ctx"

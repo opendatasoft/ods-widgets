@@ -31,7 +31,7 @@
          * @example
          *  <example module="ods-widgets">
          *      <file name="index.html">
-         *          <ods-catalog-context context="public" public-domain="https://public.opendatasoft.com">
+         *          <ods-catalog-context context="public" public-domain="https://hub.huwise.com">
          *              <ods-last-reuses-feed context="public"></ods-last-reuses-feed>
          *          </ods-catalog-context>
          *      </file>

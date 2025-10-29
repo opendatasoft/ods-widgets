@@ -22,7 +22,7 @@
          * <example module="ods-widgets">
          *     <file name="index.html">
          *          <ods-dataset-context context="events"
-         *                               events-domain="https://documentation-resources.opendatasoft.com/"
+         *                               events-domain="https://documentation-resources.huwise.com/"
          *                               events-dataset="evenements-publics-openagenda-extract">
          *              <div ng-init="values = {'from':undefined,'to':undefined}">
          *                  <ods-timerange context="events"

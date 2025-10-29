@@ -88,7 +88,7 @@ Note: There must not be any space character between the odsFacet tag and the spa
 <li><code>category.state</code> (refined, excluded, or displayed)</li>
 </ul>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>disjunctive</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>When set to <code>true</code>, the filter is in disjunctive mode, which means that other available values can also be selected after a first value is selected. All selected values are combined as &quot;or&quot;. For example, after clicking &quot;red&quot;, &quot;green&quot; and &quot;blue&quot; can also be clicked. The resulting values can be green, red, or blue.</p>
-<p> Note: this parameter is directly related to the schema of the dataset. For this parameter to work properly, the field must allow multiple selections in filters. For more information, see <a href="https://user-guide.opendatasoft.com/en/articles/2044866">Defining a dataset schema</a>).</p>
+<p> Note: this parameter is directly related to the schema of the dataset. For this parameter to work properly, the field must allow multiple selections in filters. For more information, see <a href="https://userguide.huwise.com/en/articles/2044866">Defining a dataset schema</a>).</p>
 </div> <p><em>(default: false)</em></p></td></tr><tr><td>timerangeFilter</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>When set to <code>true</code>, an option to filter using a time range is displayed above the categories. This parameter only works for date and datetime fields and must be used with a context (see <strong>context</strong> parameter).</p>
 </div> <p><em>(default: false)</em></p></td></tr><tr><td>context</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>Name of the context to refine on. This parameter is mandatory for the <strong>timerangeFilter</strong> parameter.</p>
 </div> <p><em>(default: none)</em></p></td></tr><tr><td>valueSearch</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="ods-widgets-directive-page ods-widgets-directive-odsfacets-page"><p>When set to <code>true</code>, a search box is displayed above the categories to search within the available categories. If <code>suggest</code>, the matching categories are not displayed until there is at least one character typed into the search box, effectively making it into a suggest-like search box.</p>
@@ -102,7 +102,7 @@ Note: There must not be any space character between the odsFacet tag and the spa
 <pre class="prettyprint linenums" ng-set-text="odsFacets_with_odsFacet.html"></pre>
 <script type="text/ng-template" id="odsFacets_with_odsFacet.html">
     <ods-dataset-context context="events"
-                         events-domain="https://documentation-resources.opendatasoft.com/"
+                         events-domain="https://documentation-resources.huwise.com/"
                          events-dataset="evenements-publics-openagenda-extract">
         <div class="row-fluid">
             <div class="span4">
@@ -132,9 +132,9 @@ Note: There must not be any space character between the odsFacet tag and the spa
 <pre class="prettyprint linenums" ng-set-text="refineAlso_parameter.html"></pre>
 <script type="text/ng-template" id="refineAlso_parameter.html">
     <ods-dataset-context context="geonamescities, countries"
-                         geonamescities-domain="https://documentation-resources.opendatasoft.com/"
+                         geonamescities-domain="https://documentation-resources.huwise.com/"
                          geonamescities-dataset="doc-geonames-cities-5000"
-                         countries-domain="https://documentation-resources.opendatasoft.com/"
+                         countries-domain="https://documentation-resources.huwise.com/"
                          countries-dataset="natural-earth-countries-110m">
         <ods-facets context="geonamescities">
               <ods-facet name="country_code"

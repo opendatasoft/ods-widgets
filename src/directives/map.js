@@ -108,7 +108,7 @@
          *      <file name="odsMap_used_alone.html">
          *  <ods-dataset-context context="countries"
          *                       countries-dataset="natural-earth-countries-110m"
-         *                       countries-domain="https://documentation-resources.opendatasoft.com/">
+         *                       countries-domain="https://documentation-resources.huwise.com/">
          *      <ods-map context="countries"
          *               location="2,41.88759,0.90273"
          *               basemap="jawg.light"></ods-map>
@@ -1128,7 +1128,7 @@
                         group.layers.forEach(function(layer) {
                             // tooltipTemplate must not be passed directly via a mapConfig object, as it would bypass
                             // sanitization entirely.
-                            // https://app.shortcut.com/opendatasoft/story/40124/xss-passing-tooltiptemplate-in-mapbuilder-payload
+                            // https://app.shortcut.com/Huwise/story/40124/xss-passing-tooltiptemplate-in-mapbuilder-payload
                             if (angular.isDefined(layer.tooltipTemplate)) {
                                 delete layer.tooltipTemplate;
                             }
@@ -1278,13 +1278,13 @@
          *  <ods-dataset-context context="under100000,under500000,greaterthan500000"
          *                 under100000-dataset="doc-geonames-cities-5000"
          *                 under100000-parameters="{'q.population':' population > 0 AND population < 100000'}"
-         *                 under100000-domain="https://documentation-resources.opendatasoft.com/"
+         *                 under100000-domain="https://documentation-resources.huwise.com/"
          *                 under500000-dataset="doc-geonames-cities-5000"
          *                 under500000-parameters="{'q.population':' population >= 100000 AND population < 500000'}"
-         *                 under500000-domain="https://documentation-resources.opendatasoft.com/"
+         *                 under500000-domain="https://documentation-resources.huwise.com/"
          *                 greaterthan500000-dataset="doc-geonames-cities-5000"
          *                 greaterthan500000-parameters="{'q.population':'population >= 500000'}"
-         *                 greaterthan500000-domain="https://documentation-resources.opendatasoft.com/">
+         *                 greaterthan500000-domain="https://documentation-resources.huwise.com/">
          *<ods-map no-refit="true"
          *         scroll-wheel-zoom="false"
          *         display-control="true"
@@ -1532,7 +1532,7 @@
        *
        * Available for `aggregation` and with `color` and `colorScale` display modes, or when none is specified.
        *
-       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://user-guide.opendatasoft.com/en/articles/2042498" target="_blank">Pictograms reference documentation</a>.
+       * On top of color configuration, the icon used as a marker on the map can be configured through the `picto` property. The property supports the keywords listed in the <a href="https://userguide.huwise.com/en/articles/2042498" target="_blank">Pictograms reference documentation</a>.
        *
        * When displaying shapes, `borderColor` and `opacity` can be used to configure the color of the shape border and the opacity of the shape's fill.
        *
@@ -1625,7 +1625,7 @@
        *      <file name="odsMap_with_odsMapLayer.html">
        *  <ods-dataset-context context="genderequalityineurope"
        *                       genderequalityineurope-dataset="gender-equality-in-europe"
-       *                       genderequalityineurope-domain="https://documentation-resources.opendatasoft.com/">
+       *                       genderequalityineurope-domain="https://documentation-resources.huwise.com/">
        *      <ods-map no-refit="true"
        *               scroll-wheel-zoom="false"
        *               display-control="false"

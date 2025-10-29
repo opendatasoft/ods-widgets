@@ -170,7 +170,7 @@
          *     <file name="first_example.html">
          *         <ods-dataset-context
          *             context="ctx"
-         *             ctx-domain="https://documentation-resources.opendatasoft.com/"
+         *             ctx-domain="https://documentation-resources.huwise.com/"
          *             ctx-dataset="les-arbres-remarquables-de-paris">
          *             <div ods-results="items" ods-results-context="ctx" ods-results-max="10">
          *                 <ods-select
@@ -189,7 +189,7 @@
          *     <file name="second_example.html">
          *         <ods-dataset-context
          *             context="ctx"
-         *             ctx-domain="https://documentation-resources.opendatasoft.com/"
+         *             ctx-domain="https://documentation-resources.huwise.com/"
          *             ctx-dataset="les-arbres-remarquables-de-paris"
          *             ctx-parameters="{ 'disjunctive.arrondissement': true, 'disjunctive.libellefrancais': true }">
          *             <div ods-facet-results="facetsArrondissement"
